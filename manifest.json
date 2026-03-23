@@ -1,0 +1,16 @@
+{
+  "name": "WayGo Fleet",
+  "short_name": "WayGo",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
