@@ -629,15 +629,15 @@ function renderClientsBody(){
   const filtered=CL.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.dni||'').toLowerCase().includes(q)||(c.phone||'').includes(q));
   filtered.sort((a,b)=>(b.bookingIds||[]).length-(a.bookingIds||[]).length);
   if(!filtered.length){res.innerHTML=`<div class="empty"><div class="ei">👤</div><div class="et">${CL.length?'Sin resultados':'Sin clientes aún'}</div><div class="es">Los clientes se crean automáticamente al añadir alquileres con DNI o nombre</div></div>`;return;}
-  const open=(cl)=>`_clientDetail='${cl.id}';renderClientDetail(document.getElementById('PC'))`;
+  const open=(cl)=>`_clientDetail='${escJs(cl.id)}';renderClientDetail(document.getElementById('PC'))`;
   let h='';
   if(_clientsMode==='grid'){
     h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
     filtered.forEach(cl=>{
       const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
       h+=`<div onclick="${open(cl)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer">
-        <div style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cl.name||'Sin nombre'}</div>
-        ${cl.dni?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">🪪 ${cl.dni}</div>`:''}
+        <div style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cl.name||'Sin nombre')}</div>
+        ${cl.dni?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">🪪 ${esc(cl.dni)}</div>`:''}
         <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
           <div style="text-align:center;background:var(--bg3);border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(total)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">TOTAL</div></div>
           <div style="text-align:center;background:var(--bg3);border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue)">${bks.length}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ALQ.</div></div>
@@ -653,8 +653,8 @@ function renderClientsBody(){
       h+=`<div onclick="${open(cl)}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<filtered.length-1?'1px solid var(--border)':'none'}" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👤</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cl.name||'Sin nombre'}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:1px">${cl.dni||cl.phone||'Sin datos'}</div>
+          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cl.name||'Sin nombre')}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">${esc(cl.dni||cl.phone||'Sin datos')}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(total)}</div>
@@ -672,9 +672,9 @@ function renderClientsBody(){
       h+=`<div onclick="${open(cl)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;cursor:pointer">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
-            <div style="font-size:16px;font-weight:800">${cl.name||'Sin nombre'}</div>
-            ${cl.dni?`<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">🪪 ${cl.dni}</div>`:''}
-            ${cl.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 ${cl.phone}</div>`:''}
+            <div style="font-size:16px;font-weight:800">${esc(cl.name||'Sin nombre')}</div>
+            ${cl.dni?`<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">🪪 ${esc(cl.dni)}</div>`:''}
+            ${cl.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 ${esc(cl.phone)}</div>`:''}
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmt(total)}</div>
@@ -682,8 +682,8 @@ function renderClientsBody(){
             <div style="font-size:12px;margin-top:3px">${stars}</div>
           </div>
         </div>
-        ${bks.length?`<div style="font-size:10px;color:var(--text3)">Último: ${bks[0].startDate} · ${bks[0].vname}</div>`:''}
-        ${cl.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">"${cl.notes}"</div>`:''}
+        ${bks.length?`<div style="font-size:10px;color:var(--text3)">Último: ${bks[0].startDate} · ${esc(bks[0].vname)}</div>`:''}
+        ${cl.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">"${esc(cl.notes)}"</div>`:''}
       </div>`;
     });
   }
@@ -724,18 +724,18 @@ function renderClientDetail(el){
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
       <div>
-        <div style="font-size:22px;font-weight:800">${cl.name||'Sin nombre'}</div>
-        ${cl.dni?`<div style="font-size:13px;color:var(--text3);margin-top:4px">🪪 ${cl.dni}</div>`:''}
-        ${cl.phone?`<div style="font-size:13px;color:var(--text3);margin-top:2px">📞 ${cl.phone}</div>`:''}
-        ${cl.email?`<div style="font-size:13px;color:var(--text3);margin-top:2px">✉️ ${cl.email}</div>`:''}
+        <div style="font-size:22px;font-weight:800">${esc(cl.name||'Sin nombre')}</div>
+        ${cl.dni?`<div style="font-size:13px;color:var(--text3);margin-top:4px">🪪 ${esc(cl.dni)}</div>`:''}
+        ${cl.phone?`<div style="font-size:13px;color:var(--text3);margin-top:2px">📞 ${esc(cl.phone)}</div>`:''}
+        ${cl.email?`<div style="font-size:13px;color:var(--text3);margin-top:2px">✉️ ${esc(cl.email)}</div>`:''}
       </div>
-      <button onclick="openEditClient('${cl.id}')" style="background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+      <button onclick="openEditClient('${escJs(cl.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
     </div>
     <div style="margin-bottom:10px">
       <div style="font-size:11px;color:var(--text3);margin-bottom:6px">VALORACIÓN</div>
-      <div style="display:flex;gap:6px">${[1,2,3,4,5].map(i=>`<span onclick="setClientRating('${cl.id}',${i})" style="font-size:24px;cursor:pointer">${i<=(cl.rating||0)?'⭐':'☆'}</span>`).join('')}</div>
+      <div style="display:flex;gap:6px">${[1,2,3,4,5].map(i=>`<span onclick="setClientRating('${escJs(cl.id)}',${i})" style="font-size:24px;cursor:pointer">${i<=(cl.rating||0)?'⭐':'☆'}</span>`).join('')}</div>
     </div>
-    ${cl.notes?`<div style="background:var(--bg3);border-radius:8px;padding:10px;font-size:12px;color:var(--text2);font-style:italic">"${cl.notes}"</div>`:''}
+    ${cl.notes?`<div style="background:var(--bg3);border-radius:8px;padding:10px;font-size:12px;color:var(--text2);font-style:italic">"${esc(cl.notes)}"</div>`:''}
   </div>
   <div class="grid2" style="margin-bottom:16px">
     <div class="sbox" style="border-left:4px solid var(--green)"><div class="sv" style="color:var(--green)">${fmt(total)}</div><div class="sl">TOTAL GASTADO</div></div>
@@ -748,10 +748,10 @@ function renderClientDetail(el){
   if(!bks.length){h+=`<div class="empty"><div class="ei">📅</div><div class="et">Sin alquileres</div></div>`;}
   else bks.forEach(b=>{
     const p=PLATS[b.platform];
-    h+=`<div onclick="openV('${b.vid}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
+    h+=`<div onclick="openV('${escJs(b.vid)}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div>
-          <div style="font-size:14px;font-weight:700">${b.vname}</div>
+          <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${b.startDate} → ${b.endDate}</div>
         </div>
         <div style="text-align:right">
@@ -759,12 +759,12 @@ function renderClientDetail(el){
           <div style="font-size:10px;color:var(--text3);margin-top:2px">${p?p.label:b.platform}</div>
         </div>
       </div>
-      ${b.notes?`<div style="font-size:11px;color:var(--text3)">${b.notes}</div>`:''}
+      ${b.notes?`<div style="font-size:11px;color:var(--text3)">${esc(b.notes)}</div>`:''}
     </div>`;
   });
 
   h+=`<div style="height:16px"></div>
-  <button onclick="deleteClient('${cl.id}')" class="btn-d">🗑 Eliminar cliente</button>
+  <button onclick="deleteClient('${escJs(cl.id)}')" class="btn-d">🗑 Eliminar cliente</button>
   </div>`;
   el.innerHTML=h;
 }
@@ -800,26 +800,26 @@ function openEditClient(id){
   const cl=CL.find(c=>c.id===id);if(!cl)return;
   openSheet(`<div class="stitle">Editar cliente</div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:8px">👤 DATOS PERSONALES</div>
-    <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="eclN" value="${cl.name}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="eclN" value="${esc(cl.name)}" autocomplete="off"/></div>
     <div class="r2">
-      <div class="fg"><label class="lbl">DNI / NIE</label><input id="eclDni" value="${cl.dni||''}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div class="fg"><label class="lbl">NACIONALIDAD</label><input id="eclNationality" value="${cl.nationality||''}" autocomplete="off"/></div>
+      <div class="fg"><label class="lbl">DNI / NIE</label><input id="eclDni" value="${esc(cl.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="fg"><label class="lbl">NACIONALIDAD</label><input id="eclNationality" value="${esc(cl.nationality||'')}" autocomplete="off"/></div>
     </div>
     <div class="r2">
-      <div class="fg"><label class="lbl">TELÉFONO</label><input id="eclPhone" type="tel" value="${cl.phone||''}" inputmode="tel"/></div>
-      <div class="fg"><label class="lbl">EMAIL</label><input id="eclEmail" type="email" value="${cl.email||''}" inputmode="email"/></div>
+      <div class="fg"><label class="lbl">TELÉFONO</label><input id="eclPhone" type="tel" value="${esc(cl.phone||'')}" inputmode="tel"/></div>
+      <div class="fg"><label class="lbl">EMAIL</label><input id="eclEmail" type="email" value="${esc(cl.email||'')}" inputmode="email"/></div>
     </div>
-    <div class="fg"><label class="lbl">DOMICILIO</label><input id="eclAddress" value="${cl.address||''}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="eclBirthdate" type="date" value="${cl.birthdate||''}"/></div>
+    <div class="fg"><label class="lbl">DOMICILIO</label><input id="eclAddress" value="${esc(cl.address||'')}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="eclBirthdate" type="date" value="${esc(cl.birthdate||'')}"/></div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">🪪 PERMISO DE CONDUCIR</div>
     <div class="r2">
-      <div class="fg"><label class="lbl">Nº PERMISO</label><input id="eclLicense" value="${cl.license||''}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div class="fg"><label class="lbl">CADUCIDAD</label><input id="eclLicenseExp" type="date" value="${cl.licenseExp||''}"/></div>
+      <div class="fg"><label class="lbl">Nº PERMISO</label><input id="eclLicense" value="${esc(cl.license||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="fg"><label class="lbl">CADUCIDAD</label><input id="eclLicenseExp" type="date" value="${esc(cl.licenseExp||'')}"/></div>
     </div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="eclNotes" value="${cl.notes||''}" autocomplete="off"/></div>
-    <button class="btn" onclick="submitEditClient('${id}')">💾 Guardar</button>
+    <div class="fg"><label class="lbl">NOTAS</label><input id="eclNotes" value="${esc(cl.notes||'')}" autocomplete="off"/></div>
+    <button class="btn" onclick="submitEditClient('${escJs(id)}')">💾 Guardar</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
@@ -1156,7 +1156,7 @@ function renderAnalytics(el){
   </div>`;
 
   // ── Calcular métricas avanzadas ────────────────────────────────────────────
-  const _nowStr=new Date().toISOString().slice(0,10);
+  const _nowStr=todayStr();
   const _curM2=_nowStr.slice(0,7);
   // Todos los alquileres de todos los vehículos activos (filtrados)
   const _allBks=activeV.flatMap(v=>(v.bookings||[]).map(b=>({...b,_v:v})));
@@ -2246,7 +2246,7 @@ function renderLiquidaciones(ownerId,el){
 // Lightweight inline autocomplete for client selection in booking forms
 function _clPickerHtml(inputId, currentName){
   return `<div style="position:relative">
-    <input id="${inputId}" type="text" value="${currentName||''}"
+    <input id="${esc(inputId)}" type="text" value="${esc(currentName||'')}"
       placeholder="Buscar o escribir nombre del cliente..."
       autocomplete="off"
       oninput="_clPickerFilter('${inputId}')"
@@ -2266,11 +2266,11 @@ function _clPickerFilter(inputId){
   if(!filtered.length&&!q){list.style.display='none';return;}
   let html='';
   filtered.slice(0,20).forEach(cl=>{
-    html+=`<div onmousedown="event.preventDefault();_clPickerSelect('${inputId}','${cl.id}')"
+    html+=`<div onmousedown="event.preventDefault();_clPickerSelect('${escJs(inputId)}','${escJs(cl.id)}')"
       style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)"
       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-      <div style="font-size:14px;font-weight:600">${cl.name||'Sin nombre'}</div>
-      ${cl.dni||cl.phone?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${[cl.dni,cl.phone].filter(Boolean).join(' · ')}</div>`:''}
+      <div style="font-size:14px;font-weight:600">${esc(cl.name||'Sin nombre')}</div>
+      ${cl.dni||cl.phone?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc([cl.dni,cl.phone].filter(Boolean).join(' · '))}</div>`:''}
     </div>`;
   });
   // Option to use typed name as new client
@@ -2278,7 +2278,7 @@ function _clPickerFilter(inputId){
     html+=`<div onmousedown="event.preventDefault();_clPickerNew('${inputId}')"
       style="padding:10px 14px;cursor:pointer;color:var(--amber);font-size:13px;font-weight:700"
       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-      ＋ Usar "${inp.value.trim()}" como nuevo cliente
+      ＋ Usar "${esc(inp.value.trim())}" como nuevo cliente
     </div>`;
   }
   list.innerHTML=html;
@@ -2378,7 +2378,7 @@ function openExtendBooking(bookingId){
   let _bv=null,_bb=null;
   V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){_bv=v;_bb=b;}});});
   if(!_bv||!_bb)return;
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const todayM=today.slice(0,7);
   const origEnd=_bb.endDate;
   // Guardar en window para que _confirmExtend() los recupere al pulsar Confirmar
@@ -2464,7 +2464,7 @@ function _confirmExtend(){
     return;
   }
 
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   if(!_bv.finances)_bv.finances=[];
 
   if(extraPrice>0){
@@ -2578,7 +2578,7 @@ function _confirmReturn(){
 
 function openBookingFinance(bookingId,type){
   window._bfBookingId=bookingId;window._bfType=type;window._bfEditId=null;
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   openSheet('<div class="stitle">'+(type==='income'?'💰 Ingreso adicional':'💸 Gasto del alquiler')+'</div>'
     +'<div class="fg"><label class="lbl">CONCEPTO *</label><input id="bfConcept" placeholder="'+(type==='income'?'Ej: Exceso km, limpieza extra...':'Ej: Limpieza, combustible...')+'" autocomplete="off"/></div>'
     +'<div class="r2"><div class="fg"><label class="lbl">IMPORTE (€) *</label><input id="bfAmt" type="number" step="0.01" inputmode="decimal"/></div>'
@@ -2598,7 +2598,7 @@ function _saveBookingFinance(){
   const concept=(document.getElementById('bfConcept')?.value||'').trim();
   const amt=parseFloat(document.getElementById('bfAmt')?.value)||0;
   if(!concept||!amt){alert('Concepto e importe son obligatorios.');return;}
-  const entryDate=document.getElementById('bfDate')?.value||new Date().toISOString().slice(0,10);
+  const entryDate=document.getElementById('bfDate')?.value||todayStr();
   const notes=(document.getElementById('bfNotes')?.value||'').trim();
   const entryId=editId||uid();
 
@@ -2680,7 +2680,7 @@ function closeHamburger(){
 
 function _generateRecurringEntries(r, fromYYYYMM){
   // fromYYYYMM: 'YYYY-MM' string
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const todayYM=today.slice(0,7);
   const entries=[];
   // Parse start year/month
@@ -2708,7 +2708,7 @@ function _generateRecurringEntries(r, fromYYYYMM){
   return entries;
 }
 function applyRecurringExpenses(){
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const todayM=today.slice(0,7);
   let applied=0;
   RR.forEach(r=>{
@@ -2744,7 +2744,7 @@ function applyRecurringExpenses(){
 
 
 function renderRecurring(el){
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
 
   // Items visible in this section: global + own vehicles
   const ownVehicleIds=new Set(V.filter(v=>!v.archived&&v.vtype!=='managed').map(v=>v.id));
@@ -3848,7 +3848,7 @@ function generateContractPDF(vId,bookingId){
     v.finances=v.finances.filter(f=>!f._autoExtra||f._bookingId!==b.id);
     Object.values(extrasData.items).forEach(function(ex){
       b.finance.push({id:uid(),type:'income',concept:ex.label,amount:ex.amt,date:b.startDate,notes:'Extra contratado',_autoExtra:true});
-      v.finances.push({id:uid(),type:'income',date:(b.startDate||new Date().toISOString().slice(0,10)).slice(0,7)+'-01',category:ex.label,amount:ex.amt,description:ex.label+' · '+(b.clientName||'')+' · '+v.plate,_bookingId:b.id,_autoExtra:true});
+      v.finances.push({id:uid(),type:'income',date:(b.startDate||todayStr()).slice(0,7)+'-01',category:ex.label,amount:ex.amt,description:ex.label+' · '+(b.clientName||'')+' · '+v.plate,_bookingId:b.id,_autoExtra:true});
     });
     save();
   }
@@ -4134,12 +4134,12 @@ function openMgmtContractForm(ownerId,vId){
   const ownerVehicles=V.filter(v=>!v.archived&&v.ownerId===ownerId);
   const co=getCompanyData();
   const today=new Date().toLocaleDateString('es-ES');
-  const startDate=new Date().toISOString().slice(0,10);
+  const startDate=todayStr();
   const endDate=new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().slice(0,10);
   const ibanMasked=owner.iban?owner.iban.slice(0,4)+' **** **** **** **** '+owner.iban.slice(-4):'—';
 
   openSheet(`<div class="stitle">📋 Contrato de gestión</div>
-  <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Propietario: <strong>${owner.name}</strong>${owner.iban?' · IBAN registrado ✓':' · ⚠️ Sin IBAN'}</div>
+  <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Propietario: <strong>${esc(owner.name)}</strong>${owner.iban?' · IBAN registrado ✓':' · ⚠️ Sin IBAN'}</div>
 
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:8px">🏢 EL GESTOR</div>
   <div class="r2">
@@ -4159,11 +4159,11 @@ function openMgmtContractForm(ownerId,vId){
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">👤 EL PROPIETARIO</div>
   <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:10px">
-    <div style="font-size:14px;font-weight:700">${owner.name}</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:3px">${owner.dni||'Sin DNI'} · ${owner.phone||''}</div>
+    <div style="font-size:14px;font-weight:700">${esc(owner.name)}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:3px">${esc(owner.dni||'Sin DNI')} · ${esc(owner.phone||'')}</div>
     ${owner.iban?`<div style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-top:3px">IBAN: ${ibanMasked}</div>`:'<div style="font-size:11px;color:var(--red);margin-top:3px">⚠️ IBAN no registrado</div>'}
   </div>
-  <div class="fg"><label class="lbl">DOMICILIO DEL PROPIETARIO</label><input id="mgOwnerDir" value="${owner.address||''}" autocomplete="off"/></div>
+  <div class="fg"><label class="lbl">DOMICILIO DEL PROPIETARIO</label><input id="mgOwnerDir" value="${esc(owner.address||'')}" autocomplete="off"/></div>
 
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--blue);margin-bottom:8px">🚗 VEHÍCULO</div>
@@ -4687,12 +4687,33 @@ let _vOwnersMode='extended'; // 'extended'|'compact'|'grid'
 
 // ═══════════════════════════════════════════════════════════ HELPERS
 function gV(){return V.find(v=>v.id===AV);}
-function _daysInBooking(b){
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function addDays(str,n){
+  const p=String(str||'').split('-');
+  const y=Number(p[0]),m=Number(p[1]),day=Number(p[2]);
+  if(!y||!m||!day)return String(str||'');
+  const d=new Date(y,m-1,day);
+  d.setDate(d.getDate()+(Number(n)||0));
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function _eachDate(start,end){
   const ds=[];
-  for(let d=new Date(b.startDate);d<=new Date(b.endDate);d.setDate(d.getDate()+1))
-    ds.push(d.toISOString().slice(0,10));
+  if(!start||!end||start>end)return ds;
+  let k=start,g=0;
+  while(k<=end&&g<3700){ds.push(k);k=addDays(k,1);g++;}
   return ds;
 }
+function esc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// Id dentro de onclick="fn('...')": las entidades HTML se decodifican antes de ejecutar el JS, así que la comilla simple se escapa con barra.
+function escJs(s){
+  return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r/g,'\\r').replace(/\n/g,'\\n');
+}
+function _daysInBooking(b){return _eachDate(b&&b.startDate,b&&b.endDate);}
 let _rsCache=new Map();
 function _invalidateRsCache(){_rsCache.clear();}
 function rentedSet(v){
@@ -4939,11 +4960,11 @@ function renderDash(el){
 
 
   // Active rentals right now
-  const todayStr=new Date().toISOString().slice(0,10);
+  const hoy=todayStr();
   const activeRentals=[];
   activeV.forEach(v=>{
     (v.bookings||[]).forEach(b=>{
-      if(b.startDate<=todayStr&&b.endDate>=todayStr&&!b.returned&&!b.cancelled&&!b.cancellation){
+      if(b.startDate<=hoy&&b.endDate>=hoy&&!b.returned&&!b.cancelled&&!b.cancellation){
         activeRentals.push({...b,vname:v.name,vcolor:v.color,vid:v.id});
       }
     });
@@ -4992,8 +5013,8 @@ function renderDash(el){
         <div class="sec" style="color:var(--amber);margin-bottom:14px">🔑 EN ALQUILER AHORA (${activeRentals.length})</div>
         ${activeRentals.map(b=>`<div onclick="openV('${b.vid}')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">
           <div>
-            <div style="font-size:13px;font-weight:600">${b.vname}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+b.clientName:''}</div>
+            <div style="font-size:13px;font-weight:600">${esc(b.vname)}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName):''}</div>
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
@@ -5020,7 +5041,7 @@ function renderDash(el){
     h+=`</div>`; // end 2-col grid
 
     // ── PRÓXIMOS ALQUILERES ───────────────────────────────────────────────
-    const nowStr=new Date().toISOString().slice(0,10);
+    const nowStr=todayStr();
     const upcoming2=[];
     activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate>nowStr&&!b.cancelled&&!b.cancellation)upcoming2.push({...b,vname:v.name,vcolor:v.color||'#F59E0B',vid:v.id});}));
     upcoming2.sort((a,b)=>a.startDate.localeCompare(b.startDate));
@@ -5034,7 +5055,7 @@ function renderDash(el){
           return '<div onclick="openV(\''+b.vid+'\');setTimeout(()=>showBooking(\''+b.startDate+'\'),200)" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:'+(i<upcoming2.slice(0,8).length-1?'1px solid var(--border)':'none')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
             +'<div style="width:4px;height:36px;border-radius:2px;background:'+b.vcolor+';flex-shrink:0"></div>'
             +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b.vname+(b.clientName?' · '+b.clientName:'')+'</div>'
+            +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
             +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+b.startDate+' → '+b.endDate+' · '+dur+'d'+(p?' · '+p.label:'')+'</div>'
             +'</div>'
             +'<div style="text-align:right;flex-shrink:0">'
@@ -5063,12 +5084,12 @@ function renderDash(el){
         <div style="display:flex;flex-direction:column;gap:8px">
           ${activeRentals.map(b=>`<div onclick="openV('${b.vid}')" style="background:var(--bg2);border:1px solid #F59E0B44;border-left:4px solid var(--amber);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
             <div>
-              <div style="font-size:14px;font-weight:700">${b.vname}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+b.clientName+' · ':''}hasta ${b.endDate}</div>
+              <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName)+' · ':''}hasta ${b.endDate}</div>
             </div>
             <div style="text-align:right">
               <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
-              <div style="font-size:10px;color:var(--amber);margin-top:2px">Termina en ${Math.max(0,Math.ceil((new Date(b.endDate)-new Date(todayStr))/864e5))}d</div>
+              <div style="font-size:10px;color:var(--amber);margin-top:2px">Termina en ${Math.max(0,Math.ceil((new Date(b.endDate)-new Date(hoy))/864e5))}d</div>
             </div>
           </div>`).join('')}
         </div>
@@ -5104,7 +5125,7 @@ function renderDash(el){
     const own=activeV.filter(v=>v.vtype!=='managed');
     const managed=activeV.filter(v=>v.vtype==='managed');
     // ── PRÓXIMOS ALQUILERES ───────────────────────────────────────────────
-    const nowStr=new Date().toISOString().slice(0,10);
+    const nowStr=todayStr();
     const upcoming2=[];
     activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate>nowStr&&!b.cancelled&&!b.cancellation)upcoming2.push({...b,vname:v.name,vcolor:v.color||'#F59E0B',vid:v.id});}));
     upcoming2.sort((a,b)=>a.startDate.localeCompare(b.startDate));
@@ -5118,7 +5139,7 @@ function renderDash(el){
           return '<div onclick="openV(\''+b.vid+'\');setTimeout(()=>showBooking(\''+b.startDate+'\'),200)" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:'+(i<upcoming2.slice(0,8).length-1?'1px solid var(--border)':'none')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
             +'<div style="width:4px;height:36px;border-radius:2px;background:'+b.vcolor+';flex-shrink:0"></div>'
             +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b.vname+(b.clientName?' · '+b.clientName:'')+'</div>'
+            +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
             +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+b.startDate+' → '+b.endDate+' · '+dur+'d'+(p?' · '+p.label:'')+'</div>'
             +'</div>'
             +'<div style="text-align:right;flex-shrink:0">'
@@ -5142,13 +5163,13 @@ function vcardH(v){
   const isM=v.vtype==='managed';
   const comm=isM?(Number(v.commission)||30):null;
   const share=isM?vP*(comm/100):null;
-  return `<div class="vcard" style="background:${v.color}0d;border-color:${v.color}44" onclick="openV('${v.id}')">
+  return `<div class="vcard" style="background:${v.color}0d;border-color:${v.color}44" onclick="openV('${escJs(v.id)}')">
     <div style="position:absolute;top:0;right:0;width:60px;height:60px;background:${v.color}10;border-radius:0 14px 0 60px"></div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
       <div>
-        <div style="font-size:22px;font-weight:800">${v.name}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${v.color};margin-top:2px">${v.plate}</div>
-        ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${v.model}${v.year?' · '+v.year:''}</div>`:''}
+        <div style="font-size:22px;font-weight:800">${esc(v.name)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+        ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
         <div style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;background:var(--bg4);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text3)">${vtypeLabel(v.vehicle_type||'turismo')}</div>
       </div>
       <span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;${isM?'background:#8B5CF620;color:#8B5CF6;border:1px solid #8B5CF640':'background:#F59E0B15;color:#F59E0B;border:1px solid #F59E0B40'}">${isM?'EN GESTIÓN':'PROPIO'}</span>
@@ -5224,10 +5245,10 @@ function renderListBody(){
         own.forEach(v=>{
         const vI=tInc(v),vE=tExp(v),vP=vI-vE;
         const isM=v.vtype==='managed';
-        h+=`<div onclick="openV('${v.id}')" style="background:${v.color}0d;border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
-          <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.name}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${v.plate}</div>
-          ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${v.model}</div>`:''}
+        h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${v.color}0d;border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
+          <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+          ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
           <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
             <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
             <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">BEN</div></div>
@@ -5242,10 +5263,10 @@ function renderListBody(){
         managed.forEach(v=>{
           const vI=tInc(v),vE=tExp(v),vP=vI-vE;
           const isM=v.vtype==='managed';
-          h+=`<div onclick="openV('${v.id}')" style="background:${v.color}0d;border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
-            <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.name}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${v.plate}</div>
-            ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${v.model}</div>`:''}
+          h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${v.color}0d;border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
+            <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+            ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
             <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
               <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
               <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">BEN</div></div>
@@ -5256,12 +5277,12 @@ function renderListBody(){
       }
     } else if(mode==='compact'){
       // Compact: table-like rows with status chip
-      const todayStr=new Date().toISOString().slice(0,10);
+      const hoy=todayStr();
       const getVStatus=v=>{
         const bks=v.bookings||[];
-        const inProgress=bks.find(b=>!b.returned&&b.startDate<=todayStr&&b.endDate>=todayStr);
-        if(inProgress)return{chip:`<span class="chip chip-amber">🔑 ${inProgress.clientName||'En alquiler'}</span>`,sort:1};
-        const nextB=bks.filter(b=>b.startDate>todayStr).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
+        const inProgress=bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
+        if(inProgress)return{chip:`<span class="chip chip-amber">🔑 ${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
+        const nextB=bks.filter(b=>b.startDate>hoy).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
         if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">📅 En ${dUntil}d</span>`,sort:2};}
         return{chip:`<span class="chip chip-green">✓ Disponible</span>`,sort:3};
       };
@@ -5281,13 +5302,13 @@ function renderListBody(){
         list.forEach((v,i)=>{
           const vI=tInc(v),vP=vI-tExp(v);
           const {chip}=getVStatus(v);
-          h+=`<tr class="ftr" onclick="openV('${v.id}')">
+          h+=`<tr class="ftr" onclick="openV('${escJs(v.id)}')">
             <td>
               <div style="display:flex;align-items:center;gap:10px">
                 <div style="width:5px;height:32px;border-radius:2px;background:${v.color};flex-shrink:0"></div>
                 <div>
-                  <div style="font-weight:700;font-size:13px">${v.name}</div>
-                  <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${v.plate}${v.model?' · '+v.model:''}</div>
+                  <div style="font-weight:700;font-size:13px">${esc(v.name)}</div>
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
                 </div>
               </div>
             </td>
@@ -5380,14 +5401,10 @@ function renderCal(v){
   const dayBars={};
   (v.bookings||[]).forEach(b=>{
     const col=b.cancelled?'#6B728060':(PLAT_COLORS[b.platform]||'#3B82F6');
-    let d=new Date(b.startDate);
-    const endD=new Date(b.endDate);
-    while(d<=endD){
-      const k=d.toISOString().slice(0,10);
+    _eachDate(b.startDate,b.endDate).forEach(k=>{
       if(!dayBars[k])dayBars[k]=[];
       dayBars[k].push({col,isStart:k===b.startDate,isEnd:k===b.endDate,id:b.id,startDate:b.startDate,startTime:b.startTime||'09:00',endTime:b.endTime||'09:00',client:b.clientName||'',cancelled:b.cancelled});
-      d.setDate(d.getDate()+1);
-    }
+    });
   });
 
   // ── Mini calendar ─────────────────────────────────────────────────────
@@ -5449,8 +5466,8 @@ function renderCal(v){
       const p=PLATS[b.platform]||{label:b.platform||'Sin app',icon:'🤝'};
       const platDot=PLAT_COLORS[b.platform]||'#6B7280';
       // ── Estado basado en toggles reales ──────────────────────────────────
-      const _todayS=new Date().toISOString().slice(0,10);
-      const _tomorrowS=new Date(Date.now()+864e5).toISOString().slice(0,10);
+      const _todayS=todayStr();
+      const _tomorrowS=addDays(_todayS,1);
       let col,lbl;
       if(b.cancelled){
         col='var(--red)';lbl='🚫 Cancelado';
@@ -5472,12 +5489,12 @@ function renderCal(v){
       listHtml+=
         '<div style="border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:1px solid '+platDot+'44">'+
         // Header
-        '<div style="background:linear-gradient(135deg,'+platDot+'cc,'+platDot+'55);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="showBookingById(\''+bId+'\')">'+
+        '<div style="background:linear-gradient(135deg,'+platDot+'cc,'+platDot+'55);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
           '<div style="display:flex;align-items:center;gap:8px">'+
             '<span style="font-size:20px">'+(p.icon||'🚗')+'</span>'+
             '<div>'+
-              '<div style="font-size:13px;font-weight:800;color:#fff">'+(b.clientName||'Sin nombre')+'</div>'+
-              '<div style="font-size:10px;color:rgba(255,255,255,0.8)">'+(b.clientPhone||p.label)+
+              '<div style="font-size:13px;font-weight:800;color:#fff">'+esc(b.clientName||'Sin nombre')+'</div>'+
+              '<div style="font-size:10px;color:rgba(255,255,255,0.8)">'+esc(b.clientPhone||p.label)+
                 (multiMonth?'<span style="margin-left:6px;background:rgba(255,255,255,0.2);padding:1px 5px;border-radius:4px">+2 meses</span>':'')+
               '</div>'+
             '</div>'+
@@ -5488,7 +5505,7 @@ function renderCal(v){
           '</div>'+
         '</div>'+
         // Date/time row
-        '<div style="background:var(--bg2);padding:10px 14px;cursor:pointer" onclick="showBookingById(\''+bId+'\')">'+
+        '<div style="background:var(--bg2);padding:10px 14px;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'+
             '<div style="display:flex;align-items:center;gap:8px">'+
               // Start
@@ -5517,11 +5534,11 @@ function renderCal(v){
           '</div>'+
           // Action buttons
           '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+
-            '<button onclick="event.stopPropagation();toggleDelivery(\''+bId+'\');renderDetail(document.getElementById(\'PC\'))" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.delivered?'#10B98160':'var(--border2)')+';background:'+(b.delivered?'#10B98115':'var(--bg3)')+';color:'+(b.delivered?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
+            '<button onclick="event.stopPropagation();toggleDelivery(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.delivered?'#10B98160':'var(--border2)')+';background:'+(b.delivered?'#10B98115':'var(--bg3)')+';color:'+(b.delivered?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
               (b.delivered?'🚗 Entregado':'🚗 Entregar')+'</button>'+
-            '<button onclick="event.stopPropagation();toggleReturn(\''+bId+'\')" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.returned?'#10B98160':'var(--border2)')+';background:'+(b.returned?'#10B98115':'var(--bg3)')+';color:'+(b.returned?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
+            '<button onclick="event.stopPropagation();toggleReturn(\''+escJs(bId)+'\')" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.returned?'#10B98160':'var(--border2)')+';background:'+(b.returned?'#10B98115':'var(--bg3)')+';color:'+(b.returned?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
               (b.returned?'✅ Devuelto':'🔑 Devolver')+'</button>'+
-            '<button onclick="event.stopPropagation();togglePayStatus(\''+bId+'\');renderDetail(document.getElementById(\'PC\'))" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.cobrado?'#10B98160':'var(--border2)')+';background:'+(b.cobrado?'#10B98115':'var(--bg3)')+';color:'+(b.cobrado?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
+            '<button onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.cobrado?'#10B98160':'var(--border2)')+';background:'+(b.cobrado?'#10B98115':'var(--bg3)')+';color:'+(b.cobrado?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
               (b.cobrado?'💰 Cobrado':'💰 Cobrar')+'</button>'+
           '</div>'+
           // Km row
@@ -5651,8 +5668,8 @@ function showBooking(k,_overrideId){
         <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${b.kmStart?b.kmStart.toLocaleString('es-ES')+' km':'—'} → ${b.kmEnd?b.kmEnd.toLocaleString('es-ES')+' km':'—'}</span>
         ${(b.kmStart&&b.kmEnd)?`<span style="font-family:var(--mono);font-size:11px;color:var(--text3)">(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
       </div>`:''}
-      ${b.clientName?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">👤 ${b.clientName}${b.clientPhone?' · '+b.clientPhone:''}${b.clientDni?' · '+b.clientDni:''}</div></div>`:''}
-      ${b.notes?`<div style="margin-top:6px;font-size:13px;color:var(--text2)">📝 ${b.notes}</div>`:''}
+      ${b.clientName?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">👤 ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
+      ${b.notes?`<div style="margin-top:6px;font-size:13px;color:var(--text2)">📝 ${esc(b.notes)}</div>`:''}
     </div>
     ${(()=>{
       const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
@@ -5897,7 +5914,7 @@ function submitCancelBooking(bookingId){
   const penAmt=hasPenalty?Number(document.getElementById('cancelPenaltyAmt')?.value||0):0;
   if(hasPenalty&&!(penAmt>0)){alert('Introduce el importe de la penalización.');return;}
 
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
 
   // Marcar booking como cancelado
   _cb.cancelled=true;
@@ -5984,21 +6001,21 @@ function editBooking(id){
       <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric" value="${b.kmEnd||''}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
     </div>
     <div class="sec" style="margin-bottom:6px">CLIENTE</div>
-    <input id="rCN" type="hidden" value="${b.clientName||''}"/>
-    <input id="rCP" type="hidden" value="${b.clientPhone||''}"/>
-    <input id="rCDNI" type="hidden" value="${b.clientDni||''}"/>
+    <input id="rCN" type="hidden" value="${esc(b.clientName||'')}"/>
+    <input id="rCP" type="hidden" value="${esc(b.clientPhone||'')}"/>
+    <input id="rCDNI" type="hidden" value="${esc(b.clientDni||'')}"/>
     <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||'')}</div>
     ${b.clientName?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
-        👤 ${b.clientName}${b.clientDni?' · '+b.clientDni:''}${b.clientPhone?' · '+b.clientPhone:''}
+        👤 ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}
       </div>
       <button type="button" onclick="unlinkBookingClient('${b.id}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">✂️ Desvincular</button>
     </div>`:'<div style="margin-bottom:8px"></div>'}
     <div class="r2 fg">
-      <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${b.clientPhone||''}" oninput="document.getElementById('rCP').value=this.value"/></div>
-      <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()" value="${b.clientDni||''}"/></div>
+      <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
+      <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()" value="${esc(b.clientDni||'')}"/></div>
     </div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off" value="${b.notes||''}"/></div>
+    <div class="fg"><label class="lbl">NOTAS</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off" value="${esc(b.notes||'')}"/></div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">⭐ EXTRAS <span id="rExDurLabel" style="font-weight:400;color:var(--text3)">(${dur} día${dur!==1?'s':''})</span></div>
     <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px">POR DÍA</div>
@@ -6211,7 +6228,7 @@ function deleteBooking(id){
 // ═══════════════════════════════════════════════════════════ NEW RENTAL
 function openNewRental(){
   _plat='amovens';
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const hh=String(new Date().getHours()).padStart(2,'0')+':00';
   const h1=String((new Date().getHours()+1)%24).padStart(2,'0')+':00';
   const _vNR=gV();const isFurgNR=(_vNR?.vehicle_type||'turismo').startsWith('l');const durNR=1;
@@ -6416,7 +6433,7 @@ function syncBookingExtensions(){
         if((b.financeIds||[]).includes(f.id))return;
         v.finances.push({
           id:uid(),type:'income',
-          date:f.date||new Date().toISOString().slice(0,10),
+          date:f.date||todayStr(),
           category:'Ampliación alquiler',
           amount:Number(f.amount),
           description:(f.concept||'Ampliación')+(b.clientName?' · '+b.clientName:'')+(v.plate?' · '+v.plate:''),
@@ -6574,7 +6591,7 @@ function renderFin(v){
   const dimM=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
   const allBk=v.bookings||[];
   const mBk=allBk.filter(b=>b.startDate.slice(0,7)===curM);
-  const mDays=Array.from(new Set(allBk.filter(b=>b.startDate.slice(0,7)===curM||b.endDate.slice(0,7)===curM).flatMap(b=>{const ds=[];for(let d=new Date(b.startDate);d<=new Date(b.endDate);d.setDate(d.getDate()+1))ds.push(d.toISOString().slice(0,10));return ds;}).filter(d=>d.slice(0,7)===curM))).length;
+  const mDays=Array.from(new Set(allBk.filter(b=>b.startDate.slice(0,7)===curM||b.endDate.slice(0,7)===curM).flatMap(b=>_eachDate(b.startDate,b.endDate)).filter(d=>d.slice(0,7)===curM))).length;
   const occ=Math.round(mDays/dimM*100);
   const avgDur=allBk.length?Math.round(allBk.reduce((s,b)=>s+Math.max(1,Math.ceil((new Date(b.endDate)-new Date(b.startDate))/864e5)+1),0)/allBk.length*10)/10:0;
   const rpd=Math.round(tInc(v)/(tDays(v)||1));
@@ -6613,13 +6630,13 @@ function renderFin(v){
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap">
           <span class="fb2" style="background:${isIn?'#10B98120':'#EF444420'};color:${isIn?'var(--green)':'var(--red)'}">${isIn?'ING':'GST'}</span>
           ${isA?`<span class="fb2" style="background:#F59E0B15;color:var(--amber)">🚗</span>`:''}
-          <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${e.category}</span>
+          <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${esc(e.category)}</span>
         </div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.date}${e.description?' · '+e.description:''}</div>
-        ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">🔧 ${e.maint.work||''}${e.maint.km?' · '+e.maint.km.toLocaleString('es-ES')+'km':''}${e.maint.shop?' · '+e.maint.shop:''}</div>`:''}
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.date}${e.description?' · '+esc(e.description):''}</div>
+        ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">🔧 ${esc(e.maint.work||'')}${e.maint.km?' · '+e.maint.km.toLocaleString('es-ES')+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</div>`:''}
       </div>
       <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};white-space:nowrap;margin-left:8px">${isIn?'+':'-'}${fmt(e.amount)}</div>
-      ${!isA?`<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer;flex-shrink:0" onclick="delEntry('${e.id}')">×</div>`:`<div style="width:28px"></div>`}
+      ${!isA?`<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer;flex-shrink:0" onclick="delEntry('${escJs(e.id)}')">×</div>`:`<div style="width:28px"></div>`}
     </div>`;
   });
   h+=`${isD?'</div></div></div>':''}`;h+='</div>';return h;
@@ -6629,7 +6646,7 @@ function setFM(m){finMonth=m;if(m)chartYear=parseInt(m.split('-')[0]);renderDeta
 function delEntry(id){const v=gV();if(!v)return;v.finances=(v.finances||[]).filter(e=>e.id!==id);save();renderDetail(document.getElementById('PC'));}
 function openAddEntry(){
   _etype='expense';
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   openSheet(`<div class="stitle">Movimiento manual</div>
     <div class="tsw"><div class="to" id="tInc" onclick="swET('income')" style="color:var(--text3)">💰 Ingreso</div><div class="to" id="tExp" onclick="swET('expense')" style="background:var(--bg);color:var(--red)">📉 Gasto</div></div>
     <div class="fg"><label class="lbl">FECHA</label><input id="eDate" type="date" value="${today}"/></div>
@@ -6858,7 +6875,7 @@ function openEditV(id){
     </div>`;
   }).join('');
 
-  const ownerOpts=OW.map(o=>`<option value="${o.id}"${o.id===v.ownerId?' selected':''}>${o.name}</option>`).join('');
+  const ownerOpts=OW.map(o=>`<option value="${esc(o.id)}"${o.id===v.ownerId?' selected':''}>${esc(o.name)}</option>`).join('');
 
   openSheet(`<div class="stitle">Editar vehículo</div>
     <div class="fg"><div class="lbl">PROPIETARIO / GESTIÓN</div>
@@ -6879,11 +6896,11 @@ function openEditV(id){
     <div class="fg"><label class="lbl">TIPO DE VEHÍCULO</label>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">${vtypeGrid}</div>
     </div>
-    <div class="fg"><label class="lbl">NOMBRE / ALIAS *</label><input id="evN" value="${v.name}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">MATRÍCULA *</label><input id="evP" value="${v.plate}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="fg"><label class="lbl">NOMBRE / ALIAS *</label><input id="evN" value="${esc(v.name)}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">MATRÍCULA *</label><input id="evP" value="${esc(v.plate)}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
     <div class="r2">
-      <div class="fg"><label class="lbl">MARCA</label><input id="evMake" value="${v.make||''}" placeholder="Ej: Renault" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">MODELO</label><input id="evM" value="${v.model||''}" placeholder="Ej: Clio" autocomplete="off"/></div>
+      <div class="fg"><label class="lbl">MARCA</label><input id="evMake" value="${esc(v.make||'')}" placeholder="Ej: Renault" autocomplete="off"/></div>
+      <div class="fg"><label class="lbl">MODELO</label><input id="evM" value="${esc(v.model||'')}" placeholder="Ej: Clio" autocomplete="off"/></div>
     </div>
     <div class="r2">
       <div class="fg"><label class="lbl">AÑO</label><input id="evY" type="number" value="${v.year||''}"/></div>
@@ -6901,13 +6918,13 @@ function openEditV(id){
       <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="evPrice" type="number" value="${v.purchase_price||''}" inputmode="decimal"/></div>
       <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="evBuyYear" type="number" value="${v.purchase_year||''}"/></div>
     </div>
-    <div class="fg"><label class="lbl">Nº BASTIDOR (VIN)</label><input id="evChassis" value="${v.chassis||''}" placeholder="VIN / Nº bastidor" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="evNo" value="${v.notes||''}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">Nº BASTIDOR (VIN)</label><input id="evChassis" value="${esc(v.chassis||'')}" placeholder="VIN / Nº bastidor" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="fg"><label class="lbl">NOTAS</label><input id="evNo" value="${esc(v.notes||'')}" autocomplete="off"/></div>
     <div style="height:1px;background:var(--border);margin:10px 0"></div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">🛡️ SEGURO</div>
     <div class="r2">
-      <div class="fg"><label class="lbl">ASEGURADORA</label><input id="evInsurer" value="${v.insurer||''}" placeholder="Ej: Mapfre" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">Nº PÓLIZA</label><input id="evPolicy" value="${v.policy||''}" placeholder="Nº póliza" autocomplete="off"/></div>
+      <div class="fg"><label class="lbl">ASEGURADORA</label><input id="evInsurer" value="${esc(v.insurer||'')}" placeholder="Ej: Mapfre" autocomplete="off"/></div>
+      <div class="fg"><label class="lbl">Nº PÓLIZA</label><input id="evPolicy" value="${esc(v.policy||'')}" placeholder="Nº póliza" autocomplete="off"/></div>
     </div>
     <div class="fg"><label class="lbl">TIPO</label>
         <select id="evInsType">
@@ -7690,15 +7707,15 @@ function renderOwnersBody(){
       const totalP=totalI-vehicles.reduce((s,v)=>s+tExp(v),0);
       const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+(Number(v.commission)||30),0)/vehicles.length):0;
       const toOwner=totalP*(1-avgComm/100);
-      h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A630;border-radius:12px;padding:16px;cursor:pointer" onclick="openOwnerProfile('${owner.id}')">
-        <div style="font-size:15px;font-weight:800;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${owner.name}</div>
-        ${owner.dni?`<div style="font-size:10px;color:var(--text3);margin-bottom:8px">🪪 ${owner.dni}</div>`:''}
+      h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A630;border-radius:12px;padding:16px;cursor:pointer" onclick="openOwnerProfile('${escJs(owner.id)}')">
+        <div style="font-size:15px;font-weight:800;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(owner.name)}</div>
+        ${owner.dni?`<div style="font-size:10px;color:var(--text3);margin-bottom:8px">🪪 ${esc(owner.dni)}</div>`:''}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
           <div style="background:var(--bg3);border-radius:7px;padding:7px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(totalI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">INGRESOS</div></div>
           <div style="background:var(--bg3);border-radius:7px;padding:7px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${fmt(toOwner)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">AL PROP.</div></div>
         </div>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
-          ${vehicles.map(v=>`<span onclick="event.stopPropagation();openV('${v.id}')" style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#14B8A615;color:#14B8A6;border:1px solid #14B8A640;cursor:pointer">${v.name}</span>`).join('')}
+          ${vehicles.map(v=>`<span onclick="event.stopPropagation();openV('${escJs(v.id)}')" style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#14B8A615;color:#14B8A6;border:1px solid #14B8A640;cursor:pointer">${esc(v.name)}</span>`).join('')}
           ${!vehicles.length?'<span style="font-size:10px;color:var(--text3)">Sin vehículos</span>':''}
         </div>
       </div>`;
@@ -7716,16 +7733,16 @@ function renderOwnersBody(){
       h+=`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:${i<filtered.length-1?'1px solid var(--border)':'none'}">
         <div style="width:6px;height:36px;border-radius:3px;background:#14B8A6;flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${owner.name}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:1px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}${owner.dni?' · '+owner.dni:''}</div>
+          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(owner.name)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}${owner.dni?' · '+esc(owner.dni):''}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${fmt(toOwner)}</div>
           <div style="font-size:10px;color:var(--text3);margin-top:1px">al prop.</div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
-          <div onclick="openOwnerReport('${owner.id}')" style="width:32px;height:32px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">📄</div>
-          <div onclick="editOwner('${owner.id}')" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">✏️</div>
+          <div onclick="openOwnerReport('${escJs(owner.id)}')" style="width:32px;height:32px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">📄</div>
+          <div onclick="editOwner('${escJs(owner.id)}')" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">✏️</div>
         </div>
       </div>`;
     });
@@ -7739,18 +7756,18 @@ function renderOwnersBody(){
       const totalP=totalI-totalE;
       const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+(Number(v.commission)||30),0)/vehicles.length):0;
       const toOwner=totalP*(1-avgComm/100);
-      h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A644;border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer" onclick="openOwnerProfile('${owner.id}')">
+      h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A644;border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer" onclick="openOwnerProfile('${escJs(owner.id)}')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
-            <div style="font-size:18px;font-weight:800">${owner.name}</div>
-            ${owner.dni?`<div style="font-size:11px;color:var(--text3);margin-top:2px">🪪 ${owner.dni}</div>`:''}
-            ${owner.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 ${owner.phone}</div>`:''}
-            ${owner.email?`<div style="font-size:11px;color:var(--text3)">✉️ ${owner.email}</div>`:''}
+            <div style="font-size:18px;font-weight:800">${esc(owner.name)}</div>
+            ${owner.dni?`<div style="font-size:11px;color:var(--text3);margin-top:2px">🪪 ${esc(owner.dni)}</div>`:''}
+            ${owner.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 ${esc(owner.phone)}</div>`:''}
+            ${owner.email?`<div style="font-size:11px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
           </div>
           <div style="display:flex;gap:6px">
-            <div onclick="openOwnerReport('${owner.id}')" style="width:36px;height:36px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">📄</div>
-            <div onclick="editOwner('${owner.id}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">✏️</div>
-            <div onclick="deleteOwner('${owner.id}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🗑</div>
+            <div onclick="openOwnerReport('${escJs(owner.id)}')" style="width:36px;height:36px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">📄</div>
+            <div onclick="editOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">✏️</div>
+            <div onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🗑</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
@@ -7760,11 +7777,11 @@ function renderOwnersBody(){
         </div>
         ${vehicles.length?`<div class="sec" style="margin-bottom:8px">VEHÍCULOS ASIGNADOS</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${vehicles.map(v=>`<div onclick="openV('${v.id}')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid #14B8A630;border-radius:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='#14B8A6'" onmouseout="this.style.borderColor='#14B8A630'">
+          ${vehicles.map(v=>`<div onclick="openV('${escJs(v.id)}')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid #14B8A630;border-radius:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='#14B8A6'" onmouseout="this.style.borderColor='#14B8A630'">
             <div style="width:8px;height:8px;border-radius:50%;background:${v.color};flex-shrink:0"></div>
             <div>
-              <div style="font-size:13px;font-weight:700;color:var(--text)">${v.name}</div>
-              <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${v.plate}</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(v.name)}</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
             </div>
             <div style="margin-left:4px;font-size:11px;color:var(--text3)">→</div>
           </div>`).join('')}
@@ -7807,7 +7824,7 @@ function buildOwnersStats(){
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
       <div class="sec" style="margin-bottom:14px">LIQUIDACIONES PENDIENTES</div>
-      ${OW.map(o=>{const vs=V.filter(v=>!v.archived&&v.ownerId===o.id);const tot=vs.reduce((s,v)=>{const profit=tInc(v)-tExp(v);return s+profit*(1-(Number(v.commission)||30)/100);},0);return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openOwnerReport('${o.id}')"><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700">${o.name}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${vs.length} vehículo${vs.length!==1?'s':''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--amber)">${fmt(tot)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Total acum.</div></div></div>`;}).join('')||'<div style="font-size:13px;color:var(--text3);padding:10px 0">Sin propietarios registrados</div>'}
+      ${OW.map(o=>{const vs=V.filter(v=>!v.archived&&v.ownerId===o.id);const tot=vs.reduce((s,v)=>{const profit=tInc(v)-tExp(v);return s+profit*(1-(Number(v.commission)||30)/100);},0);return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openOwnerReport('${escJs(o.id)}')"><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700">${esc(o.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${vs.length} vehículo${vs.length!==1?'s':''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--amber)">${fmt(tot)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Total acum.</div></div></div>`;}).join('')||'<div style="font-size:13px;color:var(--text3);padding:10px 0">Sin propietarios registrados</div>'}
     </div>
   </div>`;
 }
@@ -7825,12 +7842,12 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).length,0);
   const now=new Date().toISOString().slice(0,7);
 
-  let h=`<div class="stitle">👤 ${owner.name}</div>
+  let h=`<div class="stitle">👤 ${esc(owner.name)}</div>
   <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px">
-    ${owner.dni?`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">🪪 ${owner.dni}</div>`:''}
-    ${owner.phone?`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">📞 ${owner.phone}</div>`:''}
-    ${owner.email?`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">✉️ ${owner.email}</div>`:''}
-    ${owner.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px">${owner.notes}</div>`:''}
+    ${owner.dni?`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">🪪 ${esc(owner.dni)}</div>`:''}
+    ${owner.phone?`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">📞 ${esc(owner.phone)}</div>`:''}
+    ${owner.email?`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">✉️ ${esc(owner.email)}</div>`:''}
+    ${owner.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px">${esc(owner.notes)}</div>`:''}
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
     <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green)">${fmtF(totalI)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">INGRESOS</div></div>
@@ -7849,7 +7866,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
     const mFins=_getVehicleAllFinances(v).filter(e=>e.date.slice(0,7)===now);
     const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mE=mFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    return `<div style="background:var(--bg2);border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="closeSheet();openV('${v.id}')">
+    return `<div style="background:var(--bg2);border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="closeSheet();openV('${escJs(v.id)}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
           <div style="font-size:15px;font-weight:800">${v.name}</div>
@@ -7868,10 +7885,10 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   }).join('')}
   <div style="height:12px"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-    <button onclick="openOwnerReport('${owner.id}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📄 Informe mensual</button>
-    <button onclick="openMgmtContractForm('${owner.id}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📋 Contrato gestión</button>
+    <button onclick="openOwnerReport('${escJs(owner.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📄 Informe mensual</button>
+    <button onclick="openMgmtContractForm('${escJs(owner.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📋 Contrato gestión</button>
   </div>
-  <button onclick="editOwner('${owner.id}')" style="width:100%;background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar propietario</button>`;
+  <button onclick="editOwner('${escJs(owner.id)}')" style="width:100%;background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar propietario</button>`;
   openSheet(h);
 }
 
@@ -7922,9 +7939,9 @@ function renderOwnerProfile(el){
         ${owner.iban?`<div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px"><span>🏦</span><span id="ibanDisplay" style="font-family:var(--mono)">${owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4)}</span><span onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${owner.iban}':'${owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4)}';" style="cursor:pointer;font-size:15px;padding:2px 6px;background:var(--bg3);border-radius:5px;border:1px solid var(--border2)">👁</span></div>`:''}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="openOwnerReport('${owner.id}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Informe PDF</button>
-        <button onclick="openMgmtContractForm('${owner.id}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📋 Contrato de gestión</button>
-        <button onclick="editOwner('${owner.id}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">✏️ Editar</button>
+        <button onclick="openOwnerReport('${escJs(owner.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Informe PDF</button>
+        <button onclick="openMgmtContractForm('${escJs(owner.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📋 Contrato de gestión</button>
+        <button onclick="editOwner('${escJs(owner.id)}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">✏️ Editar</button>
       </div>
     </div>
   </div>
@@ -7989,15 +8006,15 @@ function submitOwner(){
 function editOwner(id){
   const o=OW.find(o=>o.id===id);if(!o)return;
   openSheet(`<div class="stitle">Editar propietario</div>
-    <div class="fg"><label class="lbl">NOMBRE *</label><input id="owN" value="${o.name}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NOMBRE *</label><input id="owN" value="${esc(o.name)}" autocomplete="off"/></div>
     <div class="r2 fg">
-      <div><label class="lbl">DNI / NIE *</label><input id="owDNI" value="${o.dni||''}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div><label class="lbl">TELÉFONO</label><input id="owP" type="tel" value="${o.phone||''}" inputmode="tel"/></div>
+      <div><label class="lbl">DNI / NIE *</label><input id="owDNI" value="${esc(o.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div><label class="lbl">TELÉFONO</label><input id="owP" type="tel" value="${esc(o.phone||'')}" inputmode="tel"/></div>
     </div>
-    <div class="fg"><label class="lbl">EMAIL</label><input id="owE" type="email" value="${o.email||''}" inputmode="email"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="owNo" value="${o.notes||''}" placeholder="Observaciones..."/></div>
-    <div class="fg"><label class="lbl">IBAN (cuenta bancaria)</label><input id="owIBAN" value="${o.iban||''}" placeholder="ES00 0000 0000 0000 0000 0000" autocomplete="off" style="font-family:var(--mono)"/></div>
-    <button class="btn" onclick="submitEditOwner('${id}')">Guardar cambios</button>
+    <div class="fg"><label class="lbl">EMAIL</label><input id="owE" type="email" value="${esc(o.email||'')}" inputmode="email"/></div>
+    <div class="fg"><label class="lbl">NOTAS</label><input id="owNo" value="${esc(o.notes||'')}" placeholder="Observaciones..."/></div>
+    <div class="fg"><label class="lbl">IBAN (cuenta bancaria)</label><input id="owIBAN" value="${esc(o.iban||'')}" placeholder="ES00 0000 0000 0000 0000 0000" autocomplete="off" style="font-family:var(--mono)"/></div>
+    <button class="btn" onclick="submitEditOwner('${escJs(id)}')">Guardar cambios</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
@@ -8014,8 +8031,8 @@ function deleteOwner(id){
   const o=OW.find(o=>o.id===id);if(!o)return;
   const linked=V.filter(v=>v.ownerId===id).length;
   openSheet(`<div class="stitle">🗑 Eliminar propietario</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">¿Eliminar a <strong>${o.name}</strong>?${linked?` Tiene <strong>${linked} vehículo${linked!==1?'s':''}</strong> asignado${linked!==1?'s':''} — quedarán sin propietario.`:''}</div>
-    <button onclick="confirmDeleteOwner('${id}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar</button>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">¿Eliminar a <strong>${esc(o.name)}</strong>?${linked?` Tiene <strong>${linked} vehículo${linked!==1?'s':''}</strong> asignado${linked!==1?'s':''} — quedarán sin propietario.`:''}</div>
+    <button onclick="confirmDeleteOwner('${escJs(id)}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar</button>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmDeleteOwner(id){
@@ -8094,17 +8111,17 @@ function genOwnerReport(ownerId){
       <div onclick="document.getElementById('ownerRepOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
       <div>
         <div style="font-size:16px;font-weight:800;color:#14B8A6">LIQUIDACIÓN PROPIETARIO</div>
-        <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${o.name.toUpperCase()} · ${mLabel.toUpperCase()}</div>
+        <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(o.name.toUpperCase())} · ${mLabel.toUpperCase()}</div>
       </div>
       <button onclick="dlOwnerReport('${ownerId}','${month}')" style="margin-left:auto;background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
       <!-- Owner info -->
       <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid #14B8A644">
-        <div style="font-size:20px;font-weight:800">${o.name}</div>
-        ${o.dni?`<div style="font-size:12px;color:var(--text3);margin-top:4px">🪪 ${o.dni}</div>`:''}
-        ${o.phone?`<div style="font-size:12px;color:var(--text3);margin-top:2px">📞 ${o.phone}</div>`:''}
-        ${o.email?`<div style="font-size:12px;color:var(--text3)">✉️ ${o.email}</div>`:''}
+        <div style="font-size:20px;font-weight:800">${esc(o.name)}</div>
+        ${o.dni?`<div style="font-size:12px;color:var(--text3);margin-top:4px">🪪 ${esc(o.dni)}</div>`:''}
+        ${o.phone?`<div style="font-size:12px;color:var(--text3);margin-top:2px">📞 ${esc(o.phone)}</div>`:''}
+        ${o.email?`<div style="font-size:12px;color:var(--text3)">✉️ ${esc(o.email)}</div>`:''}
       </div>
       <!-- Global summary -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
@@ -8225,8 +8242,8 @@ function buildDashRightPanel(activeV){
   const allBk=[];
   activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&!b.cancellation)allBk.push({...b,vname:v.name,vcolor:v.color,vplate:v.plate});}));
   allBk.sort((a,b)=>b.startDate.localeCompare(a.startDate));
-  const today=new Date().toISOString().slice(0,10);
-  const in30=new Date(Date.now()+30*864e5).toISOString().slice(0,10);
+  const today=todayStr();
+  const in30=addDays(today,30);
   const upcoming=allBk.filter(b=>b.startDate>=today&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const recent=allBk;
   const isD=window.innerWidth>=768;
@@ -8288,7 +8305,7 @@ function buildFlotaRightPanel(){
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
       <div class="sec" style="margin-bottom:14px">POR VEHÍCULO</div>
-      ${activeV.map(v=>{const vI=tInc(v),vE=tExp(v),vP=vI-vE;return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openV('${v.id}')">
+      ${activeV.map(v=>{const vI=tInc(v),vE=tExp(v),vP=vI-vE;return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openV('${escJs(v.id)}')">
         <div style="width:5px;height:40px;border-radius:3px;background:${v.color};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.name}</div>
@@ -8349,7 +8366,7 @@ function renderAgendaBody(){
       ${days.map(d=>{const isT=d===today.getDate()&&agM===today.getMonth()&&agY===today.getFullYear();const dow=['D','L','M','X','J','V','S'][new Date(agY,agM,d).getDay()];return `<th style="width:26px;min-width:26px;padding:2px;text-align:center;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}font-size:9px">${d}<br>${dow}</th>`;}).join('')}
     </tr></thead>
     <tbody>
-    ${activeV.map(v=>`<tr onclick="openV('${v.id}')" style="cursor:pointer">
+    ${activeV.map(v=>`<tr onclick="openV('${escJs(v.id)}')" style="cursor:pointer">
       <td style="padding:3px 6px;position:sticky;left:0;background:var(--bg2);z-index:1;border-bottom:1px solid var(--border)">
         <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px">${v.name}</div>
         <div style="font-family:var(--mono);font-size:9px;color:${v.color}">${v.plate}</div>
@@ -8415,9 +8432,9 @@ function agNext(){if(agM===11){agM=0;agY++;}else agM++;renderAgendaBody();}
 // ═══════════════════════════════════════════════════════════ ALQUILERES (nueva vista unificada)
 function renderRentals(el){
   const today=new Date();
-  const todayStr=today.toISOString().slice(0,10);
-  const in14=new Date(today.getTime()+14*864e5).toISOString().slice(0,10);
-  const in30=new Date(today.getTime()+30*864e5).toISOString().slice(0,10);
+  const hoy=todayStr();
+  const in14=addDays(hoy,14);
+  const in30=addDays(hoy,30);
   const activeV=V.filter(v=>!v.archived);
 
   const PLAT={amovens:{label:'Amovens',col:'#FB7AAC'},getaround:{label:'Getaround',col:'#8B5CF6'},sinapp:{label:'Sin app',col:'#10B981'}};
@@ -8426,9 +8443,9 @@ function renderRentals(el){
   const all=[];
   activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&!b.cancellation)all.push({...b,_v:v});}));
 
-  const active=all.filter(b=>!b.returned&&b.startDate<=todayStr&&b.endDate>=todayStr).sort((a,b)=>a.endDate.localeCompare(b.endDate));
-  const upcoming=all.filter(b=>b.startDate>todayStr&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
-  const recent=all.filter(b=>b.endDate<todayStr).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
+  const active=all.filter(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy).sort((a,b)=>a.endDate.localeCompare(b.endDate));
+  const upcoming=all.filter(b=>b.startDate>hoy&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
+  const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
   const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-purple" style="background:${p.col}20;color:${p.col};border-color:${p.col}50">${p.label}</span>`:'';};
 
@@ -8443,15 +8460,15 @@ function renderRentals(el){
     const v=b._v;
     const dur=daysBetween(b.startDate,b.endDate);
     const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);
-    return `<div class="rcard" onclick="openV('${v.id}')">
+    return `<div class="rcard" onclick="openV('${escJs(v.id)}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
-            <span style="font-weight:800;font-size:14px">${v.name}</span>
-            <span style="font-family:var(--mono);font-size:11px;color:${v.color}">${v.plate}</span>
+            <span style="font-weight:800;font-size:14px">${esc(v.name)}</span>
+            <span style="font-family:var(--mono);font-size:11px;color:${v.color}">${esc(v.plate)}</span>
             ${platBadge(b)}
           </div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600">${b.clientName||'Sin cliente'}</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600">${esc(b.clientName||'Sin cliente')}</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px">${b.startDate} → ${b.endDate} · ${dur}d</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
@@ -8496,10 +8513,10 @@ function renderRentals(el){
     h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px">`;
     recent.forEach((b,i)=>{
       const v=b._v;const dur=daysBetween(b.startDate,b.endDate);
-      h+=`<div onclick="openV('${v.id}')" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<recent.length-1?'1px solid var(--border)':'none'};transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      h+=`<div onclick="openV('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<recent.length-1?'1px solid var(--border)':'none'};transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <div style="width:4px;height:30px;border-radius:2px;background:${v.color};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.name} <span style="font-weight:500;color:var(--text3)">· ${b.clientName||'—'}</span></div>
+          <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)} <span style="font-weight:500;color:var(--text3)">· ${esc(b.clientName||'—')}</span></div>
           <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${b.endDate} · ${dur}d</div>
         </div>
         <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text2);flex-shrink:0">${fmtF(b.amount||0)}</div>
@@ -8630,7 +8647,7 @@ function _renderWizardStep(){
     <div class="ssub">Selecciona el vehículo del contrato</div>
     <div style="display:flex;flex-direction:column;gap:8px">`;
     activeV.forEach(v=>{
-      const today=new Date().toISOString().slice(0,10);
+      const today=todayStr();
       const activeB=(v.bookings||[]).find(b=>b.startDate<=today&&b.endDate>=today);
       const nextB=(v.bookings||[]).filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
       const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${activeB.clientName||'cliente'}</span>`:nextB?`<span class="chip chip-blue">Próx. ${nextB.startDate}</span>`:`<span class="chip chip-gray">Disponible</span>`;
@@ -8746,7 +8763,7 @@ function renderBiz(el){
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
         <div class="sec" style="margin-bottom:14px">ÚLTIMOS MOVIMIENTOS</div>
-        ${_getBizEntries().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map(e=>{const isIn=e.type==='income';return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><div style="width:4px;height:32px;border-radius:2px;background:'+(isIn?'var(--green)':'var(--red)')+';flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.category+'</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px">'+e.date+(e.description?' · '+e.description.slice(0,30):'')+'</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:'+(isIn?'var(--green)':'var(--red)')+';white-space:nowrap">'+(isIn?'+':'-')+fmt(e.amount)+'</div></div>';}).join('')}
+        ${_getBizEntries().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map(e=>{const isIn=e.type==='income';return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><div style="width:4px;height:32px;border-radius:2px;background:'+(isIn?'var(--green)':'var(--red)')+';flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(e.category)+'</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px">'+e.date+(e.description?' · '+esc(String(e.description).slice(0,30)):'')+'</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:'+(isIn?'var(--green)':'var(--red)')+';white-space:nowrap">'+(isIn?'+':'-')+fmt(e.amount)+'</div></div>';}).join('')}
       </div>
     </div>`:'';
   let h=`<div class="anim">${isD?'<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start"><div>':''}
@@ -8898,16 +8915,16 @@ function renderBiz(el){
   if(!filtered.length){h+=`<div class="empty" style="padding:40px 0"><div class="ei">💼</div><div class="et">Sin movimientos</div><div class="es">Pulsa + para añadir</div></div>`;}
   else filtered.forEach(e=>{
     const isIn=e.type==='income';
-    const delBtn=e._auto?'<div style="width:28px"></div>':'<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer" onclick="delBiz(\''+e.id+'\')">×</div>';
+    const delBtn=e._auto?'<div style="width:28px"></div>':'<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer" onclick="delBiz(\''+escJs(e.id)+'\')">×</div>';
     const autoBadge=e._auto?'<span class="fb2" style="background:#3B82F615;color:var(--blue)">🚗</span>':'';
     h+='<div class="fe">'
       +'<div style="flex:1;min-width:0">'
       +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">'
       +'<span class="fb2" style="background:'+(isIn?'#10B98120':'#EF444420')+';color:'+(isIn?'var(--green)':'var(--red)')+'">'+( isIn?'ING':'GST')+'</span>'
       +autoBadge
-      +'<span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px">'+e.category+'</span>'
+      +'<span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px">'+esc(e.category)+'</span>'
       +'</div>'
-      +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3)">'+e.date+(e.description?' · '+e.description:'')+'</div>'
+      +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3)">'+e.date+(e.description?' · '+esc(e.description):'')+'</div>'
       +'</div>'
       +'<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:'+(isIn?'var(--green)':'var(--red)')+';white-space:nowrap;margin-left:8px">'+(isIn?'+':'-')+fmt(e.amount)+'</div>'
       +delBtn
@@ -9093,7 +9110,7 @@ function nextBizYr(){bizChartYear++;renderBiz(document.getElementById('PC'));}
 function delBiz(id){BF=BF.filter(e=>e.id!==id);saveBiz();renderBiz(document.getElementById('PC'));}
 function openAddBiz(){
   _bizEtype='expense';
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   openSheet(`<div class="stitle">Movimiento de negocio</div><div class="ssub">Ingreso o gasto general, fuera de vehículos</div>
     <div class="tsw"><div class="to" id="bInc" onclick="swBiz('income')" style="color:var(--text3)">💰 Ingreso</div><div class="to" id="bExp" onclick="swBiz('expense')" style="background:var(--bg);color:var(--red)">📉 Gasto</div></div>
     <div class="fg"><label class="lbl">FECHA</label><input id="bDate" type="date" value="${today}"/></div>
@@ -9141,7 +9158,7 @@ function renderArchiveBody(){
         <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">BENEFICIO</div></div>
       </div>
       <div style="display:flex;gap:8px">
-        <button onclick="openV('${v.id}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">👁 Ver datos</button>
+        <button onclick="openV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">👁 Ver datos</button>
         <button onclick="restoreV('${v.id}')" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">↩️ Reactivar</button>
         <button onclick="deleteV('${v.id}')" style="width:40px;background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:9px;font-family:var(--font);font-size:14px;cursor:pointer">🗑</button>
       </div>
@@ -9539,7 +9556,7 @@ function genReport(vId){
   const exp=fins.filter(e=>e.type==='expense');
   function rows(list,color){
     if(!list.length)return`<div style="padding:12px 0;text-align:center;color:var(--text3);font-size:12px">Sin registros</div>`;
-    return list.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${e.category}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${e.date}${e.description?' · '+e.description:''}</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${color};white-space:nowrap">${fmtE(e.amount)}</div></div>`).join('');
+    return list.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${esc(e.category)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${e.date}${e.description?' · '+esc(e.description):''}</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${color};white-space:nowrap">${fmtE(e.amount)}</div></div>`).join('');
   }
   closeSheet();
   const ov=document.createElement('div');
@@ -9840,7 +9857,7 @@ function exportExcel(vId){
   XLSX.utils.book_append_sheet(wb,ws3,'Resumen');
   const modelPart=(v.model||v.name).replace(/\s+/g,'_');
   const platePart=v.plate.replace(/\s+/g,'');
-  XLSX.writeFile(wb,'DEIROS_'+modelPart+'_'+platePart+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  XLSX.writeFile(wb,'DEIROS_'+modelPart+'_'+platePart+'_'+todayStr()+'.xlsx');
 }
 
 // ═══════════════════════════════════════════════════════════ BACKUP
@@ -9953,7 +9970,7 @@ function _replacePhotos(photos){
   return skipped;
 }
 function exportData(){
-  _downloadBackup(_backupObject(),'DEIROS_backup_'+new Date().toISOString().slice(0,10)+'.json');
+  _downloadBackup(_backupObject(),'DEIROS_backup_'+todayStr()+'.json');
 }
 function importData(event){
   const file=event.target.files[0];if(!file)return;
@@ -10041,8 +10058,7 @@ function showNotif(title,body,tag){
 
 function checkReturnNotifs(){
   if(Notification.permission!=='granted')return;
-  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
-  const tStr=tomorrow.toISOString().slice(0,10);
+  const tStr=addDays(todayStr(),1);
   const returning=[];
   V.filter(v=>!v.archived).forEach(v=>(v.bookings||[]).forEach(b=>{
     if(b.endDate===tStr)returning.push({vname:v.name,client:b.clientName||'',time:b.endTime||''});
@@ -10444,7 +10460,7 @@ function openEditQuote(id){
 }
 
 function _openQuoteForm(q){
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayStr();
   const vOpts=V.filter(v=>v.active!==false).map(v=>`<option value="${v.id}" ${q&&q.vehicleId===v.id?'selected':''}>${v.name} · ${v.plate}</option>`).join('');
 
   // Extras individuales — km y packs tienen su propia sección más abajo
