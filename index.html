@@ -544,6 +544,15 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 let _uid=null;
 let _saveTimer=null;
+// true solo si la lectura inicial terminó bien, o si el documento aún no existe (usuario nuevo).
+let _loadedOK=false;
+// Recuento de la última carga o guardado correcto. Sirve para no pisar la nube con un estado vacío.
+let _cloudCounts={vehicles:0,movements:0};
+
+// Caché offline (enablePersistence) NO activada: en este SDK la caché del
+// navegador no queda aislada por usuario, así que una lectura vieja podría
+// darse por buena. Sin red la carga falla y no se entra en la app: no se
+// guarda un estado vacío encima de los datos reales.
 
 
 // ═══════════════════════════════════════════════════════════ CONSTANTS
@@ -4446,21 +4455,61 @@ function _mergePhotos(vehicles){
   return vehicles.map(v=>({...v,photo:_loadPhoto(v.id)||null}));
 }
 
-async function _saveToCloud(){
+function _countMovements(){
+  let n=(BF||[]).length;
+  (V||[]).forEach(v=>{n+=(v.bookings||[]).length+(v.finances||[]).length;});
+  return n;
+}
+function _snapshotCounts(){_cloudCounts={vehicles:(V||[]).length,movements:_countMovements()};}
+function _emptyCloudState(){
+  V=[];BF=[];OW=[];CL=[];RR=[];QT=[];
+  _invalidateRsCache();
+}
+function _saveToast(text,bg){
+  const toast=document.createElement('div');
+  toast.textContent=text;
+  toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:'+(bg||'#EF4444')+';color:#fff;padding:12px 20px;border-radius:10px;z-index:9999;font-size:13px;font-weight:700;max-width:90vw;text-align:center';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),6000);
+}
+function _showLoadError(){
+  const ls=document.getElementById('loadingScreen');
+  if(!ls)return;
+  ls.style.display='flex';
+  ls.innerHTML='<div style="text-align:center;padding:24px;max-width:360px">'
+    +'<div style="font-size:40px;margin-bottom:12px">⚠️</div>'
+    +'<div style="font-size:16px;font-weight:800;color:#F59E0B;margin-bottom:10px">DEIROS</div>'
+    +'<div style="font-size:15px;font-weight:800;margin-bottom:8px">No se han podido cargar los datos</div>'
+    +'<div style="font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:16px">No se entra en la aplicación, para no guardar un estado vacío encima de los datos reales.</div>'
+    +'<button onclick="location.reload()" style="background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer">Reintentar</button>'
+    +'</div>';
+}
+
+async function _saveToCloud(opts){
+  opts=opts||{};
   if(!_uid){console.warn('[save] No UID — no guardado');return;}
+  if(!_loadedOK){console.warn('[save] Carga no completada — no se guarda');return;}
+  const vCount=(V||[]).length;
+  const mCount=_countMovements();
+  const wipedV=_cloudCounts.vehicles>0&&vCount===0;
+  const wipedM=_cloudCounts.movements>0&&mCount===0;
+  if(!opts.skipDropCheck&&(wipedV||wipedM)){
+    const parts=[];
+    if(wipedV)parts.push('vehículos (había '+_cloudCounts.vehicles+', ahora 0)');
+    if(wipedM)parts.push('movimientos (había '+_cloudCounts.movements+', ahora 0)');
+    const ok=confirm('El estado a guardar deja a cero: '+parts.join(' y ')+'. Eso puede borrar datos en la nube. ¿Guardar de todos modos?');
+    if(!ok)return;
+  }
   try{
     const clean=_stripPhotos(JSON.parse(JSON.stringify(V)));
     const _safeJSON=x=>JSON.parse(JSON.stringify(x??[]));
-    await _docRef().set({vehicles:clean,bizFinances:_safeJSON(BF),owners:_safeJSON(OW),clients:_safeJSON(CL),recurring:_safeJSON(RR),quotes:_safeJSON(QT)});
+    // merge:true para no borrar campos del documento que esta versión no conoce
+    await _docRef().set({vehicles:clean,bizFinances:_safeJSON(BF),owners:_safeJSON(OW),clients:_safeJSON(CL),recurring:_safeJSON(RR),quotes:_safeJSON(QT)},{merge:true});
+    _snapshotCounts();
     console.log('[save] OK — vehículos:',V.length,'presupuestos:',QT.length);
   }catch(e){
     console.error('[save] ERROR:',e);
-    // Notificar al usuario si el guardado falla
-    const toast=document.createElement('div');
-    toast.textContent='⚠️ Error al guardar: '+e.message;
-    toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#EF4444;color:#fff;padding:12px 20px;border-radius:10px;z-index:9999;font-size:13px;font-weight:700;max-width:90vw;text-align:center';
-    document.body.appendChild(toast);
-    setTimeout(()=>toast.remove(),6000);
+    _saveToast('⚠️ Error al guardar: '+(e&&e.message?e.message:e));
   }
 }
 
@@ -4475,43 +4524,35 @@ function saveBiz(){
 }
 
 async function _loadFromCloud(){
+  _loadedOK=false;
   try{
-    // Timeout: if Firestore takes >12s, continue with empty data
-    const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Timeout — Firestore tardó demasiado. Revisa las reglas de seguridad.')),12000));
-    const docPromise=_docRef().get();
-    const doc=await Promise.race([docPromise,timeout]);
+    const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),12000));
+    const doc=await Promise.race([_docRef().get(),timeout]);
     if(doc.exists){
-      const d=doc.data();
+      const d=doc.data()||{};
       V=_mergePhotos(d.vehicles||[]);_invalidateRsCache();
       BF=d.bizFinances||[];
       OW=d.owners||[];
       CL=d.clients||[];
       RR=d.recurring||[];
       QT=d.quotes||[];
+      _snapshotCounts();
+      _loadedOK=true;
       console.log('[DEIROS] Datos cargados — vehículos:',V.length,'BF:',BF.length,'propietarios:',OW.length);
-    }else{
-      V=[];BF=[];OW=[];CL=[];RR=[];
-      console.warn('[DEIROS] Documento no encontrado. UID:',_uid);
+      return 'ok';
     }
+    // El documento no existe: usuario nuevo. Estado vacío legítimo, se puede guardar.
+    _emptyCloudState();
+    _snapshotCounts();
+    _loadedOK=true;
+    console.warn('[DEIROS] Documento no encontrado (usuario nuevo). UID:',_uid);
+    return 'empty';
   }catch(e){
-    console.error('[DEIROS] Load error:',e.message);
-    V=[];BF=[];OW=[];CL=[];RR=[];
-    // Show error on loading screen before hiding it
-    const ls=document.getElementById('loadingScreen');
-    if(ls){
-      ls.innerHTML=`<div style="text-align:center;padding:24px;max-width:340px">
-        <div style="font-size:40px;margin-bottom:12px">⚠️</div>
-        <div style="font-size:16px;font-weight:800;color:#F59E0B;margin-bottom:10px">DEIROS FLEET</div>
-        <div style="font-size:13px;color:#EF4444;font-weight:700;margin-bottom:10px">${e.message}</div>
-        <div style="font-size:11px;color:#94A3B8;line-height:1.7;margin-bottom:16px">
-          Posibles causas:<br>
-          1. <strong style="color:#F0F4FF">Reglas de Firestore</strong> — asegúrate de que permiten lectura/escritura para usuarios autenticados.<br>
-          2. <strong style="color:#F0F4FF">Cuenta diferente</strong> — puede que hayas iniciado sesión con otra cuenta de Google.
-        </div>
-        <button onclick="location.reload()" style="background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">🔄 Reintentar</button>
-      </div>`;
-      await new Promise(r=>setTimeout(r,8000)); // Show error 8s then continue
-    }
+    console.error('[DEIROS] Load error:',e&&e.message);
+    _emptyCloudState();
+    _loadedOK=false;
+    _showLoadError();
+    return 'error';
   }
 }
 
@@ -11050,7 +11091,8 @@ auth.onAuthStateChanged(async user=>{
     _uid=user.uid;
     showLogin(false);
     showLoading(true);
-    await _loadFromCloud();
+    const _loadResult=await _loadFromCloud();
+    if(_loadResult==='error')return;
     V.forEach(v=>{v.color=v.vtype==='managed'?COLOR_MAN:COLOR_OWN;});
     showLoading(false);
     // Desktop: wire up layout
@@ -11067,8 +11109,13 @@ auth.onAuthStateChanged(async user=>{
     nav('dashboard');
     initNotifications();
   }else{
+    clearTimeout(_saveTimer);
+    _saveTimer=null;
+    _loadedOK=false;
     _uid=null;
-    V=[];BF=[];
+    V=[];BF=[];OW=[];CL=[];RR=[];QT=[];
+    _cloudCounts={vehicles:0,movements:0};
+    _invalidateRsCache();
     showLoading(false);
     showLogin(true);
   }
