@@ -546,8 +546,15 @@ let _uid=null;
 let _saveTimer=null;
 // true solo si la lectura inicial terminó bien, o si el documento aún no existe (usuario nuevo).
 let _loadedOK=false;
+// rev del documento cuando se cargó. Los documentos antiguos, sin rev, valen 0.
+let _loadedRev=0;
 // Recuento de la última carga o guardado correcto. Sirve para no pisar la nube con un estado vacío.
 let _cloudCounts={vehicles:0,movements:0};
+let _saveInFlight=false;
+let _saveQueued=null;
+let _saveBlocked=false;
+let _sizeWarned=false;
+let _saveStatusTimer=null;
 
 // Caché offline (enablePersistence) NO activada: en este SDK la caché del
 // navegador no queda aislada por usuario, así que una lectura vieja podría
@@ -4485,33 +4492,116 @@ function _showLoadError(){
     +'</div>';
 }
 
+function _cloudPayload(rev){
+  const clean=_stripPhotos(JSON.parse(JSON.stringify(V)));
+  const _safeJSON=x=>JSON.parse(JSON.stringify(x??[]));
+  return {vehicles:clean,bizFinances:_safeJSON(BF),owners:_safeJSON(OW),clients:_safeJSON(CL),recurring:_safeJSON(RR),quotes:_safeJSON(QT),rev:rev,updatedAt:new Date().toISOString()};
+}
+function _jsonBytes(obj){return new Blob([JSON.stringify(obj)]).size;}
+function _setSaveStatus(state,msg){
+  let el=document.getElementById('saveStatus');
+  if(!el){
+    el=document.createElement('div');
+    el.id='saveStatus';
+    el.style.cssText='position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:1800;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;pointer-events:none;font-family:inherit;display:none';
+    document.body.appendChild(el);
+  }
+  clearTimeout(_saveStatusTimer);
+  if(state==='saving'){el.style.display='block';el.style.background='#F59E0B';el.style.color='#000';el.textContent='Guardando…';}
+  else if(state==='saved'){el.style.display='block';el.style.background='#10B981';el.style.color='#000';el.textContent='Guardado';_saveStatusTimer=setTimeout(function(){el.style.display='none';},1800);}
+  else if(state==='error'){el.style.display='block';el.style.background='#EF4444';el.style.color='#fff';el.textContent=msg||'Error al guardar';}
+  else el.style.display='none';
+}
+function _showCloudConflict(){
+  if(document.getElementById('cloudConflict'))return;
+  _saveBlocked=true;
+  const d=document.createElement('div');
+  d.id='cloudConflict';
+  d.style.cssText='position:fixed;inset:0;z-index:3000;background:#000000aa;display:flex;align-items:center;justify-content:center;padding:24px';
+  d.innerHTML='<div style="background:var(--bg2,#1a1a2e);color:var(--text,#F0F4FF);border:1px solid var(--border,#334);border-radius:14px;padding:22px;max-width:400px;width:100%">'
+    +'<div style="font-size:17px;font-weight:800;margin-bottom:10px">Hay cambios hechos desde otro dispositivo</div>'
+    +'<div style="font-size:13px;line-height:1.55;margin-bottom:18px">Hay cambios hechos desde otro dispositivo. Recarga para no perderlos. Los cambios de esta pantalla no se han subido.</div>'
+    +'<button id="cfReload" style="width:100%;background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px">Recargar</button>'
+    +'<button id="cfDownload" style="width:100%;background:transparent;color:inherit;border:1px solid var(--border2,#64748b);border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">Descargar copia de mis cambios locales</button>'
+    +'</div>';
+  document.body.appendChild(d);
+  d.querySelector('#cfReload').onclick=function(){location.reload();};
+  d.querySelector('#cfDownload').onclick=function(){exportData();};
+  _setSaveStatus('error','Hay cambios en otro dispositivo');
+}
 async function _saveToCloud(opts){
+  opts=opts||{};
+  if(_saveBlocked)return;
+  if(_saveInFlight){_saveQueued=opts;return;}
+  _saveInFlight=true;
+  try{await _saveToCloudBody(opts);}
+  finally{
+    _saveInFlight=false;
+    if(_saveQueued&&!_saveBlocked){const q=_saveQueued;_saveQueued=null;_saveToCloud(q);}
+    else _saveQueued=null;
+  }
+}
+async function _saveToCloudBody(opts){
   opts=opts||{};
   if(!_uid){console.warn('[save] No UID — no guardado');return;}
   if(!_loadedOK){console.warn('[save] Carga no completada — no se guarda');return;}
+  if(_saveBlocked)return;
   const vCount=(V||[]).length;
   const mCount=_countMovements();
   const wipedV=_cloudCounts.vehicles>0&&vCount===0;
   const wipedM=_cloudCounts.movements>0&&mCount===0;
-  if(!opts.skipDropCheck&&(wipedV||wipedM)){
-    const parts=[];
-    if(wipedV)parts.push('vehículos (había '+_cloudCounts.vehicles+', ahora 0)');
-    if(wipedM)parts.push('movimientos (había '+_cloudCounts.movements+', ahora 0)');
-    const ok=confirm('El estado a guardar deja a cero: '+parts.join(' y ')+'. Eso puede borrar datos en la nube. ¿Guardar de todos modos?');
-    if(!ok)return;
+  if(wipedV||wipedM){
+    if(opts.fromHide){console.warn('[save] No se guarda al cerrar: el estado vacía vehículos o movimientos');return;}
+    if(!opts.skipDropCheck){
+      const parts=[];
+      if(wipedV)parts.push('vehículos (había '+_cloudCounts.vehicles+', ahora 0)');
+      if(wipedM)parts.push('movimientos (había '+_cloudCounts.movements+', ahora 0)');
+      const ok=confirm('El estado a guardar deja a cero: '+parts.join(' y ')+'. Eso puede borrar datos en la nube. ¿Guardar de todos modos?');
+      if(!ok)return;
+    }
   }
+  const nextRev=(Number(_loadedRev)||0)+1;
+  let payload;
+  try{payload=_cloudPayload(nextRev);}
+  catch(e){_setSaveStatus('error','Error al guardar');_saveToast('⚠️ Error al guardar: '+(e&&e.message?e.message:e));return;}
+  const bytes=_jsonBytes(payload);
+  const WARN=800*1024, BLOCK=1000*1024;
+  if(bytes>=BLOCK){
+    _setSaveStatus('error','Demasiado grande');
+    _saveToast('No se ha guardado: los datos ocupan '+Math.round(bytes/1024)+' KB y el límite del documento es 1 MB. Exporta una copia y reduce el historial antes de seguir.');
+    return;
+  }
+  if(bytes>=WARN){
+    if(!_sizeWarned){_sizeWarned=true;_saveToast('Aviso: los datos ocupan '+Math.round(bytes/1024)+' KB. El límite es 1 MB; conviene exportar una copia y revisar el historial.','#D97706');}
+  }else _sizeWarned=false;
   try{
-    const clean=_stripPhotos(JSON.parse(JSON.stringify(V)));
-    const _safeJSON=x=>JSON.parse(JSON.stringify(x??[]));
-    // merge:true para no borrar campos del documento que esta versión no conoce
-    await _docRef().set({vehicles:clean,bizFinances:_safeJSON(BF),owners:_safeJSON(OW),clients:_safeJSON(CL),recurring:_safeJSON(RR),quotes:_safeJSON(QT)},{merge:true});
+    _setSaveStatus('saving');
+    await db.runTransaction(async function(tx){
+      const snap=await tx.get(_docRef());
+      const cloudRev=snap.exists?(Number((snap.data()||{}).rev)||0):0;
+      if(cloudRev>_loadedRev){const err=new Error('CONFLICT');err.code='conflict';throw err;}
+      // merge para no borrar campos del documento que esta versión no conoce
+      tx.set(_docRef(),payload,{merge:true});
+    });
+    _loadedRev=nextRev;
     _snapshotCounts();
-    console.log('[save] OK — vehículos:',V.length,'presupuestos:',QT.length);
+    _setSaveStatus('saved');
+    console.log('[save] OK — vehículos:',V.length,'rev:',nextRev);
   }catch(e){
+    if(e&&(e.code==='conflict'||e.message==='CONFLICT')){_showCloudConflict();return;}
     console.error('[save] ERROR:',e);
+    _setSaveStatus('error','Error al guardar');
     _saveToast('⚠️ Error al guardar: '+(e&&e.message?e.message:e));
   }
 }
+function _flushPendingSave(){
+  if(!_saveTimer)return;
+  clearTimeout(_saveTimer);
+  _saveTimer=null;
+  _saveToCloud({fromHide:true});
+}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')_flushPendingSave();});
+window.addEventListener('pagehide',_flushPendingSave);
 
 function save(){
   _invalidateRsCache();
@@ -4536,6 +4626,7 @@ async function _loadFromCloud(){
       CL=d.clients||[];
       RR=d.recurring||[];
       QT=d.quotes||[];
+      _loadedRev=Number(d.rev)||0;
       _snapshotCounts();
       _loadedOK=true;
       console.log('[DEIROS] Datos cargados — vehículos:',V.length,'BF:',BF.length,'propietarios:',OW.length);
@@ -4543,6 +4634,7 @@ async function _loadFromCloud(){
     }
     // El documento no existe: usuario nuevo. Estado vacío legítimo, se puede guardar.
     _emptyCloudState();
+    _loadedRev=0;
     _snapshotCounts();
     _loadedOK=true;
     console.warn('[DEIROS] Documento no encontrado (usuario nuevo). UID:',_uid);
@@ -4550,6 +4642,7 @@ async function _loadFromCloud(){
   }catch(e){
     console.error('[DEIROS] Load error:',e&&e.message);
     _emptyCloudState();
+    _loadedRev=0;
     _loadedOK=false;
     _showLoadError();
     return 'error';
@@ -11222,6 +11315,9 @@ auth.onAuthStateChanged(async user=>{
     clearTimeout(_saveTimer);
     _saveTimer=null;
     _loadedOK=false;
+    _loadedRev=0;
+    _saveBlocked=false;
+    _saveQueued=null;
     _uid=null;
     V=[];BF=[];OW=[];CL=[];RR=[];QT=[];
     _cloudCounts={vehicles:0,movements:0};
