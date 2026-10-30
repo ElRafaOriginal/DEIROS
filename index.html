@@ -752,11 +752,11 @@ function renderClientDetail(el){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div>
           <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${b.startDate} → ${b.endDate}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(b.startDate)} → ${esc(b.endDate)}</div>
         </div>
         <div style="text-align:right">
           <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${p?p.label:b.platform}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(p?p.label:b.platform)}</div>
         </div>
       </div>
       ${b.notes?`<div style="font-size:11px;color:var(--text3)">${esc(b.notes)}</div>`:''}
@@ -951,8 +951,8 @@ function renderOccupancy(){
         <div style="display:flex;align-items:center;gap:8px">
           <div style="width:4px;height:36px;border-radius:2px;background:${v.color};flex-shrink:0"></div>
           <div>
-            <div style="font-size:14px;font-weight:700">${v.name}</div>
-            <div style="font-size:10px;color:var(--text3)">${v.plate}</div>
+            <div style="font-size:14px;font-weight:700">${esc(v.name)}</div>
+            <div style="font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
           </div>
         </div>
         <div style="font-family:var(--mono);font-size:22px;font-weight:900;color:${occColor(isSameMonth?cur.pct:sel.pct)}">${isSameMonth?cur.pct:sel.pct}%</div>
@@ -1025,7 +1025,7 @@ function renderAnalytics(el){
 
   const _ps=active=>`border-color:${active?'var(--amber)':'var(--border2)'};background:${active?'#F59E0B22':'transparent'};color:${active?'var(--amber)':'var(--text3)'}`;
   let _filterUI=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px"><div style="display:flex;gap:5px;flex-wrap:wrap;flex:1"><div class="pill" onclick="setAnalyticsOwnership('')" style="${_ps(!_analyticsOwnership)}">Todos</div><div class="pill" onclick="setAnalyticsOwnership('own')" style="${_ps(_analyticsOwnership==='own')}">🔑 Propios</div><div class="pill" onclick="setAnalyticsOwnership('managed')" style="${_ps(_analyticsOwnership==='managed')}">🤝 Gestión</div>`;
-  if(usedVtypes.length>1){_filterUI+=`<div style="width:100%;height:0"></div>`;usedVtypes.forEach(t=>{_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('${t.id}')" style="${_ps(_analyticsVtype===t.id)}">${t.icon} ${t.label}</div>`;});_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('')" style="${_ps(!_analyticsVtype)}">Todos los tipos</div>`;}
+  if(usedVtypes.length>1){_filterUI+=`<div style="width:100%;height:0"></div>`;usedVtypes.forEach(t=>{_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('${escJs(t.id)}')" style="${_ps(_analyticsVtype===t.id)}">${t.icon} ${t.label}</div>`;});_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('')" style="${_ps(!_analyticsVtype)}">Todos los tipos</div>`;}
   _filterUI+=`</div><button onclick="openAnalyticsReportPicker()" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">📄 Informe PDF</button></div>`;
   if(!activeV.length){el.innerHTML=`<div class="anim">${_filterUI}<div class="empty"><div class="ei">🔍</div><div class="et">Sin resultados</div><div class="es">Cambia los filtros para ver vehículos</div></div></div>`;return;}
 
@@ -1041,8 +1041,8 @@ function renderAnalytics(el){
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);min-width:16px">#${i+1}</span>
-            <span style="font-size:14px;font-weight:700">${m.v.name}</span>
-            <span style="font-family:var(--mono);font-size:10px;color:${m.v.color};background:${m.v.color}22;padding:2px 7px;border-radius:20px">${m.v.plate}</span>
+            <span style="font-size:14px;font-weight:700">${esc(m.v.name)}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:${m.v.color};background:${m.v.color}22;padding:2px 7px;border-radius:20px">${esc(m.v.plate)}</span>
           </div>
           <span style="font-family:var(--mono);font-size:15px;font-weight:800;color:var(--green)">${fmt(m.rpdInc)}/día</span>
         </div>
@@ -1065,7 +1065,7 @@ function renderAnalytics(el){
       return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
         <div style="width:5px;height:48px;border-radius:3px;background:${m.v.color};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700">${m.v.name}</div>
+          <div style="font-size:14px;font-weight:700">${esc(m.v.name)}</div>
           <div style="font-size:10px;color:var(--text3);margin-top:2px">
             ${m.pp>0?`Compra: ${fmt(m.pp)}`:'Sin precio registrado'}
             ${m.paidOff?' · ✅ Ya se pagó solo':''}
@@ -1114,7 +1114,7 @@ function renderAnalytics(el){
         ${_ownMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">🔑 PROPIOS (${_ownMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${_ownProfit>=0?'var(--green)':'var(--red)'}">${fmt(_ownProfit)}</div><div style="font-size:9px;color:var(--text3)">beneficio 100%</div></div>`:''}
         ${_mgdMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">🤝 GESTIÓN (${_mgdMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--purple)">${fmt(_mgdShare)}</div><div style="font-size:9px;color:var(--text3)">comisión de ${fmt(_mgdProfit)} bruto</div></div>`:''}
       </div>
-      ${_mgdMs.map(m=>{const _c=Number(m.v.commission)||30;return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-top:6px"><span style="font-size:11px;color:var(--text2)">🤝 ${m.v.name} · comisión ${_c}%</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--purple)">${fmt(m.bizShare)} <span style="font-size:9px;font-weight:400;color:var(--text3)">de ${fmt(m.profit)} bruto</span></span></div>`;}).join('')}
+      ${_mgdMs.map(m=>{const _c=Number(m.v.commission)||30;return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-top:6px"><span style="font-size:11px;color:var(--text2)">🤝 ${esc(m.v.name)} · comisión ${_c}%</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--purple)">${fmt(m.bizShare)} <span style="font-size:9px;font-weight:400;color:var(--text3)">de ${fmt(m.profit)} bruto</span></span></div>`;}).join('')}
     </div>`;
   })()}
 
@@ -1123,7 +1123,7 @@ function renderAnalytics(el){
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px">
     ${[...metrics].sort((a,b)=>b.occ-a.occ).map(m=>`<div style="margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:13px;font-weight:600">${m.v.name}</span>
+        <span style="font-size:13px;font-weight:600">${esc(m.v.name)}</span>
         <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${m.occ>=70?'var(--green)':m.occ>=40?'var(--amber)':'var(--red)'}">${m.occ}%</span>
       </div>
       <div style="height:10px;background:var(--bg4);border-radius:5px;overflow:hidden">
@@ -1268,7 +1268,7 @@ function renderAnalytics(el){
         <div style="font-size:9px;color:var(--text3);margin-top:3px">margen ${_projInc>0?Math.round(_projProfit/_projInc*100):0}%</div>
       </div>
     </div>
-    ${metrics.filter(m=>m.pp>0&&!m.paidOff&&m.rpdProfit>0).map(m=>{const mLeft=Math.ceil((m.pp-m.profit)/m.rpdProfit/30);return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--text2)">${m.v.name} · Break-even</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">~${mLeft} meses</span></div>`;}).join('')}
+    ${metrics.filter(m=>m.pp>0&&!m.paidOff&&m.rpdProfit>0).map(m=>{const mLeft=Math.ceil((m.pp-m.profit)/m.rpdProfit/30);return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--text2)">${esc(m.v.name)} · Break-even</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">~${mLeft} meses</span></div>`;}).join('')}
   </div>`;
 
   // Clientes
@@ -1287,7 +1287,7 @@ function renderAnalytics(el){
     ${_cliList.length>0?`<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TOP 5 POR GASTO</div>
     ${_cliList.slice(0,5).map((c,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border)">
       <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);min-width:16px">#${i+1}</span>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600">${c.name}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(c.name)}</div>
         <div style="font-size:10px;color:var(--text3)">${c.count} alquiler${c.count!==1?'es':''}</div></div>
       <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${_fmtA(c.total)}</span>
       ${c.count>1?`<span style="font-size:9px;padding:2px 6px;background:var(--purple)22;color:var(--purple);border-radius:10px;border:1px solid var(--purple)44">recurrente</span>`:''}
@@ -1349,7 +1349,7 @@ function openAnalyticsReportPicker(){
       <div class="fg"><label class="lbl">HASTA (MES)</label><input type="month" id="arTo" value="${curM}"/></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px">
-      ${presets.map(([lbl,f,t])=>`<button onclick="document.getElementById('arFrom').value='${f}';document.getElementById('arTo').value='${t}'"
+      ${presets.map(([lbl,f,t])=>`<button onclick="document.getElementById('arFrom').value='${escJs(f)}';document.getElementById('arTo').value='${escJs(t)}'"
         style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:8px 4px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer">${lbl}</button>`).join('')}
     </div>
     <button class="btn" onclick="generateAnalyticsPDF(document.getElementById('arFrom').value,document.getElementById('arTo').value);closeSheet()">📄 Generar informe PDF</button>
@@ -2230,7 +2230,7 @@ function renderLiquidaciones(ownerId,el){
     <div>
       <div style="font-size:13px;font-weight:700">${l.month}</div>
       <div style="font-size:10px;color:var(--text3);margin-top:2px">${l.paidAt?new Date(l.paidAt).toLocaleDateString('es-ES'):''}</div>
-      ${l.notes?`<div style="font-size:10px;color:var(--text3)">${l.notes}</div>`:''}
+      ${l.notes?`<div style="font-size:10px;color:var(--text3)">${esc(l.notes)}</div>`:''}
     </div>
     <div style="text-align:right">
       <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${l.paid?'var(--green)':'var(--amber)'}">${fmt(l.amount)}</div>
@@ -2405,7 +2405,7 @@ function openExtendBooking(bookingId){
 
   openSheet('<div class="stitle">📅 Ampliar alquiler</div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
-    +'<div style="font-size:13px;font-weight:700">'+_bv.name+' · '+_bv.plate+'</div>'
+    +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
     +'<div style="font-size:11px;color:var(--text3);margin-top:4px">Periodo actual: <strong>'+_bb.startDate+'</strong> → <strong>'+origEnd+'</strong>'
     +(_bb.endTime?' · hasta las <strong>'+_bb.endTime+'</strong>':'')+'</div>'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--text3)">Total actual del alquiler</span>'
@@ -2524,7 +2524,7 @@ function openReturnModal(bookingId){
   window._retDelivFuel=delivFuel;
   openSheet('<div class="stitle">\ud83d\udd11 Registrar devoluci\u00f3n</div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
-    +'<div style="font-size:13px;font-weight:700">'+_bv.name+' \u00b7 '+_bv.plate+'</div>'
+    +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' \u00b7 '+esc(_bv.plate)+'</div>'
     +'<div style="font-size:11px;color:var(--text3);margin-top:3px">Km entrega: <strong>'+(kmStart?kmStart.toLocaleString('es-ES')+' km':'no registrado')+'</strong> \u00b7 Combustible entrega: <strong>'+delivFuel+'</strong></div>'
     +'<div style="font-size:11px;color:var(--text3);margin-top:2px">Km incluidos: <strong>'+(isIlim?'Ilimitados':kmLimit.toLocaleString('es-ES')+' km')+'</strong></div>'
     +'</div>'
@@ -2761,9 +2761,9 @@ function renderRecurring(el){
   const upcoming=RR.filter(r=>r.active&&!r.vId).map(r=>{
     const last=r.lastApplied?new Date(r.lastApplied):null;
     let nextDate=null;
-    if(r.freq==='monthly'){const n=new Date();if(last&&last.getMonth()===n.getMonth()&&last.getFullYear()===n.getFullYear()){n.setMonth(n.getMonth()+1);}nextDate=n.toISOString().slice(0,10);}
-    else if(r.freq==='quarterly'){const n=last?new Date(last):new Date();n.setMonth(n.getMonth()+3);nextDate=n.toISOString().slice(0,10);}
-    else if(r.freq==='yearly'){const n=last?new Date(last):new Date();n.setFullYear(n.getFullYear()+1);nextDate=n.toISOString().slice(0,10);}
+    if(r.freq==='monthly'){const n=new Date();if(last&&last.getMonth()===n.getMonth()&&last.getFullYear()===n.getFullYear()){n.setMonth(n.getMonth()+1);}nextDate=ymd(n);}
+    else if(r.freq==='quarterly'){const n=last?new Date(last):new Date();n.setMonth(n.getMonth()+3);nextDate=ymd(n);}
+    else if(r.freq==='yearly'){const n=last?new Date(last):new Date();n.setFullYear(n.getFullYear()+1);nextDate=ymd(n);}
     return{...r,nextDate};
   }).sort((a,b)=>a.nextDate>b.nextDate?1:-1);
 
@@ -2771,16 +2771,16 @@ function renderRecurring(el){
     const freqLabel={monthly:'Mensual',quarterly:'Trimestral',yearly:'Anual'}[r.freq]||r.freq;
     const next=upcoming.find(u=>u.id===r.id);
     const daysToNext=next&&next.nextDate?Math.ceil((new Date(next.nextDate)-new Date(today))/864e5):null;
-    const editCall=vId?`openAddRecurring('${r.id}','${vId}')`:`editRecurring('${r.id}')`;
-    const delCall=`deleteRecurring('${r.id}')`;
+    const editCall=vId?`openAddRecurring('${escJs(r.id)}','${escJs(vId)}')`:`editRecurring('${escJs(r.id)}')`;
+    const delCall=`deleteRecurring('${escJs(r.id)}')`;
     return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div style="font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</div>
+            <div style="font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name)}</div>
             <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;${r.active?'background:#10B98115;color:var(--green);border:1px solid #10B98130':'background:var(--bg3);color:var(--text3);border:1px solid var(--border)'}">${r.active?'Activo':'Pausado'}</span>
           </div>
-          <div style="font-size:11px;color:var(--text3)">${r.category||'Sin categoría'} · ${freqLabel}${vId?'':''}</div>
+          <div style="font-size:11px;color:var(--text3)">${esc(r.category||'Sin categoría')} · ${freqLabel}${vId?'':''}</div>
           ${r.lastApplied?`<div style="font-size:10px;color:var(--text3);margin-top:2px">Último: ${r.lastApplied}</div>`:''}
         </div>
         <div style="text-align:right;flex-shrink:0;margin-left:12px">
@@ -2789,7 +2789,7 @@ function renderRecurring(el){
         </div>
       </div>
       <div style="display:flex;gap:8px">
-        <button onclick="toggleRecurring('${r.id}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">${r.active?'⏸ Pausar':'▶ Activar'}</button>
+        <button onclick="toggleRecurring('${escJs(r.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">${r.active?'⏸ Pausar':'▶ Activar'}</button>
         <button onclick="${editCall}" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
         <button onclick="${delCall}" style="background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">×</button>
       </div>
@@ -2830,8 +2830,8 @@ function renderRecurring(el){
           <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:6px">
             <div style="width:4px;height:28px;border-radius:2px;background:${v.color||'var(--amber)'};flex-shrink:0"></div>
             <div style="flex:1">
-              <div style="font-size:13px;font-weight:700">${v.name}</div>
-              <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${v.plate}</div>
+              <div style="font-size:13px;font-weight:700">${esc(v.name)}</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
             </div>
             ${vMonthly>0?`<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red)">${fmt(vMonthly)}/mes</div>`:''}
           </div>
@@ -2855,21 +2855,21 @@ function openVehicleRecurring(vId){
     if(r.freq==='yearly')return s+Number(r.amount)/12;
     return s;
   },0);
-  openSheet(`<div class="stitle">🔄 Recurrentes — ${v.name}</div>
+  openSheet(`<div class="stitle">🔄 Recurrentes — ${esc(v.name)}</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Gastos periódicos vinculados a este vehículo (seguro, revisión, parking...)</div>
     ${totalMonthly>0?`<div style="background:var(--bg3);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--text3)">Equivalente mensual</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmt(totalMonthly)}</span></div>`:''}
-    <button onclick="openAddRecurring(null,'${vId}')" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">＋ Añadir recurrente</button>
+    <button onclick="openAddRecurring(null,'${escJs(vId)}')" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">＋ Añadir recurrente</button>
     ${vRR.length?vRR.map(r=>{
       const freqLabel={monthly:'Mensual',quarterly:'Trimestral',yearly:'Anual'}[r.freq]||r.freq;
       return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
         <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700">${r.name}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${r.category||''} · ${freqLabel} · ${r.active?'<span style=\'color:var(--green)\'>Activo</span>':'<span style=\'color:var(--text3)\'>Pausado</span>'}</div>
+          <div style="font-size:14px;font-weight:700">${esc(r.name)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(r.category||'')} · ${freqLabel} · ${r.active?'<span style=\'color:var(--green)\'>Activo</span>':'<span style=\'color:var(--text3)\'>Pausado</span>'}</div>
         </div>
         <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmt(r.amount)}</div>
-        <div onclick="toggleRecurring('${r.id}');openVehicleRecurring('${vId}')" style="font-size:18px;cursor:pointer;color:var(--text3)">${r.active?'⏸':'▶'}</div>
-        <div onclick="openAddRecurring('${r.id}','${vId}')" style="font-size:17px;cursor:pointer;color:var(--amber)">✏️</div>
-        <div onclick="if(confirm('¿Eliminar?')){RR=RR.filter(r=>r.id!=='${r.id}');save();openVehicleRecurring('${vId}');}" style="font-size:18px;cursor:pointer;color:var(--red)">×</div>
+        <div onclick="toggleRecurring('${escJs(r.id)}');openVehicleRecurring('${escJs(vId)}')" style="font-size:18px;cursor:pointer;color:var(--text3)">${r.active?'⏸':'▶'}</div>
+        <div onclick="openAddRecurring('${escJs(r.id)}','${escJs(vId)}')" style="font-size:17px;cursor:pointer;color:var(--amber)">✏️</div>
+        <div onclick="if(confirm('¿Eliminar?')){RR=RR.filter(r=>r.id!=='${escJs(r.id)}');save();openVehicleRecurring('${escJs(vId)}');}" style="font-size:18px;cursor:pointer;color:var(--red)">×</div>
       </div>`;
     }).join(''):'<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:13px">Sin gastos recurrentes para este vehículo</div>'}
     <div style="height:10px"></div>
@@ -2881,7 +2881,7 @@ function openAddRecurring(editId,vId){
   const r=editId?RR.find(r=>r.id===editId):null;
   // If coming from a specific vehicle, show its info
   const fixedV=vId?V.find(v=>v.id===vId):null;
-  const fixedVehicle=fixedV?`<div style="background:var(--bg3);border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🚗</span><div><div style="font-size:13px;font-weight:700">${fixedV.name}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fixedV.plate}</div></div></div>`:'';
+  const fixedVehicle=fixedV?`<div style="background:var(--bg3);border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🚗</span><div><div style="font-size:13px;font-weight:700">${esc(fixedV.name)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(fixedV.plate)}</div></div></div>`:'';
   // Plate search field (only when not pre-assigned to a vehicle)
   const plateSel=(!vId&&!editId)?`<div class="fg"><label class="lbl">MATRÍCULA DEL VEHÍCULO (dejar vacío = negocio general)</label>
     <input id="rrPlate" placeholder="Ej: 1234ABC" autocomplete="off" oninput="this.value=this.value.toUpperCase()"
@@ -2889,7 +2889,7 @@ function openAddRecurring(editId,vId){
     <div id="rrPlateHint" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
   </div>`:'';
   openSheet(`<div class="stitle">${r?'Editar':'Nuevo'} gasto recurrente</div>${fixedVehicle}${plateSel}
-    <div class="fg"><label class="lbl">NOMBRE *</label><input id="rrName" value="${r?r.name:''}" placeholder="Ej: Seguro MAPFRE" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NOMBRE *</label><input id="rrName" value="${esc(r?r.name:'')}" placeholder="Ej: Seguro MAPFRE" autocomplete="off"/></div>
     <div class="r2">
       <div class="fg"><label class="lbl">CATEGORÍA</label>
         <select id="rrCat">
@@ -2905,9 +2905,9 @@ function openAddRecurring(editId,vId){
       </div>
     </div>
     <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="rrAmt" type="number" step="0.01" value="${r?r.amount:''}" placeholder="0.00" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">APLICAR DESDE</label><input id="rrStart" type="month" value="${r?r.startDate?(r.startDate.slice(0,7)):'':new Date().toISOString().slice(0,7)}"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="rrNotes" value="${r?r.notes||'':''}" placeholder="Opcional..." autocomplete="off"/></div>
-    <button class="btn" onclick="submitRecurring('${editId||''}','${vId||''}')">${r?'💾 Guardar':'Añadir'}</button>
+    <div class="fg"><label class="lbl">APLICAR DESDE</label><input id="rrStart" type="month" value="${r?r.startDate?(esc(r.startDate.slice(0,7))):'':todayStr().slice(0,7)}"/></div>
+    <div class="fg"><label class="lbl">NOTAS</label><input id="rrNotes" value="${esc(r?r.notes||'':'')}" placeholder="Opcional..." autocomplete="off"/></div>
+    <button class="btn" onclick="submitRecurring('${escJs(editId||'')}','${escJs(vId||'')}')">${r?'💾 Guardar':'Añadir'}</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
   // Live plate hint
@@ -2918,7 +2918,7 @@ function openAddRecurring(editId,vId){
       const q=inp.value.trim().toUpperCase();
       if(!q){hint.textContent='';return;}
       const found=V.find(v=>!v.archived&&v.vtype!=='managed'&&v.plate.toUpperCase()===q);
-      if(found)hint.innerHTML='<span style="color:var(--green)">✓ '+found.name+'</span>';
+      if(found)hint.innerHTML='<span style="color:var(--green)">✓ '+esc(found.name)+'</span>';
       else hint.innerHTML='<span style="color:var(--red)">Matrícula no encontrada entre vehículos propios</span>';
     });
   }
@@ -3025,28 +3025,28 @@ function openContractForm(vId,bookingId){
 
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:8px">🏢 ARRENDADOR</div>
   <div class="r2">
-    <div class="fg"><label class="lbl">NOMBRE / RAZÓN SOCIAL</label><input id="ctArNombre" value="${co.nombre||'DEIROS'}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">NIF / CIF</label><input id="ctArNif" value="${co.nif||''}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NOMBRE / RAZÓN SOCIAL</label><input id="ctArNombre" value="${esc(co.nombre||'DEIROS')}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NIF / CIF</label><input id="ctArNif" value="${esc(co.nif||'')}" autocomplete="off"/></div>
   </div>
-  <div class="fg"><label class="lbl">DOMICILIO</label><input id="ctArDir" value="${co.direccion||''}" autocomplete="off"/></div>
+  <div class="fg"><label class="lbl">DOMICILIO</label><input id="ctArDir" value="${esc(co.direccion||'')}" autocomplete="off"/></div>
   <div class="r2">
-    <div class="fg"><label class="lbl">TELÉFONO</label><input id="ctArTel" value="${co.telefono||''}" inputmode="tel"/></div>
-    <div class="fg"><label class="lbl">EMAIL</label><input id="ctArEmail" value="${co.email||''}" inputmode="email"/></div>
+    <div class="fg"><label class="lbl">TELÉFONO</label><input id="ctArTel" value="${esc(co.telefono||'')}" inputmode="tel"/></div>
+    <div class="fg"><label class="lbl">EMAIL</label><input id="ctArEmail" value="${esc(co.email||'')}" inputmode="email"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">CIUDAD DE FIRMA</label><input id="ctCiudad" value="${co.ciudad||'Madrid'}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">CIUDAD DE FIRMA</label><input id="ctCiudad" value="${esc(co.ciudad||'Madrid')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">FECHA DEL CONTRATO</label><input id="ctFecha" value="${today}" autocomplete="off"/></div>
   </div>
 
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">🚗 VEHÍCULO</div>
   <div class="r2">
-    <div class="fg"><label class="lbl">MARCA</label><input id="ctVMake" value="${v.make||(v.model&&v.model.includes(' ')?v.model.split(' ')[0]:'')}" placeholder="Ej: Renault" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">MODELO</label><input id="ctVModel" value="${v.make?(v.model||v.name):(v.model&&v.model.includes(' ')?v.model.split(' ').slice(1).join(' '):v.model||v.name)}" placeholder="Ej: Clio" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">MARCA</label><input id="ctVMake" value="${esc(v.make||(v.model&&v.model.includes(' ')?v.model.split(' ')[0]:''))}" placeholder="Ej: Renault" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">MODELO</label><input id="ctVModel" value="${esc(v.make?(v.model||v.name):(v.model&&v.model.includes(' ')?v.model.split(' ').slice(1).join(' '):v.model||v.name))}" placeholder="Ej: Clio" autocomplete="off"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">MATRÍCULA</label><input id="ctVPlate" value="${v.plate}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="fg"><label class="lbl">COMBUSTIBLE</label><input id="ctVFuel" value="${v.fuel||''}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">MATRÍCULA</label><input id="ctVPlate" value="${esc(v.plate)}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="fg"><label class="lbl">COMBUSTIBLE</label><input id="ctVFuel" value="${esc(v.fuel||'')}" autocomplete="off"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">NIVEL COMBUSTIBLE ENTREGA</label>
@@ -3060,20 +3060,20 @@ function openContractForm(vId,bookingId){
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">👤 ARRENDATARIO</div>
   <div class="r2">
-    <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="ctClNombre" value="${b.clientName||cl?.name||''}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctClNif" value="${b.clientDni||cl?.dni||''}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="ctClNombre" value="${esc(b.clientName||cl?.name||'')}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctClNif" value="${esc(b.clientDni||cl?.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">DOMICILIO</label><input id="ctClDir" value="${cl?.address||''}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">NACIONALIDAD</label><input id="ctClNacionalidad" value="${cl?.nationality||''}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">DOMICILIO</label><input id="ctClDir" value="${esc(cl?.address||'')}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NACIONALIDAD</label><input id="ctClNacionalidad" value="${esc(cl?.nationality||'')}" autocomplete="off"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">TELÉFONO</label><input id="ctClTel" value="${b.clientPhone||cl?.phone||''}" inputmode="tel"/></div>
-    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="ctClNac" value="${cl?.birthdate||''}" type="date"/></div>
+    <div class="fg"><label class="lbl">TELÉFONO</label><input id="ctClTel" value="${esc(b.clientPhone||cl?.phone||'')}" inputmode="tel"/></div>
+    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="ctClNac" value="${esc(cl?.birthdate||'')}" type="date"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">Nº PERMISO CONDUCIR</label><input id="ctClLic" value="${cl?.license||''}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctClLicExp" value="${cl?.licenseExp||''}" type="date"/></div>
+    <div class="fg"><label class="lbl">Nº PERMISO CONDUCIR</label><input id="ctClLic" value="${esc(cl?.license||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctClLicExp" value="${esc(cl?.licenseExp||'')}" type="date"/></div>
   </div>
 
   <!-- Conductor adicional -->
@@ -3100,12 +3100,12 @@ function openContractForm(vId,bookingId){
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--green);margin-bottom:8px">💶 CONDICIONES ECONÓMICAS</div>
   <div class="r2">
-    <div class="fg"><label class="lbl">LUGAR ENTREGA</label><input id="ctEntLugar" value="${co.ciudadEntrega||co.ciudad||''}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">LUGAR DEVOLUCIÓN</label><input id="ctDevLugar" value="${co.ciudadEntrega||co.ciudad||''}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">LUGAR ENTREGA</label><input id="ctEntLugar" value="${esc(co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">LUGAR DEVOLUCIÓN</label><input id="ctDevLugar" value="${esc(co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">ZONA AUTORIZADA</label><input id="ctZona" value="${co.zonaAut||'Territorio nacional'}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input id="ctEdadMin" value="${co.edadMin||'21'}" inputmode="numeric"/></div>
+    <div class="fg"><label class="lbl">ZONA AUTORIZADA</label><input id="ctZona" value="${esc(co.zonaAut||'Territorio nacional')}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input id="ctEdadMin" value="${esc(co.edadMin||'21')}" inputmode="numeric"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">PRECIO BASE ALQUILER (€)</label><input id="ctPrecioBase" value="${b.amount||''}" inputmode="decimal"/></div>
@@ -3122,19 +3122,19 @@ function openContractForm(vId,bookingId){
         <span style="font-size:11px;color:var(--text3);white-space:nowrap">km base</span>
       </div>
     </div>
-    <div class="fg"><label class="lbl">PRECIO KM ADICIONAL (€)</label><input id="ctKmExtra" value="${co.kmExtra||(isFurgoneta?'0.20':'0.15')}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">PRECIO KM ADICIONAL (€)</label><input id="ctKmExtra" value="${esc(co.kmExtra||(isFurgoneta?'0.20':'0.15'))}" inputmode="decimal"/></div>
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:10px">
     <span style="font-size:12px;color:var(--text3);font-weight:600">KM TOTALES CONTRATADOS</span>
     <span id="ctKmTotalBadge" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta)} km</span>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${co.fianza||'300'}" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">PENALIZ. COMBUSTIBLE (€)</label><input id="ctPenalComb" value="${co.penalComb||'30'}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(co.fianza||'300')}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">PENALIZ. COMBUSTIBLE (€)</label><input id="ctPenalComb" value="${esc(co.penalComb||'30')}" inputmode="decimal"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">PENALIZ. LIMPIEZA (€)</label><input id="ctPenalLimp" value="${co.penalLimp||'60'}" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">USO AUTORIZADO</label><input id="ctUso" value="${co.uso||'Uso particular'}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">PENALIZ. LIMPIEZA (€)</label><input id="ctPenalLimp" value="${esc(co.penalLimp||'60')}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">USO AUTORIZADO</label><input id="ctUso" value="${esc(co.uso||'Uso particular')}" autocomplete="off"/></div>
   </div>
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">⭐ EXTRAS (${dur} día${dur!==1?'s':''})</div>
@@ -3257,7 +3257,7 @@ function openContractForm(vId,bookingId){
     <span id="exTotalAmt" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--amber)">0,00 €</span>
   </div>
   <div class="fg"><label class="lbl">OBSERVACIONES ADICIONALES</label>
-    <textarea id="ctObs" rows="2" style="font-size:13px;padding:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);width:100%;box-sizing:border-box">${b.notes||''}</textarea>
+    <textarea id="ctObs" rows="2" style="font-size:13px;padding:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);width:100%;box-sizing:border-box">${esc(b.notes||'')}</textarea>
   </div>
 
   <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer">
@@ -3265,7 +3265,7 @@ function openContractForm(vId,bookingId){
     <span style="font-size:12px;color:var(--text3)">Guardar datos de empresa para futuros contratos</span>
   </label>
 
-  <button class="btn" onclick="generateContractPDF('${vId}','${bookingId}')">📄 Generar contrato PDF</button>
+  <button class="btn" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button>
   <div style="height:8px"></div>
   <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
   // Pre-check extras from the booking (b.extras array)
@@ -4135,24 +4135,25 @@ function openMgmtContractForm(ownerId,vId){
   const co=getCompanyData();
   const today=new Date().toLocaleDateString('es-ES');
   const startDate=todayStr();
-  const endDate=new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().slice(0,10);
+  const _finContrato=new Date();_finContrato.setFullYear(_finContrato.getFullYear()+1);
+  const endDate=ymd(_finContrato);
   const ibanMasked=owner.iban?owner.iban.slice(0,4)+' **** **** **** **** '+owner.iban.slice(-4):'—';
 
   openSheet(`<div class="stitle">📋 Contrato de gestión</div>
-  <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Propietario: <strong>${esc(owner.name)}</strong>${owner.iban?' · IBAN registrado ✓':' · ⚠️ Sin IBAN'}</div>
+  <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Propietario: <strong>${esc(owner.name)}</strong>${esc(owner.iban?' · IBAN registrado ✓':' · ⚠️ Sin IBAN')}</div>
 
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:8px">🏢 EL GESTOR</div>
   <div class="r2">
-    <div class="fg"><label class="lbl">NOMBRE / EMPRESA</label><input id="mgGestorNombre" value="${co.nombre||'DEIROS'}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">NIF / CIF</label><input id="mgGestorNif" value="${co.nif||''}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NOMBRE / EMPRESA</label><input id="mgGestorNombre" value="${esc(co.nombre||'DEIROS')}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">NIF / CIF</label><input id="mgGestorNif" value="${esc(co.nif||'')}" autocomplete="off"/></div>
   </div>
-  <div class="fg"><label class="lbl">DOMICILIO</label><input id="mgGestorDir" value="${co.direccion||''}" autocomplete="off"/></div>
+  <div class="fg"><label class="lbl">DOMICILIO</label><input id="mgGestorDir" value="${esc(co.direccion||'')}" autocomplete="off"/></div>
   <div class="r2">
-    <div class="fg"><label class="lbl">TELÉFONO</label><input id="mgGestorTel" value="${co.telefono||''}" inputmode="tel"/></div>
-    <div class="fg"><label class="lbl">EMAIL</label><input id="mgGestorEmail" value="${co.email||''}" inputmode="email"/></div>
+    <div class="fg"><label class="lbl">TELÉFONO</label><input id="mgGestorTel" value="${esc(co.telefono||'')}" inputmode="tel"/></div>
+    <div class="fg"><label class="lbl">EMAIL</label><input id="mgGestorEmail" value="${esc(co.email||'')}" inputmode="email"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">CIUDAD DE FIRMA</label><input id="mgCiudad" value="${co.ciudad||'Madrid'}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">CIUDAD DE FIRMA</label><input id="mgCiudad" value="${esc(co.ciudad||'Madrid')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">FECHA DEL CONTRATO</label><input id="mgFecha" value="${today}" autocomplete="off"/></div>
   </div>
 
@@ -4161,19 +4162,19 @@ function openMgmtContractForm(ownerId,vId){
   <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:10px">
     <div style="font-size:14px;font-weight:700">${esc(owner.name)}</div>
     <div style="font-size:11px;color:var(--text3);margin-top:3px">${esc(owner.dni||'Sin DNI')} · ${esc(owner.phone||'')}</div>
-    ${owner.iban?`<div style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-top:3px">IBAN: ${ibanMasked}</div>`:'<div style="font-size:11px;color:var(--red);margin-top:3px">⚠️ IBAN no registrado</div>'}
+    ${owner.iban?`<div style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-top:3px">IBAN: ${esc(ibanMasked)}</div>`:'<div style="font-size:11px;color:var(--red);margin-top:3px">⚠️ IBAN no registrado</div>'}
   </div>
   <div class="fg"><label class="lbl">DOMICILIO DEL PROPIETARIO</label><input id="mgOwnerDir" value="${esc(owner.address||'')}" autocomplete="off"/></div>
 
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--blue);margin-bottom:8px">🚗 VEHÍCULO</div>
   ${veh?`<div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:10px">
-    <div style="font-size:14px;font-weight:700">${(veh.make?veh.make+' ':'')+veh.name} · ${veh.plate}</div>
-    ${veh.chassis?`<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">Bastidor: ${veh.chassis}</div>`:'<div style="font-size:11px;color:var(--amber);margin-top:2px">⚠️ Sin nº de bastidor</div>'}
-  </div><input type="hidden" id="mgVehId" value="${veh.id}"/>`
+    <div style="font-size:14px;font-weight:700">${esc((veh.make?veh.make+' ':'')+veh.name)} · ${esc(veh.plate)}</div>
+    ${veh.chassis?`<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">Bastidor: ${esc(veh.chassis)}</div>`:'<div style="font-size:11px;color:var(--amber);margin-top:2px">⚠️ Sin nº de bastidor</div>'}
+  </div><input type="hidden" id="mgVehId" value="${esc(veh.id)}"/>`
   :ownerVehicles.length?`<div class="fg"><label class="lbl">SELECCIONAR VEHÍCULO</label>
     <select id="mgVehSel">
-      ${ownerVehicles.map(v=>'<option value="'+v.id+'">'+(v.make?v.make+' ':'')+v.name+' · '+v.plate+'</option>').join('')}
+      ${ownerVehicles.map(v=>'<option value="'+esc(v.id)+'">'+(v.make?v.make+' ':'')+esc(v.name)+' · '+esc(v.plate)+'</option>').join('')}
     </select></div>`
   :'<div style="font-size:12px;color:var(--red);padding:8px 0">Sin vehículos asignados a este propietario.</div>'}
 
@@ -4188,7 +4189,7 @@ function openMgmtContractForm(ownerId,vId){
     <div class="fg"><label class="lbl">FIN CONTRATO (renovable)</label><input id="mgFinDate" type="date" value="${endDate}"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">CIUDAD JURISDICCIÓN</label><input id="mgJurisdiccion" value="${co.ciudad||'Madrid'}" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">CIUDAD JURISDICCIÓN</label><input id="mgJurisdiccion" value="${esc(co.ciudad||'Madrid')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">DÍAS PREAVISO RESOLUCIÓN</label><input id="mgPreaviso" value="30" inputmode="numeric"/></div>
   </div>
   <div class="fg"><label class="lbl">OBSERVACIONES ADICIONALES</label>
@@ -4200,7 +4201,7 @@ function openMgmtContractForm(ownerId,vId){
     <span style="font-size:12px;color:var(--text3)">Guardar datos del gestor para futuros contratos</span>
   </label>
 
-  <button class="btn" onclick="generateMgmtContractPDF('${ownerId}','${vId||''}')">📋 Generar contrato PDF</button>
+  <button class="btn" onclick="generateMgmtContractPDF('${escJs(ownerId)}','${vId||''}')">📋 Generar contrato PDF</button>
   <div style="height:8px"></div>
   <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
@@ -4606,11 +4607,11 @@ window.addEventListener('pagehide',_flushPendingSave);
 function save(){
   _invalidateRsCache();
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>_saveToCloud(),800);
+  _saveTimer=setTimeout(()=>{_saveTimer=null;_saveToCloud();},800);
 }
 function saveBiz(){
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>_saveToCloud(),800);
+  _saveTimer=setTimeout(()=>{_saveTimer=null;_saveToCloud();},800);
 }
 
 async function _loadFromCloud(){
@@ -4687,17 +4688,18 @@ let _vOwnersMode='extended'; // 'extended'|'compact'|'grid'
 
 // ═══════════════════════════════════════════════════════════ HELPERS
 function gV(){return V.find(v=>v.id===AV);}
-function todayStr(){
-  const d=new Date();
+function ymd(d){
+  if(!(d instanceof Date)||isNaN(d.getTime()))return '';
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
+function todayStr(){return ymd(new Date());}
 function addDays(str,n){
   const p=String(str||'').split('-');
   const y=Number(p[0]),m=Number(p[1]),day=Number(p[2]);
   if(!y||!m||!day)return String(str||'');
   const d=new Date(y,m-1,day);
   d.setDate(d.getDate()+(Number(n)||0));
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return ymd(d);
 }
 function _eachDate(start,end){
   const ds=[];
@@ -5011,14 +5013,14 @@ function renderDash(el){
     if(activeRentals.length){
       h+=`<div style="background:var(--bg2);border:1px solid #F59E0B44;border-radius:14px;padding:20px;margin-bottom:16px">
         <div class="sec" style="color:var(--amber);margin-bottom:14px">🔑 EN ALQUILER AHORA (${activeRentals.length})</div>
-        ${activeRentals.map(b=>`<div onclick="openV('${b.vid}')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">
+        ${activeRentals.map(b=>`<div onclick="openV('${escJs(b.vid)}')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">
           <div>
             <div style="font-size:13px;font-weight:600">${esc(b.vname)}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName):''}</div>
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
-            <div style="font-size:10px;color:var(--amber)">hasta ${b.endDate}</div>
+            <div style="font-size:10px;color:var(--amber)">hasta ${esc(b.endDate)}</div>
           </div>
         </div>`).join('')}
       </div>`;
@@ -5026,10 +5028,10 @@ function renderDash(el){
     if(alerts.length){
       h+=`<div style="background:var(--bg2);border:1px solid #EF444430;border-radius:14px;padding:20px;margin-bottom:16px">
         <div class="sec" style="color:var(--red);margin-bottom:14px">🔔 ALERTAS (${alerts.length})</div>
-        ${alerts.slice(0,8).map(a=>`<div onclick="openV('${a.vid}')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">
+        ${alerts.slice(0,8).map(a=>`<div onclick="openV('${escJs(a.vid)}')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">
           <div>
-            <div style="font-size:13px;font-weight:600">${a.vname}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${a.label}</div>
+            <div style="font-size:13px;font-weight:600">${esc(a.vname)}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(a.label)}</div>
           </div>
           <span style="font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;background:${a.expired?'#EF444420':'#F59E0B15'};color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
         </div>`).join('')}
@@ -5071,8 +5073,8 @@ function renderDash(el){
     if(alerts.length){
       h+=`<div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #EF444440">
         <div class="sec" style="color:var(--red);margin-bottom:10px">🔔 ALERTAS (${alerts.length})</div>
-        ${alerts.slice(0,5).map(a=>`<div onclick="openV('${a.vid}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer">
-          <div><div style="font-size:13px;font-weight:600">${a.vname}</div><div style="font-size:11px;color:var(--text3)">${a.label}</div></div>
+        ${alerts.slice(0,5).map(a=>`<div onclick="openV('${escJs(a.vid)}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer">
+          <div><div style="font-size:13px;font-weight:600">${esc(a.vname)}</div><div style="font-size:11px;color:var(--text3)">${esc(a.label)}</div></div>
           <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</div>
         </div>`).join('')}
       </div>`;
@@ -5082,10 +5084,10 @@ function renderDash(el){
       h+=`<div style="margin-bottom:16px">
         <div class="sec" style="margin-bottom:8px">🔑 EN ALQUILER AHORA (${activeRentals.length})</div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          ${activeRentals.map(b=>`<div onclick="openV('${b.vid}')" style="background:var(--bg2);border:1px solid #F59E0B44;border-left:4px solid var(--amber);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+          ${activeRentals.map(b=>`<div onclick="openV('${escJs(b.vid)}')" style="background:var(--bg2);border:1px solid #F59E0B44;border-left:4px solid var(--amber);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName)+' · ':''}hasta ${b.endDate}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName)+' · ':''}hasta ${esc(b.endDate)}</div>
             </div>
             <div style="text-align:right">
               <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
@@ -5336,7 +5338,7 @@ function renderList(el){
     el.innerHTML=`<div class="anim">
   <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
     <div style="flex:1;position:relative">
-      <input type="text" id="searchFlotaInput" placeholder="🔍  Buscar vehículo..." value="${_searchFlota}"
+      <input type="text" id="searchFlotaInput" placeholder="🔍  Buscar vehículo..." value="${esc(_searchFlota)}"
         oninput="_searchFlota=this.value;renderListBody()"
         style="padding-left:14px;font-size:14px"/>
     </div>
@@ -5360,7 +5362,7 @@ function renderList(el){
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TIPO DE VEHÍCULO</div>
       <div class="pills">
         <div class="pill" id="vtp-all" onclick="setFlotaVtype('')" style="border-color:${!_filterVtype?'var(--amber)':'var(--border2)'};background:${!_filterVtype?'#F59E0B22':'transparent'};color:${!_filterVtype?'var(--amber)':'var(--text3)'}">Todos</div>
-        ${VTYPES.map(t=>`<div class="pill" id="vtp-${t.id}" onclick="setFlotaVtype('${t.id}')" style="border-color:${_filterVtype===t.id?'var(--amber)':'var(--border2)'};background:${_filterVtype===t.id?'#F59E0B22':'transparent'};color:${_filterVtype===t.id?'var(--amber)':'var(--text3)'}">${t.icon} ${t.label}</div>`).join('')}
+        ${VTYPES.map(t=>`<div class="pill" id="vtp-${t.id}" onclick="setFlotaVtype('${escJs(t.id)}')" style="border-color:${_filterVtype===t.id?'var(--amber)':'var(--border2)'};background:${_filterVtype===t.id?'#F59E0B22':'transparent'};color:${_filterVtype===t.id?'var(--amber)':'var(--text3)'}">${t.icon} ${t.label}</div>`).join('')}
       </div>
     </div>
   </div>
@@ -5429,7 +5431,7 @@ function renderCal(v){
         let bg='transparent',bd='var(--border)';
         if(s==='maintenance'){bg='rgba(59,130,246,0.08)';bd='rgba(59,130,246,0.4)';}
         else if(s==='blocked'){bg='rgba(239,68,68,0.08)';bd='rgba(239,68,68,0.4)';}
-        const fn=s==='rented'?`showBooking('${k}')`:`toggleDay('${k}')`;
+        const fn=s==='rented'?`showBooking('${escJs(k)}')`:`toggleDay('${escJs(k)}')`;
         const lineHtml=bars.slice(0,3).map((b,i)=>{
           let lp=0,rp=0;
           if(b.isStart){const t=b.startTime.split(':');lp=Math.round((parseInt(t[0])*60+parseInt(t[1]||0))/(24*60)*100);}
@@ -5445,7 +5447,7 @@ function renderCal(v){
       }).join('')}
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
-      ${Object.entries(MAN_ST).map(([k,cv])=>`<div onclick="setManSel('${k}')" style="font-size:9px;padding:3px 7px;border-radius:10px;border:1.5px solid ${calSel===k?cv.border:cv.border+'40'};background:${calSel===k?cv.color:'transparent'};color:${cv.text};cursor:pointer;font-weight:700">${cv.label}</div>`).join('')}
+      ${Object.entries(MAN_ST).map(([k,cv])=>`<div onclick="setManSel('${escJs(k)}')" style="font-size:9px;padding:3px 7px;border-radius:10px;border:1.5px solid ${calSel===k?cv.border:cv.border+'40'};background:${calSel===k?cv.color:'transparent'};color:${cv.text};cursor:pointer;font-weight:700">${cv.label}</div>`).join('')}
     </div>
   </div>`;
 
@@ -5633,15 +5635,15 @@ function showBooking(k,_overrideId){
           Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}
         </div>`:''}
       </div>
-      <button onclick="restoreBooking('${b.id}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:7px;padding:6px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩ Restablecer</button>
+      <button onclick="restoreBooking('${escJs(b.id)}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:7px;padding:6px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩ Restablecer</button>
     </div>`:''}
     <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${b.startTime}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${b.startDate}</div></div>
-        <div><div class="lbl">FIN</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${b.endTime}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${b.endDate}</div></div>
+        <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.startTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(b.startDate)}</div></div>
+        <div><div class="lbl">FIN</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.endTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(b.endDate)}</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span class="pb ${p?.cls||''}">${p?.icon||''} ${p?.label||b.platform}</span>
+        <span class="pb ${p?.cls||''}">${p?.icon||''} ${esc(p?.label||b.platform)}</span>
         <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">${dur} día${dur!==1?'s':''}</span>
         ${(()=>{
           const _fi=b.finance||[];
@@ -5723,7 +5725,7 @@ function showBooking(k,_overrideId){
         </div>`:''}
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
           <input id="abonoInput_${b.id}" type="number" min="0" step="0.01" value="${_abono||''}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
-          <button onclick="setBookingAbono('${b.id}')" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
+          <button onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -5772,19 +5774,19 @@ function showBooking(k,_overrideId){
       </div>`;
     })()}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button onclick="toggleDelivery('${b.id}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.delivered?'#3B82F620':'var(--bg3)'};color:${b.delivered?'var(--blue)':'var(--text2)'};border:1.5px solid ${b.delivered?'#3B82F640':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.delivered?'🚗 Entregado ✓':'🚗 Marcar entregado'}</button>
-      <button onclick="toggleReturn('${b.id}')" style="background:${b.returned?'#10B98120':'var(--bg3)'};color:${b.returned?'var(--green)':'var(--text2)'};border:1.5px solid ${b.returned?'#10B98140':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.returned?'✅ Devuelto ✓':'🔑 Marcar devuelto'}</button>
+      <button onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.delivered?'#3B82F620':'var(--bg3)'};color:${b.delivered?'var(--blue)':'var(--text2)'};border:1.5px solid ${b.delivered?'#3B82F640':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.delivered?'🚗 Entregado ✓':'🚗 Marcar entregado'}</button>
+      <button onclick="toggleReturn('${escJs(b.id)}')" style="background:${b.returned?'#10B98120':'var(--bg3)'};color:${b.returned?'var(--green)':'var(--text2)'};border:1.5px solid ${b.returned?'#10B98140':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.returned?'✅ Devuelto ✓':'🔑 Marcar devuelto'}</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button onclick="togglePayStatus('${b.id}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.paid?'#10B98120':'#F59E0B20'};color:${b.paid?'var(--green)':'var(--amber)'};border:1.5px solid ${b.paid?'#10B98140':'#F59E0B40'};border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">${b.paid?'✅ Cobrado':'⏳ Marcar cobrado'}</button>
-      <button onclick="editBooking('${b.id}')" style="background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar</button>
-      <button class="btn-d" onclick="deleteBooking('${b.id}');closeSheet()">🗑 Eliminar</button>
+      <button onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.paid?'#10B98120':'#F59E0B20'};color:${b.paid?'var(--green)':'var(--amber)'};border:1.5px solid ${b.paid?'#10B98140':'#F59E0B40'};border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">${b.paid?'✅ Cobrado':'⏳ Marcar cobrado'}</button>
+      <button onclick="editBooking('${escJs(b.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar</button>
+      <button class="btn-d" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">🗑 Eliminar</button>
     </div>
-    ${!b.cancelled?`<button onclick="openCancelBooking('${b.id}')" style="width:100%;background:#EF444415;color:var(--red);border:1.5px solid #EF444435;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">🚫 Cancelar alquiler</button>`:''}
+    ${!b.cancelled?`<button onclick="openCancelBooking('${escJs(b.id)}')" style="width:100%;background:#EF444415;color:var(--red);border:1.5px solid #EF444435;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">🚫 Cancelar alquiler</button>`:''}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <button onclick="closeSheet();openContractForm('${v.id}','${b.id}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Contrato</button>
-      <button onclick="generateReceiptPDF('${b.id}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🧾 Recibo</button>
-      <button onclick="closeSheet();setTimeout(function(){openExtendBooking('${b.id}');},200)" style="background:#3B82F620;color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📅 Ampliar</button>
+      <button onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Contrato</button>
+      <button onclick="generateReceiptPDF('${escJs(b.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🧾 Recibo</button>
+      <button onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)" style="background:#3B82F620;color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📅 Ampliar</button>
     </div>
     </div>`);
 }
@@ -5797,7 +5799,7 @@ function openCancelBooking(bookingId){
   openSheet(`
     <div class="stitle">🚫 Cancelar alquiler</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:18px">
-      ${b.clientName?'<strong style="color:var(--text2)">'+b.clientName+'</strong> · ':''} ${b.startDate} → ${b.endDate}
+      ${b.clientName?'<strong style="color:var(--text2)">'+esc(b.clientName)+'</strong> · ':''} ${esc(b.startDate)} → ${esc(b.endDate)}
     </div>
 
     <div class="lbl">¿QUIÉN CANCELA?</div>
@@ -5836,7 +5838,7 @@ function openCancelBooking(bookingId){
     </div>
 
     <div style="height:6px"></div>
-    <button onclick="submitCancelBooking('${bookingId}')"
+    <button onclick="submitCancelBooking('${escJs(bookingId)}')"
       style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px">
       🚫 Confirmar cancelación
     </button>
@@ -5971,15 +5973,15 @@ function editBooking(id){
   const dur=daysBetween(b.startDate,b.endDate);
   const isFurgEdit=(v.vehicle_type||'turismo').startsWith('l');
   closeSheet();
-  openSheet(`<div class="stitle">✏️ Editar alquiler</div><div class="ssub">${b.startDate} → ${b.endDate}</div>
+  openSheet(`<div class="stitle">✏️ Editar alquiler</div><div class="ssub">${esc(b.startDate)} → ${esc(b.endDate)}</div>
     <div class="fg"><label class="lbl">VEHÍCULO</label>
       <select id="rNewVehicle" style="background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;width:100%">
-        ${activeV.map(vx=>`<option value="${vx.id}"${vx.id===v.id?' selected':''}>${vx.name} · ${vx.plate}</option>`).join('')}
+        ${activeV.map(vx=>`<option value="${esc(vx.id)}"${vx.id===v.id?' selected':''}>${esc(vx.name)} · ${esc(vx.plate)}</option>`).join('')}
       </select>
     </div>
     <div class="lbl">PLATAFORMA</div>
     <div class="plat-opts">
-      ${PLAT_QUICK.map(k=>{const p=PLATS[k];return `<div class="plat-opt${k===_plat?' sel':''}" id="po_${k}" onclick="selPlat('${k}')"><div style="font-size:24px;margin-bottom:6px">${p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${p.label}</div></div>`;}).join('')}
+      ${PLAT_QUICK.map(k=>{const p=PLATS[k];return `<div class="plat-opt${k===_plat?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px">${p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${p.label}</div></div>`;}).join('')}
     </div>
     <input id="platCustom" type="text" placeholder="Otra fuente (Wallapop, Instagram...)" autocomplete="off"
       value="${(!PLATS[_plat]&&_plat!=='sinapp')?_plat:''}"
@@ -5988,13 +5990,13 @@ function editBooking(id){
     <div class="lbl">PRECIO/DÍA (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">base para cálculo por horas</span></div>
     <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" value="${b.priceDay||''}" step="0.01" inputmode="decimal" placeholder="${(v.vehicle_type||'turismo').startsWith('l')?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="lbl">INICIO</div>
-    <div class="r2 fg"><input type="date" id="rSD" value="${b.startDate}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${b.startTime}" oninput="_recalcRentalExtras()"/></div>
+    <div class="r2 fg"><input type="date" id="rSD" value="${esc(b.startDate)}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(b.startTime)}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">FIN</div>
-    <div class="r2 fg"><input type="date" id="rED" value="${b.endDate}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${b.endTime}" oninput="_recalcRentalExtras()"/></div>
+    <div class="r2 fg"><input type="date" id="rED" value="${esc(b.endDate)}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(b.endTime)}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">IMPORTE ALQUILER (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
     <div style="position:relative;margin-bottom:10px"><input type="number" id="rAmt" value="${b.amount}" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="lbl">FIANZA / DEPÓSITO (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">reembolsable</span></div>
-    <div style="position:relative;margin-bottom:14px"><input type="number" id="rFianza" value="${b.fianza||''}" step="0.01" inputmode="decimal" placeholder="0" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--blue);font-weight:700;font-family:var(--mono)">€</span></div>
+    <div style="position:relative;margin-bottom:14px"><input type="number" id="rFianza" value="${esc(b.fianza||'')}" step="0.01" inputmode="decimal" placeholder="0" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--blue);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="sec" style="margin-bottom:10px">KILÓMETROS</div>
     <div class="r2 fg">
       <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric" value="${b.kmStart||''}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
@@ -6004,12 +6006,12 @@ function editBooking(id){
     <input id="rCN" type="hidden" value="${esc(b.clientName||'')}"/>
     <input id="rCP" type="hidden" value="${esc(b.clientPhone||'')}"/>
     <input id="rCDNI" type="hidden" value="${esc(b.clientDni||'')}"/>
-    <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||'')}</div>
+    <div class="fg">${esc(_clPickerHtml('rClientPicker',b.clientName||''))}</div>
     ${b.clientName?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
         👤 ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}
       </div>
-      <button type="button" onclick="unlinkBookingClient('${b.id}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">✂️ Desvincular</button>
+      <button type="button" onclick="unlinkBookingClient('${escJs(b.id)}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">✂️ Desvincular</button>
     </div>`:'<div style="margin-bottom:8px"></div>'}
     <div class="r2 fg">
       <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
@@ -6040,7 +6042,7 @@ function editBooking(id){
       <span style="font-size:13px;font-weight:700">Total extras:</span>
       <span id="exTotalAmt" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">0,00 €</span>
     </div>
-    <button class="btn" onclick="submitEditBooking('${id}')">💾 Guardar cambios</button>
+    <button class="btn" onclick="submitEditBooking('${escJs(id)}')">💾 Guardar cambios</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
   // Pre-check extras already on the booking
@@ -6235,7 +6237,7 @@ function openNewRental(){
   openSheet(`<div class="stitle">Nuevo alquiler</div><div class="ssub">Plataforma, fechas, horas e importe</div>
     <div class="lbl">PLATAFORMA</div>
     <div class="plat-opts">
-      ${Object.entries(PLATS).map(([k,p])=>`<div class="plat-opt${k==='amovens'?' sel':''}" id="po_${k}" onclick="selPlat('${k}')"><div style="font-size:24px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">${k==='amovens'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#FB7AAC"></span>':k==='getaround'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#8B5CF6"></span>':p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${p.label}</div></div>`).join('')}
+      ${Object.entries(PLATS).map(([k,p])=>`<div class="plat-opt${k==='amovens'?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">${k==='amovens'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#FB7AAC"></span>':k==='getaround'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#8B5CF6"></span>':p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${p.label}</div></div>`).join('')}
     </div>
     <div class="lbl">PRECIO/DÍA (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">base para cálculo por horas</span></div>
     <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" step="0.01" inputmode="decimal" placeholder="${isFurgNR?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
@@ -6614,11 +6616,11 @@ function renderFin(v){
   <button class="btn" onclick="openAddEntry()" style="width:100%;margin-bottom:8px">＋ Añadir movimiento</button>
   <button class="btn-g" onclick="syncBookingExtensions()" style="width:100%;margin-bottom:8px;font-size:11px">🔄 Sincronizar ampliaciones</button>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-    <button onclick="openVehicleRecurring('${v.id}')" style="background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">🔄 Recurrentes</button>
-    <button onclick="openReport('${v.id}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">📄 Informe</button>
+    <button onclick="openVehicleRecurring('${escJs(v.id)}')" style="background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">🔄 Recurrentes</button>
+    <button onclick="openReport('${escJs(v.id)}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">📄 Informe</button>
   </div>
   <div class="pills">
-    ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setFF('${t}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
+    ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setFF('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
     <input type="month" value="${finMonth}" onchange="setFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
   </div>
   ${isD?'<div style="flex:1;overflow-y:auto;min-height:0;padding-right:4px">':''}`;
@@ -6632,7 +6634,7 @@ function renderFin(v){
           ${isA?`<span class="fb2" style="background:#F59E0B15;color:var(--amber)">🚗</span>`:''}
           <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${esc(e.category)}</span>
         </div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.date}${e.description?' · '+esc(e.description):''}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.date)}${e.description?' · '+esc(e.description):''}</div>
         ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">🔧 ${esc(e.maint.work||'')}${e.maint.km?' · '+e.maint.km.toLocaleString('es-ES')+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</div>`:''}
       </div>
       <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};white-space:nowrap;margin-left:8px">${isIn?'+':'-'}${fmt(e.amount)}</div>
@@ -6713,16 +6715,16 @@ function renderInfo(v){
   const fields=[['Tipo',isM?'En gestión':'Propio'],['Tipo vehículo',vtypeLabel(v.vehicle_type||'turismo')],['Nombre',v.name],['Matrícula',v.plate],['Modelo',v.model||'—'],['Año',v.year||'—'],['Combustible',v.fuel||'—'],['Km actuales',v.km?Number(v.km).toLocaleString('es-ES')+' km':'—'],['Km últ. mant.',v.maint_km?Number(v.maint_km).toLocaleString('es-ES')+' km'+(v.km?' ('+Number(Number(v.km)-Number(v.maint_km)).toLocaleString('es-ES')+' km desde entonces)':''):'—'],['Nº bastidor',v.chassis||'—'],['Precio compra',v.purchase_price?fmtF(Number(v.purchase_price)):'—'],['Año compra',v.purchase_year||'—'],['Notas',v.notes||'—']];
   let h=`<div>
   ${v.photo?`<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1.5px solid ${v.color}44;position:relative">
-    <img src="${v.photo}" style="width:100%;max-height:200px;object-fit:cover;display:block"/>
-    <button onclick="removeVPhoto('${v.id}')" style="position:absolute;top:8px;right:8px;background:#0008;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer">🗑 Quitar</button>
-  </div>`:`<button onclick="pickVPhoto('${v.id}')" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:1.5px dashed var(--border2);border-radius:12px;padding:20px;cursor:pointer;margin-bottom:16px;font-family:var(--font)">
+    <img src="${esc(v.photo)}" alt="" style="width:100%;max-height:200px;object-fit:cover;display:block"/>
+    <button onclick="removeVPhoto('${escJs(v.id)}')" style="position:absolute;top:8px;right:8px;background:#0008;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer">🗑 Quitar</button>
+  </div>`:`<button onclick="pickVPhoto('${escJs(v.id)}')" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:1.5px dashed var(--border2);border-radius:12px;padding:20px;cursor:pointer;margin-bottom:16px;font-family:var(--font)">
     <span style="font-size:24px">📷</span>
     <span style="font-size:13px;color:var(--text3);font-weight:600">Añadir foto del vehículo</span>
     <span style="font-size:11px;color:var(--text3)">Solo visible en la ficha</span>
   </button>`}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <div class="sec" style="margin-bottom:0">FICHA DEL VEHÍCULO</div>
-    <button onclick="openEditV('${v.id}')" style="background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">✏️ Editar</button>
+    <button onclick="openEditV('${escJs(v.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">✏️ Editar</button>
   </div>
   ${(()=>{const isD=window.innerWidth>=768;
   const curKm=Number(v.km)||0;const maintKm=Number(v.maint_km)||0;
@@ -6746,7 +6748,7 @@ function renderInfo(v){
     +'<div>'
     +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">KM ÚLTIMO MANT.</div>'
     +'<div style="display:flex;align-items:center;gap:5px">'
-    +'<input type="number" value="'+(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" onchange="saveMaintKm(\''+v.id+'\',this.value)" style="font-size:12px;padding:5px 6px;flex:1"/>'
+    +'<input type="number" value="'+(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" onchange="saveMaintKm(\''+esc(v.id)+'\',this.value)" style="font-size:12px;padding:5px 6px;flex:1"/>'
     +'<span style="font-size:10px;color:var(--text3)">km</span>'
     +'</div>'
     +(kmDiff!==null?'<div style="font-size:10px;margin-top:4px;color:'+kmColor+'">'+(kmExpired?'⚠️ Vencido (+'+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div style="font-size:10px;margin-top:3px;color:var(--text3)">Alerta a 10.000km</div>')
@@ -6754,7 +6756,7 @@ function renderInfo(v){
     // --- Date column ---
     +'<div>'
     +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">PRÓXIMA FECHA</div>'
-    +'<input type="date" value="'+maintDateVal+'" onchange="saveDate(\''+v.id+'\',\'maint_date\',this.value)" style="font-size:12px;padding:5px 6px;width:100%"/>'
+    +'<input type="date" value="'+maintDateVal+'" onchange="saveDate(\''+esc(v.id)+'\',\'maint_date\',this.value)" style="font-size:12px;padding:5px 6px;width:100%"/>'
     +(maintDays!==null?'<div style="font-size:10px;margin-top:4px;color:'+dateColor+'">'+(maintDateExpired?'⚠️ Fecha vencida':maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
     +'</div>'
     +'</div>'
@@ -6768,11 +6770,11 @@ function renderInfo(v){
       const urgent=days!==null&&days<=30;
       const expired=days!==null&&days<0;
       const color=expired?'var(--red)':urgent?'var(--amber)':'var(--text3)';
-      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+color+';margin-bottom:6px">'+label+'</div><input type="date" value="'+val+'" onchange="saveDate(\''+v.id+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+color+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
+      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+color+';margin-bottom:6px">'+label+'</div><input type="date" value="'+val+'" onchange="saveDate(\''+esc(v.id)+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+color+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
     }).join('')}
     ${maintKmCard}
   </div></div>`;
-  const fichaPanel='<div>'+fields.map(([k,val])=>'<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:12px"><div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);min-width:100px;padding-top:2px">'+k.toUpperCase()+'</div><div style="font-family:var(--mono);font-size:13px;color:var(--text2)">'+val+'</div></div>').join('')+'</div>';
+  const fichaPanel='<div>'+fields.map(([k,val])=>'<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:12px"><div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);min-width:100px;padding-top:2px">'+k.toUpperCase()+'</div><div style="font-family:var(--mono);font-size:13px;color:var(--text2)">'+esc(val)+'</div></div>').join('')+'</div>';
   if(isD)return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:16px">'+fichaPanel+alertsPanel+'</div>';
   return fichaPanel+'<div class="divider"></div>'+alertsPanel;
   })()}
@@ -6783,7 +6785,7 @@ function renderInfo(v){
     if(owner){
       return '<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">'
         +'<div>'
-        +'<div style="font-size:14px;font-weight:700;color:var(--text)">'+owner.name+'</div>'
+        +'<div style="font-size:14px;font-weight:700;color:var(--text)">'+esc(owner.name)+'</div>'
         +(owner.phone?'<div style="font-size:11px;color:var(--text3);margin-top:2px">📞 '+owner.phone+'</div>':'')
         +(owner.email?'<div style="font-size:11px;color:var(--text3);">✉️ '+owner.email+'</div>':'')
         +'</div>'
@@ -6791,9 +6793,9 @@ function renderInfo(v){
         +'</div>';
     }
     return '<div style="margin-bottom:16px">'
-      +'<select id="ownerAssign" onchange="assignOwner(\''+v.id+'\',this.value)" style="width:100%">'
+      +'<select id="ownerAssign" onchange="assignOwner(\''+esc(v.id)+'\',this.value)" style="width:100%">'
       +'<option value="">— Sin asignar —</option>'
-      +OW.map(o=>'<option value="'+o.id+'"'+(o.id===v.ownerId?' selected':'')+'>'+o.name+'</option>').join('')
+      +OW.map(o=>'<option value="'+esc(o.id)+'"'+(o.id===v.ownerId?' selected':'')+'>'+esc(o.name)+'</option>').join('')
       +'</select>'
       +(OW.length===0?'<div style="font-size:11px;color:var(--text3);margin-top:8px">Primero crea propietarios en la sección 👥</div>':'')
       +'</div>';
@@ -6802,7 +6804,7 @@ function renderInfo(v){
     <div style="font-size:12px;color:var(--text3);margin-bottom:12px">% del beneficio neto que va al negocio.</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <div style="position:relative;flex:1"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal" style="padding-right:36px"/><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--purple);font-weight:700;font-family:var(--mono)">%</span></div>
-      <button onclick="saveComm('${v.id}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px 18px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
+      <button onclick="saveComm('${escJs(v.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px 18px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${[10,20,25,30,35,40,50].map(p=>`<div onclick="document.getElementById('commInput').value=${p}" style="padding:5px 12px;border-radius:20px;border:1px solid #8B5CF640;background:#8B5CF610;color:var(--purple);font-size:12px;font-weight:700;cursor:pointer">${p}%</div>`).join('')}</div>`:''}
   <div class="divider"></div>
@@ -6844,14 +6846,14 @@ function renderInfo(v){
           +'</div>';
       }).join('')
       +'</div>'
-      +'<button onclick="dlMaintReport(\''+v.id+'\')" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">📄 Informe de mantenimientos</button>';
+      +'<button onclick="dlMaintReport(\''+esc(v.id)+'\')" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">📄 Informe de mantenimientos</button>';
   })()}
-  ${isM&&v.ownerId?`<button onclick="openMgmtContractForm('${v.ownerId}','${v.id}')" style="width:100%;background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Contrato de gestión</button>`:''}
-  <button onclick="exportExcel('${v.id}')" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar a Excel</button>
+  ${isM&&v.ownerId?`<button onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="width:100%;background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Contrato de gestión</button>`:''}
+  <button onclick="exportExcel('${escJs(v.id)}')" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar a Excel</button>
   <div style="height:8px"></div>
-  ${v.archived?`<button onclick="restoreV('${v.id}')" style="width:100%;background:transparent;color:var(--amber);border:1.5px solid ${v.color}60;border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">↩️ Reactivar vehículo</button>`:
-  `<button onclick="archiveV('${v.id}','${isM?'end':'sold'}')" style="width:100%;background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
-  <button class="btn-d" onclick="deleteV('${v.id}')">🗑 Eliminar definitivamente</button>
+  ${v.archived?`<button onclick="restoreV('${escJs(v.id)}')" style="width:100%;background:transparent;color:var(--amber);border:1.5px solid ${v.color}60;border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">↩️ Reactivar vehículo</button>`:
+  `<button onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="width:100%;background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
+  <button class="btn-d" onclick="deleteV('${escJs(v.id)}')">🗑 Eliminar definitivamente</button>
   </div>`;
   return h;
 }
@@ -6869,7 +6871,7 @@ function openEditV(id){
 
   const vtypeGrid=VTYPES.map(t=>{
     const active=t.id===(v.vehicle_type||'turismo');
-    return `<div onclick="selEditVehicleType('${t.id}')" id="evt_${t.id}" style="border-radius:8px;border:2px solid ${active?'var(--amber)':'var(--border2)'};background:${active?'#F59E0B15':'transparent'};padding:10px 6px;text-align:center;cursor:pointer">
+    return `<div onclick="selEditVehicleType('${escJs(t.id)}')" id="evt_${t.id}" style="border-radius:8px;border:2px solid ${active?'var(--amber)':'var(--border2)'};background:${active?'#F59E0B15':'transparent'};padding:10px 6px;text-align:center;cursor:pointer">
       <div style="font-size:18px">${t.icon}</div>
       <div style="font-size:11px;font-weight:700;color:${active?'var(--amber)':'var(--text3)'};margin-top:2px">${t.label}</div>
     </div>`;
@@ -7203,8 +7205,8 @@ function openBizReportPicker(){
   openSheet(`<div class="stitle">📄 Informe de negocio</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Elige un período o selecciona los meses</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-      ${presets.map(p=>`<div onclick="dlBizReport('${p.from}','${p.to}','${p.label}')" style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:12px;cursor:pointer;text-align:center" onmouseover="this.style.borderColor='var(--amber)';this.style.background='#F59E0B0A'" onmouseout="this.style.borderColor='var(--border2)';this.style.background='var(--bg3)'">
-        <div style="font-size:13px;font-weight:700">${p.label}</div>
+      ${presets.map(p=>`<div onclick="dlBizReport('${escJs(p.from)}','${escJs(p.to)}','${escJs(p.label)}')" style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:12px;cursor:pointer;text-align:center" onmouseover="this.style.borderColor='var(--amber)';this.style.background='#F59E0B0A'" onmouseout="this.style.borderColor='var(--border2)';this.style.background='var(--bg3)'">
+        <div style="font-size:13px;font-weight:700">${esc(p.label)}</div>
       </div>`).join('')}
     </div>
     <div style="height:1px;background:var(--border);margin-bottom:14px"></div>
@@ -7615,7 +7617,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     doc.text('Pág '+p+' / '+totalPages,W-mg,H-2.5,{align:'right'});
   }
 
-  _savePDF(doc,'Informe_DEIROS_'+periodLabel.replace(/ /g,'_')+'_'+now.toISOString().slice(0,10)+'.pdf');
+  _savePDF(doc,'Informe_DEIROS_'+periodLabel.replace(/ /g,'_')+'_'+ymd(now)+'.pdf');
   }catch(e){alert('Error al generar el informe de negocio:\n'+e.message+'\n'+(e.stack||'').slice(0,300));}
 }
 
@@ -7799,7 +7801,7 @@ function renderOwners(el){
     el.innerHTML=`<div class="anim">${isD?'<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start"><div>':''}
   <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
     <div style="flex:1">
-      <input type="text" id="searchOwnersInput" placeholder="🔍  Buscar propietario..." value="${_searchOwners}"
+      <input type="text" id="searchOwnersInput" placeholder="🔍  Buscar propietario..." value="${esc(_searchOwners)}"
         oninput="_searchOwners=this.value;renderOwnersBody()"
         style="font-size:14px"/>
     </div>
@@ -7869,8 +7871,8 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
     return `<div style="background:var(--bg2);border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="closeSheet();openV('${escJs(v.id)}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
-          <div style="font-size:15px;font-weight:800">${v.name}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${v.plate}${v.model?' · '+v.model:''}</div>
+          <div style="font-size:15px;font-weight:800">${esc(v.name)}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
           ${v.km?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📍 ${Number(v.km).toLocaleString('es-ES')} km</div>`:''}
         </div>
         <span style="font-size:10px;font-weight:700;padding:3px 8px;background:#8B5CF620;color:var(--purple);border-radius:20px">Com. ${comm}%</span>
@@ -7932,11 +7934,11 @@ function renderOwnerProfile(el){
   <div style="background:var(--bg2);border:1px solid #14B8A640;border-radius:14px;padding:22px;margin-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
       <div>
-        <div style="font-size:24px;font-weight:800;margin-bottom:6px">${owner.name}</div>
-        ${owner.dni?`<div style="font-size:13px;color:var(--text3);margin-bottom:3px">🪪 ${owner.dni}</div>`:''}
-        ${owner.phone?`<div style="font-size:13px;color:var(--text3);margin-bottom:3px">📞 ${owner.phone}</div>`:''}
-        ${owner.email?`<div style="font-size:13px;color:var(--text3)">✉️ ${owner.email}</div>`:''}
-        ${owner.iban?`<div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px"><span>🏦</span><span id="ibanDisplay" style="font-family:var(--mono)">${owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4)}</span><span onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${owner.iban}':'${owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4)}';" style="cursor:pointer;font-size:15px;padding:2px 6px;background:var(--bg3);border-radius:5px;border:1px solid var(--border2)">👁</span></div>`:''}
+        <div style="font-size:24px;font-weight:800;margin-bottom:6px">${esc(owner.name)}</div>
+        ${owner.dni?`<div style="font-size:13px;color:var(--text3);margin-bottom:3px">🪪 ${esc(owner.dni)}</div>`:''}
+        ${owner.phone?`<div style="font-size:13px;color:var(--text3);margin-bottom:3px">📞 ${esc(owner.phone)}</div>`:''}
+        ${owner.email?`<div style="font-size:13px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
+        ${owner.iban?`<div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px"><span>🏦</span><span id="ibanDisplay" style="font-family:var(--mono)">${esc(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}</span><span onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${escJs(owner.iban)}':'${escJs(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}';" style="cursor:pointer;font-size:15px;padding:2px 6px;background:var(--bg3);border-radius:5px;border:1px solid var(--border2)">👁</span></div>`:''}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="openOwnerReport('${escJs(owner.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Informe PDF</button>
@@ -7959,10 +7961,10 @@ function renderOwnerProfile(el){
   ${isD?'<div class="desk-fleet-grid">':''}
   ${vData.map(d=>`
   <div style="background:var(--bg2);border:1.5px solid ${d.v.color}44;border-radius:14px;padding:18px;${isD?'':'margin-bottom:14px'}">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;cursor:pointer" onclick="openV('${d.v.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;cursor:pointer" onclick="openV('${escJs(d.v.id)}')">
       <div>
-        <div style="font-size:18px;font-weight:800">${d.v.name}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${d.v.color};margin-top:2px">${d.v.plate}${d.v.model?' · '+d.v.model:''}</div>
+        <div style="font-size:18px;font-weight:800">${esc(d.v.name)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${d.v.color};margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
         ${d.v.km?`<div style="font-size:11px;color:var(--text3);margin-top:2px">📍 ${Number(d.v.km).toLocaleString('es-ES')} km</div>`:''}
       </div>
       <span style="font-size:11px;font-weight:700;padding:4px 10px;background:#8B5CF620;color:var(--purple);border-radius:20px">Com. ${d.comm}%</span>
@@ -8057,7 +8059,7 @@ function offerSaveLiquidacion(ownerId,month,amount){
       <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--green)">${fmt(amount)}</div>
       <div style="font-size:12px;color:var(--text3);margin-top:4px">${month}</div>
     </div>
-    <button class="btn" onclick="saveLiquidacion('${ownerId}','${month}',${amount});closeSheet();alert('✅ Liquidación guardada en el historial')">✅ Marcar como pagada</button>
+    <button class="btn" onclick="saveLiquidacion('${escJs(ownerId)}','${escJs(month)}',${amount});closeSheet();alert('✅ Liquidación guardada en el historial')">✅ Marcar como pagada</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cerrar sin registrar</button>`);
 }
@@ -8068,10 +8070,10 @@ function openOwnerReport(ownerId){
   const now=new Date();
   const defMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   openSheet(`<div class="stitle">📄 Informe de propietario</div>
-    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${o.name}</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}: ${vehicles.map(v=>v.name).join(', ')}</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${esc(o.name)}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}: ${esc(vehicles.map(v=>v.name).join(', '))}</div>
     <div class="fg"><label class="lbl">MES DEL INFORME</label><input type="month" id="repOwnerMonth" value="${defMonth}" style="font-size:16px"/></div>
-    <button class="btn" onclick="genOwnerReport('${ownerId}')">Ver informe</button>
+    <button class="btn" onclick="genOwnerReport('${escJs(ownerId)}')">Ver informe</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
@@ -8113,7 +8115,7 @@ function genOwnerReport(ownerId){
         <div style="font-size:16px;font-weight:800;color:#14B8A6">LIQUIDACIÓN PROPIETARIO</div>
         <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(o.name.toUpperCase())} · ${mLabel.toUpperCase()}</div>
       </div>
-      <button onclick="dlOwnerReport('${ownerId}','${month}')" style="margin-left:auto;background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
+      <button onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
       <!-- Owner info -->
@@ -8135,8 +8137,8 @@ function genOwnerReport(ownerId){
       <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #14B8A620">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
-            <div style="font-size:15px;font-weight:800">${d.v.name}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:#14B8A6;margin-top:2px">${d.v.plate}${d.v.model?' · '+d.v.model:''}</div>
+            <div style="font-size:15px;font-weight:800">${esc(d.v.name)}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:#14B8A6;margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
           </div>
           <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#8B5CF620;color:var(--purple);border:1px solid #8B5CF640">Comisión ${d.comm}%</span>
         </div>
@@ -8158,12 +8160,12 @@ function genOwnerReport(ownerId){
         ${d.fins.filter(e=>e.type==='income').length?`
         <div style="margin-top:10px">
           <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">INGRESOS DEL MES</div>
-          ${d.fins.filter(e=>e.type==='income').map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${e.date} · ${e.category}</span><span style="font-family:var(--mono);color:var(--green);font-weight:700">${fmtE(e.amount)}</span></div>`).join('')}
+          ${d.fins.filter(e=>e.type==='income').map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${esc(e.date)} · ${esc(e.category)}</span><span style="font-family:var(--mono);color:var(--green);font-weight:700">${fmtE(e.amount)}</span></div>`).join('')}
         </div>`:''}
       </div>`).join('')}
       <!-- Total to pay -->
       <div style="background:#14B8A615;border:2px solid #14B8A6;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">
-        <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#14B8A6;margin-bottom:8px">TOTAL A PAGAR A ${o.name.toUpperCase()}</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#14B8A6;margin-bottom:8px">TOTAL A PAGAR A ${esc(o.name.toUpperCase())}</div>
         <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--amber)">${fmtE(totOwner)}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px">${mLabel} · ${vehicles.length} vehículo${vehicles.length!==1?'s':''}</div>
       </div>
@@ -8251,12 +8253,12 @@ function buildDashRightPanel(activeV){
   const bkRow=(b)=>{const p=PLATS[b.platform];return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
     <div style="width:4px;height:38px;border-radius:2px;background:${b.vcolor};flex-shrink:0"></div>
     <div style="flex:1;min-width:0">
-      <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.vname}</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${b.startDate}${b.clientName&&!isD?' · '+b.clientName:''}</div>
+      <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.vname)}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(b.startDate)}${esc(b.clientName&&!isD?' · '+b.clientName:'')}</div>
     </div>
     <div style="text-align:right;flex-shrink:0">
       <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmtF(b.amount)}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:1px">${p?p.label:b.platform}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:1px">${esc(p?p.label:b.platform)}</div>
     </div>
   </div>`;};
   const upcomingPanel=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;${isD?'flex:1;min-height:0;':'margin-bottom:16px'}">
@@ -8308,8 +8310,8 @@ function buildFlotaRightPanel(){
       ${activeV.map(v=>{const vI=tInc(v),vE=tExp(v),vP=vI-vE;return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openV('${escJs(v.id)}')">
         <div style="width:5px;height:40px;border-radius:3px;background:${v.color};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.name}</div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${v.plate} · ${tDays(v)}d</div>
+          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${esc(v.plate)} · ${tDays(v)}d</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmt(vI)}</div>
@@ -8368,8 +8370,8 @@ function renderAgendaBody(){
     <tbody>
     ${activeV.map(v=>`<tr onclick="openV('${escJs(v.id)}')" style="cursor:pointer">
       <td style="padding:3px 6px;position:sticky;left:0;background:var(--bg2);z-index:1;border-bottom:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px">${v.name}</div>
-        <div style="font-family:var(--mono);font-size:9px;color:${v.color}">${v.plate}</div>
+        <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px">${esc(v.name)}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:${v.color}">${esc(v.plate)}</div>
       </td>
       ${days.map(d=>{
         const key=agY+'-'+String(agM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
@@ -8416,7 +8418,7 @@ function renderAgenda(el){
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TIPO DE VEHÍCULO</div>
         <div class="pills">
           <div class="pill" id="agtp-all" onclick="setAgendaVtype('')" style="border-color:${!_agFilterVtype?'var(--amber)':'var(--border2)'};background:${!_agFilterVtype?'#F59E0B22':'transparent'};color:${!_agFilterVtype?'var(--amber)':'var(--text3)'}">Todos</div>
-          ${VTYPES.map(t=>`<div class="pill" id="agtp-${t.id}" onclick="setAgendaVtype('${t.id}')" style="border-color:var(--border2);background:transparent;color:var(--text3)">${t.icon} ${t.label}</div>`).join('')}
+          ${VTYPES.map(t=>`<div class="pill" id="agtp-${t.id}" onclick="setAgendaVtype('${escJs(t.id)}')" style="border-color:var(--border2);background:transparent;color:var(--text3)">${t.icon} ${t.label}</div>`).join('')}
         </div>
       </div>
     </div>
@@ -8469,7 +8471,7 @@ function renderRentals(el){
             ${platBadge(b)}
           </div>
           <div style="font-size:12px;color:var(--text2);font-weight:600">${esc(b.clientName||'Sin cliente')}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px">${b.startDate} → ${b.endDate} · ${dur}d</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px">${esc(b.startDate)} → ${esc(b.endDate)} · ${dur}d</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-family:var(--mono);font-size:17px;font-weight:800;color:var(--green)">${fmtF(b.amount||0)}</div>
@@ -8517,7 +8519,7 @@ function renderRentals(el){
         <div style="width:4px;height:30px;border-radius:2px;background:${v.color};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)} <span style="font-weight:500;color:var(--text3)">· ${esc(b.clientName||'—')}</span></div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${b.endDate} · ${dur}d</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(b.endDate)} · ${dur}d</div>
         </div>
         <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text2);flex-shrink:0">${fmtF(b.amount||0)}</div>
       </div>`;
@@ -8574,15 +8576,15 @@ function renderContracts(el){
       [...QT].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).forEach(q=>{
         const v=V.find(v=>v.id===q.vehicleId);
         const col=statColor[q.status]||'var(--text3)';
-        h+=`<div onclick="_quoteEditId='${q.id}';_contractsTab='presupuestos';showQuoteDetailInContracts()" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
+        h+=`<div onclick="_quoteEditId='${escJs(q.id)}';_contractsTab='presupuestos';showQuoteDetailInContracts()" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${q.num||'—'}</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(q.num||'—')}</div>
             <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${statLabel[q.status]||q.status}</div>
           </div>
-          <div style="font-weight:700;font-size:14px;margin-bottom:4px">${v?v.name+' · '+v.plate:'Vehículo no encontrado'}</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(v?v.name+' · '+v.plate:'Vehículo no encontrado')}</div>
           <div style="font-size:12px;color:var(--text3)">${q.startDate||'—'} → ${q.endDate||'—'} · ${q.dur||0} días</div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-            <div style="font-size:11px;color:var(--text3)">${q.clientName||'Sin cliente'}</div>
+            <div style="font-size:11px;color:var(--text3)">${esc(q.clientName||'Sin cliente')}</div>
             <div style="font-family:var(--mono);font-size:17px;font-weight:800;color:var(--green)">${fmtF(q.totalAmount||0)}</div>
           </div>
         </div>`;
@@ -8650,12 +8652,12 @@ function _renderWizardStep(){
       const today=todayStr();
       const activeB=(v.bookings||[]).find(b=>b.startDate<=today&&b.endDate>=today);
       const nextB=(v.bookings||[]).filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-      const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${activeB.clientName||'cliente'}</span>`:nextB?`<span class="chip chip-blue">Próx. ${nextB.startDate}</span>`:`<span class="chip chip-gray">Disponible</span>`;
-      h+=`<div onclick="_ctWizVid='${v.id}';_ctWizStep=2;_renderWizardStep()" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
+      const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Próx. ${nextB.startDate}</span>`:`<span class="chip chip-gray">Disponible</span>`;
+      h+=`<div onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
         <div style="width:5px;height:40px;border-radius:3px;background:${v.color};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:800;font-size:14px">${v.name}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${v.color}">${v.plate}${v.model?' · '+v.model:''}</div>
+          <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${v.color}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
         </div>
         <div>${statusTxt}</div>
         <div style="color:var(--text3);font-size:18px">›</div>
@@ -8669,15 +8671,15 @@ function _renderWizardStep(){
     const v=V.find(x=>x.id===_ctWizVid);if(!v){_ctWizStep=1;_renderWizardStep();return;}
     const bks=(v.bookings||[]).sort((a,b)=>b.startDate.localeCompare(a.startDate)).slice(0,10);
     let h=`${bar}<div class="stitle">¿Para qué reserva?</div>
-    <div class="ssub">${v.name} · ${v.plate}</div>
+    <div class="ssub">${esc(v.name)} · ${esc(v.plate)}</div>
     <div style="display:flex;flex-direction:column;gap:8px">`;
     bks.forEach(b=>{
       const dur=daysBetween(b.startDate,b.endDate);
-      h+=`<div onclick="_ctWizBid='${b.id}';_ctWizStep=3;_renderWizardStep()" style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
+      h+=`<div onclick="_ctWizBid='${escJs(b.id)}';_ctWizStep=3;_renderWizardStep()" style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div style="font-weight:700;font-size:14px">${b.clientName||'Sin cliente'}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px">${b.startDate} → ${b.endDate} · ${dur}d</div>
+            <div style="font-weight:700;font-size:14px">${esc(b.clientName||'Sin cliente')}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px">${esc(b.startDate)} → ${esc(b.endDate)} · ${dur}d</div>
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmtF(b.amount||0)}</div>
@@ -8772,7 +8774,7 @@ function renderBiz(el){
   <button onclick="exportGlobalExcel()" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar todo a Excel</button>
   <button onclick="openBizReportPicker()" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">📄 Informe de negocio (PDF)</button>
   <div class="pills">
-    ${['all','income','expense'].map(t=>{const a=bizFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setBizFilter('${t}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
+    ${['all','income','expense'].map(t=>{const a=bizFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setBizFilter('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
     <input type="month" value="${bizMonth}" onchange="setBizFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
   </div>`;
 
@@ -8862,7 +8864,7 @@ function renderBiz(el){
     if(!sorted.length)return '';
     const maxVal=sorted[0][1];
     let s=`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px">`;
-    s+=`<div onclick="var el=document.getElementById('${toggleId}');el.style.display=el.style.display==='none'?'block':'none';this.querySelector('.chev').textContent=el.style.display==='none'?'▶':'▼'"
+    s+=`<div onclick="var el=document.getElementById('${escJs(toggleId)}');el.style.display=el.style.display==='none'?'block':'none';this.querySelector('.chev').textContent=el.style.display==='none'?'▶':'▼'"
       style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;background:var(--bg2)">
       <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text3)">${title}</span>
       <div style="display:flex;align-items:center;gap:8px">
@@ -8965,7 +8967,7 @@ function renderBizMgmt(){
     h+=`<div style="background:var(--bg2);border:1px solid #8B5CF630;border-radius:12px;padding:14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
-          <div style="font-size:14px;font-weight:700">${v.name} <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${v.plate}</span></div>
+          <div style="font-size:14px;font-weight:700">${esc(v.name)} <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${esc(v.plate)}</span></div>
           <div style="font-size:11px;color:var(--text3);margin-top:2px">Comisión ${Math.round(comm*100)}%${period?' · '+period:' · acumulado'}</div>
         </div>
         <div style="text-align:right">
@@ -9099,7 +9101,7 @@ function exportGlobalExcel(){
   ws4['!cols']=[{wch:10},{wch:14},{wch:14},{wch:14}];
   XLSX.utils.book_append_sheet(wb,ws4,'P&L Mensual');
 
-  XLSX.writeFile(wb,'DEIROS_Global_'+now.toISOString().slice(0,10)+'.xlsx');
+  XLSX.writeFile(wb,'DEIROS_Global_'+ymd(now)+'.xlsx');
 }
 
 
@@ -9149,7 +9151,7 @@ function renderArchiveBody(){
     const reason=v.archiveReason==='sold'?'🏷️ Vendido':v.archiveReason==='end'?'🤝 Fin de gestión':'📦 Archivado';
     h+=`<div class="arc-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div><div style="font-size:18px;font-weight:800;color:var(--text2)">${v.name}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${v.plate}${v.model?' · '+v.model:''}</div></div>
+        <div><div style="font-size:18px;font-weight:800;color:var(--text2)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
         <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);white-space:nowrap">${reason}${v.archivedDate?' · '+v.archivedDate:''}</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
@@ -9159,8 +9161,8 @@ function renderArchiveBody(){
       </div>
       <div style="display:flex;gap:8px">
         <button onclick="openV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">👁 Ver datos</button>
-        <button onclick="restoreV('${v.id}')" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">↩️ Reactivar</button>
-        <button onclick="deleteV('${v.id}')" style="width:40px;background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:9px;font-family:var(--font);font-size:14px;cursor:pointer">🗑</button>
+        <button onclick="restoreV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">↩️ Reactivar</button>
+        <button onclick="deleteV('${escJs(v.id)}')" style="width:40px;background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:9px;font-family:var(--font);font-size:14px;cursor:pointer">🗑</button>
       </div>
     </div>`;
   });
@@ -9170,7 +9172,7 @@ function renderArchive(el){
   if(!document.getElementById('archive-results')){
     el.innerHTML=`<div class="anim">
   <div style="margin-bottom:14px">
-    <input type="text" id="searchArchiveInput" placeholder="🔍  Buscar en archivo..." value="${_searchArchive}"
+    <input type="text" id="searchArchiveInput" placeholder="🔍  Buscar en archivo..." value="${esc(_searchArchive)}"
       oninput="_searchArchive=this.value;renderArchiveBody()"
       style="font-size:14px"/>
   </div>
@@ -9185,8 +9187,8 @@ function archiveV(id,reason){
   const icon=reason==='sold'?'🏷️':'🤝';
   openSheet(`<div class="stitle">${icon} ${label}</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">${reason==='sold'?'El vehículo se moverá al archivo conservando todos sus datos.':'Este vehículo dejará de estar en gestión. Se moverá al archivo conservando todos sus registros.'}</div>
-    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${v.name}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${v.plate}${v.model?' · '+v.model:''}</div></div>
-    <button onclick="confirmArchive('${id}','${reason}')" style="width:100%;background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">${icon} Confirmar — ${label}</button>
+    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
+    <button onclick="confirmArchive('${escJs(id)}','${escJs(reason)}')" style="width:100%;background:var(--amber);color:#000;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">${icon} Confirmar — ${label}</button>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmArchive(id,reason){
@@ -9198,8 +9200,8 @@ function deleteV(id){
   const v=V.find(v=>v.id===id);if(!v)return;
   openSheet(`<div class="stitle">🗑 Eliminar definitivamente</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">Se eliminarán todos los datos. Esta acción no se puede deshacer.</div>
-    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${v.name}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${v.plate}</div></div>
-    <button onclick="confirmDelete('${id}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar definitivamente</button>
+    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}</div></div>
+    <button onclick="confirmDelete('${escJs(id)}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar definitivamente</button>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmDelete(id){V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
@@ -9332,7 +9334,7 @@ function selVtype(t){
   const ownerSel=document.getElementById('vOwner');
   if(ownerRow)ownerRow.style.display=t==='managed'?'block':'none';
   if(ownerSel&&t==='managed'){
-    ownerSel.innerHTML='<option value="">— Sin asignar —</option>'+OW.map(o=>'<option value="'+o.id+'">'+o.name+'</option>').join('');
+    ownerSel.innerHTML='<option value="">— Sin asignar —</option>'+OW.map(o=>'<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>').join('');
   }
 }
 function submitV(){
@@ -9388,16 +9390,16 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
     const isSel=selKey&&d.key===selKey;const isCur=d.key===curMKey;
     const ih=d.inc>0?Math.max(3,Math.round(d.inc/maxVal*CH)):0;
     const eh=d.exp>0?Math.max(3,Math.round(d.exp/maxVal*CH)):0;
-    bars+=`<rect x="${gx}" y="${BL-ih}" width="${BW}" height="${Math.max(ih,0)}" rx="3" fill="${isSel?'#10B981':isCur?'#10B98199':'#10B98133'}" style="cursor:pointer" onclick="${onSelFn}('${d.key}')"/>`;
-    bars+=`<rect x="${gx+BW+BG}" y="${BL-eh}" width="${BW}" height="${Math.max(eh,0)}" rx="3" fill="${isSel?'#EF4444':isCur?'#EF444499':'#EF444433'}" style="cursor:pointer" onclick="${onSelFn}('${d.key}')"/>`;
-    bars+=`<rect x="${gx}" y="0" width="${gW}" height="${BL}" fill="transparent" style="cursor:pointer" onclick="${onSelFn}('${d.key}')"/>`;
+    bars+=`<rect x="${gx}" y="${BL-ih}" width="${BW}" height="${Math.max(ih,0)}" rx="3" fill="${isSel?'#10B981':isCur?'#10B98199':'#10B98133'}" style="cursor:pointer" onclick="${onSelFn}('${escJs(d.key)}')"/>`;
+    bars+=`<rect x="${gx+BW+BG}" y="${BL-eh}" width="${BW}" height="${Math.max(eh,0)}" rx="3" fill="${isSel?'#EF4444':isCur?'#EF444499':'#EF444433'}" style="cursor:pointer" onclick="${onSelFn}('${escJs(d.key)}')"/>`;
+    bars+=`<rect x="${gx}" y="0" width="${gW}" height="${BL}" fill="transparent" style="cursor:pointer" onclick="${onSelFn}('${escJs(d.key)}')"/>`;
     labels+=`<text x="${cx}" y="${svgH-2}" text-anchor="middle" font-size="9" fill="${isSel?'#F59E0B':isCur?'#94A3B8':'#4B5C76'}" font-weight="${isSel||isCur?700:400}" font-family="JetBrains Mono,monospace">${d.label}</text>`;
     if(isSel)labels+=`<circle cx="${cx}" cy="${BL+5}" r="2" fill="#F59E0B"/>`;
     if(d.inc>0||d.exp>0){const py=Math.max(3,Math.min(BL-2,BL-(d.profit/maxVal*CH)));pts.push({x:cx,y:py,profit:d.profit,key:d.key});}
   });
   let profSVG='';
   if(pts.length>1)profSVG=`<path d="${pts.map((p,i)=>(i===0?'M':'L')+p.x+','+p.y).join(' ')}" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.5"/>`;
-  pts.forEach(p=>{profSVG+=`<circle cx="${p.x}" cy="${p.y}" r="${p.key===selKey?4:2.5}" fill="${p.profit>=0?'#F59E0B':'#EF4444'}" stroke="${p.key===selKey?'#fff':'none'}" stroke-width="${p.key===selKey?1.5:0}" style="cursor:pointer" onclick="${onSelFn}('${p.key}')"/>`;});
+  pts.forEach(p=>{profSVG+=`<circle cx="${p.x}" cy="${p.y}" r="${p.key===selKey?4:2.5}" fill="${p.profit>=0?'#F59E0B':'#EF4444'}" stroke="${p.key===selKey?'#fff':'none'}" stroke-width="${p.key===selKey?1.5:0}" style="cursor:pointer" onclick="${onSelFn}('${escJs(p.key)}')"/>`;});
   const sk=selKey||curMKey;
   const selD=data.find(d=>d.key===sk)||{inc:0,exp:0,profit:0};
   const [sy,sm]=sk.split('-');
@@ -9532,9 +9534,9 @@ function openReport(vId){
   const v=V.find(x=>x.id===vId);if(!v)return;
   const now=new Date();
   const def=finMonth||(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'));
-  openSheet(`<div class="stitle">📄 Informe mensual</div><div class="ssub">${v.name} · ${v.plate}</div>
+  openSheet(`<div class="stitle">📄 Informe mensual</div><div class="ssub">${esc(v.name)} · ${esc(v.plate)}</div>
     <div class="fg"><label class="lbl">SELECCIONA MES</label><input type="month" id="repMonth" value="${def}" style="font-size:16px"/></div>
-    <button class="btn" onclick="genReport('${vId}')">Ver informe</button><div style="height:10px"></div>
+    <button class="btn" onclick="genReport('${escJs(vId)}')">Ver informe</button><div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function genReport(vId){
@@ -9556,7 +9558,7 @@ function genReport(vId){
   const exp=fins.filter(e=>e.type==='expense');
   function rows(list,color){
     if(!list.length)return`<div style="padding:12px 0;text-align:center;color:var(--text3);font-size:12px">Sin registros</div>`;
-    return list.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${esc(e.category)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${e.date}${e.description?' · '+esc(e.description):''}</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${color};white-space:nowrap">${fmtE(e.amount)}</div></div>`).join('');
+    return list.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${esc(e.category)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${esc(e.date)}${e.description?' · '+esc(e.description):''}</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${color};white-space:nowrap">${fmtE(e.amount)}</div></div>`).join('');
   }
   closeSheet();
   const ov=document.createElement('div');
@@ -9564,14 +9566,14 @@ function genReport(vId){
   ov.innerHTML=`
     <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
       <div onclick="document.getElementById('repOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
-      <div><div style="font-size:16px;font-weight:800;color:var(--amber)">INFORME MENSUAL</div><div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${v.name} · ${mLabel.toUpperCase()}</div></div>
-      <button onclick="dlReport('${vId}','${month}')" style="margin-left:auto;background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
+      <div><div style="font-size:16px;font-weight:800;color:var(--amber)">INFORME MENSUAL</div><div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(v.name)} · ${mLabel.toUpperCase()}</div></div>
+      <button onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
       <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid ${v.color}44">
-        <div style="font-size:20px;font-weight:800">${v.name}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${v.color};margin-top:2px">${v.plate}</div>
-        ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:4px">${v.model}${v.year?' · '+v.year:''}</div>`:''}
+        <div style="font-size:20px;font-weight:800">${esc(v.name)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+        ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:4px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
         <div style="margin-top:8px"><span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;${isM?'background:#8B5CF620;color:#8B5CF6;border:1px solid #8B5CF640':'background:#F59E0B15;color:#F59E0B;border:1px solid #F59E0B40'}">${isM?'EN GESTIÓN':'PROPIO'}</span></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
@@ -9920,7 +9922,57 @@ function _downloadBackup(obj,name){
 }
 function _listError(arr,label){
   if(!Array.isArray(arr))return '«'+label+'» tiene que ser una lista.';
-  if(arr.some(x=>!_isPlainObject(x)))return '«'+label+'» contiene un elemento que no es un objeto.';
+  for(let i=0;i<arr.length;i++){
+    if(!_isPlainObject(arr[i]))return '«'+label+'» nº '+(i+1)+' tiene que ser un objeto.';
+  }
+  return '';
+}
+function _expectStr(obj,key,label){
+  if(!(key in obj)||obj[key]==null||obj[key]==='')return '';
+  if(typeof obj[key]!=='string')return '«'+label+'» tiene que ser texto.';
+  return '';
+}
+function _expectNum(obj,key,label){
+  if(!(key in obj)||obj[key]==null||obj[key]==='')return '';
+  if(typeof obj[key]!=='number'||!isFinite(obj[key]))return '«'+label+'» tiene que ser un número.';
+  return '';
+}
+function _expectDate(obj,key,label){
+  if(!(key in obj)||obj[key]==null||obj[key]==='')return '';
+  if(typeof obj[key]!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(obj[key]))return '«'+label+'» tiene que ser una fecha AAAA-MM-DD.';
+  return '';
+}
+function _checkEntry(e,label){
+  if(!_isPlainObject(e))return '«'+label+'» tiene que ser un objeto.';
+  let err=_expectStr(e,'id',label+' · id')||_expectStr(e,'date',label+' · fecha')||_expectDate(e,'date',label+' · fecha')||_expectStr(e,'category',label+' · categoría')||_expectStr(e,'description',label+' · descripción')||_expectStr(e,'type',label+' · tipo')||_expectNum(e,'amount',label+' · importe');
+  if(err)return err;
+  if(e.type!=null&&e.type!==''&&e.type!=='income'&&e.type!=='expense')return '«'+label+' · tipo» tiene que ser ingreso o gasto.';
+  return '';
+}
+function _checkBooking(b,label){
+  if(!_isPlainObject(b))return '«'+label+'» tiene que ser un objeto.';
+  let err=_expectStr(b,'id',label+' · id')||_expectDate(b,'startDate',label+' · inicio')||_expectDate(b,'endDate',label+' · fin')||_expectStr(b,'clientName',label+' · cliente')||_expectStr(b,'clientPhone',label+' · teléfono')||_expectStr(b,'clientDni',label+' · DNI')||_expectStr(b,'notes',label+' · notas')||_expectStr(b,'platform',label+' · plataforma')||_expectNum(b,'amount',label+' · importe');
+  if(err)return err;
+  if('finances' in b&&b.finances!=null){
+    if(!Array.isArray(b.finances))return '«'+label+' · finances» tiene que ser una lista.';
+    for(let i=0;i<b.finances.length;i++){err=_checkEntry(b.finances[i],label+' · finances nº '+(i+1));if(err)return err;}
+  }
+  if('extras' in b&&b.extras!=null&&!Array.isArray(b.extras))return '«'+label+' · extras» tiene que ser una lista.';
+  return '';
+}
+function _checkVehicle(v,label){
+  if(!_isPlainObject(v))return '«'+label+'» tiene que ser un objeto.';
+  let err=_expectStr(v,'id',label+' · id')||_expectStr(v,'name',label+' · nombre')||_expectStr(v,'plate',label+' · matrícula')||_expectStr(v,'model',label+' · modelo')||_expectStr(v,'notes',label+' · notas')||_expectStr(v,'make',label+' · marca')||_expectStr(v,'fuel',label+' · combustible');
+  if(err)return err;
+  if('bookings' in v&&v.bookings!=null){
+    if(!Array.isArray(v.bookings))return '«'+label+' · bookings» tiene que ser una lista.';
+    for(let i=0;i<v.bookings.length;i++){err=_checkBooking(v.bookings[i],label+' · bookings nº '+(i+1));if(err)return err;}
+  }
+  if('finances' in v&&v.finances!=null){
+    if(!Array.isArray(v.finances))return '«'+label+' · finances» tiene que ser una lista.';
+    for(let i=0;i<v.finances.length;i++){err=_checkEntry(v.finances[i],label+' · finances nº '+(i+1));if(err)return err;}
+  }
+  if('calendar' in v&&v.calendar!=null&&!_isPlainObject(v.calendar))return '«'+label+' · calendar» tiene que ser un objeto.';
   return '';
 }
 function _validateBackup(data){
@@ -9928,11 +9980,53 @@ function _validateBackup(data){
   if('version' in data&&data.version!=null&&typeof data.version!=='number')return '«version» tiene que ser un número.';
   let err=_listError(data.vehicles,'vehicles');
   if(err)return err;
-  ['bizFinances','owners','clients','recurring','quotes'].forEach(k=>{
-    if(!err&&k in data&&data[k]!=null)err=_listError(data[k],k);
-  });
-  if(err)return err;
+  for(let i=0;i<data.vehicles.length;i++){err=_checkVehicle(data.vehicles[i],'vehicles nº '+(i+1));if(err)return err;}
+  const lists={bizFinances:'bizFinances',owners:'owners',clients:'clients',recurring:'recurring',quotes:'quotes'};
+  for(const k in lists){
+    if(!(k in data)||data[k]==null)continue;
+    err=_listError(data[k],k);
+    if(err)return err;
+  }
+  if(Array.isArray(data.bizFinances)){
+    for(let i=0;i<data.bizFinances.length;i++){err=_checkEntry(data.bizFinances[i],'bizFinances nº '+(i+1));if(err)return err;}
+  }
+  if(Array.isArray(data.owners)){
+    for(let i=0;i<data.owners.length;i++){
+      const o=data.owners[i];
+      err=_expectStr(o,'id','owners nº '+(i+1)+' · id')||_expectStr(o,'name','owners nº '+(i+1)+' · nombre')||_expectStr(o,'dni','owners nº '+(i+1)+' · DNI')||_expectStr(o,'iban','owners nº '+(i+1)+' · IBAN')||_expectStr(o,'phone','owners nº '+(i+1)+' · teléfono')||_expectStr(o,'email','owners nº '+(i+1)+' · email')||_expectStr(o,'notes','owners nº '+(i+1)+' · notas')||_expectStr(o,'address','owners nº '+(i+1)+' · domicilio');
+      if(err)return err;
+    }
+  }
+  if(Array.isArray(data.clients)){
+    for(let i=0;i<data.clients.length;i++){
+      const c=data.clients[i];
+      err=_expectStr(c,'id','clients nº '+(i+1)+' · id')||_expectStr(c,'name','clients nº '+(i+1)+' · nombre')||_expectStr(c,'dni','clients nº '+(i+1)+' · DNI')||_expectStr(c,'phone','clients nº '+(i+1)+' · teléfono')||_expectStr(c,'email','clients nº '+(i+1)+' · email')||_expectStr(c,'notes','clients nº '+(i+1)+' · notas')||_expectStr(c,'address','clients nº '+(i+1)+' · domicilio');
+      if(err)return err;
+      if('bookingIds' in c&&c.bookingIds!=null&&!Array.isArray(c.bookingIds))return '«clients nº '+(i+1)+' · bookingIds» tiene que ser una lista.';
+    }
+  }
+  if(Array.isArray(data.recurring)){
+    for(let i=0;i<data.recurring.length;i++){
+      const r=data.recurring[i];
+      err=_expectStr(r,'id','recurring nº '+(i+1)+' · id')||_expectStr(r,'name','recurring nº '+(i+1)+' · nombre')||_expectStr(r,'category','recurring nº '+(i+1)+' · categoría')||_expectStr(r,'notes','recurring nº '+(i+1)+' · notas')||_expectStr(r,'freq','recurring nº '+(i+1)+' · frecuencia')||_expectNum(r,'amount','recurring nº '+(i+1)+' · importe');
+      if(err)return err;
+    }
+  }
+  if(Array.isArray(data.quotes)){
+    for(let i=0;i<data.quotes.length;i++){
+      const q=data.quotes[i];
+      err=_expectStr(q,'id','quotes nº '+(i+1)+' · id')||_expectStr(q,'clientName','quotes nº '+(i+1)+' · cliente')||_expectStr(q,'notes','quotes nº '+(i+1)+' · notas')||_expectStr(q,'num','quotes nº '+(i+1)+' · número');
+      if(err)return err;
+      if('extras' in q&&q.extras!=null&&!Array.isArray(q.extras))return '«quotes nº '+(i+1)+' · extras» tiene que ser una lista.';
+    }
+  }
   if('company' in data&&data.company!=null&&!_isPlainObject(data.company))return '«company» tiene que ser un objeto.';
+  if(_isPlainObject(data.company)){
+    ['nombre','nif','direccion','telefono','email','ciudad'].forEach(k=>{
+      if(!err)err=_expectStr(data.company,k,'company · '+k);
+    });
+    if(err)return err;
+  }
   if('photos' in data&&data.photos!=null){
     if(!_isPlainObject(data.photos))return '«photos» tiene que ser un objeto.';
     for(const k in data.photos){
@@ -10112,7 +10206,7 @@ function openNotifSettings(){
     <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">ALERTAS ACTIVAS (${alerts.length})</div>
       ${alerts.length?alerts.slice(0,8).map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
-        <div><div style="font-size:12px;font-weight:600">${a.vname}</div><div style="font-size:10px;color:var(--text3)">${a.label}</div></div>
+        <div><div style="font-size:12px;font-weight:600">${esc(a.vname)}</div><div style="font-size:10px;color:var(--text3)">${esc(a.label)}</div></div>
         <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
       </div>`).join(''):'<div style="font-size:12px;color:var(--text3)">Sin alertas próximas 🎉</div>'}
     </div>
@@ -10365,15 +10459,15 @@ function renderQuotes(el){
   [...QT].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).forEach(q=>{
     const v=V.find(v=>v.id===q.vehicleId);
     const col=statColor[q.status]||'var(--text3)';
-    h+=`<div onclick="_quoteEditId='${q.id}';showQuoteDetail(document.getElementById('PC'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
+    h+=`<div onclick="_quoteEditId='${escJs(q.id)}';showQuoteDetail(document.getElementById('PC'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${q.num||'—'}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(q.num||'—')}</div>
         <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${statLabel[q.status]||q.status}</div>
       </div>
-      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${v?v.name+' · '+v.plate:'Vehículo no encontrado'}</div>
+      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(v?v.name+' · '+v.plate:'Vehículo no encontrado')}</div>
       <div style="font-size:12px;color:var(--text3)">${q.startDate||'—'} → ${q.endDate||'—'} · ${q.dur||0} días</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-        <div style="font-size:11px;color:var(--text3)">${q.clientName||'Sin cliente asignado'}</div>
+        <div style="font-size:11px;color:var(--text3)">${esc(q.clientName||'Sin cliente asignado')}</div>
         <div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">${fmtF(q.totalAmount||0)}</div>
       </div>
     </div>`;
@@ -10393,19 +10487,19 @@ function showQuoteDetail(el){
   // Header
   h+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
     <div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${q.num}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(q.num)}</div>
       <div style="font-weight:700;font-size:20px;margin-top:2px">Presupuesto</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:2px">${q.createdAt.slice(0,10)}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px">${ymd(new Date(q.createdAt))}</div>
     </div>
-    <div style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${col}20;color:${col}">${statLabel[q.status]||q.status}</div>
+    <div style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${col}20;color:${col}">${esc(statLabel[q.status]||q.status)}</div>
   </div>`;
   // Vehicle + dates
   h+=`<div style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:12px">
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:8px">VEHÍCULO Y FECHAS</div>
-    <div style="font-weight:700;font-size:15px">${v?v.name+' · '+v.plate:'—'}</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:6px">${q.startDate||'—'} ${q.startTime||''} → ${q.endDate||'—'} ${q.endTime||''}</div>
+    <div style="font-weight:700;font-size:15px">${esc(v?v.name+' · '+v.plate:'—')}</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:6px">${esc(q.startDate||'—')} ${esc(q.startTime||'')} → ${esc(q.endDate||'—')} ${esc(q.endTime||'')}</div>
     <div style="font-size:12px;color:var(--text3);margin-top:2px">Duración: <strong>${q.dur||0} días</strong></div>
-    ${q.clientName?'<div style="font-size:12px;color:var(--text3);margin-top:6px">Cliente: <strong>'+q.clientName+'</strong></div>':''}
+    ${q.clientName?'<div style="font-size:12px;color:var(--text3);margin-top:6px">Cliente: <strong>'+esc(q.clientName)+'</strong></div>':''}
     ${q.fianza?'<div style="font-size:12px;color:var(--amber);margin-top:4px">Fianza reembolsable: <strong>'+fmtF(q.fianza)+'</strong></div>':''}
   </div>`;
   // Price breakdown
@@ -10417,7 +10511,7 @@ function showQuoteDetail(el){
     </div>`;
   (q.extras||[]).forEach(ex=>{
     h+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:12px;color:var(--text3)">${ex.label}</span>
+      <span style="font-size:12px;color:var(--text3)">${esc(ex.label)}</span>
       <span style="font-family:var(--mono);font-size:12px">+${fmtF(ex.amount)}</span>
     </div>`;
   });
@@ -10428,22 +10522,22 @@ function showQuoteDetail(el){
   if(q.notes){
     h+=`<div style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:12px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:6px">OBSERVACIONES</div>
-      <div style="font-size:13px;color:var(--text2)">${q.notes}</div>
+      <div style="font-size:13px;color:var(--text2)">${esc(q.notes)}</div>
     </div>`;
   }
   // Actions
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
-  h+=`<button class="btn" onclick="generateQuotePDF('${q.id}')">📄 PDF</button>`;
+  h+=`<button class="btn" onclick="generateQuotePDF('${escJs(q.id)}')">📄 PDF</button>`;
   if(q.status!=='convertido'){
-    h+=`<button class="btn" onclick="convertQuoteToBooking('${q.id}')" style="background:var(--blue)">🚗 Convertir en alquiler</button>`;
+    h+=`<button class="btn" onclick="convertQuoteToBooking('${escJs(q.id)}')" style="background:var(--blue)">🚗 Convertir en alquiler</button>`;
   } else {
     h+=`<button class="btn-g" disabled>✅ Ya convertido</button>`;
   }
-  h+=`<button class="btn-g" onclick="openEditQuote('${q.id}')">✏️ Editar</button>`;
-  h+=`<button class="btn-g" onclick="openQuoteStatusMenu('${q.id}')">🏷️ Estado</button>`;
+  h+=`<button class="btn-g" onclick="openEditQuote('${escJs(q.id)}')">✏️ Editar</button>`;
+  h+=`<button class="btn-g" onclick="openQuoteStatusMenu('${escJs(q.id)}')">🏷️ Estado</button>`;
   h+='</div>';
   h+=`<button class="btn-g" onclick="_quoteEditId=null;renderQuotes(document.getElementById('PC'))" style="width:100%;margin-bottom:8px">← Volver</button>`;
-  h+=`<button onclick="deleteQuote('${q.id}')" style="width:100%;background:none;border:none;color:var(--red);font-size:13px;padding:8px;cursor:pointer">🗑️ Eliminar presupuesto</button>`;
+  h+=`<button onclick="deleteQuote('${escJs(q.id)}')" style="width:100%;background:none;border:none;color:var(--red);font-size:13px;padding:8px;cursor:pointer">🗑️ Eliminar presupuesto</button>`;
   h+='</div>';
   el.innerHTML=h;
 }
@@ -10461,7 +10555,7 @@ function openEditQuote(id){
 
 function _openQuoteForm(q){
   const today=todayStr();
-  const vOpts=V.filter(v=>v.active!==false).map(v=>`<option value="${v.id}" ${q&&q.vehicleId===v.id?'selected':''}>${v.name} · ${v.plate}</option>`).join('');
+  const vOpts=V.filter(v=>v.active!==false).map(v=>`<option value="${v.id}" ${q&&q.vehicleId===v.id?'selected':''}>${esc(v.name)} · ${esc(v.plate)}</option>`).join('');
 
   // Extras individuales — km y packs tienen su propia sección más abajo
   const EXTRAS_CAT=[
@@ -10521,7 +10615,7 @@ function _openQuoteForm(q){
           value="${q&&q.discount?q.discount:''}" oninput="_calcQuoteTotal()"/></div>
     </div>
     <div class="fg"><label class="lbl">NOMBRE DEL CLIENTE (opcional)</label>
-      <input id="qClient" value="${q?q.clientName||'':''}" placeholder="Nombre del cliente" autocomplete="off"/></div>
+      <input id="qClient" value="${esc(q?q.clientName||'':'')}" placeholder="Nombre del cliente" autocomplete="off"/></div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">⭐ SUPLEMENTOS</div>
     <div id="qExtrasSection">${extrasHtml}</div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">📦 BOLSAS DE KILÓMETROS</div>
@@ -10595,9 +10689,9 @@ function _openQuoteForm(q){
     }).join('')}</div>
     <div class="fg"><label class="lbl">FIANZA (€) <span style="font-size:9px;color:var(--text3)">reembolsable, no suma al total</span></label>
       <input type="number" id="qFianza" step="0.01" inputmode="decimal" placeholder="200"
-        value="${q&&q.fianza?q.fianza:''}"/></div>
+        value="${esc(q&&q.fianza?q.fianza:'')}"/></div>
     <div class="fg"><label class="lbl">OBSERVACIONES (aparecerán en el PDF)</label>
-      <input id="qNotes" value="${q?q.notes||'':''}" placeholder="Condiciones especiales, descuentos..." autocomplete="off"/></div>
+      <input id="qNotes" value="${esc(q?q.notes||'':'')}" placeholder="Condiciones especiales, descuentos..." autocomplete="off"/></div>
     <div id="qTotalBox" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">
       <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">Días:</span><span id="qDurOut" style="font-family:var(--mono);font-size:12px">—</span></div>
       <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">Km incluidos:</span><span id="qKmOut" style="font-family:var(--mono);font-size:12px;color:var(--blue)">—</span></div>
@@ -10848,7 +10942,7 @@ function openQuoteStatusMenu(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const statuses=[['pendiente','⏳','Pendiente','var(--amber)'],['aceptado','✅','Aceptado','var(--green)'],['rechazado','❌','Rechazado','var(--red)'],['convertido','🚗','Convertido','var(--blue)']];
   openSheet('<div class="stitle">🏷️ Cambiar estado</div>'
-    +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${id}','${s}')" style="width:100%;background:${q.status===s?col+'30':'var(--bg3)'};border:1.5px solid ${q.status===s?col:'var(--border2)'};color:${q.status===s?col:'var(--text2)'};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${icon} ${lbl}</button>`).join('')
+    +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')" style="width:100%;background:${q.status===s?col+'30':'var(--bg3)'};border:1.5px solid ${q.status===s?col:'var(--border2)'};color:${q.status===s?col:'var(--text2)'};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${icon} ${lbl}</button>`).join('')
     +'<button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
@@ -10970,8 +11064,8 @@ function generateQuotePDF(id){
   doc.setFillColor(242,240,250);
   doc.setDrawColor(200,190,225);
   doc.roundedRect(M,y,CW,20,2,2,'FD');
-  const cols=[['FECHA EMISI\u00d3N',q.createdAt.slice(0,10),M+3],
-              ['V\u00c1LIDO HASTA',(()=>{const d=new Date(q.createdAt);d.setDate(d.getDate()+15);return d.toISOString().slice(0,10);})(),M+52],
+  const cols=[['FECHA EMISI\u00d3N',ymd(new Date(q.createdAt)),M+3],
+              ['V\u00c1LIDO HASTA',(()=>{const d=new Date(q.createdAt);d.setDate(d.getDate()+15);return ymd(d);})(),M+52],
               ['DUR.',q.dur+' d\u00edas',M+107],
               ['REF.',q.num,M+135]];
   cols.forEach(([lbl,val,x])=>{
@@ -11148,7 +11242,7 @@ function generateQuotePDF(id){
   doc.setFont('helvetica','normal');doc.setTextColor(160,150,200);
   doc.text('Alquiler de Veh\u00edculos \u00b7 Madrid \u00b7 +34 613 44 78 01 \u00b7 info@deiros.es \u00b7 deiros.es',M+22,290);
   doc.setTextColor(130,120,170);
-  doc.text(q.num+' \u00b7 Emitido: '+q.createdAt.slice(0,10),W-M,290,{align:'right'});
+  doc.text(q.num+' \u00b7 Emitido: '+ymd(new Date(q.createdAt)),W-M,290,{align:'right'});
 
   // ══════════════════════════════════════════════════════════════════════════
   // PÁGINA 2 — Personaliza tu alquiler (packs + bolsas km)
