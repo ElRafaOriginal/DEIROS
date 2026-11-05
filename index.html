@@ -6344,6 +6344,18 @@ function proRataEntries(sd, ed, amt, platform, notes, bookingId){
   return entries;
 }
 
+// Devuelve el alquiler de v que se solapa con el rango dado (ignora devueltos/cancelados y excludeId)
+function _findBookingConflict(v,sd,st,ed,et,excludeId){
+  const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
+  return ((v&&v.bookings)||[]).find(b=>{
+    if(excludeId&&b.id===excludeId)return false;
+    if(b.returned)return false; // devuelto anticipadamente → disponible
+    if(b.cancelled||b.cancellation)return false; // cancelado → días libres
+    const bs=new Date(b.startDate+'T'+b.startTime),be=new Date(b.endDate+'T'+b.endTime);
+    return ns<be&&ne>bs;
+  });
+}
+
 function submitEditBooking(id){
   const v=gV();if(!v)return;
   const b=(v.bookings||[]).find(b=>b.id===id);if(!b)return;
@@ -6360,13 +6372,7 @@ function submitEditBooking(id){
   const movingVehicle=targetV.id!==v.id;
 
   // Check overlap in the target vehicle (excluding this booking)
-  const conflict=(targetV.bookings||[]).find(bk=>{
-    if(bk.id===id)return false;
-    if(bk.returned)return false;
-    if(bk.cancelled||bk.cancellation)return false;
-    const bs=new Date(bk.startDate+'T'+bk.startTime),be=new Date(bk.endDate+'T'+bk.endTime);
-    return ns<be&&ne>bs;
-  });
+  const conflict=_findBookingConflict(targetV,sd,st,ed,et,id);
   if(conflict){alert('Conflicto con alquiler en '+targetV.name+':\n'+conflict.startDate+' '+conflict.startTime+' → '+conflict.endDate+' '+conflict.endTime);return;}
 
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
@@ -6596,12 +6602,7 @@ function submitRental(){
   const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
   if(ne<=ns){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
-  const conflict=(v.bookings||[]).find(b=>{
-    if(b.returned)return false; // devuelto anticipadamente → disponible
-    if(b.cancelled||b.cancellation)return false; // cancelado → días libres
-    const bs=new Date(b.startDate+'T'+b.startTime),be=new Date(b.endDate+'T'+b.endTime);
-    return ns<be&&ne>bs;
-  });
+  const conflict=_findBookingConflict(v,sd,st,ed,et);
   if(conflict){alert('Conflicto con alquiler existente:\n'+conflict.startDate+' '+conflict.startTime+' → '+conflict.endDate+' '+conflict.endTime);return;}
   const bId=uid();
   if(!v.finances)v.finances=[];
@@ -11128,9 +11129,16 @@ function _saveQuote(){
   const start=document.getElementById('qStart')?.value;
   const end=document.getElementById('qEnd')?.value;
   if(!vId||!start||!end){alert('Selecciona vehículo y fechas.');return;}
+  const existing=_quoteEditId?QT.find(q=>q.id===_quoteEditId):null;
+  {
+    const _qv=V.find(x=>x.id===vId);
+    const _qSt=document.getElementById('qStartT')?.value||'09:00',_qEt=document.getElementById('qEndT')?.value||'09:00';
+    if(new Date(end+'T'+_qEt)<=new Date(start+'T'+_qSt)){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
+    const _qc=_findBookingConflict(_qv,start,_qSt,end,_qEt,existing?.bookingId);
+    if(_qc){alert('Conflicto con alquiler existente en '+(_qv?.name||'el vehículo')+':\n'+_qc.startDate+' '+_qc.startTime+' → '+_qc.endDate+' '+_qc.endTime+'\nEl presupuesto no se ha guardado.');return;}
+  }
   _calcQuoteTotal();
   const calc=window._qCalc||{};
-  const existing=_quoteEditId?QT.find(q=>q.id===_quoteEditId):null;
   const q={
     id:_quoteEditId||uid(),
     num:existing?.num||quoteNum(),
@@ -11195,6 +11203,8 @@ function deleteQuote(id){
 function convertQuoteToBooking(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const v=V.find(v=>v.id===q.vehicleId);if(!v)return;
+  const _cc=_findBookingConflict(v,q.startDate,q.startTime||'09:00',q.endDate,q.endTime||'09:00',q.bookingId);
+  if(_cc){alert('Conflicto con alquiler existente en '+(v.name||'el vehículo')+':\n'+_cc.startDate+' '+_cc.startTime+' → '+_cc.endDate+' '+_cc.endTime+'\nNo se ha creado el alquiler.');return;}
   if(!confirm('¿Convertir este presupuesto en un alquiler?\nSe creará el alquiler con los datos del presupuesto.'))return;
   if(!v.bookings)v.bookings=[];
   const bId=uid();
@@ -11219,6 +11229,15 @@ function convertQuoteToBooking(id){
     b.finance.push({id:uid(),type:'income',concept:ex.label,amount:ex.amount,date:q.startDate,_autoExtra:true});
   });
   v.bookings.push(b);
+  // Auto-link client (mismo patrón que el alta de alquiler)
+  if(q.clientName||q.clientDni){
+    const clientName=q.clientName||'',clientDni=q.clientDni||'',clientPhone=q.clientPhone||'';
+    const key=(clientDni||clientName).trim().toUpperCase();
+    let cl=CL.find(c=>c.dni&&c.dni.toUpperCase()===key||(c.name&&c.name.toUpperCase()===clientName.toUpperCase()&&!clientDni));
+    if(!cl){cl={id:uid(),name:clientName,dni:clientDni,phone:clientPhone,email:'',notes:'',rating:0,bookingIds:[]};CL.push(cl);}
+    if(!cl.bookingIds)cl.bookingIds=[];
+    if(!cl.bookingIds.includes(bId))cl.bookingIds.push(bId);
+  }
   q.status='convertido';
   q.bookingId=bId;
   save();
