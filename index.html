@@ -10806,7 +10806,7 @@ function _fvSearch(){
   pl.innerHTML=[['','Todos'],['t','Turismo'],['f','Furgoneta']].map(([k,l])=>{const a=_fvType===k;return `<div class="pill" onclick="_fvSetType('${k}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${l}</div>`;}).join('');
   if(!s||!e||e<s){res.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Elige un intervalo de fechas válido</div>';return;}
   const free=V.filter(v=>{
-    if(v.active===false)return false;
+    if(v.archived)return false;
     const van=(v.vehicle_type||'turismo').startsWith('l');
     if(_fvType==='t'&&van)return false;
     if(_fvType==='f'&&!van)return false;
