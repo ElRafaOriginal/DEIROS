@@ -10810,6 +10810,7 @@ function _fvSearch(){
     const van=(v.vehicle_type||'turismo').startsWith('l');
     if(_fvType==='t'&&van)return false;
     if(_fvType==='f'&&!van)return false;
+    if(_eachDate(s,e).some(k=>{const c=v.calendar&&v.calendar[k];return c==='maintenance'||c==='blocked';}))return false;
     return !(v.bookings||[]).some(b=>!b.returned&&!b.cancelled&&!b.cancellation&&b.startDate<=e&&b.endDate>=s);
   });
   if(!free.length){res.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">No hay vehículos libres en esas fechas</div>';return;}
