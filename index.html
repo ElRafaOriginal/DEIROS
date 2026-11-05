@@ -441,6 +441,9 @@ select option{background:var(--bg);}
   <div onclick="closeHamburger();nav('contracts')" class="hmenu-item" id="hni-contracts">
     <span class="hmenu-icon">📄</span><span class="hmenu-lbl">Contratos</span>
   </div>
+  <div onclick="closeHamburger();openFreeVehiclesSearch()" class="hmenu-item">
+    <span class="hmenu-icon">🔍</span><span class="hmenu-lbl">Coches libres</span>
+  </div>
   <div onclick="closeHamburger();nav('clients')" class="hmenu-item" id="hni-clients">
     <span class="hmenu-icon">👤</span><span class="hmenu-lbl">Clientes</span>
   </div>
@@ -5179,7 +5182,7 @@ function render(){
       else if(CV==='owners'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openAddOwner()">＋ Nuevo propietario</button>';
       else if(AV&&AT==='calendar')dA.innerHTML='<button class="desk-btn" onclick="openNewRental()">＋ Nuevo alquiler</button>';
       else if(AV&&AT==='finances')dA.innerHTML='<button class="desk-btn" onclick="openAddEntry()">＋ Movimiento</button>';
-      else if(CV==='quotes'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openNewQuote()">＋ Nuevo presupuesto</button>';
+      else if(CV==='quotes'&&!AV)dA.innerHTML='<button class="desk-btn-ghost" onclick="openFreeVehiclesSearch()">🔍 Coches libres</button><button class="desk-btn" onclick="openNewQuote()">＋ Nuevo presupuesto</button>';
       else if(CV==='analytics')dA.innerHTML='<button class="desk-btn" onclick="generateAnalyticsPDF()">📄 Informe PDF</button>';
       else dA.innerHTML='';
     }
@@ -10952,6 +10955,50 @@ function showQuoteDetail(el){
 function openNewQuote(){
   _quoteEditId=null;
   _openQuoteForm(null);
+}
+
+// ── Buscador de coches libres ──
+let _fvType='';
+function openFreeVehiclesSearch(){
+  const t=todayStr();
+  openSheet(`<div class="stitle">🔍 Coches libres</div>
+    <div class="r2">
+      <div class="fg"><label class="lbl">FECHA INICIO</label><input type="date" id="fvStart" value="${esc(t)}" onchange="_fvSearch()"/></div>
+      <div class="fg"><label class="lbl">FECHA FIN</label><input type="date" id="fvEnd" value="${esc(t)}" onchange="_fvSearch()"/></div>
+    </div>
+    <div class="pills" style="margin-bottom:12px" id="fvPills"></div>
+    <div id="fvRes"></div>`);
+  _fvType='';
+  _fvSearch();
+}
+function _fvSetType(t){_fvType=t;_fvSearch();}
+function _fvSearch(){
+  const s=document.getElementById('fvStart')?.value,e=document.getElementById('fvEnd')?.value;
+  const pl=document.getElementById('fvPills'),res=document.getElementById('fvRes');
+  if(!pl||!res)return;
+  pl.innerHTML=[['','Todos'],['t','Turismo'],['f','Furgoneta']].map(([k,l])=>{const a=_fvType===k;return `<div class="pill" onclick="_fvSetType('${k}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${l}</div>`;}).join('');
+  if(!s||!e||e<s){res.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Elige un intervalo de fechas válido</div>';return;}
+  const free=V.filter(v=>{
+    if(v.archived)return false;
+    const van=(v.vehicle_type||'turismo').startsWith('l');
+    if(_fvType==='t'&&van)return false;
+    if(_fvType==='f'&&!van)return false;
+    if(_eachDate(s,e).some(k=>{const c=v.calendar&&v.calendar[k];return c==='maintenance'||c==='blocked';}))return false;
+    return !(v.bookings||[]).some(b=>!b.returned&&!b.cancelled&&!b.cancellation&&b.startDate<=e&&b.endDate>=s);
+  });
+  if(!free.length){res.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">No hay vehículos libres en esas fechas</div>';return;}
+  res.innerHTML=free.map(v=>`<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">
+    <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">${esc(v.name)}</div>
+    <div style="font-size:11px;color:var(--text3)">${esc(v.plate||'')} · ${(v.vehicle_type||'turismo').startsWith('l')?'Furgoneta':'Turismo'}</div></div>
+    <button class="btn" onclick="_fvQuote('${escJs(v.id)}')">Presupuesto</button></div>`).join('');
+}
+function _fvQuote(vid){
+  const s=document.getElementById('fvStart').value,e=document.getElementById('fvEnd').value;
+  openNewQuote();
+  document.getElementById('qVehicle').value=vid;
+  document.getElementById('qStart').value=s;
+  document.getElementById('qEnd').value=e;
+  _loadQuoteExtrasUpdate();_calcQuoteTotal();
 }
 
 function openEditQuote(id){
