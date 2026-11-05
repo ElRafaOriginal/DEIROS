@@ -2392,7 +2392,7 @@ function openExtendBooking(bookingId){
   if(!_bv||!_bb)return;
   const today=todayStr();
   const todayM=today.slice(0,7);
-  const origEnd=_bb.endDate;
+  const origEnd=(typeof _bb.endDate==='string')?_bb.endDate:'';
   // Guardar en window para que _confirmExtend() los recupere al pulsar Confirmar
   window._extBookingId=bookingId;
   window._extOrigEnd=origEnd;
@@ -4842,6 +4842,7 @@ function _normEntry(e){
 }
 function _normBooking(b){
   if(!b||typeof b!=='object')return;
+  if(b.startDate==null)b.startDate='';if(b.endDate==null)b.endDate='';
   _normDate(b,'startDate');_normDate(b,'endDate');
   _normTime(b,'startTime');_normTime(b,'endTime');
   ['amount','priceDay','fianza','kmStart','kmEnd','kmContracted','deposit','abono'].forEach(k=>_normNum(b,k));
