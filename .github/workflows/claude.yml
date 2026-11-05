@@ -40,4 +40,6 @@ jobs:
           branch_prefix: "claude/"
           additional_permissions: |
             actions: read
-          claude_args: "--max-turns 15"
+          claude_args: |
+            --max-turns 15
+            --allowedTools "Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*)"
