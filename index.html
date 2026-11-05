@@ -3550,9 +3550,12 @@ function generateReceiptPDF(bookingId){
   y+=8;
 
   // Obtener extras para el desglose (b.extras tiene prioridad, fallback a b.finance._autoExtra)
-  const _pdfExtras=(b.extras||[]).length>0
+  const _pdfExtrasBase=(b.extras||[]).length>0
     ? b.extras
     : (b.finance||[]).filter(f=>f._autoExtra&&f.type==='income').map(f=>({label:f.concept,amount:f.amount}));
+  // Cobros de devolución (exceso de km / combustible faltante)
+  const _pdfReturnCharges=(b.finance||[]).filter(f=>f._returnCharge&&f.type==='income').map(f=>({label:f.concept,amount:f.amount}));
+  const _pdfExtras=_pdfExtrasBase.concat(_pdfReturnCharges);
 
   const _hasExtras=_pdfExtras.length>0;
 
