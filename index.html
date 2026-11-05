@@ -518,7 +518,7 @@ select option{background:var(--bg);}
 <script>
 window.onerror=function(msg,src,line,col,err){
   var ls=document.getElementById('loadingScreen');
-  if(ls)ls.innerHTML='<div style="text-align:center;padding:24px;max-width:380px;font-family:monospace"><div style="font-size:36px;margin-bottom:12px">🔴</div><div style="font-size:13px;font-weight:bold;color:#EF4444;margin-bottom:10px">ERROR JS</div><div style="font-size:11px;color:#F0F4FF;word-break:break-all;background:#1a1a2e;padding:12px;border-radius:8px;text-align:left"><b>Msg:</b> '+msg+'<br><b>Line:</b> '+line+'<br>'+(err?'<b>Stack:</b><br>'+(err.stack||'').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button onclick="location.reload()" style="margin-top:12px;background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer">🔄 Recargar</button></div>';
+  if(ls)ls.innerHTML='<div style="text-align:center;padding:24px;max-width:380px;font-family:monospace"><div style="font-size:36px;margin-bottom:12px">🔴</div><div style="font-size:13px;font-weight:bold;color:#EF4444;margin-bottom:10px">ERROR JS</div><div style="font-size:11px;color:#F0F4FF;word-break:break-all;background:#1a1a2e;padding:12px;border-radius:8px;text-align:left"><b>Msg:</b> '+String(msg==null?'':msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<br><b>Line:</b> '+String(line==null?'':line).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br>'+(err?'<b>Stack:</b><br>'+String(err.stack||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button onclick="location.reload()" style="margin-top:12px;background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer">🔄 Recargar</button></div>';
   return false;
 };
 window.addEventListener('unhandledrejection',function(e){window.onerror('Promise rejection: '+(e.reason&&e.reason.message||e.reason),'',0,0,e.reason);});
@@ -548,6 +548,9 @@ let _saveTimer=null;
 let _loadedOK=false;
 // rev del documento cuando se cargó. Los documentos antiguos, sin rev, valen 0.
 let _loadedRev=0;
+// Correcciones hechas solo en memoria. Mientras sea true no se sube, para no borrar el documento de la nube.
+let _normFixes=0;
+let _holdCloudWrite=false;
 // Recuento de la última carga o guardado correcto. Sirve para no pisar la nube con un estado vacío.
 let _cloudCounts={vehicles:0,movements:0};
 let _saveInFlight=false;
@@ -810,12 +813,12 @@ function openEditClient(id){
       <div class="fg"><label class="lbl">EMAIL</label><input id="eclEmail" type="email" value="${esc(cl.email||'')}" inputmode="email"/></div>
     </div>
     <div class="fg"><label class="lbl">DOMICILIO</label><input id="eclAddress" value="${esc(cl.address||'')}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="eclBirthdate" type="date" value="${esc(cl.birthdate||'')}"/></div>
+    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="eclBirthdate" type="date" value="${esc(safeDate(cl.birthdate||''))}"/></div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">🪪 PERMISO DE CONDUCIR</div>
     <div class="r2">
       <div class="fg"><label class="lbl">Nº PERMISO</label><input id="eclLicense" value="${esc(cl.license||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div class="fg"><label class="lbl">CADUCIDAD</label><input id="eclLicenseExp" type="date" value="${esc(cl.licenseExp||'')}"/></div>
+      <div class="fg"><label class="lbl">CADUCIDAD</label><input id="eclLicenseExp" type="date" value="${esc(safeDate(cl.licenseExp||''))}"/></div>
     </div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="eclNotes" value="${esc(cl.notes||'')}" autocomplete="off"/></div>
@@ -949,7 +952,7 @@ function renderOccupancy(){
     h+=`<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:4px;height:36px;border-radius:2px;background:${v.color};flex-shrink:0"></div>
+          <div style="width:4px;height:36px;border-radius:2px;background:${safeColor(v.color)};flex-shrink:0"></div>
           <div>
             <div style="font-size:14px;font-weight:700">${esc(v.name)}</div>
             <div style="font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
@@ -1042,12 +1045,12 @@ function renderAnalytics(el){
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);min-width:16px">#${i+1}</span>
             <span style="font-size:14px;font-weight:700">${esc(m.v.name)}</span>
-            <span style="font-family:var(--mono);font-size:10px;color:${m.v.color};background:${m.v.color}22;padding:2px 7px;border-radius:20px">${esc(m.v.plate)}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:${safeColor(m.v.color)};background:${safeColor(m.v.color)}22;padding:2px 7px;border-radius:20px">${esc(m.v.plate)}</span>
           </div>
           <span style="font-family:var(--mono);font-size:15px;font-weight:800;color:var(--green)">${fmt(m.rpdInc)}/día</span>
         </div>
         <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${m.v.color};border-radius:4px;transition:width 0.5s"></div>
+          <div style="height:100%;width:${pct}%;background:${safeColor(m.v.color)};border-radius:4px;transition:width 0.5s"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:4px">
           <span style="font-size:10px;color:var(--text3)">${m.bks} alq. · ${m.days}d ocupado</span>
@@ -1063,7 +1066,7 @@ function renderAnalytics(el){
     ${metrics.map(m=>{
       const roiColor=m.roi===null?'var(--text3)':m.roi>=100?'var(--green)':m.roi>=50?'var(--amber)':'var(--red)';
       return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
-        <div style="width:5px;height:48px;border-radius:3px;background:${m.v.color};flex-shrink:0"></div>
+        <div style="width:5px;height:48px;border-radius:3px;background:${safeColor(m.v.color)};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:700">${esc(m.v.name)}</div>
           <div style="font-size:10px;color:var(--text3);margin-top:2px">
@@ -1137,7 +1140,7 @@ function renderAnalytics(el){
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
     <!-- Month selector -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <input type="month" id="occMonth" value="${new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')}"
+      <input type="month" id="occMonth" value="${esc(safeMonth(new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')))}"
         onchange="renderOccupancy()"
         style="flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px"/>
       <button onclick="renderOccupancy()" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Ver</button>
@@ -1345,8 +1348,8 @@ function openAnalyticsReportPicker(){
   openSheet(`<div class="stitle">📄 Informe de Analíticas</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Selecciona el período. El informe incluirá KPIs, ranking por vehículo, ocupación, desglose mensual y comparativa.</div>
     <div class="r2">
-      <div class="fg"><label class="lbl">DESDE (MES)</label><input type="month" id="arFrom" value="${jan}"/></div>
-      <div class="fg"><label class="lbl">HASTA (MES)</label><input type="month" id="arTo" value="${curM}"/></div>
+      <div class="fg"><label class="lbl">DESDE (MES)</label><input type="month" id="arFrom" value="${esc(safeMonth(jan))}"/></div>
+      <div class="fg"><label class="lbl">HASTA (MES)</label><input type="month" id="arTo" value="${esc(safeMonth(curM))}"/></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px">
       ${presets.map(([lbl,f,t])=>`<button onclick="document.getElementById('arFrom').value='${escJs(f)}';document.getElementById('arTo').value='${escJs(t)}'"
@@ -2412,8 +2415,8 @@ function openExtendBooking(bookingId){
     +'<span style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+_fmtE(_curTotal)+'</span></div>'
     +'</div>'
     +'<div class="r2">'
-    +'<div class="fg"><label class="lbl">NUEVA FECHA FIN *</label><input id="extNewEnd" type="date" value="'+esc(origEnd)+'" min="'+esc(origEnd)+'"/></div>'
-    +'<div class="fg"><label class="lbl">HORA FIN</label><input id="extNewTime" type="time" value="'+esc(_bb.endTime||'20:00')+'"/></div>'
+    +'<div class="fg"><label class="lbl">NUEVA FECHA FIN *</label><input id="extNewEnd" type="date" value="'+esc(safeDate(origEnd))+'" min="'+esc(safeDate(origEnd))+'"/></div>'
+    +'<div class="fg"><label class="lbl">HORA FIN</label><input id="extNewTime" type="time" value="'+esc(safeTime(_bb.endTime)||'20:00')+'"/></div>'
     +'</div>'
     +'<div class="fg"><label class="lbl">NUEVO IMPORTE TOTAL DEL ALQUILER (€)</label>'
     +'<input id="extNewTotal" type="number" step="0.01" inputmode="decimal" placeholder="'+_curTotal.toFixed(2)+'" oninput="_extUpdateCalc('+_curTotal+')"/></div>'
@@ -2582,7 +2585,7 @@ function openBookingFinance(bookingId,type){
   openSheet('<div class="stitle">'+(type==='income'?'💰 Ingreso adicional':'💸 Gasto del alquiler')+'</div>'
     +'<div class="fg"><label class="lbl">CONCEPTO *</label><input id="bfConcept" placeholder="'+(type==='income'?'Ej: Exceso km, limpieza extra...':'Ej: Limpieza, combustible...')+'" autocomplete="off"/></div>'
     +'<div class="r2"><div class="fg"><label class="lbl">IMPORTE (€) *</label><input id="bfAmt" type="number" step="0.01" inputmode="decimal"/></div>'
-    +'<div class="fg"><label class="lbl">FECHA</label><input id="bfDate" type="date" value="'+today+'"/></div></div>'
+    +'<div class="fg"><label class="lbl">FECHA</label><input id="bfDate" type="date" value="'+esc(safeDate(today))+'"/></div></div>'
     +'<div class="fg"><label class="lbl">OBSERVACIONES</label><input id="bfNotes" autocomplete="off"/></div>'
     +'<button class="btn" onclick="_saveBookingFinance()">💾 Guardar</button>'
     +'<div style="height:8px"></div>'
@@ -2781,7 +2784,7 @@ function renderRecurring(el){
             <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;${r.active?'background:#10B98115;color:var(--green);border:1px solid #10B98130':'background:var(--bg3);color:var(--text3);border:1px solid var(--border)'}">${r.active?'Activo':'Pausado'}</span>
           </div>
           <div style="font-size:11px;color:var(--text3)">${esc(r.category||'Sin categoría')} · ${freqLabel}${vId?'':''}</div>
-          ${r.lastApplied?`<div style="font-size:10px;color:var(--text3);margin-top:2px">Último: ${r.lastApplied}</div>`:''}
+          ${r.lastApplied?`<div style="font-size:10px;color:var(--text3);margin-top:2px">Último: ${esc(r.lastApplied)}</div>`:''}
         </div>
         <div style="text-align:right;flex-shrink:0;margin-left:12px">
           <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red)">${fmt(r.amount)}</div>
@@ -2828,7 +2831,7 @@ function renderRecurring(el){
         },0);
         h+=`<div style="margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:6px">
-            <div style="width:4px;height:28px;border-radius:2px;background:${v.color||'var(--amber)'};flex-shrink:0"></div>
+            <div style="width:4px;height:28px;border-radius:2px;background:${safeColor(v.color||'var(--amber)')};flex-shrink:0"></div>
             <div style="flex:1">
               <div style="font-size:13px;font-weight:700">${esc(v.name)}</div>
               <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
@@ -2905,7 +2908,7 @@ function openAddRecurring(editId,vId){
       </div>
     </div>
     <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="rrAmt" type="number" step="0.01" value="${esc(r?r.amount:'')}" placeholder="0.00" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">APLICAR DESDE</label><input id="rrStart" type="month" value="${r?r.startDate?(esc(r.startDate.slice(0,7))):'':todayStr().slice(0,7)}"/></div>
+    <div class="fg"><label class="lbl">APLICAR DESDE</label><input id="rrStart" type="month" value="${esc(safeMonth((r&&r.startDate?r.startDate.slice(0,7):todayStr().slice(0,7))))}"/></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="rrNotes" value="${esc(r?r.notes||'':'')}" placeholder="Opcional..." autocomplete="off"/></div>
     <button class="btn" onclick="submitRecurring('${escJs(editId||'')}','${escJs(vId||'')}')">${r?'💾 Guardar':'Añadir'}</button>
     <div style="height:10px"></div>
@@ -3069,11 +3072,11 @@ function openContractForm(vId,bookingId){
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">TELÉFONO</label><input id="ctClTel" value="${esc(b.clientPhone||cl?.phone||'')}" inputmode="tel"/></div>
-    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="ctClNac" value="${esc(cl?.birthdate||'')}" type="date"/></div>
+    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="ctClNac" value="${esc(safeDate(cl?.birthdate||''))}" type="date"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">Nº PERMISO CONDUCIR</label><input id="ctClLic" value="${esc(cl?.license||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctClLicExp" value="${esc(cl?.licenseExp||'')}" type="date"/></div>
+    <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctClLicExp" value="${esc(safeDate(cl?.licenseExp||''))}" type="date"/></div>
   </div>
 
   <!-- Conductor adicional -->
@@ -3118,7 +3121,7 @@ function openContractForm(vId,bookingId){
   <div class="r2">
     <div class="fg"><label class="lbl">KM BASE INCLUIDOS</label>
       <div style="display:flex;align-items:center;gap:6px">
-        <input id="ctKmInc" value="${calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta)}" inputmode="numeric" style="flex:1" oninput="_ctKmUpdate()"/>
+        <input id="ctKmInc" value="${Number(calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta))||0}" inputmode="numeric" style="flex:1" oninput="_ctKmUpdate()"/>
         <span style="font-size:11px;color:var(--text3);white-space:nowrap">km base</span>
       </div>
     </div>
@@ -3126,7 +3129,7 @@ function openContractForm(vId,bookingId){
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:10px">
     <span style="font-size:12px;color:var(--text3);font-weight:600">KM TOTALES CONTRATADOS</span>
-    <span id="ctKmTotalBadge" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta)} km</span>
+    <span id="ctKmTotalBadge" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${Number(calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta))||0} km</span>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(co.fianza||'300')}" inputmode="decimal"/></div>
@@ -3215,7 +3218,7 @@ function openContractForm(vId,bookingId){
   <!-- KILÓMETROS -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0 4px">
     <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3)">KILÓMETROS EXTRA (bolsas)</span>
-    <span style="font-size:9px;color:var(--text3)">base: <strong style="color:var(--amber)" id="ctKmBaseRef">${calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta)}</strong> km</span>
+    <span style="font-size:9px;color:var(--text3)">base: <strong style="color:var(--amber)" id="ctKmBaseRef">${Number(calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta))||0}</strong> km</span>
   </div>
   <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
     <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
@@ -4185,8 +4188,8 @@ function openMgmtContractForm(ownerId,vId){
     <div class="fg"><label class="lbl">PLAZO PAGO AL PROPIETARIO</label><input id="mgPlazo" value="10 primeros días del mes siguiente" autocomplete="off"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">INICIO CONTRATO</label><input id="mgInicioDate" type="date" value="${startDate}"/></div>
-    <div class="fg"><label class="lbl">FIN CONTRATO (renovable)</label><input id="mgFinDate" type="date" value="${endDate}"/></div>
+    <div class="fg"><label class="lbl">INICIO CONTRATO</label><input id="mgInicioDate" type="date" value="${esc(safeDate(startDate))}"/></div>
+    <div class="fg"><label class="lbl">FIN CONTRATO (renovable)</label><input id="mgFinDate" type="date" value="${esc(safeDate(endDate))}"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">CIUDAD JURISDICCIÓN</label><input id="mgJurisdiccion" value="${esc(co.ciudad||'Madrid')}" autocomplete="off"/></div>
@@ -4544,6 +4547,7 @@ async function _saveToCloud(opts){
 }
 async function _saveToCloudBody(opts){
   opts=opts||{};
+  if(_holdCloudWrite&&!opts.force){console.warn('[save] Correcciones solo en memoria — no se sube a la nube');_setSaveStatus('error','No subido: correcciones solo en local');return;}
   if(!_uid){console.warn('[save] No UID — no guardado');return;}
   if(!_loadedOK){console.warn('[save] Carga no completada — no se guarda');return;}
   if(_saveBlocked)return;
@@ -4616,6 +4620,7 @@ function saveBiz(){
 
 async function _loadFromCloud(){
   _loadedOK=false;
+  _holdCloudWrite=false;
   try{
     const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),12000));
     const doc=await Promise.race([_docRef().get(),timeout]);
@@ -4627,6 +4632,8 @@ async function _loadFromCloud(){
       CL=d.clients||[];
       RR=d.recurring||[];
       QT=d.quotes||[];
+      _normalizeState();
+      if(_normFixes){_holdCloudWrite=true;_showNormNotice(_normFixes,'local');}
       _loadedRev=Number(d.rev)||0;
       _snapshotCounts();
       _loadedOK=true;
@@ -4657,7 +4664,7 @@ const _fmtEUR=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',min
 const _fmtEURs=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'});
 function fmt(n){return _fmtEUR.format(n||0);}
 function fmtF(n){return _fmtEURs.format(n||0);}
-function dStr(s){const p=s.split('-');return p[2]+'/'+p[1];}
+function dStr(s){const t=safeDate(s);if(!t)return '';const p=t.split('-');return p[2]+'/'+p[1];}
 function daysBetween(s,e){return Math.max(1,Math.round((new Date(e)-new Date(s))/864e5));}
 
 let V=[];
@@ -4714,6 +4721,186 @@ function esc(s){
 // Id dentro de onclick="fn('...')": las entidades HTML se decodifican antes de ejecutar el JS, así que la comilla simple se escapa con barra.
 function escJs(s){
   return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r/g,'\\r').replace(/\n/g,'\\n');
+}
+// Color de datos dentro de style="…". Si no cuadra con un color, uno neutro: un punto y coma o una comilla no pueden salir del atributo.
+function safeColor(c){
+  const s=String(c==null?'':c).trim();
+  if(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(s))return s;
+  let m=/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/.exec(s);
+  if(m&&[+m[1],+m[2],+m[3]].every(n=>n<=255))return s;
+  m=/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/.exec(s);
+  if(m&&[+m[1],+m[2],+m[3]].every(n=>n<=255))return s;
+  if(/^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/.test(s))return s;
+  if(/^[a-zA-Z]+$/.test(s))return s;
+  if(/^var\(--[a-zA-Z0-9_-]+\)$/.test(s))return s;
+  return '#6B7280';
+}
+function safeDate(s){
+  const t=String(s==null?'':s).trim();
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
+  if(!m)return '';
+  const y=+m[1],mo=+m[2],d=+m[3];
+  if(mo<1||mo>12||d<1||d>31)return '';
+  const dt=new Date(y,mo-1,d);
+  if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return '';
+  return t;
+}
+function safeTime(s){
+  const t=String(s==null?'':s).trim();
+  const m=/^(\d{2}):(\d{2})$/.exec(t);
+  if(!m)return '';
+  if(+m[1]>23||+m[2]>59)return '';
+  return t;
+}
+function safeMonth(s){
+  const t=String(s==null?'':s).trim();
+  const m=/^(\d{4})-(\d{2})$/.exec(t);
+  if(!m||+m[2]<1||+m[2]>12)return '';
+  return t;
+}
+function _normBump(obj,key,next){
+  if(obj[key]!==next){_normFixes++;obj[key]=next;}
+}
+function _normNum(obj,key){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  const v=obj[key];
+  if(v==null||v==='')return;
+  if(typeof v==='number'&&Number.isFinite(v))return;
+  if(typeof v==='string'&&v.trim()!==''&&Number.isFinite(Number(v))){obj[key]=Number(v);return;}
+  _normBump(obj,key,null);
+}
+function _normDate(obj,key){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  const v=obj[key];
+  if(v==null||v==='')return;
+  _normBump(obj,key,safeDate(v));
+}
+function _normTime(obj,key){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  const v=obj[key];
+  if(v==null||v==='')return;
+  _normBump(obj,key,safeTime(v));
+}
+function _normColor(obj,key){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  const v=obj[key];
+  if(v==null||v==='')return;
+  _normBump(obj,key,safeColor(v));
+}
+function _normEnum(obj,key,allowed,fallback){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  const v=obj[key];
+  if(v==null||v==='')return;
+  if(allowed.indexOf(v)>=0)return;
+  _normBump(obj,key,fallback);
+}
+function _normBool(obj,key){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  const v=obj[key];
+  if(v==null||v==='')return;
+  if(typeof v==='boolean')return;
+  if(v===1||v==='true'){obj[key]=true;return;}
+  if(v===0||v==='false'){obj[key]=false;return;}
+  _normBump(obj,key,false);
+}
+function _normList(obj,key){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  if(obj[key]==null)return;
+  if(!Array.isArray(obj[key]))_normBump(obj,key,[]);
+}
+function _normEntry(e){
+  if(!e||typeof e!=='object')return;
+  _normDate(e,'date');
+  _normNum(e,'amount');
+  _normEnum(e,'type',['income','expense'],'expense');
+}
+function _normBooking(b){
+  if(!b||typeof b!=='object')return;
+  _normDate(b,'startDate');_normDate(b,'endDate');
+  _normTime(b,'startTime');_normTime(b,'endTime');
+  ['amount','priceDay','fianza','kmStart','kmEnd','kmContracted','deposit','abono'].forEach(k=>_normNum(b,k));
+  ['cancelled','delivered','returned','cobrado','paid','kmIlimitados'].forEach(k=>_normBool(b,k));
+  _normList(b,'finances');_normList(b,'extras');
+  (b.finances||[]).forEach(_normEntry);
+  (b.extras||[]).forEach(x=>{if(x&&typeof x==='object')_normNum(x,'amount');});
+}
+function _normalizeState(){
+  _normFixes=0;
+  const vtypes=VTYPES.map(t=>t.id);
+  const fuels=['Gasolina','Diésel','Híbrido','Eléctrico','GLP'];
+  (V||[]).forEach(v=>{
+    if(!v||typeof v!=='object')return;
+    _normColor(v,'color');
+    _normEnum(v,'vtype',['own','managed'],'own');
+    _normEnum(v,'vehicle_type',vtypes,'turismo');
+    _normEnum(v,'fuel',fuels,'');
+    ['year','km','purchase_price','purchase_year','commission','maint_km'].forEach(k=>_normNum(v,k));
+    ['itv_date','insurance_date','maint_date','archivedDate'].forEach(k=>_normDate(v,k));
+    ['active','archived'].forEach(k=>_normBool(v,k));
+    _normList(v,'bookings');_normList(v,'finances');
+    (v.bookings||[]).forEach(_normBooking);
+    (v.finances||[]).forEach(_normEntry);
+    if(v.calendar&&typeof v.calendar==='object'){
+      Object.keys(v.calendar).forEach(k=>{
+        if(['maintenance','blocked','available'].indexOf(v.calendar[k])<0){_normFixes++;v.calendar[k]='available';}
+      });
+    }
+  });
+  (BF||[]).forEach(_normEntry);
+  (RR||[]).forEach(r=>{
+    if(!r||typeof r!=='object')return;
+    _normNum(r,'amount');
+    _normDate(r,'startDate');_normDate(r,'lastApplied');
+    _normEnum(r,'freq',['monthly','quarterly','yearly'],'monthly');
+    _normBool(r,'active');
+  });
+  (QT||[]).forEach(q=>{
+    if(!q||typeof q!=='object')return;
+    _normDate(q,'startDate');_normDate(q,'endDate');
+    _normTime(q,'startTime');_normTime(q,'endTime');
+    ['dur','customRate','discount','dailyRate','baseAmount','totalAmount'].forEach(k=>_normNum(q,k));
+    _normEnum(q,'status',['pendiente','aceptado','rechazado','convertido'],'pendiente');
+    _normList(q,'extras');
+    (q.extras||[]).forEach(x=>{if(x&&typeof x==='object')_normNum(x,'amount');});
+  });
+  (CL||[]).forEach(c=>{
+    if(!c||typeof c!=='object')return;
+    _normNum(c,'rating');
+    _normDate(c,'birthdate');_normDate(c,'licenseExp');
+    _normList(c,'bookingIds');
+  });
+  (OW||[]).forEach(o=>{
+    if(!o||typeof o!=='object')return;
+    _normList(o,'vehicleIds');
+  });
+  return _normFixes;
+}
+function _showNormNotice(n,mode){
+  const old=document.getElementById('normNotice');if(old)old.remove();
+  if(!n)return;
+  const el=document.createElement('div');
+  el.id='normNotice';
+  el.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:1900;background:#D97706;color:#111;padding:12px 14px;border-radius:12px;max-width:440px;width:calc(100% - 24px);font-family:inherit;box-shadow:0 8px 24px #0006';
+  const t=document.createElement('div');
+  t.style.cssText='font-size:13px;font-weight:700;line-height:1.45';
+  t.textContent=mode==='import'
+    ?'Se han corregido '+n+' valores no válidos del fichero importado.'
+    :'Se han corregido '+n+' valores no válidos en la copia local. El documento en la nube no se ha modificado.';
+  el.appendChild(t);
+  if(mode!=='import'){
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;margin-top:10px';
+    const keep=document.createElement('button');
+    keep.textContent='Dejar la nube como está';
+    keep.style.cssText='flex:1;background:#111;color:#fff;border:none;border-radius:8px;padding:8px;font-weight:700;cursor:pointer';
+    keep.onclick=function(){el.remove();};
+    const up=document.createElement('button');
+    up.textContent='Subir la copia corregida';
+    up.style.cssText='flex:1;background:#fff;color:#111;border:none;border-radius:8px;padding:8px;font-weight:700;cursor:pointer';
+    up.onclick=function(){_holdCloudWrite=false;el.remove();save();};
+    row.appendChild(keep);row.appendChild(up);el.appendChild(row);
+  }
+  document.body.appendChild(el);
 }
 function _daysInBooking(b){return _eachDate(b&&b.startDate,b&&b.endDate);}
 let _rsCache=new Map();
@@ -4994,7 +5181,7 @@ function renderDash(el){
             const pct=Math.round(p.inc/platTotal*100);
             return `<div style="background:var(--bg3);border-radius:12px;padding:16px">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                <span style="font-size:14px;font-weight:700">${p.icon}${p.label}</span>
+                <span style="font-size:14px;font-weight:700">${p.icon}${esc(p.label)}</span>
               </div>
               <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green);margin-bottom:4px">${fmt(p.inc)}</div>
               <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${p.n} alquileres</div>
@@ -5165,12 +5352,12 @@ function vcardH(v){
   const isM=v.vtype==='managed';
   const comm=isM?(Number(v.commission)||30):null;
   const share=isM?vP*(comm/100):null;
-  return `<div class="vcard" style="background:${v.color}0d;border-color:${v.color}44" onclick="openV('${escJs(v.id)}')">
-    <div style="position:absolute;top:0;right:0;width:60px;height:60px;background:${v.color}10;border-radius:0 14px 0 60px"></div>
+  return `<div class="vcard" style="background:${safeColor(v.color)}0d;border-color:${safeColor(v.color)}44" onclick="openV('${escJs(v.id)}')">
+    <div style="position:absolute;top:0;right:0;width:60px;height:60px;background:${safeColor(v.color)}10;border-radius:0 14px 0 60px"></div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
       <div>
         <div style="font-size:22px;font-weight:800">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
         ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
         <div style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;background:var(--bg4);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text3)">${vtypeLabel(v.vehicle_type||'turismo')}</div>
       </div>
@@ -5247,9 +5434,9 @@ function renderListBody(){
         own.forEach(v=>{
         const vI=tInc(v),vE=tExp(v),vP=vI-vE;
         const isM=v.vtype==='managed';
-        h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${v.color}0d;border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
+        h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${safeColor(v.color)}0d;border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
           <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
           ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
           <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
             <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
@@ -5265,9 +5452,9 @@ function renderListBody(){
         managed.forEach(v=>{
           const vI=tInc(v),vE=tExp(v),vP=vI-vE;
           const isM=v.vtype==='managed';
-          h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${v.color}0d;border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
+          h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${safeColor(v.color)}0d;border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
             <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
             ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
             <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
               <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
@@ -5307,7 +5494,7 @@ function renderListBody(){
           h+=`<tr class="ftr" onclick="openV('${escJs(v.id)}')">
             <td>
               <div style="display:flex;align-items:center;gap:10px">
-                <div style="width:5px;height:32px;border-radius:2px;background:${v.color};flex-shrink:0"></div>
+                <div style="width:5px;height:32px;border-radius:2px;background:${safeColor(v.color)};flex-shrink:0"></div>
                 <div>
                   <div style="font-weight:700;font-size:13px">${esc(v.name)}</div>
                   <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
@@ -5402,7 +5589,7 @@ function renderCal(v){
   const PLAT_COLORS={amovens:'#FB7AAC',getaround:'#8B5CF6',sinapp:'#10B981'};
   const dayBars={};
   (v.bookings||[]).forEach(b=>{
-    const col=b.cancelled?'#6B728060':(PLAT_COLORS[b.platform]||'#3B82F6');
+    const col=safeColor(b.cancelled?'#6B728060':(PLAT_COLORS[b.platform]||'#3B82F6'));
     _eachDate(b.startDate,b.endDate).forEach(k=>{
       if(!dayBars[k])dayBars[k]=[];
       dayBars[k].push({col,isStart:k===b.startDate,isEnd:k===b.endDate,id:b.id,startDate:b.startDate,startTime:b.startTime||'09:00',endTime:b.endTime||'09:00',client:b.clientName||'',cancelled:b.cancelled});
@@ -5438,7 +5625,7 @@ function renderCal(v){
           if(b.isEnd){const t=b.endTime.split(':');rp=100-Math.round((parseInt(t[0])*60+parseInt(t[1]||0))/(24*60)*100);}
           const rL=b.isStart?'2px':'0';const rR=b.isEnd?'2px':'0';
           const top=50-(bars.length-1)*3+i*6;
-          return `<div style="position:absolute;top:calc(${top}% - 2px);left:${lp}%;right:${rp}%;height:3px;background:${b.col};border-radius:${rL} ${rR} ${rR} ${rL}"></div>`;
+          return `<div style="position:absolute;top:calc(${top}% - 2px);left:${lp}%;right:${rp}%;height:3px;background:${safeColor(b.col)};border-radius:${rL} ${rR} ${rR} ${rL}"></div>`;
         }).join('');
         return `<div onclick="${fn}" style="position:relative;aspect-ratio:1;border-radius:3px;border:1px solid ${isT?'var(--amber)':bd};background:${isT?'rgba(245,158,11,0.1)':bg};cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center">
           <span style="font-size:11px;font-weight:${isT?800:400};color:${isT?'var(--amber)':'var(--text2)'};position:relative;z-index:1">${d}</span>
@@ -5447,7 +5634,7 @@ function renderCal(v){
       }).join('')}
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
-      ${Object.entries(MAN_ST).map(([k,cv])=>`<div onclick="setManSel('${escJs(k)}')" style="font-size:9px;padding:3px 7px;border-radius:10px;border:1.5px solid ${calSel===k?cv.border:cv.border+'40'};background:${calSel===k?cv.color:'transparent'};color:${cv.text};cursor:pointer;font-weight:700">${cv.label}</div>`).join('')}
+      ${Object.entries(MAN_ST).map(([k,cv])=>`<div onclick="setManSel('${escJs(k)}')" style="font-size:9px;padding:3px 7px;border-radius:10px;border:1.5px solid ${safeColor(calSel===k?cv.border:cv.border+'40')};background:${safeColor(calSel===k?cv.color:'transparent')};color:${safeColor(cv.text)};cursor:pointer;font-weight:700">${cv.label}</div>`).join('')}
     </div>
   </div>`;
 
@@ -5466,7 +5653,7 @@ function renderCal(v){
       const dur=daysBetween(b.startDate,b.endDate);
       if(b.paid&&!b.cobrado)b.cobrado=true; // normalize legacy field
       const p=PLATS[b.platform]||{label:b.platform||'Sin app',icon:'🤝'};
-      const platDot=PLAT_COLORS[b.platform]||'#6B7280';
+      const platDot=safeColor(PLAT_COLORS[b.platform]||'#6B7280');
       // ── Estado basado en toggles reales ──────────────────────────────────
       const _todayS=todayStr();
       const _tomorrowS=addDays(_todayS,1);
@@ -5629,7 +5816,7 @@ function showBooking(k,_overrideId){
         <div style="font-weight:800;font-size:14px;color:var(--red);letter-spacing:.5px;margin-bottom:3px">ALQUILER CANCELADO</div>
         <div style="font-size:11px;color:var(--text3)">
           ${b.cancellation?.by==='client'?'Cancelado por el <strong style="color:var(--text2)">cliente</strong>':'Cancelado por <strong style="color:var(--text2)">DEIROS</strong>'}
-          ${b.cancellation?.date?' · '+b.cancellation.date:''}
+          ${b.cancellation?.date?' · '+esc(safeDate(b.cancellation.date)):''}
         </div>
         ${(b.cancellation?.penalty>0)?`<div style="margin-top:5px;font-size:12px;font-weight:700;color:${b.cancellation.by==='client'?'var(--green)':'var(--amber)'}">
           Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}
@@ -5981,7 +6168,7 @@ function editBooking(id){
     </div>
     <div class="lbl">PLATAFORMA</div>
     <div class="plat-opts">
-      ${PLAT_QUICK.map(k=>{const p=PLATS[k];return `<div class="plat-opt${k===_plat?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px">${p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${p.label}</div></div>`;}).join('')}
+      ${PLAT_QUICK.map(k=>{const p=PLATS[k];return `<div class="plat-opt${k===_plat?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px">${p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${esc(p.label)}</div></div>`;}).join('')}
     </div>
     <input id="platCustom" type="text" placeholder="Otra fuente (Wallapop, Instagram...)" autocomplete="off"
       value="${esc((!PLATS[_plat]&&_plat!=='sinapp')?_plat:'')}"
@@ -5990,9 +6177,9 @@ function editBooking(id){
     <div class="lbl">PRECIO/DÍA (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">base para cálculo por horas</span></div>
     <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" value="${esc(b.priceDay||'')}" step="0.01" inputmode="decimal" placeholder="${(v.vehicle_type||'turismo').startsWith('l')?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="lbl">INICIO</div>
-    <div class="r2 fg"><input type="date" id="rSD" value="${esc(b.startDate)}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(b.startTime)}" oninput="_recalcRentalExtras()"/></div>
+    <div class="r2 fg"><input type="date" id="rSD" value="${esc(safeDate(b.startDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(b.startTime))}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">FIN</div>
-    <div class="r2 fg"><input type="date" id="rED" value="${esc(b.endDate)}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(b.endTime)}" oninput="_recalcRentalExtras()"/></div>
+    <div class="r2 fg"><input type="date" id="rED" value="${esc(safeDate(b.endDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(b.endTime))}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">IMPORTE ALQUILER (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
     <div style="position:relative;margin-bottom:10px"><input type="number" id="rAmt" value="${esc(b.amount)}" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="lbl">FIANZA / DEPÓSITO (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">reembolsable</span></div>
@@ -6237,14 +6424,14 @@ function openNewRental(){
   openSheet(`<div class="stitle">Nuevo alquiler</div><div class="ssub">Plataforma, fechas, horas e importe</div>
     <div class="lbl">PLATAFORMA</div>
     <div class="plat-opts">
-      ${Object.entries(PLATS).map(([k,p])=>`<div class="plat-opt${k==='amovens'?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">${k==='amovens'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#FB7AAC"></span>':k==='getaround'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#8B5CF6"></span>':p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${p.label}</div></div>`).join('')}
+      ${Object.entries(PLATS).map(([k,p])=>`<div class="plat-opt${k==='amovens'?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">${k==='amovens'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#FB7AAC"></span>':k==='getaround'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#8B5CF6"></span>':p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${esc(p.label)}</div></div>`).join('')}
     </div>
     <div class="lbl">PRECIO/DÍA (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">base para cálculo por horas</span></div>
     <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" step="0.01" inputmode="decimal" placeholder="${isFurgNR?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="lbl">INICIO</div>
-    <div class="r2 fg"><input type="date" id="rSD" value="${today}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${hh}" oninput="_recalcRentalExtras()"/></div>
+    <div class="r2 fg"><input type="date" id="rSD" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(hh))}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">FIN</div>
-    <div class="r2 fg"><input type="date" id="rED" value="${today}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${h1}" oninput="_recalcRentalExtras()"/></div>
+    <div class="r2 fg"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">IMPORTE (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
     <div style="position:relative;margin-bottom:14px"><input type="number" id="rAmt" placeholder="0.00" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="sec" style="margin-bottom:10px">KILÓMETROS (opcional)</div>
@@ -6621,7 +6808,7 @@ function renderFin(v){
   </div>
   <div class="pills">
     ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setFF('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
-    <input type="month" value="${finMonth}" onchange="setFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
+    <input type="month" value="${esc(safeMonth(finMonth))}" onchange="setFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
   </div>
   ${isD?'<div style="flex:1;overflow-y:auto;min-height:0;padding-right:4px">':''}`;
   if(!filtered.length){h+=`<div class="empty" style="padding:36px 0"><div class="ei">💶</div><div class="et">Sin movimientos</div></div>`;}  
@@ -6635,7 +6822,7 @@ function renderFin(v){
           <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${esc(e.category)}</span>
         </div>
         <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.date)}${e.description?' · '+esc(e.description):''}</div>
-        ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">🔧 ${esc(e.maint.work||'')}${e.maint.km?' · '+e.maint.km.toLocaleString('es-ES')+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</div>`:''}
+        ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">🔧 ${esc(e.maint.work||'')}${e.maint.km?' · '+esc(Number(e.maint.km).toLocaleString('es-ES'))+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</div>`:''}
       </div>
       <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};white-space:nowrap;margin-left:8px">${isIn?'+':'-'}${fmt(e.amount)}</div>
       ${!isA?`<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer;flex-shrink:0" onclick="delEntry('${escJs(e.id)}')">×</div>`:`<div style="width:28px"></div>`}
@@ -6651,7 +6838,7 @@ function openAddEntry(){
   const today=todayStr();
   openSheet(`<div class="stitle">Movimiento manual</div>
     <div class="tsw"><div class="to" id="tInc" onclick="swET('income')" style="color:var(--text3)">💰 Ingreso</div><div class="to" id="tExp" onclick="swET('expense')" style="background:var(--bg);color:var(--red)">📉 Gasto</div></div>
-    <div class="fg"><label class="lbl">FECHA</label><input id="eDate" type="date" value="${today}"/></div>
+    <div class="fg"><label class="lbl">FECHA</label><input id="eDate" type="date" value="${esc(safeDate(today))}"/></div>
     <div class="fg"><label class="lbl">CATEGORÍA</label><select id="eCat" onchange="toggleMaintFields()">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
     <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="eAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">DESCRIPCIÓN (opcional)</label><input id="eDesc" placeholder="Nota..." autocomplete="off"/></div>
@@ -6714,7 +6901,7 @@ function renderInfo(v){
   const comm=Number(v.commission)||30;
   const fields=[['Tipo',isM?'En gestión':'Propio'],['Tipo vehículo',vtypeLabel(v.vehicle_type||'turismo')],['Nombre',v.name],['Matrícula',v.plate],['Modelo',v.model||'—'],['Año',v.year||'—'],['Combustible',v.fuel||'—'],['Km actuales',v.km?Number(v.km).toLocaleString('es-ES')+' km':'—'],['Km últ. mant.',v.maint_km?Number(v.maint_km).toLocaleString('es-ES')+' km'+(v.km?' ('+Number(Number(v.km)-Number(v.maint_km)).toLocaleString('es-ES')+' km desde entonces)':''):'—'],['Nº bastidor',v.chassis||'—'],['Precio compra',v.purchase_price?fmtF(Number(v.purchase_price)):'—'],['Año compra',v.purchase_year||'—'],['Notas',v.notes||'—']];
   let h=`<div>
-  ${v.photo?`<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1.5px solid ${v.color}44;position:relative">
+  ${v.photo?`<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1.5px solid ${safeColor(v.color)}44;position:relative">
     <img src="${esc(v.photo)}" alt="" style="width:100%;max-height:200px;object-fit:cover;display:block"/>
     <button onclick="removeVPhoto('${escJs(v.id)}')" style="position:absolute;top:8px;right:8px;background:#0008;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer">🗑 Quitar</button>
   </div>`:`<button onclick="pickVPhoto('${escJs(v.id)}')" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:1.5px dashed var(--border2);border-radius:12px;padding:20px;cursor:pointer;margin-bottom:16px;font-family:var(--font)">
@@ -6748,7 +6935,7 @@ function renderInfo(v){
     +'<div>'
     +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">KM ÚLTIMO MANT.</div>'
     +'<div style="display:flex;align-items:center;gap:5px">'
-    +'<input type="number" value="'+(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" onchange="saveMaintKm(\''+escJs(v.id)+'\',this.value)" style="font-size:12px;padding:5px 6px;flex:1"/>'
+    +'<input type="number" value="'+esc(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" onchange="saveMaintKm(\''+escJs(v.id)+'\',this.value)" style="font-size:12px;padding:5px 6px;flex:1"/>'
     +'<span style="font-size:10px;color:var(--text3)">km</span>'
     +'</div>'
     +(kmDiff!==null?'<div style="font-size:10px;margin-top:4px;color:'+kmColor+'">'+(kmExpired?'⚠️ Vencido (+'+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div style="font-size:10px;margin-top:3px;color:var(--text3)">Alerta a 10.000km</div>')
@@ -6756,7 +6943,7 @@ function renderInfo(v){
     // --- Date column ---
     +'<div>'
     +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">PRÓXIMA FECHA</div>'
-    +'<input type="date" value="'+maintDateVal+'" onchange="saveDate(\''+escJs(v.id)+'\',\'maint_date\',this.value)" style="font-size:12px;padding:5px 6px;width:100%"/>'
+    +'<input type="date" value="'+esc(safeDate(maintDateVal))+'" onchange="saveDate(\''+escJs(v.id)+'\',\'maint_date\',this.value)" style="font-size:12px;padding:5px 6px;width:100%"/>'
     +(maintDays!==null?'<div style="font-size:10px;margin-top:4px;color:'+dateColor+'">'+(maintDateExpired?'⚠️ Fecha vencida':maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
     +'</div>'
     +'</div>'
@@ -6770,7 +6957,7 @@ function renderInfo(v){
       const urgent=days!==null&&days<=30;
       const expired=days!==null&&days<0;
       const color=expired?'var(--red)':urgent?'var(--amber)':'var(--text3)';
-      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+color+';margin-bottom:6px">'+label+'</div><input type="date" value="'+val+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+color+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
+      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+color+';margin-bottom:6px">'+label+'</div><input type="date" value="'+esc(safeDate(val))+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+color+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
     }).join('')}
     ${maintKmCard}
   </div></div>`;
@@ -6851,7 +7038,7 @@ function renderInfo(v){
   ${isM&&v.ownerId?`<button onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="width:100%;background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Contrato de gestión</button>`:''}
   <button onclick="exportExcel('${escJs(v.id)}')" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar a Excel</button>
   <div style="height:8px"></div>
-  ${v.archived?`<button onclick="restoreV('${escJs(v.id)}')" style="width:100%;background:transparent;color:var(--amber);border:1.5px solid ${v.color}60;border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">↩️ Reactivar vehículo</button>`:
+  ${v.archived?`<button onclick="restoreV('${escJs(v.id)}')" style="width:100%;background:transparent;color:var(--amber);border:1.5px solid ${safeColor(v.color)}60;border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">↩️ Reactivar vehículo</button>`:
   `<button onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="width:100%;background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
   <button class="btn-d" onclick="deleteV('${escJs(v.id)}')">🗑 Eliminar definitivamente</button>
   </div>`;
@@ -6905,7 +7092,7 @@ function openEditV(id){
       <div class="fg"><label class="lbl">MODELO</label><input id="evM" value="${esc(v.model||'')}" placeholder="Ej: Clio" autocomplete="off"/></div>
     </div>
     <div class="r2">
-      <div class="fg"><label class="lbl">AÑO</label><input id="evY" type="number" value="${v.year||''}"/></div>
+      <div class="fg"><label class="lbl">AÑO</label><input id="evY" type="number" value="${esc(v.year||'')}"/></div>
     </div>
     <div class="r2">
       <div class="fg"><label class="lbl">COMBUSTIBLE</label>
@@ -6914,11 +7101,11 @@ function openEditV(id){
           ${['Gasolina','Diésel','Híbrido','Eléctrico','GLP'].map(f=>`<option${f===(v.fuel||'')?'  selected':''}>${f}</option>`).join('')}
         </select>
       </div>
-      <div class="fg"><label class="lbl">KM ACTUALES</label><input id="evKm" type="number" value="${v.km||''}" inputmode="numeric"/></div>
+      <div class="fg"><label class="lbl">KM ACTUALES</label><input id="evKm" type="number" value="${esc(v.km||'')}" inputmode="numeric"/></div>
     </div>
     <div class="r2">
-      <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="evPrice" type="number" value="${v.purchase_price||''}" inputmode="decimal"/></div>
-      <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="evBuyYear" type="number" value="${v.purchase_year||''}"/></div>
+      <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="evPrice" type="number" value="${esc(v.purchase_price||'')}" inputmode="decimal"/></div>
+      <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="evBuyYear" type="number" value="${esc(v.purchase_year||'')}"/></div>
     </div>
     <div class="fg"><label class="lbl">Nº BASTIDOR (VIN)</label><input id="evChassis" value="${esc(v.chassis||'')}" placeholder="VIN / Nº bastidor" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="evNo" value="${esc(v.notes||'')}" autocomplete="off"/></div>
@@ -7212,8 +7399,8 @@ function openBizReportPicker(){
     <div style="height:1px;background:var(--border);margin-bottom:14px"></div>
     <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">RANGO PERSONALIZADO</div>
     <div class="r2">
-      <div class="fg"><label class="lbl">DESDE</label><input type="month" id="bizRptFrom" value="${ym(y,0)}" max="${curM}" style="font-size:14px"/></div>
-      <div class="fg"><label class="lbl">HASTA</label><input type="month" id="bizRptTo" value="${curM}" max="${curM}" style="font-size:14px"/></div>
+      <div class="fg"><label class="lbl">DESDE</label><input type="month" id="bizRptFrom" value="${esc(safeMonth(ym(y,0)))}" max="${esc(safeMonth(curM))}" style="font-size:14px"/></div>
+      <div class="fg"><label class="lbl">HASTA</label><input type="month" id="bizRptTo" value="${esc(safeMonth(curM))}" max="${esc(safeMonth(curM))}" style="font-size:14px"/></div>
     </div>
     <button class="btn" onclick="(()=>{const f=document.getElementById('bizRptFrom').value;const t=document.getElementById('bizRptTo').value;if(!f||!t){alert('Selecciona ambos meses');return;}if(f>t){alert('El mes de inicio debe ser anterior al final');return;}dlBizReport(f,t,(()=>{const[fy,fm]=f.split('-');const[ty,tm]=t.split('-');const MN2=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return f===t?'MES: '+MN2[parseInt(fm)-1]+' '+fy:'PERÍODO: '+MN2[parseInt(fm)-1]+' '+fy+' — '+MN2[parseInt(tm)-1]+' '+ty;})();})()">Generar informe</button>
     <div style="height:10px"></div>
@@ -7780,7 +7967,7 @@ function renderOwnersBody(){
         ${vehicles.length?`<div class="sec" style="margin-bottom:8px">VEHÍCULOS ASIGNADOS</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           ${vehicles.map(v=>`<div onclick="openV('${escJs(v.id)}')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid #14B8A630;border-radius:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='#14B8A6'" onmouseout="this.style.borderColor='#14B8A630'">
-            <div style="width:8px;height:8px;border-radius:50%;background:${v.color};flex-shrink:0"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:${safeColor(v.color)};flex-shrink:0"></div>
             <div>
               <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(v.name)}</div>
               <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
@@ -7868,11 +8055,11 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
     const mFins=_getVehicleAllFinances(v).filter(e=>e.date.slice(0,7)===now);
     const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mE=mFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    return `<div style="background:var(--bg2);border:1.5px solid ${v.color}44;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="closeSheet();openV('${escJs(v.id)}')">
+    return `<div style="background:var(--bg2);border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="closeSheet();openV('${escJs(v.id)}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
           <div style="font-size:15px;font-weight:800">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${v.color};margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
           ${v.km?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📍 ${Number(v.km).toLocaleString('es-ES')} km</div>`:''}
         </div>
         <span style="font-size:10px;font-weight:700;padding:3px 8px;background:#8B5CF620;color:var(--purple);border-radius:20px">Com. ${comm}%</span>
@@ -7960,11 +8147,11 @@ function renderOwnerProfile(el){
   <div class="sec">VEHÍCULOS EN GESTIÓN</div>
   ${isD?'<div class="desk-fleet-grid">':''}
   ${vData.map(d=>`
-  <div style="background:var(--bg2);border:1.5px solid ${d.v.color}44;border-radius:14px;padding:18px;${isD?'':'margin-bottom:14px'}">
+  <div style="background:var(--bg2);border:1.5px solid ${safeColor(d.v.color)}44;border-radius:14px;padding:18px;${isD?'':'margin-bottom:14px'}">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;cursor:pointer" onclick="openV('${escJs(d.v.id)}')">
       <div>
         <div style="font-size:18px;font-weight:800">${esc(d.v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${d.v.color};margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${safeColor(d.v.color)};margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
         ${d.v.km?`<div style="font-size:11px;color:var(--text3);margin-top:2px">📍 ${Number(d.v.km).toLocaleString('es-ES')} km</div>`:''}
       </div>
       <span style="font-size:11px;font-weight:700;padding:4px 10px;background:#8B5CF620;color:var(--purple);border-radius:20px">Com. ${d.comm}%</span>
@@ -8057,9 +8244,9 @@ function offerSaveLiquidacion(ownerId,month,amount){
     <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">
       <div style="font-size:13px;color:var(--text3);margin-bottom:6px">IMPORTE A PAGAR</div>
       <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--green)">${fmt(amount)}</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:4px">${month}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">${esc(safeMonth(month))}</div>
     </div>
-    <button class="btn" onclick="saveLiquidacion('${escJs(ownerId)}','${escJs(month)}',${amount});closeSheet();alert('✅ Liquidación guardada en el historial')">✅ Marcar como pagada</button>
+    <button class="btn" onclick="saveLiquidacion('${escJs(ownerId)}','${escJs(month)}',${Number(amount)||0});closeSheet();alert('✅ Liquidación guardada en el historial')">✅ Marcar como pagada</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cerrar sin registrar</button>`);
 }
@@ -8072,7 +8259,7 @@ function openOwnerReport(ownerId){
   openSheet(`<div class="stitle">📄 Informe de propietario</div>
     <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${esc(o.name)}</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:20px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}: ${esc(vehicles.map(v=>v.name).join(', '))}</div>
-    <div class="fg"><label class="lbl">MES DEL INFORME</label><input type="month" id="repOwnerMonth" value="${defMonth}" style="font-size:16px"/></div>
+    <div class="fg"><label class="lbl">MES DEL INFORME</label><input type="month" id="repOwnerMonth" value="${esc(safeMonth(defMonth))}" style="font-size:16px"/></div>
     <button class="btn" onclick="genOwnerReport('${escJs(ownerId)}')">Ver informe</button>
     <div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
@@ -8251,7 +8438,7 @@ function buildDashRightPanel(activeV){
   const isD=window.innerWidth>=768;
   const PANEL_H=isD?'calc((100vh - 320px) / 2)':'auto';
   const bkRow=(b)=>{const p=PLATS[b.platform];return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-    <div style="width:4px;height:38px;border-radius:2px;background:${b.vcolor};flex-shrink:0"></div>
+    <div style="width:4px;height:38px;border-radius:2px;background:${safeColor(b.vcolor)};flex-shrink:0"></div>
     <div style="flex:1;min-width:0">
       <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.vname)}</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(b.startDate)}${esc(b.clientName&&!isD?' · '+b.clientName:'')}</div>
@@ -8308,7 +8495,7 @@ function buildFlotaRightPanel(){
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
       <div class="sec" style="margin-bottom:14px">POR VEHÍCULO</div>
       ${activeV.map(v=>{const vI=tInc(v),vE=tExp(v),vP=vI-vE;return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openV('${escJs(v.id)}')">
-        <div style="width:5px;height:40px;border-radius:3px;background:${v.color};flex-shrink:0"></div>
+        <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
           <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${esc(v.plate)} · ${tDays(v)}d</div>
@@ -8371,7 +8558,7 @@ function renderAgendaBody(){
     ${activeV.map(v=>`<tr onclick="openV('${escJs(v.id)}')" style="cursor:pointer">
       <td style="padding:3px 6px;position:sticky;left:0;background:var(--bg2);z-index:1;border-bottom:1px solid var(--border)">
         <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:9px;color:${v.color}">${esc(v.plate)}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:${safeColor(v.color)}">${esc(v.plate)}</div>
       </td>
       ${days.map(d=>{
         const key=agY+'-'+String(agM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
@@ -8449,7 +8636,7 @@ function renderRentals(el){
   const upcoming=all.filter(b=>b.startDate>hoy&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
-  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-purple" style="background:${p.col}20;color:${p.col};border-color:${p.col}50">${p.label}</span>`:'';};
+  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-purple" style="background:${safeColor(p.col)}20;color:${safeColor(p.col)};border-color:${safeColor(p.col)}50">${esc(p.label)}</span>`:'';};
 
   const statusChip=b=>{
     const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
@@ -8467,7 +8654,7 @@ function renderRentals(el){
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
             <span style="font-weight:800;font-size:14px">${esc(v.name)}</span>
-            <span style="font-family:var(--mono);font-size:11px;color:${v.color}">${esc(v.plate)}</span>
+            <span style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)}">${esc(v.plate)}</span>
             ${platBadge(b)}
           </div>
           <div style="font-size:12px;color:var(--text2);font-weight:600">${esc(b.clientName||'Sin cliente')}</div>
@@ -8516,7 +8703,7 @@ function renderRentals(el){
     recent.forEach((b,i)=>{
       const v=b._v;const dur=daysBetween(b.startDate,b.endDate);
       h+=`<div onclick="openV('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<recent.length-1?'1px solid var(--border)':'none'};transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <div style="width:4px;height:30px;border-radius:2px;background:${v.color};flex-shrink:0"></div>
+        <div style="width:4px;height:30px;border-radius:2px;background:${safeColor(v.color)};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)} <span style="font-weight:500;color:var(--text3)">· ${esc(b.clientName||'—')}</span></div>
           <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(b.endDate)} · ${dur}d</div>
@@ -8573,7 +8760,7 @@ function renderContracts(el){
       <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px">
         ${[['Total',total,'var(--text2)'],['Pendientes',pend,'var(--amber)'],['Aceptados',acep,'var(--green)'],['Convertidos',conv,'var(--blue)']].map(([lbl,val,col])=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;flex-shrink:0"><div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${col}">${val}</div><div style="font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:.5px">${lbl.toUpperCase()}</div></div>`).join('')}
       </div>`;
-      [...QT].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).forEach(q=>{
+      [...QT].sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).forEach(q=>{
         const v=V.find(v=>v.id===q.vehicleId);
         const col=statColor[q.status]||'var(--text3)';
         h+=`<div onclick="_quoteEditId='${escJs(q.id)}';_contractsTab='presupuestos';showQuoteDetailInContracts()" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
@@ -8654,10 +8841,10 @@ function _renderWizardStep(){
       const nextB=(v.bookings||[]).filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
       const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Próx. ${esc(nextB.startDate)}</span>`:`<span class="chip chip-gray">Disponible</span>`;
       h+=`<div onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
-        <div style="width:5px;height:40px;border-radius:3px;background:${v.color};flex-shrink:0"></div>
+        <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
           <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${v.color}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
         </div>
         <div>${statusTxt}</div>
         <div style="color:var(--text3);font-size:18px">›</div>
@@ -8775,7 +8962,7 @@ function renderBiz(el){
   <button onclick="openBizReportPicker()" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">📄 Informe de negocio (PDF)</button>
   <div class="pills">
     ${['all','income','expense'].map(t=>{const a=bizFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setBizFilter('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
-    <input type="month" value="${bizMonth}" onchange="setBizFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
+    <input type="month" value="${esc(safeMonth(bizMonth))}" onchange="setBizFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
   </div>`;
 
 
@@ -8877,7 +9064,7 @@ function renderBiz(el){
     s+=`<div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:12px;gap:1px">`;
     sorted.forEach(function(entry){const k=entry[0],v=entry[1];
       const pct=(v/total*100).toFixed(1);
-      s+=`<div style="flex:${pct};background:${colors[k]||'#6B7280'};min-width:2px;border-radius:2px" title="${esc(k)}"></div>`;
+      s+=`<div style="flex:${pct};background:${safeColor(colors[k]||'#6B7280')};min-width:2px;border-radius:2px" title="${esc(k)}"></div>`;
     });
     s+=`</div>`;
     // Bars per item
@@ -9115,7 +9302,7 @@ function openAddBiz(){
   const today=todayStr();
   openSheet(`<div class="stitle">Movimiento de negocio</div><div class="ssub">Ingreso o gasto general, fuera de vehículos</div>
     <div class="tsw"><div class="to" id="bInc" onclick="swBiz('income')" style="color:var(--text3)">💰 Ingreso</div><div class="to" id="bExp" onclick="swBiz('expense')" style="background:var(--bg);color:var(--red)">📉 Gasto</div></div>
-    <div class="fg"><label class="lbl">FECHA</label><input id="bDate" type="date" value="${today}"/></div>
+    <div class="fg"><label class="lbl">FECHA</label><input id="bDate" type="date" value="${esc(safeDate(today))}"/></div>
     <div class="fg"><label class="lbl">CATEGORÍA</label><select id="bCat">${BIZ_EXP.map(x=>'<option>'+x+'</option>').join('')}</select></div>
     <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="bAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">DESCRIPCIÓN (opcional)</label><input id="bDesc" placeholder="Nota..." autocomplete="off"/></div>
@@ -9152,7 +9339,7 @@ function renderArchiveBody(){
     h+=`<div class="arc-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div><div style="font-size:18px;font-weight:800;color:var(--text2)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
-        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);white-space:nowrap">${reason}${v.archivedDate?' · '+v.archivedDate:''}</span>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);white-space:nowrap">${reason}${v.archivedDate?' · '+esc(safeDate(v.archivedDate)):''}</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
         <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">INGRESOS</div></div>
@@ -9299,7 +9486,7 @@ function pickNewVPhoto(){
     const lbl=document.getElementById('photoLabel');
     const prev=document.getElementById('photoPreview');
     if(lbl){lbl.style.padding='4px';lbl.style.borderColor='var(--green)';}
-    if(prev)prev.innerHTML='<img src="'+data+'" style="max-height:120px;max-width:100%;border-radius:6px;object-fit:cover"/><span style="font-size:11px;color:var(--green);margin-top:4px;display:block">✅ Foto seleccionada</span>';
+    if(prev)prev.innerHTML='<img src="'+esc(data)+'" style="max-height:120px;max-width:100%;border-radius:6px;object-fit:cover"/><span style="font-size:11px;color:var(--green);margin-top:4px;display:block">✅ Foto seleccionada</span>';
   });
 }
 
@@ -9390,16 +9577,16 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
     const isSel=selKey&&d.key===selKey;const isCur=d.key===curMKey;
     const ih=d.inc>0?Math.max(3,Math.round(d.inc/maxVal*CH)):0;
     const eh=d.exp>0?Math.max(3,Math.round(d.exp/maxVal*CH)):0;
-    bars+=`<rect x="${gx}" y="${BL-ih}" width="${BW}" height="${Math.max(ih,0)}" rx="3" fill="${isSel?'#10B981':isCur?'#10B98199':'#10B98133'}" style="cursor:pointer" onclick="${onSelFn}('${escJs(d.key)}')"/>`;
-    bars+=`<rect x="${gx+BW+BG}" y="${BL-eh}" width="${BW}" height="${Math.max(eh,0)}" rx="3" fill="${isSel?'#EF4444':isCur?'#EF444499':'#EF444433'}" style="cursor:pointer" onclick="${onSelFn}('${escJs(d.key)}')"/>`;
-    bars+=`<rect x="${gx}" y="0" width="${gW}" height="${BL}" fill="transparent" style="cursor:pointer" onclick="${onSelFn}('${escJs(d.key)}')"/>`;
+    bars+=`<rect x="${gx}" y="${BL-ih}" width="${BW}" height="${Math.max(ih,0)}" rx="3" fill="${isSel?'#10B981':isCur?'#10B98199':'#10B98133'}" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
+    bars+=`<rect x="${gx+BW+BG}" y="${BL-eh}" width="${BW}" height="${Math.max(eh,0)}" rx="3" fill="${isSel?'#EF4444':isCur?'#EF444499':'#EF444433'}" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
+    bars+=`<rect x="${gx}" y="0" width="${gW}" height="${BL}" fill="transparent" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
     labels+=`<text x="${cx}" y="${svgH-2}" text-anchor="middle" font-size="9" fill="${isSel?'#F59E0B':isCur?'#94A3B8':'#4B5C76'}" font-weight="${isSel||isCur?700:400}" font-family="JetBrains Mono,monospace">${d.label}</text>`;
     if(isSel)labels+=`<circle cx="${cx}" cy="${BL+5}" r="2" fill="#F59E0B"/>`;
     if(d.inc>0||d.exp>0){const py=Math.max(3,Math.min(BL-2,BL-(d.profit/maxVal*CH)));pts.push({x:cx,y:py,profit:d.profit,key:d.key});}
   });
   let profSVG='';
   if(pts.length>1)profSVG=`<path d="${pts.map((p,i)=>(i===0?'M':'L')+p.x+','+p.y).join(' ')}" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.5"/>`;
-  pts.forEach(p=>{profSVG+=`<circle cx="${p.x}" cy="${p.y}" r="${p.key===selKey?4:2.5}" fill="${p.profit>=0?'#F59E0B':'#EF4444'}" stroke="${p.key===selKey?'#fff':'none'}" stroke-width="${p.key===selKey?1.5:0}" style="cursor:pointer" onclick="${onSelFn}('${escJs(p.key)}')"/>`;});
+  pts.forEach(p=>{profSVG+=`<circle cx="${p.x}" cy="${p.y}" r="${p.key===selKey?4:2.5}" fill="${p.profit>=0?'#F59E0B':'#EF4444'}" stroke="${p.key===selKey?'#fff':'none'}" stroke-width="${p.key===selKey?1.5:0}" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(p.key)}')"/>`;});
   const sk=selKey||curMKey;
   const selD=data.find(d=>d.key===sk)||{inc:0,exp:0,profit:0};
   const [sy,sm]=sk.split('-');
@@ -9407,9 +9594,9 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
   return `<div style="background:var(--bg3);border-radius:12px;padding:14px 12px 12px;margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px">
-        <div onclick="${prevFn}()" style="width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text2)">‹</div>
-        <div style="font-size:16px;font-weight:800;letter-spacing:1px;min-width:48px;text-align:center">${year}${title}</div>
-        <div onclick="${nextFn}()" style="width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text2)">›</div>
+        <div onclick="${escJs(prevFn)}()" style="width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text2)">‹</div>
+        <div style="font-size:16px;font-weight:800;letter-spacing:1px;min-width:48px;text-align:center">${Number(year)||''}${esc(title||'')}</div>
+        <div onclick="${escJs(nextFn)}()" style="width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text2)">›</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <span style="font-size:9px;color:var(--green);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;background:var(--green);border-radius:2px;display:inline-block"></span>Ing.</span>
@@ -9535,7 +9722,7 @@ function openReport(vId){
   const now=new Date();
   const def=finMonth||(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'));
   openSheet(`<div class="stitle">📄 Informe mensual</div><div class="ssub">${esc(v.name)} · ${esc(v.plate)}</div>
-    <div class="fg"><label class="lbl">SELECCIONA MES</label><input type="month" id="repMonth" value="${def}" style="font-size:16px"/></div>
+    <div class="fg"><label class="lbl">SELECCIONA MES</label><input type="month" id="repMonth" value="${esc(safeMonth(def))}" style="font-size:16px"/></div>
     <button class="btn" onclick="genReport('${escJs(vId)}')">Ver informe</button><div style="height:10px"></div>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
@@ -9558,7 +9745,7 @@ function genReport(vId){
   const exp=fins.filter(e=>e.type==='expense');
   function rows(list,color){
     if(!list.length)return`<div style="padding:12px 0;text-align:center;color:var(--text3);font-size:12px">Sin registros</div>`;
-    return list.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${esc(e.category)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${esc(e.date)}${e.description?' · '+esc(e.description):''}</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${color};white-space:nowrap">${fmtE(e.amount)}</div></div>`).join('');
+    return list.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${esc(e.category)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${esc(e.date)}${e.description?' · '+esc(e.description):''}</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${safeColor(color)};white-space:nowrap">${fmtE(e.amount)}</div></div>`).join('');
   }
   closeSheet();
   const ov=document.createElement('div');
@@ -9570,9 +9757,9 @@ function genReport(vId){
       <button onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid ${v.color}44">
+      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid ${safeColor(v.color)}44">
         <div style="font-size:20px;font-weight:800">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${v.color};margin-top:2px">${esc(v.plate)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
         ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:4px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
         <div style="margin-top:8px"><span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;${isM?'background:#8B5CF620;color:#8B5CF6;border:1px solid #8B5CF640':'background:#F59E0B15;color:#F59E0B;border:1px solid #F59E0B40'}">${isM?'EN GESTIÓN':'PROPIO'}</span></div>
       </div>
@@ -10097,8 +10284,11 @@ function importData(event){
       }
       _absorbVehiclePhotos(V);
       V=_mergePhotos(V);
+      _normalizeState();
+      _holdCloudWrite=false;
+      if(_normFixes)_showNormNotice(_normFixes,'import');
       _invalidateRsCache();
-      await _saveToCloud({skipDropCheck:true});
+      await _saveToCloud({skipDropCheck:true,force:true});
       closeSheet();nav('dashboard');
     }catch(err){alert('Error al leer el fichero.');}
   };
@@ -10456,7 +10646,7 @@ function renderQuotes(el){
   });
   h+='</div>';
   // List
-  [...QT].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).forEach(q=>{
+  [...QT].sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).forEach(q=>{
     const v=V.find(v=>v.id===q.vehicleId);
     const col=statColor[q.status]||'var(--text3)';
     h+=`<div onclick="_quoteEditId='${escJs(q.id)}';showQuoteDetail(document.getElementById('PC'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
@@ -10599,12 +10789,12 @@ function _openQuoteForm(q){
     <div class="fg"><label class="lbl">VEHÍCULO *</label>
       <select id="qVehicle" onchange="_loadQuoteExtrasUpdate()"><option value="">— Seleccionar —</option>${vOpts}</select></div>
     <div class="r2">
-      <div class="fg"><label class="lbl">FECHA INICIO *</label><input type="date" id="qStart" value="${esc(q?q.startDate:today)}" onchange="_calcQuoteTotal()"/></div>
-      <div class="fg"><label class="lbl">FECHA FIN *</label><input type="date" id="qEnd" value="${esc(q?q.endDate:'')}" onchange="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">FECHA INICIO *</label><input type="date" id="qStart" value="${esc(safeDate(q?q.startDate:today))}" onchange="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">FECHA FIN *</label><input type="date" id="qEnd" value="${esc(safeDate(q?q.endDate:''))}" onchange="_calcQuoteTotal()"/></div>
     </div>
     <div class="r2">
-      <div class="fg"><label class="lbl">HORA INICIO</label><input type="time" id="qStartT" value="${esc(q?q.startTime||'09:00':'09:00')}" oninput="_calcQuoteTotal()"/></div>
-      <div class="fg"><label class="lbl">HORA FIN</label><input type="time" id="qEndT" value="${esc(q?q.endTime||'09:00':'09:00')}" oninput="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">HORA INICIO</label><input type="time" id="qStartT" value="${esc(safeTime(q?q.startTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">HORA FIN</label><input type="time" id="qEndT" value="${esc(safeTime(q?q.endTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div>
     </div>
     <div class="r2">
       <div class="fg"><label class="lbl">PRECIO/DÍA (€) *</label>
@@ -10942,7 +11132,7 @@ function openQuoteStatusMenu(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const statuses=[['pendiente','⏳','Pendiente','var(--amber)'],['aceptado','✅','Aceptado','var(--green)'],['rechazado','❌','Rechazado','var(--red)'],['convertido','🚗','Convertido','var(--blue)']];
   openSheet('<div class="stitle">🏷️ Cambiar estado</div>'
-    +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')" style="width:100%;background:${q.status===s?col+'30':'var(--bg3)'};border:1.5px solid ${q.status===s?col:'var(--border2)'};color:${q.status===s?col:'var(--text2)'};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${icon} ${lbl}</button>`).join('')
+    +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')" style="width:100%;background:${safeColor(q.status===s?col:'var(--bg3)')};border:1.5px solid ${safeColor(q.status===s?col:'var(--border2)')};color:${safeColor(q.status===s?col:'var(--text2)')};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${icon} ${esc(lbl)}</button>`).join('')
     +'<button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
@@ -11426,6 +11616,8 @@ auth.onAuthStateChanged(async user=>{
     _saveTimer=null;
     _loadedOK=false;
     _loadedRev=0;
+    _holdCloudWrite=false;
+    _normFixes=0;
     _saveBlocked=false;
     _saveQueued=null;
     _uid=null;
