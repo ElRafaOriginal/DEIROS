@@ -682,7 +682,7 @@ function renderClientsBody(){
             <div style="font-size:12px;margin-top:3px">${stars}</div>
           </div>
         </div>
-        ${bks.length?`<div style="font-size:10px;color:var(--text3)">Último: ${bks[0].startDate} · ${esc(bks[0].vname)}</div>`:''}
+        ${bks.length?`<div style="font-size:10px;color:var(--text3)">Último: ${esc(bks[0].startDate)} · ${esc(bks[0].vname)}</div>`:''}
         ${cl.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">"${esc(cl.notes)}"</div>`:''}
       </div>`;
     });
@@ -2406,14 +2406,14 @@ function openExtendBooking(bookingId){
   openSheet('<div class="stitle">📅 Ampliar alquiler</div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
     +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:4px">Periodo actual: <strong>'+_bb.startDate+'</strong> → <strong>'+origEnd+'</strong>'
-    +(_bb.endTime?' · hasta las <strong>'+_bb.endTime+'</strong>':'')+'</div>'
+    +'<div style="font-size:11px;color:var(--text3);margin-top:4px">Periodo actual: <strong>'+esc(_bb.startDate)+'</strong> → <strong>'+esc(origEnd)+'</strong>'
+    +(_bb.endTime?' · hasta las <strong>'+esc(_bb.endTime)+'</strong>':'')+'</div>'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--text3)">Total actual del alquiler</span>'
     +'<span style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+_fmtE(_curTotal)+'</span></div>'
     +'</div>'
     +'<div class="r2">'
-    +'<div class="fg"><label class="lbl">NUEVA FECHA FIN *</label><input id="extNewEnd" type="date" value="'+origEnd+'" min="'+origEnd+'"/></div>'
-    +'<div class="fg"><label class="lbl">HORA FIN</label><input id="extNewTime" type="time" value="'+(_bb.endTime||'20:00')+'"/></div>'
+    +'<div class="fg"><label class="lbl">NUEVA FECHA FIN *</label><input id="extNewEnd" type="date" value="'+esc(origEnd)+'" min="'+esc(origEnd)+'"/></div>'
+    +'<div class="fg"><label class="lbl">HORA FIN</label><input id="extNewTime" type="time" value="'+esc(_bb.endTime||'20:00')+'"/></div>'
     +'</div>'
     +'<div class="fg"><label class="lbl">NUEVO IMPORTE TOTAL DEL ALQUILER (€)</label>'
     +'<input id="extNewTotal" type="number" step="0.01" inputmode="decimal" placeholder="'+_curTotal.toFixed(2)+'" oninput="_extUpdateCalc('+_curTotal+')"/></div>'
@@ -2525,7 +2525,7 @@ function openReturnModal(bookingId){
   openSheet('<div class="stitle">\ud83d\udd11 Registrar devoluci\u00f3n</div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
     +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' \u00b7 '+esc(_bv.plate)+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:3px">Km entrega: <strong>'+(kmStart?kmStart.toLocaleString('es-ES')+' km':'no registrado')+'</strong> \u00b7 Combustible entrega: <strong>'+delivFuel+'</strong></div>'
+    +'<div style="font-size:11px;color:var(--text3);margin-top:3px">Km entrega: <strong>'+(kmStart?kmStart.toLocaleString('es-ES')+' km':'no registrado')+'</strong> \u00b7 Combustible entrega: <strong>'+esc(delivFuel)+'</strong></div>'
     +'<div style="font-size:11px;color:var(--text3);margin-top:2px">Km incluidos: <strong>'+(isIlim?'Ilimitados':kmLimit.toLocaleString('es-ES')+' km')+'</strong></div>'
     +'</div>'
     +'<div class="fg"><label class="lbl">KM ACTUALES EN DEVOLUCIÓN *</label>'
@@ -2904,7 +2904,7 @@ function openAddRecurring(editId,vId){
         </select>
       </div>
     </div>
-    <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="rrAmt" type="number" step="0.01" value="${r?r.amount:''}" placeholder="0.00" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="rrAmt" type="number" step="0.01" value="${esc(r?r.amount:'')}" placeholder="0.00" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">APLICAR DESDE</label><input id="rrStart" type="month" value="${r?r.startDate?(esc(r.startDate.slice(0,7))):'':todayStr().slice(0,7)}"/></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="rrNotes" value="${esc(r?r.notes||'':'')}" placeholder="Opcional..." autocomplete="off"/></div>
     <button class="btn" onclick="submitRecurring('${escJs(editId||'')}','${escJs(vId||'')}')">${r?'💾 Guardar':'Añadir'}</button>
@@ -3054,7 +3054,7 @@ function openContractForm(vId,bookingId){
         ${fuelLevels.map(f=>'<option'+(f===(co.fuelLevel||'Lleno (100%)')?' selected':'')+'>'+f+'</option>').join('')}
       </select>
     </div>
-    <div class="fg"><label class="lbl">KM EN ENTREGA</label><input id="ctVKm" value="${b.kmStart||v.km||''}" inputmode="numeric"/></div>
+    <div class="fg"><label class="lbl">KM EN ENTREGA</label><input id="ctVKm" value="${esc(b.kmStart||v.km||'')}" inputmode="numeric"/></div>
   </div>
 
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
@@ -3108,7 +3108,7 @@ function openContractForm(vId,bookingId){
     <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input id="ctEdadMin" value="${esc(co.edadMin||'21')}" inputmode="numeric"/></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">PRECIO BASE ALQUILER (€)</label><input id="ctPrecioBase" value="${b.amount||''}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">PRECIO BASE ALQUILER (€)</label><input id="ctPrecioBase" value="${esc(b.amount||'')}" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">FORMA DE PAGO</label>
       <select id="ctPago">
         ${['Transferencia bancaria','Tarjeta de crédito/débito','Efectivo','Bizum'].map(x=>'<option'+(x===(co.formaPago||'')?' selected':'')+'>'+x+'</option>').join('')}
@@ -5667,7 +5667,7 @@ function showBooking(k,_overrideId){
       </div>
       ${(b.kmStart||b.kmEnd)?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">
         <span style="font-size:11px;color:var(--text3)">📍 Kilómetros</span>
-        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${b.kmStart?b.kmStart.toLocaleString('es-ES')+' km':'—'} → ${b.kmEnd?b.kmEnd.toLocaleString('es-ES')+' km':'—'}</span>
+        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'} → ${b.kmEnd?esc(Number(b.kmEnd).toLocaleString('es-ES')+' km'):'—'}</span>
         ${(b.kmStart&&b.kmEnd)?`<span style="font-family:var(--mono);font-size:11px;color:var(--text3)">(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
       </div>`:''}
       ${b.clientName?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">👤 ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
@@ -5724,7 +5724,7 @@ function showBooking(k,_overrideId){
           <span style="font-family:var(--mono);font-size:14px;font-weight:800;color:var(--blue)">${fmtF(_fianza)}</span>
         </div>`:''}
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
-          <input id="abonoInput_${b.id}" type="number" min="0" step="0.01" value="${_abono||''}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
+          <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
           <button onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
@@ -5984,23 +5984,23 @@ function editBooking(id){
       ${PLAT_QUICK.map(k=>{const p=PLATS[k];return `<div class="plat-opt${k===_plat?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px">${p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${p.label}</div></div>`;}).join('')}
     </div>
     <input id="platCustom" type="text" placeholder="Otra fuente (Wallapop, Instagram...)" autocomplete="off"
-      value="${(!PLATS[_plat]&&_plat!=='sinapp')?_plat:''}"
+      value="${esc((!PLATS[_plat]&&_plat!=='sinapp')?_plat:'')}"
       oninput="_updatePlatFromCustom(this.value)"
       style="margin-top:6px;width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px"/>
     <div class="lbl">PRECIO/DÍA (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">base para cálculo por horas</span></div>
-    <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" value="${b.priceDay||''}" step="0.01" inputmode="decimal" placeholder="${(v.vehicle_type||'turismo').startsWith('l')?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
+    <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" value="${esc(b.priceDay||'')}" step="0.01" inputmode="decimal" placeholder="${(v.vehicle_type||'turismo').startsWith('l')?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="lbl">INICIO</div>
     <div class="r2 fg"><input type="date" id="rSD" value="${esc(b.startDate)}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(b.startTime)}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">FIN</div>
     <div class="r2 fg"><input type="date" id="rED" value="${esc(b.endDate)}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(b.endTime)}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">IMPORTE ALQUILER (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
-    <div style="position:relative;margin-bottom:10px"><input type="number" id="rAmt" value="${b.amount}" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
+    <div style="position:relative;margin-bottom:10px"><input type="number" id="rAmt" value="${esc(b.amount)}" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="lbl">FIANZA / DEPÓSITO (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">reembolsable</span></div>
     <div style="position:relative;margin-bottom:14px"><input type="number" id="rFianza" value="${esc(b.fianza||'')}" step="0.01" inputmode="decimal" placeholder="0" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--blue);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="sec" style="margin-bottom:10px">KILÓMETROS</div>
     <div class="r2 fg">
-      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric" value="${b.kmStart||''}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
-      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric" value="${b.kmEnd||''}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
+      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric" value="${esc(b.kmStart||'')}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
+      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric" value="${esc(b.kmEnd||'')}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
     </div>
     <div class="sec" style="margin-bottom:6px">CLIENTE</div>
     <input id="rCN" type="hidden" value="${esc(b.clientName||'')}"/>
@@ -8478,7 +8478,7 @@ function renderRentals(el){
           <div style="margin-top:5px">${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
         </div>
       </div>
-      ${b.startTime||b.endTime?`<div style="font-size:11px;color:var(--text3)">🕐 ${b.startTime||'–'} → ${b.endTime||'–'}</div>`:''}
+      ${b.startTime||b.endTime?`<div style="font-size:11px;color:var(--text3)">🕐 ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}</div>`:''}
     </div>`;
   };
 
@@ -8579,10 +8579,10 @@ function renderContracts(el){
         h+=`<div onclick="_quoteEditId='${escJs(q.id)}';_contractsTab='presupuestos';showQuoteDetailInContracts()" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(q.num||'—')}</div>
-            <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${statLabel[q.status]||q.status}</div>
+            <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${esc(statLabel[q.status]||q.status)}</div>
           </div>
           <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(v?v.name+' · '+v.plate:'Vehículo no encontrado')}</div>
-          <div style="font-size:12px;color:var(--text3)">${q.startDate||'—'} → ${q.endDate||'—'} · ${q.dur||0} días</div>
+          <div style="font-size:12px;color:var(--text3)">${esc(q.startDate||'—')} → ${esc(q.endDate||'—')} · ${esc(q.dur||0)} días</div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
             <div style="font-size:11px;color:var(--text3)">${esc(q.clientName||'Sin cliente')}</div>
             <div style="font-family:var(--mono);font-size:17px;font-weight:800;color:var(--green)">${fmtF(q.totalAmount||0)}</div>
@@ -8652,7 +8652,7 @@ function _renderWizardStep(){
       const today=todayStr();
       const activeB=(v.bookings||[]).find(b=>b.startDate<=today&&b.endDate>=today);
       const nextB=(v.bookings||[]).filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-      const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Próx. ${nextB.startDate}</span>`:`<span class="chip chip-gray">Disponible</span>`;
+      const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Próx. ${esc(nextB.startDate)}</span>`:`<span class="chip chip-gray">Disponible</span>`;
       h+=`<div onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
         <div style="width:5px;height:40px;border-radius:3px;background:${v.color};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
@@ -8877,7 +8877,7 @@ function renderBiz(el){
     s+=`<div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:12px;gap:1px">`;
     sorted.forEach(function(entry){const k=entry[0],v=entry[1];
       const pct=(v/total*100).toFixed(1);
-      s+=`<div style="flex:${pct};background:${colors[k]||'#6B7280'};min-width:2px;border-radius:2px" title="${k}"></div>`;
+      s+=`<div style="flex:${pct};background:${colors[k]||'#6B7280'};min-width:2px;border-radius:2px" title="${esc(k)}"></div>`;
     });
     s+=`</div>`;
     // Bars per item
@@ -8889,7 +8889,7 @@ function renderBiz(el){
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
           <div style="display:flex;align-items:center;gap:6px">
             <div style="width:10px;height:10px;border-radius:3px;background:${col};flex-shrink:0"></div>
-            <span style="font-size:12px;color:var(--text2)">${k}</span>
+            <span style="font-size:12px;color:var(--text2)">${esc(k)}</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${col}">${fmt(v)}</span>
@@ -10462,10 +10462,10 @@ function renderQuotes(el){
     h+=`<div onclick="_quoteEditId='${escJs(q.id)}';showQuoteDetail(document.getElementById('PC'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(q.num||'—')}</div>
-        <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${statLabel[q.status]||q.status}</div>
+        <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${esc(statLabel[q.status]||q.status)}</div>
       </div>
       <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(v?v.name+' · '+v.plate:'Vehículo no encontrado')}</div>
-      <div style="font-size:12px;color:var(--text3)">${q.startDate||'—'} → ${q.endDate||'—'} · ${q.dur||0} días</div>
+      <div style="font-size:12px;color:var(--text3)">${esc(q.startDate||'—')} → ${esc(q.endDate||'—')} · ${esc(q.dur||0)} días</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
         <div style="font-size:11px;color:var(--text3)">${esc(q.clientName||'Sin cliente asignado')}</div>
         <div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">${fmtF(q.totalAmount||0)}</div>
@@ -10498,7 +10498,7 @@ function showQuoteDetail(el){
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:8px">VEHÍCULO Y FECHAS</div>
     <div style="font-weight:700;font-size:15px">${esc(v?v.name+' · '+v.plate:'—')}</div>
     <div style="font-size:12px;color:var(--text3);margin-top:6px">${esc(q.startDate||'—')} ${esc(q.startTime||'')} → ${esc(q.endDate||'—')} ${esc(q.endTime||'')}</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:2px">Duración: <strong>${q.dur||0} días</strong></div>
+    <div style="font-size:12px;color:var(--text3);margin-top:2px">Duración: <strong>${esc(q.dur||0)} días</strong></div>
     ${q.clientName?'<div style="font-size:12px;color:var(--text3);margin-top:6px">Cliente: <strong>'+esc(q.clientName)+'</strong></div>':''}
     ${q.fianza?'<div style="font-size:12px;color:var(--amber);margin-top:4px">Fianza reembolsable: <strong>'+fmtF(q.fianza)+'</strong></div>':''}
   </div>`;
@@ -10506,7 +10506,7 @@ function showQuoteDetail(el){
   h+=`<div style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:12px">
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:10px">DESGLOSE DE PRECIO</div>
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px">Base alquiler (${q.basePriceBreakdown||q.dur+'d × '+fmtF(q.dailyRate||0)})</span>
+      <span style="font-size:13px">Base alquiler (${esc(q.basePriceBreakdown||((q.dur||0)+'d × '+fmtF(q.dailyRate||0)))})</span>
       <span style="font-family:var(--mono);font-weight:700">${fmtF(q.baseAmount||0)}</span>
     </div>`;
   (q.extras||[]).forEach(ex=>{
@@ -10555,7 +10555,7 @@ function openEditQuote(id){
 
 function _openQuoteForm(q){
   const today=todayStr();
-  const vOpts=V.filter(v=>v.active!==false).map(v=>`<option value="${v.id}" ${q&&q.vehicleId===v.id?'selected':''}>${esc(v.name)} · ${esc(v.plate)}</option>`).join('');
+  const vOpts=V.filter(v=>v.active!==false).map(v=>`<option value="${esc(v.id)}" ${q&&q.vehicleId===v.id?'selected':''}>${esc(v.name)} · ${esc(v.plate)}</option>`).join('');
 
   // Extras individuales — km y packs tienen su propia sección más abajo
   const EXTRAS_CAT=[
@@ -10599,20 +10599,20 @@ function _openQuoteForm(q){
     <div class="fg"><label class="lbl">VEHÍCULO *</label>
       <select id="qVehicle" onchange="_loadQuoteExtrasUpdate()"><option value="">— Seleccionar —</option>${vOpts}</select></div>
     <div class="r2">
-      <div class="fg"><label class="lbl">FECHA INICIO *</label><input type="date" id="qStart" value="${q?q.startDate:today}" onchange="_calcQuoteTotal()"/></div>
-      <div class="fg"><label class="lbl">FECHA FIN *</label><input type="date" id="qEnd" value="${q?q.endDate:''}" onchange="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">FECHA INICIO *</label><input type="date" id="qStart" value="${esc(q?q.startDate:today)}" onchange="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">FECHA FIN *</label><input type="date" id="qEnd" value="${esc(q?q.endDate:'')}" onchange="_calcQuoteTotal()"/></div>
     </div>
     <div class="r2">
-      <div class="fg"><label class="lbl">HORA INICIO</label><input type="time" id="qStartT" value="${q?q.startTime||'09:00':'09:00'}" oninput="_calcQuoteTotal()"/></div>
-      <div class="fg"><label class="lbl">HORA FIN</label><input type="time" id="qEndT" value="${q?q.endTime||'09:00':'09:00'}" oninput="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">HORA INICIO</label><input type="time" id="qStartT" value="${esc(q?q.startTime||'09:00':'09:00')}" oninput="_calcQuoteTotal()"/></div>
+      <div class="fg"><label class="lbl">HORA FIN</label><input type="time" id="qEndT" value="${esc(q?q.endTime||'09:00':'09:00')}" oninput="_calcQuoteTotal()"/></div>
     </div>
     <div class="r2">
       <div class="fg"><label class="lbl">PRECIO/DÍA (€) *</label>
         <input type="number" id="qCustomRate" step="0.01" inputmode="decimal" placeholder="${(()=>{const _vq=V.find(v=>v.id===(q&&q.vehicleId));return (_vq?.vehicle_type||'turismo').startsWith('l')?45:30;})()} €/día"
-          value="${q&&q.customRate?q.customRate:''}" oninput="_calcQuoteTotal()"/></div>
+          value="${esc(q&&q.customRate?q.customRate:'')}" oninput="_calcQuoteTotal()"/></div>
       <div class="fg"><label class="lbl">DESCUENTO (€)</label>
         <input type="number" id="qDiscount" step="0.01" inputmode="decimal" placeholder="0"
-          value="${q&&q.discount?q.discount:''}" oninput="_calcQuoteTotal()"/></div>
+          value="${esc(q&&q.discount?q.discount:'')}" oninput="_calcQuoteTotal()"/></div>
     </div>
     <div class="fg"><label class="lbl">NOMBRE DEL CLIENTE (opcional)</label>
       <input id="qClient" value="${esc(q?q.clientName||'':'')}" placeholder="Nombre del cliente" autocomplete="off"/></div>
@@ -10654,7 +10654,7 @@ function _openQuoteForm(q){
         <span style="font-size:18px">🔢</span>
         <span style="flex:1;font-size:13px;font-weight:600">Km sueltos
           <span style="font-size:10px;color:var(--text3);font-weight:400">0,15€/km</span>
-          <input id="qkm_exKmPrepago" type="number" min="0" step="50" placeholder="km" value="${kmSueltoKm}"
+          <input id="qkm_exKmPrepago" type="number" min="0" step="50" placeholder="km" value="${esc(kmSueltoKm)}"
             onclick="event.stopPropagation()" oninput="_calcQuoteTotal()"
             style="width:70px;font-size:12px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border2);
                    border-radius:6px;color:var(--text);font-family:var(--mono);text-align:right;margin-left:6px"/>
@@ -10879,7 +10879,7 @@ function _calcQuoteTotal(){
   if(durEl)durEl.textContent=dur+' día'+(dur!==1?'s':'')+(startT&&endT?' · '+startT+'→'+endT:'');
   if(kmEl)kmEl.textContent=(Number.isFinite(kmIncTotal)?kmIncTotal:0).toLocaleString('es-ES')+' km';
   if(baseEl)baseEl.textContent=fmtF(baseAmt)+(basePriceBreakdown?' — '+basePriceBreakdown:'');
-  if(extEl)extEl.innerHTML=extrasSelected.map(e=>'<div style="display:flex;justify-content:space-between"><span style="font-size:11px;color:var(--text3)">+ '+e.label+'</span><span style="font-family:var(--mono);font-size:11px">+'+fmtF(e.amount)+'</span></div>').join('');
+  if(extEl)extEl.innerHTML=extrasSelected.map(e=>'<div style="display:flex;justify-content:space-between"><span style="font-size:11px;color:var(--text3)">+ '+esc(e.label)+'</span><span style="font-family:var(--mono);font-size:11px">+'+fmtF(e.amount)+'</span></div>').join('');
   if(discRow)discRow.style.display=discount>0?'flex':'none';
   if(discVal)discVal.textContent='-'+fmtF(discount);
   if(totEl)totEl.textContent=fmtF(total);
