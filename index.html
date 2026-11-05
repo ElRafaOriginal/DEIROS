@@ -2555,7 +2555,7 @@ function openReturnModal(bookingId){
     +'<div id="retSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px;display:none"></div>'
     +'<div class="r2"><div class="fg"><label class="lbl">KM EXTRA</label><input id="retKmExtra" type="number" min="0" inputmode="numeric" value="0" oninput="_retKmAmtSync()"/></div>'
     +'<div class="fg"><label class="lbl">IMPORTE KM (€)</label><input id="retKmAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div></div>'
-    +'<div class="r2"><div class="fg"><label class="lbl">COMBUSTIBLE FALTANTE (%)</label><input id="retFuelPct" type="number" value="0" readonly/></div>'
+    +'<div class="r2"><div class="fg"><label class="lbl">COMBUSTIBLE FALTANTE (%)</label><input id="retFuelPct" type="number" min="0" max="100" step="1" inputmode="numeric" value="0" oninput="_retFuelAmtSync()"/></div>'
     +'<div class="fg"><label class="lbl">IMPORTE COMBUSTIBLE (€)</label><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div></div>'
     +'<div style="font-size:10px;color:var(--text3);margin:-6px 0 12px">Importes sugeridos y editables. Con 0 no se crea cobro.</div>'
     +'<button class="btn" onclick="_confirmReturn()">\u2705 Confirmar devoluci\u00f3n</button>'
@@ -2567,6 +2567,10 @@ function _fuelFrac(s){if(!s)return 1;s=s.toLowerCase();if(s.includes('100')||s.i
 function _retKmAmtSync(){
   const ex=parseInt(document.getElementById('retKmExtra')?.value)||0;
   const i=document.getElementById('retKmAmt');if(i)i.value=Math.round(Math.max(0,ex)*(window._retKmRate||0.29)*100)/100;
+}
+function _retFuelAmtSync(){
+  const p=parseFloat(document.getElementById('retFuelPct')?.value)||0;
+  const i=document.getElementById('retFuelAmt');if(i)i.value=p>0?Number(getCompanyData().penalComb||30):0;
 }
 function _calcReturnSummary(){
   const kmStart=window._retKmStart||0,kmLimit=window._retKmLimit||9999999,kmRate=window._retKmRate||0.29;
