@@ -911,7 +911,7 @@ function renderOccupancy(){
 
   function occBar(pct,col){
     return `<div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-top:4px">
-      <div style="height:100%;width:${pct}%;background:${col};border-radius:4px;transition:width 0.5s"></div>
+      <div style="height:100%;width:${Number(pct)}%;background:${safeColor(col)};border-radius:4px;transition:width 0.5s"></div>
     </div>`;
   }
   function occColor(pct){return pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';}
@@ -924,7 +924,7 @@ function renderOccupancy(){
   // Current month global
   h+=`<div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
     <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:4px">MES ACTUAL · ${fmtM(curM).toUpperCase()}</div>
-    <div style="font-family:var(--mono);font-size:32px;font-weight:900;color:${occColor(curG.pct)}">${curG.pct}%</div>
+    <div style="font-family:var(--mono);font-size:32px;font-weight:900;color:${safeColor(occColor(curG.pct))}">${curG.pct}%</div>
     <div style="font-size:10px;color:var(--text3);margin-top:2px">${curG.days} días ocupados / ${curG.totalAvail} disponibles</div>
     ${occBar(curG.pct,occColor(curG.pct))}
     <div style="font-size:11px;color:var(--text3);margin-top:6px">${fmtF(curG.totalInc)} generados</div>
@@ -934,7 +934,7 @@ function renderOccupancy(){
   if(!isSameMonth){
     h+=`<div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
       <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:4px">SELECCIONADO · ${fmtM(selM).toUpperCase()}</div>
-      <div style="font-family:var(--mono);font-size:32px;font-weight:900;color:${occColor(selG.pct)}">${selG.pct}%</div>
+      <div style="font-family:var(--mono);font-size:32px;font-weight:900;color:${safeColor(occColor(selG.pct))}">${selG.pct}%</div>
       <div style="font-size:10px;color:var(--text3);margin-top:2px">${selG.days} días ocupados / ${selG.totalAvail} disponibles</div>
       ${occBar(selG.pct,occColor(selG.pct))}
       <div style="font-size:11px;color:var(--text3);margin-top:6px">${fmtF(selG.totalInc)} generados</div>
@@ -958,16 +958,16 @@ function renderOccupancy(){
             <div style="font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
           </div>
         </div>
-        <div style="font-family:var(--mono);font-size:22px;font-weight:900;color:${occColor(isSameMonth?cur.pct:sel.pct)}">${isSameMonth?cur.pct:sel.pct}%</div>
+        <div style="font-family:var(--mono);font-size:22px;font-weight:900;color:${safeColor(occColor(isSameMonth?cur.pct:sel.pct))}">${isSameMonth?cur.pct:sel.pct}%</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr ${isSameMonth?'1fr':'1fr 1fr'};gap:6px">
         <div style="background:var(--bg2);border-radius:7px;padding:7px;text-align:center">
-          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${occColor(cur.pct)}">${cur.pct}%</div>
+          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${safeColor(occColor(cur.pct))}">${cur.pct}%</div>
           <div style="font-size:9px;color:var(--text3);margin-top:1px">Mes actual</div>
           <div style="font-size:9px;color:var(--text3)">${cur.days}/${cur.dim}d</div>
         </div>
         ${!isSameMonth?`<div style="background:var(--bg2);border-radius:7px;padding:7px;text-align:center">
-          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${occColor(sel.pct)}">${sel.pct}%</div>
+          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${safeColor(occColor(sel.pct))}">${sel.pct}%</div>
           <div style="font-size:9px;color:var(--text3);margin-top:1px">${fmtM(selM).split(' ')[0]}</div>
           <div style="font-size:9px;color:var(--text3)">${sel.days}/${sel.dim}d</div>
         </div>`:''}
@@ -1050,7 +1050,7 @@ function renderAnalytics(el){
           <span style="font-family:var(--mono);font-size:15px;font-weight:800;color:var(--green)">${fmt(m.rpdInc)}/día</span>
         </div>
         <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${safeColor(m.v.color)};border-radius:4px;transition:width 0.5s"></div>
+          <div style="height:100%;width:${Number(pct)}%;background:${safeColor(m.v.color)};border-radius:4px;transition:width 0.5s"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:4px">
           <span style="font-size:10px;color:var(--text3)">${m.bks} alq. · ${m.days}d ocupado</span>
@@ -1079,7 +1079,7 @@ function renderAnalytics(el){
           ${!m.paidOff&&m.daysToPayOff?`<div style="font-size:10px;color:var(--amber);margin-top:1px">⏱ Se paga solo en ~${m.daysToPayOff} días al ritmo actual</div>`:''}
         </div>
         <div style="text-align:center;flex-shrink:0">
-          <div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${roiColor}">${m.roi!==null?m.roi+'%':'—'}</div>
+          <div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${safeColor(roiColor)}">${m.roi!==null?m.roi+'%':'—'}</div>
           <div style="font-size:9px;color:var(--text3);margin-top:2px">ROI</div>
         </div>
       </div>`;
@@ -1213,7 +1213,7 @@ function renderAnalytics(el){
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
       <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">⏱ TIEMPO MUERTO MEDIO</div>
-      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${_avgDeadTime===null?'var(--text3)':_avgDeadTime<=2?'var(--green)':_avgDeadTime<=5?'var(--amber)':'var(--red)'}">${_avgDeadTime!==null?_avgDeadTime+'d':'—'}</div>
+      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${safeColor(_avgDeadTime===null?'var(--text3)':_avgDeadTime<=2?'var(--green)':_avgDeadTime<=5?'var(--amber)':'var(--red)')}">${_avgDeadTime!==null?_avgDeadTime+'d':'—'}</div>
       <div style="font-size:10px;color:var(--text3);margin-top:4px">días libres entre alquileres</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
@@ -1223,12 +1223,12 @@ function renderAnalytics(el){
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
       <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">📊 RATIO EFICIENCIA</div>
-      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${_effRatio===null?'var(--text3)':_effRatio>=3?'var(--green)':_effRatio>=2?'var(--amber)':'var(--red)'}">${_effRatio!==null?_effRatio+'x':'—'}</div>
+      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${safeColor(_effRatio===null?'var(--text3)':_effRatio>=3?'var(--green)':_effRatio>=2?'var(--amber)':'var(--red)')}">${_effRatio!==null?_effRatio+'x':'—'}</div>
       <div style="font-size:10px;color:var(--text3);margin-top:4px">€ ingresados por cada € gastado</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
       <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">🔧 MANTENIMIENTO / INGRESOS</div>
-      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${_maintRatio<=10?'var(--green)':_maintRatio<=20?'var(--amber)':'var(--red)'}">${_maintRatio}%</div>
+      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${safeColor(_maintRatio<=10?'var(--green)':_maintRatio<=20?'var(--amber)':'var(--red)')}">${_maintRatio}%</div>
       <div style="font-size:10px;color:var(--text3);margin-top:4px">${_fmtA(_maintExp)} en mantenimiento total</div>
     </div>
   </div>`;
@@ -1241,10 +1241,10 @@ function renderAnalytics(el){
       return `<div style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px">
           <span style="font-size:13px;font-weight:600">${lbl}</span>
-          <span style="font-family:var(--mono);font-size:12px;color:${col}">${grp.length} alq. · ${pct}% · Ø${_fmtA(_durAvg(grp))}</span>
+          <span style="font-family:var(--mono);font-size:12px;color:${safeColor(col)}">${grp.length} alq. · ${pct}% · Ø${_fmtA(_durAvg(grp))}</span>
         </div>
         <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${col};border-radius:4px"></div>
+          <div style="height:100%;width:${Number(pct)}%;background:${safeColor(col)};border-radius:4px"></div>
         </div>
       </div>`;
     }).join('')}
@@ -1303,7 +1303,7 @@ function renderAnalytics(el){
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         ${[['🚗 Turismos',_tStat,'var(--blue)'],['🚐 Furgonetas',_fStat,'var(--amber)']].map(([lbl,st,col])=>`
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:2px solid ${col}">
+        <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:2px solid ${safeColor(col)}">
           <div style="font-size:12px;font-weight:700;margin-bottom:8px">${lbl} (${st.cnt})</div>
           ${[['Ingresos',_fmtA(st.inc),'var(--green)'],['Gastos',_fmtA(st.exp),'var(--red)'],['Beneficio',_fmtA(st.inc-st.exp),st.inc-st.exp>=0?'var(--green)':'var(--red)'],['Alquileres',st.bks,'var(--text)'],['Días ocup.',st.days+'d','var(--text)'],['€/día',_fmtA(st.days>0?Math.round(st.inc/st.days):0),'var(--amber)']].map(([l,v,c])=>`
           <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
@@ -1421,8 +1421,16 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   // ══ CALCULOS ════════════════════════════════════════════════════════════
   // Meses del periodo
   const months=[];
-  {let mi=new Date(curM+'-01');const ms=new Date(toM+'-01');
-   while(mi<=ms){months.push(mi.getFullYear()+'-'+String(mi.getMonth()+1).padStart(2,'0'));mi.setMonth(mi.getMonth()+1);}}
+  {let mi=new Date(curM+'-01T12:00:00');const ms=new Date(toM+'-01T12:00:00');
+   let g=0;
+   while(mi<=ms&&g<1200){
+     if(isNaN(mi.getTime())||isNaN(ms.getTime()))break;
+     months.push(mi.getFullYear()+'-'+String(mi.getMonth()+1).padStart(2,'0'));
+     const prev=mi.getTime();
+     mi.setMonth(mi.getMonth()+1);
+     if(isNaN(mi.getTime())||mi.getTime()<=prev)break;
+     g++;
+   }}
   const periodMonths=months.length;
 
   // Dias del periodo (por vehiculo es igual)
@@ -1511,7 +1519,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   const deadTimes=filtered.map(v=>{
     const sb=[...(v.bookings||[]).filter(b=>b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM)].sort((a,b)=>a.startDate.localeCompare(b.startDate));
     let tg=0,g=0;
-    for(let i=1;i<sb.length;i++){const gap=Math.round((new Date(sb[i].startDate)-new Date(sb[i-1].endDate))/864e5);if(gap>=0){tg+=gap;g++;}}
+    for(let i=1;i<sb.length;i++){const gap=Math.round((new Date(sb[i].startDate)-new Date(sb[i-1].endDate))/864e5);if(Number.isFinite(gap)&&gap>=0&&gap<4000){tg+=gap;g++;}}
     return{v,avg:g>0?Math.round(tg/g*10)/10:null,gaps:g};
   });
   const validDead=deadTimes.filter(d=>d.avg!==null);
@@ -2340,6 +2348,7 @@ function toggleReturn(bookingId){
 // Rebuild v.finances for a booking from scratch using b.amount + b.finance extensions
 function _syncBookingToVFinances(v, b){
   if(!v||!b)return;
+  if(!safeDate(b.startDate)||!safeDate(b.endDate))return;
   const bId=b.id;
   // Remove ALL existing v.finances entries for this booking (original + extensions)
   v.finances=(v.finances||[]).filter(f=>
@@ -2355,7 +2364,7 @@ function _syncBookingToVFinances(v, b){
   exts.forEach(function(ext){
     // Parse origEnd and newEnd from concept "Ampliación alquiler (YYYY-MM-DD → YYYY-MM-DD)"
     const m=ext.concept.match(/\((\d{4}-\d{2}-\d{2})\s*\S+\s*(\d{4}-\d{2}-\d{2})\)/);
-    if(!m)return;
+    if(!m||!safeDate(m[1])||!safeDate(m[2]))return;
     const origEnd=m[1],newEnd=m[2];
     const extStart=new Date(origEnd);
     extStart.setDate(extStart.getDate()+1);
@@ -2397,7 +2406,7 @@ function openExtendBooking(bookingId){
     const _expectedBase=Number(_bb.amount||0);
     const _expectedTotal=_expectedBase+_extInBFin.reduce((s,f)=>s+Number(f.amount||0),0);
     const _actualTotal=_allVFin.reduce((s,f)=>s+Number(f.amount||0),0);
-    if(Math.abs(_actualTotal-_expectedTotal)>0.5){
+    if(safeDate(_bb.startDate)&&safeDate(_bb.endDate)&&Math.abs(_actualTotal-_expectedTotal)>0.5){
       // Silently rebuild v.finances for this booking
       _syncBookingToVFinances(_bv,_bb);
     }
@@ -2455,7 +2464,7 @@ function _confirmExtend(){
   const newEnd=document.getElementById('extNewEnd')?.value;
   const newTime=document.getElementById('extNewTime')?.value||'';
   const newTotalRaw=parseFloat(document.getElementById('extNewTotal')?.value)||0;
-  if(!newEnd||newEnd<=origEnd){alert('La nueva fecha debe ser posterior a la fecha de fin actual.');return;}
+  if(!safeDate(newEnd)||!safeDate(origEnd)||newEnd<=origEnd){alert('La nueva fecha debe ser posterior a la fecha de fin actual.');return;}
   let _bv=null,_bb=null;
   V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){_bv=v;_bb=b;}});});
   if(!_bv||!_bb)return;
@@ -2471,9 +2480,11 @@ function _confirmExtend(){
   if(!_bv.finances)_bv.finances=[];
 
   if(extraPrice>0){
-    const extStart=new Date(origEnd);
+    const extStart=new Date(origEnd+'T12:00:00');
+    if(isNaN(extStart.getTime()))return;
     extStart.setDate(extStart.getDate()+1);
-    const extStartStr=_localDateStr(extStart.getFullYear(),extStart.getMonth(),extStart.getDate());
+    const extStartStr=ymd(extStart);
+    if(!safeDate(extStartStr)||!safeDate(newEnd))return;
     const extEntries=proRataEntries(extStartStr,newEnd,extraPrice,_bb.platform,'Ampliación · '+(_bb.clientName||''),bookingId);
     extEntries.forEach(e=>{e._extension=true;_bv.finances.push(e);});
     const extIds=extEntries.map(e=>e.id);
@@ -2683,6 +2694,7 @@ function closeHamburger(){
 
 function _generateRecurringEntries(r, fromYYYYMM){
   // fromYYYYMM: 'YYYY-MM' string
+  if(!safeMonth(fromYYYYMM))return [];
   const today=todayStr();
   const todayYM=today.slice(0,7);
   const entries=[];
@@ -4710,9 +4722,15 @@ function addDays(str,n){
 }
 function _eachDate(start,end){
   const ds=[];
-  if(!start||!end||start>end)return ds;
-  let k=start,g=0;
-  while(k<=end&&g<3700){ds.push(k);k=addDays(k,1);g++;}
+  const a=safeDate(start),b=safeDate(end);
+  if(!a||!b||a>b)return ds;
+  let k=a,g=0;
+  while(k<=b&&g<1200){
+    ds.push(k);
+    const n=addDays(k,1);
+    if(!n||n===k)break;
+    k=n;g++;
+  }
   return ds;
 }
 function esc(s){
@@ -4774,6 +4792,14 @@ function _normDate(obj,key){
   const v=obj[key];
   if(v==null||v==='')return;
   _normBump(obj,key,safeDate(v));
+}
+// Un recurrente puede guardar el mes como AAAA-MM (el input type=month) o como AAAA-MM-DD. Los dos son válidos.
+function _normMonthOrDate(obj,key){
+  if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
+  const v=obj[key];
+  if(v==null||v==='')return;
+  if(typeof v==='string'&&(safeDate(v)===v||safeMonth(v)===v))return;
+  _normBump(obj,key,safeDate(v)||safeMonth(v)||'');
 }
 function _normTime(obj,key){
   if(!obj||!Object.prototype.hasOwnProperty.call(obj,key))return;
@@ -4850,7 +4876,7 @@ function _normalizeState(){
   (RR||[]).forEach(r=>{
     if(!r||typeof r!=='object')return;
     _normNum(r,'amount');
-    _normDate(r,'startDate');_normDate(r,'lastApplied');
+    _normMonthOrDate(r,'startDate');_normMonthOrDate(r,'lastApplied');
     _normEnum(r,'freq',['monthly','quarterly','yearly'],'monthly');
     _normBool(r,'active');
   });
@@ -5186,7 +5212,7 @@ function renderDash(el){
               <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green);margin-bottom:4px">${fmt(p.inc)}</div>
               <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${p.n} alquileres</div>
               <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:${pct}%;background:var(--amber);border-radius:3px"></div>
+                <div style="height:100%;width:${Number(pct)}%;background:var(--amber);border-radius:3px"></div>
               </div>
               <div style="font-size:11px;color:var(--amber);margin-top:4px;font-weight:600">${pct}% del total</div>
             </div>`;
@@ -5242,7 +5268,7 @@ function renderDash(el){
           const daysUntil=Math.ceil((new Date(b.startDate)-new Date(nowStr))/864e5);
           const dur=daysBetween(b.startDate,b.endDate);
           return '<div onclick="openV(\''+escJs(b.vid)+'\');setTimeout(()=>showBooking(\''+escJs(b.startDate)+'\'),200)" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:'+(i<upcoming2.slice(0,8).length-1?'1px solid var(--border)':'none')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
-            +'<div style="width:4px;height:36px;border-radius:2px;background:'+b.vcolor+';flex-shrink:0"></div>'
+            +'<div style="width:4px;height:36px;border-radius:2px;background:'+safeColor(b.vcolor)+';flex-shrink:0"></div>'
             +'<div style="flex:1;min-width:0">'
             +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
             +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+esc(b.startDate)+' → '+esc(b.endDate)+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
@@ -5309,7 +5335,7 @@ function renderDash(el){
       ${['monthly','quarterly','annual'].map(p=>{const a=_dashPlatPeriod===p;const L={monthly:'Mes',quarterly:'Trimestre',annual:'Año'};return '<div onclick="_dashPlatPeriod=\''+p+'\';renderDash(document.getElementById(\'PC\'))" style="flex:1;padding:6px 0;text-align:center;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid '+(a?'var(--amber)':'var(--border2)')+';background:'+(a?'#F59E0B22':'transparent')+';color:'+(a?'var(--amber)':'var(--text3)')+'">'+L[p]+'</div>';}).join('')}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px">
-      ${Object.values(pdP).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:13px;font-weight:600">'+p.label+' <span style="color:var(--text3);font-size:11px">'+p.n+' alq.</span></span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmt(p.inc)+'</span></div><div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--amber);border-radius:2px"></div></div></div>';}).join('')}
+      ${Object.values(pdP).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:13px;font-weight:600">'+esc(p.label)+' <span style="color:var(--text3);font-size:11px">'+p.n+' alq.</span></span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmt(p.inc)+'</span></div><div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+Number(pct)+'%;background:var(--amber);border-radius:2px"></div></div></div>';}).join('')}
     </div>`;
     const own=activeV.filter(v=>v.vtype!=='managed');
     const managed=activeV.filter(v=>v.vtype==='managed');
@@ -5326,7 +5352,7 @@ function renderDash(el){
           const daysUntil=Math.ceil((new Date(b.startDate)-new Date(nowStr))/864e5);
           const dur=daysBetween(b.startDate,b.endDate);
           return '<div onclick="openV(\''+escJs(b.vid)+'\');setTimeout(()=>showBooking(\''+escJs(b.startDate)+'\'),200)" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:'+(i<upcoming2.slice(0,8).length-1?'1px solid var(--border)':'none')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
-            +'<div style="width:4px;height:36px;border-radius:2px;background:'+b.vcolor+';flex-shrink:0"></div>'
+            +'<div style="width:4px;height:36px;border-radius:2px;background:'+safeColor(b.vcolor)+';flex-shrink:0"></div>'
             +'<div style="flex:1;min-width:0">'
             +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
             +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+esc(b.startDate)+' → '+esc(b.endDate)+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
@@ -5370,8 +5396,8 @@ function vcardH(v){
     </div>
     ${isM?`<div style="margin-top:10px;background:#8B5CF610;border:1px solid #8B5CF630;border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;color:#8B5CF6;font-weight:700">COMISIÓN DEIROS (${comm}%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${share>=0?'var(--green)':'var(--red)'}">${fmtF(share)}</span></div>`:''}
     <div class="pb-bg" style="display:flex;height:5px;border-radius:2px;overflow:hidden;margin-top:12px">
-      <div style="width:${iPct}%;background:var(--green);border-radius:2px 0 0 2px;transition:width 0.4s"></div>
-      <div style="width:${ePct}%;background:var(--red);border-radius:0 2px 2px 0;transition:width 0.4s"></div>
+      <div style="width:${Number(iPct)}%;background:var(--green);border-radius:2px 0 0 2px;transition:width 0.4s"></div>
+      <div style="width:${Number(ePct)}%;background:var(--red);border-radius:0 2px 2px 0;transition:width 0.4s"></div>
     </div>
     <div style="display:flex;justify-content:space-between;margin-top:5px">
       <span style="font-family:var(--mono);font-size:11px;color:var(--green)">${fmt(vI)}</span>
@@ -5477,7 +5503,7 @@ function renderListBody(){
       };
       const drawCompactSection=(list,label,clr)=>{
         if(!list.length)return;
-        h+=`<div class="sec" style="color:${clr};margin-bottom:8px">${label}</div>`;
+        h+=`<div class="sec" style="color:${safeColor(clr)};margin-bottom:8px">${label}</div>`;
         h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
           <table class="fleet-tbl" style="width:100%">
             <thead><tr>
@@ -5676,9 +5702,9 @@ function renderCal(v){
       const multiMonth=b.startDate.slice(0,7)!==b.endDate.slice(0,7);
       const bId=b.id, bSd=b.startDate;
       listHtml+=
-        '<div style="border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:1px solid '+platDot+'44">'+
+        '<div style="border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:1px solid '+safeColor(platDot)+'44">'+
         // Header
-        '<div style="background:linear-gradient(135deg,'+platDot+'cc,'+platDot+'55);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
+        '<div style="background:linear-gradient(135deg,'+safeColor(platDot)+'cc,'+safeColor(platDot)+'55);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
           '<div style="display:flex;align-items:center;gap:8px">'+
             '<span style="font-size:20px">'+(p.icon||'🚗')+'</span>'+
             '<div>'+
@@ -5701,24 +5727,24 @@ function renderCal(v){
               '<div style="background:var(--bg3);border-radius:8px;padding:6px 10px;text-align:center;min-width:60px">'+
                 '<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:1px">RECOGIDA</div>'+
                 '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(String(b.startDate).slice(5).replace('-','/'))+'</div>'+
-                (b.startTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+platDot+'">'+esc(b.startTime)+'</div>':'')+
+                (b.startTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+safeColor(platDot)+'">'+esc(b.startTime)+'</div>':'')+
               '</div>'+
               // Duration
               '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'+
                 '<div style="width:20px;height:1px;background:var(--border2)"></div>'+
-                '<span style="font-size:11px;font-family:var(--mono);color:'+platDot+';font-weight:800;padding:2px 7px;background:'+platDot+'18;border-radius:5px">'+dur+'d</span>'+
+                '<span style="font-size:11px;font-family:var(--mono);color:'+safeColor(platDot)+';font-weight:800;padding:2px 7px;background:'+safeColor(platDot)+'18;border-radius:5px">'+dur+'d</span>'+
                 '<div style="width:20px;height:1px;background:var(--border2)"></div>'+
               '</div>'+
               // End
               '<div style="background:var(--bg3);border-radius:8px;padding:6px 10px;text-align:center;min-width:60px">'+
                 '<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:1px">DEVOLUCIÓN</div>'+
                 '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(String(b.endDate).slice(5).replace('-','/'))+'</div>'+
-                (b.endTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+platDot+'">'+esc(b.endTime)+'</div>':'')+
+                (b.endTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+safeColor(platDot)+'">'+esc(b.endTime)+'</div>':'')+
               '</div>'+
             '</div>'+
             // Status badge (single)
             '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">'+
-              '<span style="font-size:9px;color:'+col+';font-weight:700;background:'+col+'20;border-radius:5px;padding:2px 7px">'+lbl+'</span>'+
+              '<span style="font-size:9px;color:'+safeColor(col)+';font-weight:700;background:'+safeColor(col)+'20;border-radius:5px;padding:2px 7px">'+lbl+'</span>'+
             '</div>'+
           '</div>'+
           // Action buttons
@@ -6254,22 +6280,29 @@ function _parseDateLocal(s){const[y,m,d]=s.split('-').map(Number);return new Dat
 function _daysInRange(aDate,bDate){return Math.round((bDate-aDate)/864e5)+1;}
 
 function proRataEntries(sd, ed, amt, platform, notes, bookingId){
+  const startStr=safeDate(sd), endStr=safeDate(ed);
+  if(!startStr||!endStr||startStr>endStr)return [];
   const p=PLATS[platform]||{label:platform,icon:''};
-  const totalDays=daysBetween(sd,ed);
+  const totalDays=daysBetween(startStr,endStr);
+  if(!Number.isFinite(totalDays)||totalDays<=0)return [];
   const entries=[];
 
   // Parse purely in local time — no UTC conversion
-  const start=_parseDateLocal(sd);
-  const end=_parseDateLocal(ed);
+  const start=_parseDateLocal(startStr);
+  const end=_parseDateLocal(endStr);
+  if(isNaN(start.getTime())||isNaN(end.getTime()))return [];
 
-  // Walk month by month
+  // Walk month by month. Tope: una fecha lejana (año 1 → 9999) no puede dejar el bucle vivo.
   let curYear=start.getFullYear();
   let curMonth=start.getMonth();
+  let guard=0;
 
-  while(true){
+  while(guard++<1200){
+    if(!Number.isFinite(curYear)||!Number.isFinite(curMonth)||isNaN(end.getTime()))break;
     // First day of rental inside this month (local)
     const mFirst=new Date(curYear,curMonth,1);
     const mLast=new Date(curYear,curMonth+1,0); // last day of month
+    if(isNaN(mFirst.getTime())||isNaN(mLast.getTime()))break;
 
     const rangeStart=start>mFirst?start:mFirst;  // max(start, mFirst)
     const rangeEnd=end<mLast?end:mLast;            // min(end, mLast)
@@ -6277,10 +6310,10 @@ function proRataEntries(sd, ed, amt, platform, notes, bookingId){
     const daysInMonth=_daysInRange(rangeStart,rangeEnd);
     const ratio=daysInMonth/totalDays;
     const mAmt=parseFloat((amt*ratio).toFixed(10)); // full precision, no rounding
-    const mLabel=MON_ES[curMonth]+' '+curYear;
+    const mLabel=(MON_ES[curMonth]||'')+' '+curYear;
     // Date string in local time — no toISOString() to avoid UTC shift
     const dateStr=_localDateStr(rangeStart.getFullYear(),rangeStart.getMonth(),rangeStart.getDate());
-    const desc=p.label+' · '+dStr(sd)+'→'+dStr(ed)+' ('+totalDays+'d'+(totalDays!==daysInMonth?', '+daysInMonth+'d en '+mLabel:'')+')'+(notes?' · '+notes:'');
+    const desc=p.label+' · '+dStr(startStr)+'→'+dStr(endStr)+' ('+totalDays+'d'+(totalDays!==daysInMonth?', '+daysInMonth+'d en '+mLabel:'')+')'+(notes?' · '+notes:'');
 
     entries.push({
       id:uid(),
@@ -6296,8 +6329,10 @@ function proRataEntries(sd, ed, amt, platform, notes, bookingId){
     // Stop if we've covered the end month
     if(curYear===end.getFullYear()&&curMonth===end.getMonth())break;
     // Move to next month
+    const prevY=curYear, prevM=curMonth;
     curMonth++;
     if(curMonth>11){curMonth=0;curYear++;}
+    if(curYear===prevY&&curMonth===prevM)break;
   }
 
   // Fix rounding so entries always sum exactly to amt
@@ -6928,8 +6963,8 @@ function renderInfo(v){
   const cardColor=anyExpired?'var(--red)':anyUrgent?'var(--amber)':'var(--text3)';
   const kmColor=kmExpired?'var(--red)':kmUrgent?'var(--amber)':'var(--text3)';
   const dateColor=maintDateExpired?'var(--red)':maintDateUrgent?'var(--amber)':'var(--text3)';
-  const maintKmCard='<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+cardBorder+';grid-column:1/-1">'
-    +'<div style="font-size:10px;font-weight:700;color:'+cardColor+';margin-bottom:8px">⚙️ MANTENIMIENTO PERIÓDICO'+(anyExpired?' ⚠️':anyUrgent?' ⚡':'')+'</div>'
+  const maintKmCard='<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+safeColor(cardBorder)+';grid-column:1/-1">'
+    +'<div style="font-size:10px;font-weight:700;color:'+safeColor(cardColor)+';margin-bottom:8px">⚙️ MANTENIMIENTO PERIÓDICO'+(anyExpired?' ⚠️':anyUrgent?' ⚡':'')+'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
     // --- KM column ---
     +'<div>'
@@ -6938,16 +6973,16 @@ function renderInfo(v){
     +'<input type="number" value="'+esc(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" onchange="saveMaintKm(\''+escJs(v.id)+'\',this.value)" style="font-size:12px;padding:5px 6px;flex:1"/>'
     +'<span style="font-size:10px;color:var(--text3)">km</span>'
     +'</div>'
-    +(kmDiff!==null?'<div style="font-size:10px;margin-top:4px;color:'+kmColor+'">'+(kmExpired?'⚠️ Vencido (+'+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div style="font-size:10px;margin-top:3px;color:var(--text3)">Alerta a 10.000km</div>')
+    +(kmDiff!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(kmColor)+'">'+(kmExpired?'⚠️ Vencido (+'+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div style="font-size:10px;margin-top:3px;color:var(--text3)">Alerta a 10.000km</div>')
     +'</div>'
     // --- Date column ---
     +'<div>'
     +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">PRÓXIMA FECHA</div>'
     +'<input type="date" value="'+esc(safeDate(maintDateVal))+'" onchange="saveDate(\''+escJs(v.id)+'\',\'maint_date\',this.value)" style="font-size:12px;padding:5px 6px;width:100%"/>'
-    +(maintDays!==null?'<div style="font-size:10px;margin-top:4px;color:'+dateColor+'">'+(maintDateExpired?'⚠️ Fecha vencida':maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
+    +(maintDays!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(dateColor)+'">'+(maintDateExpired?'⚠️ Fecha vencida':maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
     +'</div>'
     +'</div>'
-    +((anyExpired||anyUrgent)?'<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;font-weight:700;color:'+cardColor+'">Hacer lo que llegue primero (km o fecha)</div>':'')
+    +((anyExpired||anyUrgent)?'<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;font-weight:700;color:'+safeColor(cardColor)+'">Hacer lo que llegue primero (km o fecha)</div>':'')
     +'</div>';
   const alertsPanel=`<div><div class="sec">ALERTAS Y VENCIMIENTOS</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
@@ -6957,7 +6992,7 @@ function renderInfo(v){
       const urgent=days!==null&&days<=30;
       const expired=days!==null&&days<0;
       const color=expired?'var(--red)':urgent?'var(--amber)':'var(--text3)';
-      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+color+';margin-bottom:6px">'+label+'</div><input type="date" value="'+esc(safeDate(val))+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+color+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
+      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+safeColor(color)+';margin-bottom:6px">'+label+'</div><input type="date" value="'+esc(safeDate(val))+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(color)+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
     }).join('')}
     ${maintKmCard}
   </div></div>`;
@@ -7437,9 +7472,17 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   // Build list of months in range
   const mthKeys=[];
   if(fromMonth&&toMonth){
-    let[cy,cm]=[parseInt(fromMonth.slice(0,4)),parseInt(fromMonth.slice(5,7))-1];
-    const[ey,em]=[parseInt(toMonth.slice(0,4)),parseInt(toMonth.slice(5,7))-1];
-    while(cy<ey||(cy===ey&&cm<=em)){mthKeys.push(cy+'-'+String(cm+1).padStart(2,'0'));cm++;if(cm>11){cm=0;cy++;}}
+    let[cy,cm]=[parseInt(fromMonth.slice(0,4),10),parseInt(fromMonth.slice(5,7),10)-1];
+    const[ey,em]=[parseInt(toMonth.slice(0,4),10),parseInt(toMonth.slice(5,7),10)-1];
+    let g=0;
+    while((cy<ey||(cy===ey&&cm<=em))&&g<1200){
+      if(!Number.isFinite(cy)||!Number.isFinite(cm)||!Number.isFinite(ey)||!Number.isFinite(em))break;
+      mthKeys.push(cy+'-'+String(cm+1).padStart(2,'0'));
+      const py=cy,pm=cm;
+      cm++;if(cm>11){cm=0;cy++;}
+      if(cy===py&&cm===pm)break;
+      g++;
+    }
   }
 
   // Filter data to period — uses full Negocio source (propios + BF + comisiones gestión)
@@ -7832,7 +7875,7 @@ function runComparison(){
     const positive=(isInv?d<0:d>0);
     const clr=d===0?'var(--text3)':positive?'var(--green)':'var(--red)';
     const arrow=d>0?'↑':d<0?'↓':'—';
-    return `<span style="color:${clr};font-size:11px;font-weight:700">${arrow}${pct!==null?Math.abs(pct)+'%':''}</span>`;
+    return `<span style="color:${safeColor(clr)};font-size:11px;font-weight:700">${arrow}${pct!==null?Math.abs(pct)+'%':''}</span>`;
   }
   const [ayA,moA]=mA.split('-');const [ayB,moB]=mB.split('-');
   const lblA=MON_ES[parseInt(moA)-1]+' '+ayA;const lblB=MON_ES[parseInt(moB)-1]+' '+ayB;
@@ -8009,7 +8052,7 @@ function buildOwnersStats(){
   return `<div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
       <div class="sec" style="margin-bottom:14px">PROPIETARIOS</div>
-      ${[['Total propietarios',OW.length,'var(--amber)'],['Vehículos en gestión',managed.length,'var(--purple)'],['Sin propietario',managed.filter(v=>!v.ownerId).length,'var(--text3)']].map(([l,v,clr])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--text2)">${l}</span><span style="font-family:var(--mono);font-size:18px;font-weight:700;color:${clr}">${v}</span></div>`).join('')}
+      ${[['Total propietarios',OW.length,'var(--amber)'],['Vehículos en gestión',managed.length,'var(--purple)'],['Sin propietario',managed.filter(v=>!v.ownerId).length,'var(--text3)']].map(([l,v,clr])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--text2)">${l}</span><span style="font-family:var(--mono);font-size:18px;font-weight:700;color:${safeColor(clr)}">${v}</span></div>`).join('')}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
       <div class="sec" style="margin-bottom:14px">LIQUIDACIONES PENDIENTES</div>
@@ -8489,7 +8532,7 @@ function buildFlotaRightPanel(){
       ${[['Ingresos totales',fmtF(totalI),'var(--green)'],['Gastos totales',fmtF(totalE),'var(--red)'],['Beneficio',fmtF(totalI-totalE),(totalI-totalE)>=0?'var(--green)':'var(--red)'],['Alquileres',totalBk,'var(--amber)'],['Días ocupados',totalDays,'var(--blue)']].map(([l,v,clr])=>`
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:13px;color:var(--text2)">${l}</span>
-        <span style="font-family:var(--mono);font-size:16px;font-weight:700;color:${clr}">${v}</span>
+        <span style="font-family:var(--mono);font-size:16px;font-weight:700;color:${safeColor(clr)}">${v}</span>
       </div>`).join('')}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
@@ -8549,7 +8592,7 @@ function renderAgendaBody(){
     <div onclick="agNext()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">›</div>
   </div>
   <div id="agenda-scroll" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px">
-  <table class="agenda-table" style="min-width:${dim*26+100}px;width:100%">
+  <table class="agenda-table" style="min-width:${Number(dim*26+100)}px;width:100%">
     <thead><tr>
       <th style="width:88px;min-width:88px;padding:4px 6px;font-size:9px;letter-spacing:1px;color:var(--text3);text-align:left;position:sticky;left:0;background:var(--bg);z-index:2">VEHÍCULO</th>
       ${days.map(d=>{const isT=d===today.getDate()&&agM===today.getMonth()&&agY===today.getFullYear();const dow=['D','L','M','X','J','V','S'][new Date(agY,agM,d).getDay()];return `<th style="width:26px;min-width:26px;padding:2px;text-align:center;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}font-size:9px">${d}<br>${dow}</th>`;}).join('')}
@@ -8758,7 +8801,7 @@ function renderContracts(el){
       const total=QT.length,pend=QT.filter(q=>q.status==='pendiente').length,acep=QT.filter(q=>q.status==='aceptado').length,conv=QT.filter(q=>q.status==='convertido').length;
       h+=`<div class="sec">PRESUPUESTOS RECIENTES</div>
       <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px">
-        ${[['Total',total,'var(--text2)'],['Pendientes',pend,'var(--amber)'],['Aceptados',acep,'var(--green)'],['Convertidos',conv,'var(--blue)']].map(([lbl,val,col])=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;flex-shrink:0"><div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${col}">${val}</div><div style="font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:.5px">${lbl.toUpperCase()}</div></div>`).join('')}
+        ${[['Total',total,'var(--text2)'],['Pendientes',pend,'var(--amber)'],['Aceptados',acep,'var(--green)'],['Convertidos',conv,'var(--blue)']].map(([lbl,val,col])=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;flex-shrink:0"><div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${safeColor(col)}">${val}</div><div style="font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:.5px">${lbl.toUpperCase()}</div></div>`).join('')}
       </div>`;
       [...QT].sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).forEach(q=>{
         const v=V.find(v=>v.id===q.vehicleId);
@@ -8766,7 +8809,7 @@ function renderContracts(el){
         h+=`<div onclick="_quoteEditId='${escJs(q.id)}';_contractsTab='presupuestos';showQuoteDetailInContracts()" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(q.num||'—')}</div>
-            <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${esc(statLabel[q.status]||q.status)}</div>
+            <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${safeColor(col)}20;color:${safeColor(col)}">${esc(statLabel[q.status]||q.status)}</div>
           </div>
           <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(v?v.name+' · '+v.plate:'Vehículo no encontrado')}</div>
           <div style="font-size:12px;color:var(--text3)">${esc(q.startDate||'—')} → ${esc(q.endDate||'—')} · ${esc(q.dur||0)} días</div>
@@ -8947,7 +8990,7 @@ function renderBiz(el){
           const allI=_all.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
           const allE=_all.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
           const items=[['Ingresos totales',allI,'var(--green)'],['Gastos totales',allE,'var(--red)'],['Beneficio',allI-allE,(allI-allE)>=0?'var(--green)':'var(--red)']];
-          return items.map(([l,v,clr])=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--text2)">'+l+'</span><span style="font-family:var(--mono);font-size:16px;font-weight:700;color:'+clr+'">'+fmtF(v)+'</span></div>').join('');
+          return items.map(([l,v,clr])=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--text2)">'+l+'</span><span style="font-family:var(--mono);font-size:16px;font-weight:700;color:'+safeColor(clr)+'">'+fmtF(v)+'</span></div>').join('');
         })()}
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
@@ -9064,7 +9107,7 @@ function renderBiz(el){
     s+=`<div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:12px;gap:1px">`;
     sorted.forEach(function(entry){const k=entry[0],v=entry[1];
       const pct=(v/total*100).toFixed(1);
-      s+=`<div style="flex:${pct};background:${safeColor(colors[k]||'#6B7280')};min-width:2px;border-radius:2px" title="${esc(k)}"></div>`;
+      s+=`<div style="flex:${Number(pct)};background:${safeColor(colors[k]||'#6B7280')};min-width:2px;border-radius:2px" title="${esc(k)}"></div>`;
     });
     s+=`</div>`;
     // Bars per item
@@ -9075,16 +9118,16 @@ function renderBiz(el){
       s+=`<div style="margin-bottom:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
           <div style="display:flex;align-items:center;gap:6px">
-            <div style="width:10px;height:10px;border-radius:3px;background:${col};flex-shrink:0"></div>
+            <div style="width:10px;height:10px;border-radius:3px;background:${safeColor(col)};flex-shrink:0"></div>
             <span style="font-size:12px;color:var(--text2)">${esc(k)}</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${col}">${fmt(v)}</span>
+            <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${safeColor(col)}">${fmt(v)}</span>
             <span style="font-size:10px;color:var(--text3)">${pct}%</span>
           </div>
         </div>
         <div style="height:5px;background:var(--bg2);border-radius:3px;overflow:hidden">
-          <div style="height:100%;width:${barW}%;background:${col};border-radius:3px;transition:width .4s"></div>
+          <div style="height:100%;width:${Number(barW)}%;background:${safeColor(col)};border-radius:3px;transition:width .4s"></div>
         </div>
       </div>`;
     });
@@ -9605,7 +9648,7 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
       </div>
     </div>
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px 4px">
-      <svg viewBox="0 0 ${TW} ${svgH}" width="100%" height="${svgH}" preserveAspectRatio="xMidYMid meet" style="display:block;overflow:visible;min-width:${TW}px">
+      <svg viewBox="0 0 ${Number(TW)} ${svgH}" width="100%" height="${svgH}" preserveAspectRatio="xMidYMid meet" style="display:block;overflow:visible;min-width:${Number(TW)}px">
         <line x1="${PL}" y1="${BL}" x2="${TW-PR}" y2="${BL}" stroke="#1e2d42" stroke-width="1"/>
         ${bars}${profSVG}${labels}
       </svg>
@@ -9614,10 +9657,10 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
       <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--amber);margin-bottom:8px;text-align:center">${selLabel.toUpperCase()}</div>
       ${(()=>{const _pct=selD.inc>0?Math.round(selD.profit/selD.inc*100):0;const _clrP=selD.profit>=0?'var(--green)':'var(--red)';const _bgP=selD.profit>=0?'#10B98120':'#EF444420';const _brP=selD.profit>=0?'#10B98140':'#EF444440';return '<div style="display:flex;align-items:center;gap:8px">'
         +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:1">'
-        +[['Ingresos',fmtF(selD.inc),'var(--green)'],['Gastos',fmtF(selD.exp),'var(--red)'],['Beneficio',fmtF(selD.profit),_clrP]].map(([l,val,clr])=>'<div style="text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+clr+'">'+val+'</div><div style="font-size:9px;color:var(--text3);margin-top:2px">'+l+'</div></div>').join('')
+        +[['Ingresos',fmtF(selD.inc),'var(--green)'],['Gastos',fmtF(selD.exp),'var(--red)'],['Beneficio',fmtF(selD.profit),_clrP]].map(([l,val,clr])=>'<div style="text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+safeColor(clr)+'">'+val+'</div><div style="font-size:9px;color:var(--text3);margin-top:2px">'+l+'</div></div>').join('')
         +'</div>'
-        +'<div style="background:'+_bgP+';border:1.5px solid '+_brP+';border-radius:12px;padding:10px 12px;text-align:center;flex-shrink:0">'
-        +'<div style="font-family:var(--mono);font-size:20px;font-weight:800;color:'+_clrP+'">'+_pct+'%</div>'
+        +'<div style="background:'+safeColor(_bgP)+';border:1.5px solid '+safeColor(_brP)+';border-radius:12px;padding:10px 12px;text-align:center;flex-shrink:0">'
+        +'<div style="font-family:var(--mono);font-size:20px;font-weight:800;color:'+safeColor(_clrP)+'">'+_pct+'%</div>'
         +'<div style="font-size:9px;color:var(--text3);margin-top:3px;letter-spacing:1px;font-weight:700">MARGEN</div>'
         +'</div>'
         +'</div>';})()}
@@ -10640,7 +10683,7 @@ function renderQuotes(el){
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
   [['Total',total,'var(--text2)'],['Pendientes',pend,'var(--amber)'],['Aceptados',acep,'var(--green)'],['Convertidos',conv,'var(--blue)']].forEach(([lbl,val,col])=>{
     h+=`<div style="background:var(--bg2);border-radius:10px;padding:10px;text-align:center">
-      <div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${col}">${val}</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${safeColor(col)}">${val}</div>
       <div style="font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.5px">${lbl}</div>
     </div>`;
   });
@@ -10652,7 +10695,7 @@ function renderQuotes(el){
     h+=`<div onclick="_quoteEditId='${escJs(q.id)}';showQuoteDetail(document.getElementById('PC'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(q.num||'—')}</div>
-        <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col}20;color:${col}">${esc(statLabel[q.status]||q.status)}</div>
+        <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${safeColor(col)}20;color:${safeColor(col)}">${esc(statLabel[q.status]||q.status)}</div>
       </div>
       <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(v?v.name+' · '+v.plate:'Vehículo no encontrado')}</div>
       <div style="font-size:12px;color:var(--text3)">${esc(q.startDate||'—')} → ${esc(q.endDate||'—')} · ${esc(q.dur||0)} días</div>
@@ -10681,7 +10724,7 @@ function showQuoteDetail(el){
       <div style="font-weight:700;font-size:20px;margin-top:2px">Presupuesto</div>
       <div style="font-size:12px;color:var(--text3);margin-top:2px">${ymd(new Date(q.createdAt))}</div>
     </div>
-    <div style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${col}20;color:${col}">${esc(statLabel[q.status]||q.status)}</div>
+    <div style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${safeColor(col)}20;color:${safeColor(col)}">${esc(statLabel[q.status]||q.status)}</div>
   </div>`;
   // Vehicle + dates
   h+=`<div style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:12px">
