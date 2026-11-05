@@ -10320,7 +10320,7 @@ function checkBackupReminder(){
   const row=document.createElement('div');
   row.style.cssText='display:flex;gap:8px;justify-content:center;margin-top:8px';
   const mk=(t,fn)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer';b.onclick=fn;return b;};
-  row.appendChild(mk('Hacer copia',()=>{el.remove();openBackup();}));
+  row.appendChild(mk('Hacer copia',()=>{el.remove();exportData();}));
   row.appendChild(mk('Más tarde',()=>el.remove()));
   el.appendChild(txt);el.appendChild(row);
   document.body.appendChild(el);
