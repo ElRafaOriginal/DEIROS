@@ -10341,6 +10341,34 @@ function _replacePhotos(photos){
 }
 function exportData(){
   _downloadBackup(_backupObject(),'DEIROS_backup_'+todayStr()+'.json');
+  try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
+  const _bn=document.getElementById('backupReminder');if(_bn)_bn.remove();
+}
+// Recordatorio mensual (no modal) de exportar la copia de seguridad
+function checkBackupReminder(){
+  const DIA=86400000,now=Date.now();
+  let last=0,remind=0;
+  try{
+    last=Date.parse(localStorage.getItem('deiros_lastBackupAt')||'')||0;
+    remind=Date.parse(localStorage.getItem('deiros_lastBackupRemindAt')||'')||0;
+  }catch(e){return;}
+  if(last&&now-last<30*DIA)return;
+  if(remind&&now-remind<30*DIA)return;
+  if(document.getElementById('backupReminder'))return;
+  // Se registra el aviso al mostrarlo: no vuelve a salir hasta dentro de 30 días
+  try{localStorage.setItem('deiros_lastBackupRemindAt',new Date(now).toISOString());}catch(e){}
+  const el=document.createElement('div');
+  el.id='backupReminder';
+  el.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#D97706;color:#fff;padding:12px 16px;border-radius:10px;z-index:9999;font-size:13px;font-weight:700;max-width:90vw;text-align:center';
+  const txt=document.createElement('div');
+  txt.textContent='Conviene exportar una copia de seguridad. Última: '+(last?new Date(last).toLocaleDateString('es-ES'):'nunca');
+  const row=document.createElement('div');
+  row.style.cssText='display:flex;gap:8px;justify-content:center;margin-top:8px';
+  const mk=(t,fn)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer';b.onclick=fn;return b;};
+  row.appendChild(mk('Hacer copia',()=>{el.remove();exportData();}));
+  row.appendChild(mk('Más tarde',()=>el.remove()));
+  el.appendChild(txt);el.appendChild(row);
+  document.body.appendChild(el);
 }
 function importData(event){
   const file=event.target.files[0];if(!file)return;
@@ -11718,6 +11746,7 @@ auth.onAuthStateChanged(async user=>{
     applyRecurringExpenses();
     nav('dashboard');
     initNotifications();
+    setTimeout(checkBackupReminder,4000);
   }else{
     clearTimeout(_saveTimer);
     _saveTimer=null;
