@@ -381,6 +381,9 @@ select option{background:var(--bg);}
     <div class="desk-ni-sm" id="dni-analytics" onclick="nav('analytics')">
       <span class="desk-icon">📈</span><span class="desk-lbl">Analítica</span>
     </div>
+    <div class="desk-ni-sm" onclick="openPendingDeposits()">
+      <span class="desk-icon">🔒</span><span class="desk-lbl">Fianzas</span>
+    </div>
     <div class="desk-ni-sm" id="dni-archive" onclick="nav('archive')">
       <span class="desk-icon">📦</span><span class="desk-lbl">Archivo</span>
     </div>
@@ -452,6 +455,9 @@ select option{background:var(--bg);}
   </div>
   <div onclick="closeHamburger();nav('recurring')" class="hmenu-item" id="hni-recurring">
     <span class="hmenu-icon">🔄</span><span class="hmenu-lbl">Gastos recurrentes</span>
+  </div>
+  <div onclick="closeHamburger();openPendingDeposits()" class="hmenu-item">
+    <span class="hmenu-icon">🔒</span><span class="hmenu-lbl">Fianzas</span>
   </div>
   <div onclick="closeHamburger();nav('archive')" class="hmenu-item" id="hni-archive">
     <span class="hmenu-icon">📦</span><span class="hmenu-lbl">Archivo</span>
@@ -2687,6 +2693,71 @@ function setBookingAbono(bookingId){
   save();closeSheet();renderDetail(document.getElementById('PC'));
 }
 
+// ─── CONTROL DE FIANZAS ───────────────────────────────────────────────────
+function _fianzaStatus(b){
+  if(!(Number(b&&b.fianza)>0))return '';
+  const s=b.fianzaStatus;
+  return (s==='returned'||s==='retained'||s==='partial')?s:'pending';
+}
+function setBookingFianzaStatus(bookingId,status,amount,reason){
+  let _bb=null;
+  V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId)_bb=b;});});
+  if(!_bb)return;
+  const fz=Number(_bb.fianza)||0;
+  if(!(fz>0))return;
+  if(['pending','returned','retained','partial'].indexOf(status)<0)return;
+  reason=String(reason||'').trim().slice(0,300);
+  if(status==='retained')amount=fz;
+  if(status==='partial'){
+    amount=Number(amount);
+    if(!(amount>0)||amount>fz){alert('El importe retenido debe ser mayor que 0 y no superar la fianza ('+fmtF(fz)+')');return;}
+  }
+  if((status==='retained'||status==='partial')&&!reason){alert('Indica el motivo de la retención');return;}
+  _bb.fianzaStatus=status;
+  if(status==='retained'||status==='partial'){_bb.fianzaRetainedAmount=amount;_bb.fianzaRetainedReason=reason;}
+  else{delete _bb.fianzaRetainedAmount;delete _bb.fianzaRetainedReason;}
+  if(status==='pending')delete _bb.fianzaReturnedAt;
+  else _bb.fianzaReturnedAt=new Date().toISOString();
+  save();showBookingById(bookingId);
+}
+function retainFianzaFull(bookingId){
+  const r=prompt('Motivo de la retención de la fianza:');
+  if(r===null)return;
+  setBookingFianzaStatus(bookingId,'retained',null,r);
+}
+function retainFianzaPart(bookingId){
+  const a=document.getElementById('fzAmt_'+bookingId),r=document.getElementById('fzRsn_'+bookingId);
+  if(!a||!r)return;
+  setBookingFianzaStatus(bookingId,'partial',parseFloat(a.value),r.value);
+}
+function openPendingDeposits(filter){
+  filter=filter||'pending';
+  const rows=[];
+  V.forEach(v=>(v.bookings||[]).forEach(b=>{
+    const st=_fianzaStatus(b);
+    if(!st||b.cancelled)return;
+    if(filter==='pending'&&st!=='pending')return;
+    if(filter==='retained'&&st!=='retained'&&st!=='partial')return;
+    rows.push({v,b,st});
+  }));
+  rows.sort((x,y)=>String(x.b.endDate||'').localeCompare(String(y.b.endDate||'')));
+  const LBL={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'};
+  const COL={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:'#F97316'};
+  const pill=(k,t)=>'<button onclick="openPendingDeposits(\''+k+'\')" style="flex:1;background:'+(filter===k?'var(--amber)':'var(--bg3)')+';color:'+(filter===k?'#000':'var(--text2)')+';border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">'+t+'</button>';
+  let h='<div style="padding:16px"><div style="font-size:16px;font-weight:800;margin-bottom:10px">🔒 Fianzas</div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:12px">'+pill('pending','Pendientes')+pill('retained','Retenidas')+pill('all','Todas')+'</div>';
+  if(!rows.length)h+='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Sin fianzas en esta lista</div>';
+  rows.forEach(({v,b,st})=>{
+    h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><div style="font-size:13px;font-weight:700;min-width:0">'+esc(v.name)+' <span style="font-size:10px;color:var(--text3);font-weight:500">'+esc(v.plate||'')+'</span></div>'
+      +'<span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--blue)">'+fmtF(b.fianza)+'</span></div>'
+      +'<div style="font-size:11px;color:var(--text3);margin:2px 0 6px">'+esc(b.clientName||'—')+' · '+esc(b.startDate||'')+' → '+esc(b.endDate||'')+'</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;font-weight:700;color:'+COL[st]+'">'+LBL[st]+'</span>'
+      +'<button onclick="showBookingById(\''+escJs(b.id)+'\')" style="background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">Ver alquiler</button></div></div>';
+  });
+  openSheet(h+'</div>');
+}
+
 function unlinkBookingClient(bookingId){
   const v=gV();if(!v)return;
   const b=(v.bookings||[]).find(b=>b.id===bookingId);if(!b)return;
@@ -4882,6 +4953,9 @@ function _normBooking(b){
   ['amount','priceDay','fianza','kmStart','kmEnd','kmContracted','deposit','abono'].forEach(k=>_normNum(b,k));
   ['cancelled','delivered','returned','cobrado','paid','kmIlimitados'].forEach(k=>_normBool(b,k));
   ['deliveredFuelLevel','returnedFuelLevel'].forEach(k=>{if(k in b&&typeof b[k]!=='string')b[k]=b[k]==null?'':String(b[k]);});
+  _normEnum(b,'fianzaStatus',['pending','returned','retained','partial'],'');
+  _normNum(b,'fianzaRetainedAmount');
+  ['fianzaRetainedReason','fianzaReturnedAt'].forEach(k=>{if(b[k]!=null&&typeof b[k]!=='string')_normBump(b,k,'');});
   _normList(b,'finances');_normList(b,'extras');
   (b.finances||[]).forEach(_normEntry);
   (b.extras||[]).forEach(x=>{if(x&&typeof x==='object')_normNum(x,'amount');});
@@ -5185,6 +5259,8 @@ function renderDash(el){
       <div style="font-size:10px;color:var(--text3);margin-top:3px">${totalBk} alq. totales</div>
     </div>
   </div>
+  ${(()=>{let n=0;activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&_fianzaStatus(b)==='pending')n++;}));
+    return `<div onclick="openPendingDeposits()" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid ${n?'#F59E0B40':'var(--border2)'};border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer"><span style="font-size:12px;font-weight:700;color:${n?'var(--amber)':'var(--text2)'}">🔒 Fianzas pendientes (${n})</span><span style="color:var(--text3)">›</span></div>`;})()}
   <details style="margin-bottom:${isDesk?'24px':'12px'}">
     <summary style="font-size:11px;color:var(--text3);cursor:pointer;padding:6px 0;list-style:none">▸ Año ${now.getFullYear()} (acumulado)</summary>
     ${(()=>{
@@ -5971,7 +6047,31 @@ function showBooking(k,_overrideId){
         ${_hasFianza?`<div style="display:flex;justify-content:space-between;align-items:center;background:#3B82F610;border:1px solid #3B82F630;border-radius:8px;padding:8px 12px;margin-bottom:8px">
           <span style="font-size:12px;color:var(--blue);font-weight:700">🔒 Fianza reembolsable</span>
           <span style="font-family:var(--mono);font-size:14px;font-weight:800;color:var(--blue)">${fmtF(_fianza)}</span>
-        </div>`:''}
+        </div>
+        ${(()=>{
+          const _st=_fianzaStatus(b);
+          const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
+          const _C={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:'#F97316'}[_st];
+          const _bs='border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--text)';
+          const _is='background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;min-width:0';
+          const _id=escJs(b.id);
+          return `<div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:11px;font-weight:700;color:${_C};border:1px solid ${_C};border-radius:99px;padding:2px 10px">${_L}</span>
+              ${_st==='retained'||_st==='partial'?`<span style="font-size:11px;color:var(--text3)">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+              ${_st!=='returned'?`<button onclick="setBookingFianzaStatus('${_id}','returned')" style="${_bs}">✅ Marcar devuelta</button>`:''}
+              ${_st!=='retained'?`<button onclick="retainFianzaFull('${_id}')" style="${_bs}">⛔ Retener toda</button>`:''}
+              ${_st!=='pending'?`<button onclick="setBookingFianzaStatus('${_id}','pending')" style="${_bs}">↩️ Volver a pendiente</button>`:''}
+            </div>
+            <div style="display:flex;gap:6px">
+              <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:90px;font-family:var(--mono)"/>
+              <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1"/>
+              <button onclick="retainFianzaPart('${_id}')" style="${_bs};white-space:nowrap">Retener parte</button>
+            </div>
+          </div>`;
+        })()}`:''}
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
           <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
           <button onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
