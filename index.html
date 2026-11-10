@@ -2620,7 +2620,7 @@ function _confirmReturn(){
     const kmAmt=Math.max(0,parseFloat(document.getElementById('retKmAmt')?.value)||0);
     const kmEx=Math.max(0,parseInt(document.getElementById('retKmExtra')?.value)||0);
     const fuAmt=Math.max(0,parseFloat(document.getElementById('retFuelAmt')?.value)||0);
-    const fuPct=parseInt(document.getElementById('retFuelPct')?.value)||0;
+    const fuPct=Math.min(100,Math.max(0,parseInt(document.getElementById('retFuelPct')?.value)||0));
     if(kmAmt>0)b.finance.push({id:uid(),type:'income',concept:'Exceso de km',amount:kmAmt,date:todayStr(),notes:kmEx+' km extra en devolución',_returnCharge:true});
     if(fuAmt>0)b.finance.push({id:uid(),type:'income',concept:'Combustible faltante',amount:fuAmt,date:todayStr(),notes:(fuPct>0?'Faltan '+fuPct+'% ('+(b.deliveredFuelLevel||'?')+' → '+retFuel+')':'Combustible en devolución: '+retFuel),_returnCharge:true});
     if(kmEnd>Number(v.km||0))v.km=String(kmEnd);
