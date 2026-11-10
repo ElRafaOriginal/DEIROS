@@ -2213,7 +2213,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const [yr2,mo2]=mk.split('-');
       const mI=filtered.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&e.date.startsWith(mk)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
       const mE=filtered.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&e.date.startsWith(mk)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
-      const mBk=filtered.reduce((s,v)=>s+(v.bookings||[]).filter(b=>b.startDate.startsWith(mk)).length,0);
+      const mBk=filtered.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.startsWith(mk)).length,0);
       const mP=mI-mE;
       _tblR([
         [MON_ES[parseInt(mo2)-1]+' '+yr2,mg+3,'left',[30,60,120],true],
