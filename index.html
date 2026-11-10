@@ -117,18 +117,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   .desk-page-title{font-size:20px;font-weight:800;letter-spacing:0.5px;color:var(--text);}
   .desk-page-sub{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:1px;}
   .desk-actions{display:flex;gap:10px;align-items:center;}
-  .desk-btn{
-    background:var(--amber);color:var(--on-amber);border:none;
-    border-radius:8px;padding:8px 16px;
+  /* .desk-btn = .btn-pri, .desk-btn-ghost = .btn-sec (mismo aspecto, ancho automático) */
+  .desk-btn,.desk-btn-ghost{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border-radius:var(--rsm);padding:11px 18px;
     font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;
-    display:flex;align-items:center;gap:6px;
+    min-height:44px;width:auto;box-sizing:border-box;white-space:nowrap;
   }
-  .desk-btn-ghost{
-    background:var(--bg3);color:var(--text2);border:1px solid var(--border2);
-    border-radius:8px;padding:8px 14px;
-    font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;
-    display:flex;align-items:center;gap:6px;
-  }
+  .desk-btn{background:var(--amber);color:var(--on-amber);border:1.5px solid var(--amber);}
+  .desk-btn-ghost{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);}
+  .desk-btn:active,.desk-btn-ghost:active{opacity:.85;}
 
   /* Content — full width, no artificial max */
   .page{
@@ -2473,7 +2471,7 @@ function openExtendBooking(bookingId){
     +'</div>'
     +'<button class="btn" onclick="_confirmExtend()">✅ Confirmar ampliación</button>'
     +'<div style="height:8px"></div>'
-    +'<button onclick="generateExtensionPDF()" style="width:100%;background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Generar Anexo de Ampliación</button>'
+    +'<button onclick="generateExtensionPDF()" class="btn-pri" style="margin-bottom:8px">📋 Generar Anexo de Ampliación</button>'
     +'<button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
@@ -6111,7 +6109,7 @@ function showBooking(k,_overrideId){
         })()}`:''}
         <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
           <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
-          <button class="tap44" onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;width:auto">Guardar</button>
+          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="color:var(--on-amber);white-space:nowrap;width:auto">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -6226,11 +6224,10 @@ function openCancelBooking(bookingId){
     </div>
 
     <div style="height:6px"></div>
-    <button onclick="submitCancelBooking('${escJs(bookingId)}')"
-      style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px">
+    <button onclick="submitCancelBooking('${escJs(bookingId)}')" class="btn-dang" style="margin-bottom:8px">
       🚫 Confirmar cancelación
     </button>
-    <button onclick="closeSheet()" class="btn-g" style="width:100%">Volver</button>
+    <button onclick="closeSheet()" class="btn-sec">Volver</button>
   `);
   // Estado inicial
   window._cancelBy=null;
@@ -7319,7 +7316,7 @@ function renderInfo(v){
           +'</div>';
       }).join('')
       +'</div>'
-      +'<button onclick="dlMaintReport(\''+escJs(v.id)+'\')" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">📄 Informe de mantenimientos</button>';
+      +'<button onclick="dlMaintReport(\''+escJs(v.id)+'\')" class="btn-sec" style="margin-bottom:12px">📄 Informe de mantenimientos</button>';
   })()}
   ${isM&&v.ownerId?`<button class="btn-sec" onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="margin-bottom:8px">📋 Contrato de gestión</button>`:''}
   <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')" style="margin-bottom:8px">📊 Exportar a Excel</button>
@@ -9080,7 +9077,7 @@ function renderContracts(el){
       <div style="font-size:36px;margin-bottom:10px">💼</div>
       <div style="font-size:15px;font-weight:800;margin-bottom:6px">Sección Negocio</div>
       <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">Los números reales de Deiros: ingresos propios + comisiones de gestión (sin sumar el total de vehículos ajenos)</div>
-      <button onclick="nav('biz')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:12px 24px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">Ir a Negocio →</button>
+      <button onclick="nav('biz')" class="btn-pri" style="width:auto">Ir a Negocio →</button>
     </div>
     </div>`;
 
@@ -10722,7 +10719,7 @@ function openNotifSettings(){
         <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
       </div>`).join(''):'<div style="font-size:12px;color:var(--text3)">Sin alertas próximas 🎉</div>'}
     </div>
-    ${perm==='granted'?`<button onclick="localStorage.removeItem('wg_lastNotifCheck');checkAlertNotifs();closeSheet();alert('Notificación enviada (si hay alertas activas)');" style="width:100%;background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">🔁 Forzar comprobación ahora</button>`:''}
+    ${perm==='granted'?`<button onclick="localStorage.removeItem('wg_lastNotifCheck');checkAlertNotifs();closeSheet();alert('Notificación enviada (si hay alertas activas)');" class="btn-sec" style="margin-bottom:10px">🔁 Forzar comprobación ahora</button>`:''}
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
 }
 
