@@ -5137,7 +5137,7 @@ function nav(view){
 }
 function openV(id){AV=id;AT='calendar';calY=new Date().getFullYear();calM=new Date().getMonth();history.pushState(null,'');document.getElementById('BN').style.display='none';document.getElementById('FAB').style.display='none';render();}
 function goBack(){AV=null;document.getElementById('BN').style.display='flex';document.getElementById('FAB').style.display=(CV==='vehicles'||CV==='biz'||CV==='owners'||CV==='clients'||CV==='rentals')?'flex':'none';render();}
-function fabClick(){if(CV==='vehicles')openAddV();else if(CV==='biz')openAddBiz();else if(CV==='owners')openAddOwner();else if(CV==='clients')openAddClient();else if(CV==='quotes')openNewQuote();else if(CV==='rentals')openContractWizard();}
+function fabClick(){if(CV==='vehicles')openAddV();else if(CV==='biz')openAddBiz();else if(CV==='owners')openAddOwner();else if(CV==='clients')openAddClient();else if(CV==='quotes')openNewQuote();else if(CV==='rentals')openNewRentalPicker();}
 
 // ═══════════════════════════════════════════════════════════ RENDER
 function render(){
@@ -5176,7 +5176,7 @@ function render(){
     const dA=document.getElementById('deskActions');
     if(dA){
       if(CV==='vehicles'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openAddV()">＋ Nuevo vehículo</button>';
-      else if(CV==='rentals')dA.innerHTML='<button class="desk-btn" onclick="openContractWizard()">📄 Nuevo contrato</button>';
+      else if(CV==='rentals')dA.innerHTML='<button class="desk-btn-ghost" onclick="openContractWizard()">📄 Contrato PDF</button><button class="desk-btn" onclick="openNewRentalPicker()">＋ Nuevo alquiler</button>';
       else if(CV==='contracts')dA.innerHTML='<button class="desk-btn-ghost" onclick="openAddBiz()">＋ Movimiento</button><button class="desk-btn" onclick="openContractWizard()">📄 Nuevo contrato</button>';
       else if(CV==='biz'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openBizReportPicker()">📄 Informe</button><button class="desk-btn" onclick="openAddBiz()">＋ Añadir movimiento</button>';
       else if(CV==='owners'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openAddOwner()">＋ Nuevo propietario</button>';
@@ -6604,6 +6604,29 @@ function deleteBooking(id){
 }
 
 // ═══════════════════════════════════════════════════════════ NEW RENTAL
+function openNewRentalPicker(){
+  const act=V.filter(v=>!v.archived);
+  if(!act.length){
+    openSheet(`<div class="stitle">Nuevo alquiler</div><div class="empty"><div class="ei">🚗</div><div class="et">Sin vehículos — añade uno en Flota</div></div>`);
+    return;
+  }
+  if(act.length===1){_newRentalFor(act[0].id);return;}
+  let h=`<div class="stitle">Nuevo alquiler</div><div class="ssub">¿Para qué vehículo?</div><div style="display:flex;flex-direction:column;gap:8px">`;
+  act.forEach(v=>{
+    h+=`<div onclick="_newRentalFor('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
+      <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+      </div>
+      <div style="color:var(--text3);font-size:18px">›</div>
+    </div>`;
+  });
+  h+=`</div>`;
+  openSheet(h);
+}
+function _newRentalFor(id){closeSheet();openV(id);openNewRental();}
+
 function openNewRental(){
   _plat='amovens';
   const today=todayStr();
