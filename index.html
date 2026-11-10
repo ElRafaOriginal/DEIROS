@@ -6042,12 +6042,13 @@ function showBooking(k,_overrideId){
     })()}
     ${(()=>{
       const _abono=Number(b.abonoReserva||0);
+      const _cobSinImp=!!(b.cobrado||b.paid)&&!_abono;
       const _fianza=Number(b.fianza||0);
       const _totAlq=_bookingRealTotal(b);
       const _totTotal=_totAlq+_fianza;
       const _pend=Math.max(0,_totTotal-_abono);
       const _hasFianza=_fianza>0;
-      const _hasAbono=_abono>0||_hasFianza;
+      const _hasAbono=_abono>0||_hasFianza||_cobSinImp;
       return `<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">💳 COBROS Y FIANZA</div>
         ${_hasFianza?`<div style="display:flex;justify-content:space-between;align-items:center;background:#3B82F610;border:1px solid #3B82F630;border-radius:8px;padding:8px 12px;margin-bottom:8px">
@@ -6099,7 +6100,7 @@ function showBooking(k,_overrideId){
                 <div style="display:flex;justify-content:space-between;align-items:baseline">
                   <span style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--text)">${fmtF(_totAlq)}</span>
                   <span style="font-size:9px;font-weight:700;color:${_alqPend===0?'var(--green)':'var(--amber)'}">
-                    ${_alqPend===0?'✓ cubierto':'falta '+fmtF(_alqPend)}
+                    ${_cobSinImp?'sin importe':_alqPend===0?'✓ cubierto':'falta '+fmtF(_alqPend)}
                   </span>
                 </div>
               </div>
@@ -6108,22 +6109,23 @@ function showBooking(k,_overrideId){
                 <div style="display:flex;justify-content:space-between;align-items:baseline">
                   <span style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--blue)">${fmtF(_fianza)}</span>
                   <span style="font-size:9px;font-weight:700;color:${_fiaPend===0?'var(--green)':'var(--amber)'}">
-                    ${_fiaPend===0?'✓ cubierta':'falta '+fmtF(_fiaPend)}
+                    ${_cobSinImp?'sin importe':_fiaPend===0?'✓ cubierta':'falta '+fmtF(_fiaPend)}
                   </span>
                 </div>
               </div>`:''}
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:${_pend>0?'1px solid var(--border)':'none'}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:${_pend>0&&!_cobSinImp?'1px solid var(--border)':'none'}">
               <div style="padding:8px 10px;border-right:1px solid var(--border)">
                 <div style="font-size:7px;color:var(--text3);font-weight:700;margin-bottom:2px">RECIBIDO</div>
-                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--green)">${fmtF(_abono)}</div>
+                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</div>
               </div>
               <div style="padding:8px 10px">
-                <div style="font-size:7px;color:${_pend>0?'var(--amber)':'var(--green)'};font-weight:700;margin-bottom:2px">PENDIENTE</div>
-                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:${_pend>0?'var(--amber)':'var(--green)'}">${fmtF(_pend)}</div>
+                <div style="font-size:7px;color:${_cobSinImp?'var(--text3)':_pend>0?'var(--amber)':'var(--green)'};font-weight:700;margin-bottom:2px">PENDIENTE</div>
+                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:${_cobSinImp?'var(--text3)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</div>
               </div>
             </div>
-            ${_pend>0&&_concepto?`<div style="padding:5px 10px;background:#F59E0B10;font-size:10px;color:var(--amber)">En concepto de: <strong>${_concepto}</strong></div>`:''}
+            ${_pend>0&&_concepto&&!_cobSinImp?`<div style="padding:5px 10px;background:#F59E0B10;font-size:10px;color:var(--amber)">En concepto de: <strong>${_concepto}</strong></div>`:''}
+            ${_cobSinImp?`<div style="padding:5px 10px;font-size:10px;color:var(--text3)">Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</div>`:''}
           </div>`;
         })()}`:''}
       </div>`;
