@@ -290,7 +290,8 @@ select option{background:var(--bg);}
   .plat-opt{display:flex;flex-direction:column;align-items:center;justify-content:center;}
   .plat-opts{gap:8px;}
   .g8{gap:8px!important;}
-  input,select{min-height:44px;}
+  input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select{min-height:44px;}
+  label:has(>input[type=checkbox]:not([style*="display:none"])){min-height:44px;}
   .page{padding-bottom:calc(90px + 56px + var(--sb));}
 }
 @media(min-width:768px){#hamburgerMenu,#hamburgerPanel,#hamburgerBtn{display:none!important;}}
