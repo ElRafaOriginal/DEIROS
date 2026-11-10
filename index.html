@@ -11241,7 +11241,9 @@ function _openQuoteForm(q){
     </div>`;
   }).join('');
 
-  openSheet(`<div class="stitle">${q?'✏️ Editar presupuesto':'📝 Nuevo presupuesto'}</div>
+  openSheet(`<div class="stitle">${q?'✏️ Editar presupuesto':'📝 Nuevo presupuesto'}</div><div class="ssub" id="qwSub">Paso 1: vehículo y fechas</div>
+    <div class="wiz-bar">${['Vehículo','Extras','Total'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="qwS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
+    <div data-qw="1">
     <div class="fg"><label class="lbl">VEHÍCULO *</label>
       <select id="qVehicle" onchange="_loadQuoteExtrasUpdate()"><option value="">— Seleccionar —</option>${vOpts}</select></div>
     <div class="r2">
@@ -11260,6 +11262,9 @@ function _openQuoteForm(q){
         <input type="number" id="qDiscount" step="0.01" inputmode="decimal" placeholder="0"
           value="${esc(q&&q.discount?q.discount:'')}" oninput="_calcQuoteTotal()"/></div>
     </div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_qwGo(2)">Siguiente ›</button></div>
+    </div>
+    <div data-qw="2" style="display:none">
     <div class="fg"><label class="lbl">NOMBRE DEL CLIENTE (opcional)</label>
       <input id="qClient" value="${esc(q?q.clientName||'':'')}" placeholder="Nombre del cliente" autocomplete="off"/></div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">⭐ SUPLEMENTOS</div>
@@ -11333,7 +11338,11 @@ function _openQuoteForm(q){
         </span>
       </div>`;
     }).join('')}</div>
-    <div class="fg"><label class="lbl">FIANZA (€) <span style="font-size:9px;color:var(--text3)">reembolsable, no suma al total</span></label>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_qwGo(1)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_qwGo(3)">Siguiente ›</button></div>
+    </div>
+    <div data-qw="3" style="display:none">
+    <div id="qwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
+    <div class="fg"><label class="lbl">FIANZA (€)<span style="font-size:9px;color:var(--text3)">reembolsable, no suma al total</span></label>
       <input type="number" id="qFianza" step="0.01" inputmode="decimal" placeholder="200"
         value="${esc(q&&q.fianza?q.fianza:'')}"/></div>
     <div class="fg"><label class="lbl">OBSERVACIONES (aparecerán en el PDF)</label>
@@ -11350,9 +11359,8 @@ function _openQuoteForm(q){
         <span id="qTotalOut" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">—</span>
       </div>
     </div>
-    <button class="btn" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button>
-    <div style="height:8px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div style="display:flex;gap:10px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_qwGo(2)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button></div>
+    </div>`);
 
   setTimeout(()=>{
     if(q&&q.vehicleId){
@@ -11364,6 +11372,32 @@ function _openQuoteForm(q){
 }
 
 function _loadQuoteExtrasUpdate(){_calcQuoteTotal();}
+
+function _qwValidate1(){
+  const g=id=>document.getElementById(id)?.value;
+  ['qVehicle','qStart','qEnd'].forEach(id=>_rwMark(id,false));
+  const miss=['qVehicle','qStart','qEnd'].filter(id=>!g(id));
+  if(miss.length){miss.forEach(id=>_rwMark(id,true));alert('Selecciona vehículo y fechas.');return false;}
+  const st=g('qStartT')||'09:00',et=g('qEndT')||'09:00';
+  if(new Date(g('qEnd')+'T'+et)<=new Date(g('qStart')+'T'+st)){['qEnd','qEndT'].forEach(id=>_rwMark(id,true));alert('La fecha/hora de fin debe ser posterior al inicio');return false;}
+  return true;
+}
+function _qwGo(n){
+  const cur=[1,2,3].find(i=>document.querySelector('#SC [data-qw="'+i+'"]')?.style.display!=='none')||1;
+  if(n>cur&&!_qwValidate1())return;
+  document.querySelectorAll('#SC [data-qw]').forEach(d=>{d.style.display=d.getAttribute('data-qw')===String(n)?'':'none';});
+  [1,2,3].forEach(i=>{const e=document.getElementById('qwS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
+  const sub=document.getElementById('qwSub');
+  if(sub)sub.textContent=['','Paso 1: vehículo y fechas','Paso 2: cliente y extras','Paso 3: total y guardar'][n];
+  if(n===3){
+    _calcQuoteTotal();
+    const g=id=>document.getElementById(id)?.value||'';
+    const veh=V.find(x=>x.id===g('qVehicle'));
+    const cl=g('qClient').trim();
+    document.getElementById('qwSummary').innerHTML='<div>🚗 <b>'+esc(veh?veh.name+' · '+veh.plate:'—')+'</b></div><div>📅 '+esc(fmtDMY(g('qStart')))+' '+esc(g('qStartT'))+' → '+esc(fmtDMY(g('qEnd')))+' '+esc(g('qEndT'))+'</div>'+(cl?'<div>👤 '+esc(cl)+'</div>':'');
+  }
+  const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
+}
 
 function _kmDia(d, cfg){
   // km incluidos el día d-ésimo del alquiler (d empieza en 1)
