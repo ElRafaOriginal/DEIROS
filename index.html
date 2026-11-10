@@ -2754,7 +2754,7 @@ function openPendingDeposits(filter){
     h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><div style="font-size:13px;font-weight:700;min-width:0">'+esc(v.name)+' <span style="font-size:10px;color:var(--text3);font-weight:500">'+esc(v.plate||'')+'</span></div>'
       +'<span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--blue)">'+fmtF(b.fianza)+'</span></div>'
-      +'<div style="font-size:11px;color:var(--text3);margin:2px 0 6px">'+esc(b.clientName||'—')+' · '+esc(b.startDate||'')+' → '+esc(b.endDate||'')+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin:2px 0 6px">'+esc(b.clientName||'—')+' · '+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;font-weight:700;color:'+COL[st]+'">'+LBL[st]+'</span>'
       +'<button onclick="showBookingById(\''+escJs(b.id)+'\')" style="background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">Ver alquiler</button></div></div>';
   });
@@ -4784,6 +4784,7 @@ const _fmtEUR=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',min
 const _fmtEURs=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'});
 function fmt(n){return _fmtEUR.format(n||0);}
 function fmtF(n){return _fmtEURs.format(n||0);}
+function fmtDMY(s){const t=String(s==null?'':s);const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(t);return m?m[3]+'/'+m[2]+'/'+m[1]:t;}
 function dStr(s){const t=safeDate(s);if(!t)return '';const p=t.split('-');return p[2]+'/'+p[1];}
 function daysBetween(s,e){return Math.max(1,Math.round((new Date(e)-new Date(s))/864e5));}
 
@@ -5348,7 +5349,7 @@ function renderDash(el){
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
-            <div style="font-size:10px;color:var(--amber)">hasta ${esc(b.endDate)}</div>
+            <div style="font-size:10px;color:var(--amber)">hasta ${esc(fmtDMY(b.endDate))}</div>
           </div>
         </div>`).join('')}
       </div>`;
@@ -5386,7 +5387,7 @@ function renderDash(el){
             +'<div style="width:4px;height:36px;border-radius:2px;background:'+safeColor(b.vcolor)+';flex-shrink:0"></div>'
             +'<div style="flex:1;min-width:0">'
             +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
-            +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+esc(b.startDate)+' → '+esc(b.endDate)+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
+            +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+esc(fmtDMY(b.startDate))+' → '+esc(fmtDMY(b.endDate))+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
             +'</div>'
             +'<div style="text-align:right;flex-shrink:0">'
             +'<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmtF(b.amount)+'</div>'
@@ -5415,7 +5416,7 @@ function renderDash(el){
           ${activeRentals.map(b=>`<div onclick="openV('${escJs(b.vid)}')" style="background:var(--bg2);border:1px solid #F59E0B44;border-left:4px solid var(--amber);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName)+' · ':''}hasta ${esc(b.endDate)}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName)+' · ':''}hasta ${esc(fmtDMY(b.endDate))}</div>
             </div>
             <div style="text-align:right">
               <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
@@ -5470,7 +5471,7 @@ function renderDash(el){
             +'<div style="width:4px;height:36px;border-radius:2px;background:'+safeColor(b.vcolor)+';flex-shrink:0"></div>'
             +'<div style="flex:1;min-width:0">'
             +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
-            +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+esc(b.startDate)+' → '+esc(b.endDate)+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
+            +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+esc(fmtDMY(b.startDate))+' → '+esc(fmtDMY(b.endDate))+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
             +'</div>'
             +'<div style="text-align:right;flex-shrink:0">'
             +'<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmtF(b.amount)+'</div>'
@@ -5841,7 +5842,7 @@ function renderCal(v){
               // Start
               '<div style="background:var(--bg3);border-radius:8px;padding:6px 10px;text-align:center;min-width:60px">'+
                 '<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:1px">RECOGIDA</div>'+
-                '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(String(b.startDate).slice(5).replace('-','/'))+'</div>'+
+                '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(fmtDMY(b.startDate))+'</div>'+
                 (b.startTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+safeColor(platDot)+'">'+esc(b.startTime)+'</div>':'')+
               '</div>'+
               // Duration
@@ -5853,7 +5854,7 @@ function renderCal(v){
               // End
               '<div style="background:var(--bg3);border-radius:8px;padding:6px 10px;text-align:center;min-width:60px">'+
                 '<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:1px">DEVOLUCIÓN</div>'+
-                '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(String(b.endDate).slice(5).replace('-','/'))+'</div>'+
+                '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(fmtDMY(b.endDate))+'</div>'+
                 (b.endTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+safeColor(platDot)+'">'+esc(b.endTime)+'</div>':'')+
               '</div>'+
             '</div>'+
@@ -5967,8 +5968,8 @@ function showBooking(k,_overrideId){
     </div>`:''}
     <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.startTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(b.startDate)}</div></div>
-        <div><div class="lbl">FIN</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.endTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(b.endDate)}</div></div>
+        <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.startTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.startDate))}</div></div>
+        <div><div class="lbl">FIN</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.endTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.endDate))}</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <span class="pb ${p?.cls||''}">${p?.icon||''} ${esc(p?.label||b.platform)}</span>
@@ -6151,7 +6152,7 @@ function openCancelBooking(bookingId){
   openSheet(`
     <div class="stitle">🚫 Cancelar alquiler</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:18px">
-      ${b.clientName?'<strong style="color:var(--text2)">'+esc(b.clientName)+'</strong> · ':''} ${esc(b.startDate)} → ${esc(b.endDate)}
+      ${b.clientName?'<strong style="color:var(--text2)">'+esc(b.clientName)+'</strong> · ':''} ${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}
     </div>
 
     <div class="lbl">¿QUIÉN CANCELA?</div>
