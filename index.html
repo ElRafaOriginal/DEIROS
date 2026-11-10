@@ -694,7 +694,7 @@ function renderClientsBody(){
             <div style="font-size:12px;margin-top:3px">${stars}</div>
           </div>
         </div>
-        ${bks.length?`<div style="font-size:10px;color:var(--text3)">Último: ${esc(bks[0].startDate)} · ${esc(bks[0].vname)}</div>`:''}
+        ${bks.length?`<div style="font-size:10px;color:var(--text3)">Último: ${esc(fmtDMY(bks[0].startDate))} · ${esc(bks[0].vname)}</div>`:''}
         ${cl.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">"${esc(cl.notes)}"</div>`:''}
       </div>`;
     });
@@ -764,7 +764,7 @@ function renderClientDetail(el){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div>
           <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(b.startDate)} → ${esc(b.endDate)}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
         </div>
         <div style="text-align:right">
           <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
@@ -2427,7 +2427,7 @@ function openExtendBooking(bookingId){
   openSheet('<div class="stitle">📅 Ampliar alquiler</div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
     +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:4px">Periodo actual: <strong>'+esc(_bb.startDate)+'</strong> → <strong>'+esc(origEnd)+'</strong>'
+    +'<div style="font-size:11px;color:var(--text3);margin-top:4px">Periodo actual: <strong>'+esc(fmtDMY(_bb.startDate))+'</strong> → <strong>'+esc(fmtDMY(origEnd))+'</strong>'
     +(_bb.endTime?' · hasta las <strong>'+esc(_bb.endTime)+'</strong>':'')+'</div>'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--text3)">Total actual del alquiler</span>'
     +'<span style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+_fmtE(_curTotal)+'</span></div>'
@@ -5958,7 +5958,7 @@ function showBooking(k,_overrideId){
         <div style="font-weight:800;font-size:14px;color:var(--red);letter-spacing:.5px;margin-bottom:3px">ALQUILER CANCELADO</div>
         <div style="font-size:11px;color:var(--text3)">
           ${b.cancellation?.by==='client'?'Cancelado por el <strong style="color:var(--text2)">cliente</strong>':'Cancelado por <strong style="color:var(--text2)">DEIROS</strong>'}
-          ${b.cancellation?.date?' · '+esc(safeDate(b.cancellation.date)):''}
+          ${b.cancellation?.date?' · '+esc(fmtDMY(safeDate(b.cancellation.date))):''}
         </div>
         ${(b.cancellation?.penalty>0)?`<div style="margin-top:5px;font-size:12px;font-weight:700;color:${b.cancellation.by==='client'?'var(--green)':'var(--amber)'}">
           Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}
@@ -6326,7 +6326,7 @@ function editBooking(id){
   const dur=daysBetween(b.startDate,b.endDate);
   const isFurgEdit=(v.vehicle_type||'turismo').startsWith('l');
   closeSheet();
-  openSheet(`<div class="stitle">✏️ Editar alquiler</div><div class="ssub">${esc(b.startDate)} → ${esc(b.endDate)}</div>
+  openSheet(`<div class="stitle">✏️ Editar alquiler</div><div class="ssub">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
     <div class="fg"><label class="lbl">VEHÍCULO</label>
       <select id="rNewVehicle" style="background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;width:100%">
         ${activeV.map(vx=>`<option value="${esc(vx.id)}"${vx.id===v.id?' selected':''}>${esc(vx.name)} · ${esc(vx.plate)}</option>`).join('')}
@@ -7006,7 +7006,7 @@ function renderFin(v){
           ${isA?`<span class="fb2" style="background:#F59E0B15;color:var(--amber)">🚗</span>`:''}
           <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${esc(e.category)}</span>
         </div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.date)}${e.description?' · '+esc(e.description):''}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(fmtDMY(e.date))}${e.description?' · '+esc(e.description):''}</div>
         ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">🔧 ${esc(e.maint.work||'')}${e.maint.km?' · '+esc(Number(e.maint.km).toLocaleString('es-ES'))+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</div>`:''}
       </div>
       <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};white-space:nowrap;margin-left:8px">${isIn?'+':'-'}${fmt(e.amount)}</div>
@@ -7193,7 +7193,7 @@ function renderInfo(v){
       +bksKm.slice(0,8).map(b=>{
         const km=b.kmStart&&b.kmEnd?b.kmEnd-b.kmStart:null;
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border)">'
-          +'<div><div style="font-size:11px;font-weight:600;color:var(--text2)">'+esc(b.startDate)+'</div>'
+          +'<div><div style="font-size:11px;font-weight:600;color:var(--text2)">'+esc(fmtDMY(b.startDate))+'</div>'
           +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px">'+(b.kmStart?b.kmStart.toLocaleString('es-ES'):'—')+' → '+(b.kmEnd?b.kmEnd.toLocaleString('es-ES'):'—')+' km</div></div>'
           +'<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+(km?'var(--blue)':'var(--text3)')+'">'+(km?'+'+km.toLocaleString('es-ES')+' km':'—')+'</span>'
           +'</div>';
@@ -7213,7 +7213,7 @@ function renderInfo(v){
           +'<div style="font-size:12px;font-weight:700;color:var(--text)">'+esc(m.work||'Sin descripción')+'</div>'
           +'<div style="font-family:var(--mono);font-size:11px;color:var(--amber);font-weight:700">-'+fmt(e.amount)+'</div>'
           +'</div>'
-          +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px">📅 '+esc(e.date)+(m.km?' · '+m.km.toLocaleString('es-ES')+' km':'')+(m.shop?' · '+esc(m.shop):'')+'</div>'
+          +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px">📅 '+esc(fmtDMY(e.date))+(m.km?' · '+m.km.toLocaleString('es-ES')+' km':'')+(m.shop?' · '+esc(m.shop):'')+'</div>'
           +(m.nextKm||m.nextDate?'<div style="font-size:10px;color:var(--blue)">Próximo: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' / ':'')+esc(m.nextDate||'')+'</div>':'')
           +'</div>';
       }).join('')
@@ -8356,7 +8356,7 @@ function renderOwnerProfile(el){
       <div style="background:var(--bg3);border-radius:8px;padding:9px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${d.mI>0?fmt(d.mI):'—'}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">MES ACT.</div></div>
     </div>
     ${d.recentBk.length?`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">ÚLTIMOS ALQUILERES</div>
-    ${d.recentBk.map(b=>{const p=PLATS[b.platform];return '<div onclick="showBookingById(\''+escJs(b.id)+'\')" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);cursor:pointer" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'"><div><div style="font-size:12px;font-weight:600">'+esc(b.startDate)+(b.endDate&&b.endDate!==b.startDate?' → '+esc(b.endDate):'')+(b.clientName?' · '+esc(b.clientName):'')+'</div><div style="font-size:10px;color:var(--text3);margin-top:1px">'+esc(p?p.label:b.platform||'—')+'</div></div><div style="text-align:right"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmtF(b.amount)+'</div><div style="font-size:9px;color:var(--text3);margin-top:1px">ver ficha →</div></div></div>';}).join('')}`:''}
+    ${d.recentBk.map(b=>{const p=PLATS[b.platform];return '<div onclick="showBookingById(\''+escJs(b.id)+'\')" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);cursor:pointer" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'"><div><div style="font-size:12px;font-weight:600">'+esc(fmtDMY(b.startDate))+(b.endDate&&b.endDate!==b.startDate?' → '+esc(fmtDMY(b.endDate)):'')+(b.clientName?' · '+esc(b.clientName):'')+'</div><div style="font-size:10px;color:var(--text3);margin-top:1px">'+esc(p?p.label:b.platform||'—')+'</div></div><div style="text-align:right"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmtF(b.amount)+'</div><div style="font-size:9px;color:var(--text3);margin-top:1px">ver ficha →</div></div></div>';}).join('')}`:''}
   </div>`).join('')}
   ${isD?'</div>':''}
   </div>`;
@@ -8540,7 +8540,7 @@ function genOwnerReport(ownerId){
         ${d.fins.filter(e=>e.type==='income').length?`
         <div style="margin-top:10px">
           <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">INGRESOS DEL MES</div>
-          ${d.fins.filter(e=>e.type==='income').map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${esc(e.date)} · ${esc(e.category)}</span><span style="font-family:var(--mono);color:var(--green);font-weight:700">${fmtE(e.amount)}</span></div>`).join('')}
+          ${d.fins.filter(e=>e.type==='income').map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${esc(fmtDMY(e.date))} · ${esc(e.category)}</span><span style="font-family:var(--mono);color:var(--green);font-weight:700">${fmtE(e.amount)}</span></div>`).join('')}
         </div>`:''}
       </div>`).join('')}
       <!-- Total to pay -->
@@ -8634,7 +8634,7 @@ function buildDashRightPanel(activeV){
     <div style="width:4px;height:38px;border-radius:2px;background:${safeColor(b.vcolor)};flex-shrink:0"></div>
     <div style="flex:1;min-width:0">
       <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.vname)}</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(b.startDate)}${esc(b.clientName&&!isD?' · '+b.clientName:'')}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(fmtDMY(b.startDate))}${esc(b.clientName&&!isD?' · '+b.clientName:'')}</div>
     </div>
     <div style="text-align:right;flex-shrink:0">
       <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmtF(b.amount)}</div>
