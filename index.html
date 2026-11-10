@@ -242,9 +242,9 @@ select option{background:var(--bg);}
 .plat-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;}
 .plat-opt{border-radius:10px;border:2px solid var(--border2);padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.2s;}
 .plat-opt.sel{border-color:var(--amber);background:#F59E0B12;}
-.plat-amovens{background:#FB7AAC20;color:#FB7AAC;border:1px solid #FB7AAC40;}
-.plat-getaround{background:#8B5CF620;color:#8B5CF6;border:1px solid #8B5CF640;}
-.plat-sinapp{background:#8B5CF620;color:#8B5CF6;border:1px solid #8B5CF640;}
+.plat-amovens{background:#FB7AAC20;color:#F9A8D4;border:1px solid #FB7AAC40;}
+.plat-getaround{background:#8B5CF620;color:#C4B5FD;border:1px solid #8B5CF640;}
+.plat-sinapp{background:#8B5CF620;color:#C4B5FD;border:1px solid #8B5CF640;}
 :root.light .plat-amovens{color:#BE185D;}
 :root.light .plat-getaround,:root.light .plat-sinapp{color:#6D28D9;}
 .pb{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:0.3px;white-space:nowrap;}
@@ -2748,7 +2748,7 @@ function openPendingDeposits(filter){
   rows.sort((x,y)=>String(x.b.endDate||'').localeCompare(String(y.b.endDate||'')));
   const LBL={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'};
   const COL={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:'#F97316'};
-  const pill=(k,t)=>'<button onclick="openPendingDeposits(\''+k+'\')" style="flex:1;background:'+(filter===k?'var(--amber)':'var(--bg3)')+';color:'+(filter===k?'#000':'var(--text2)')+';border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">'+t+'</button>';
+  const pill=(k,t)=>'<button onclick="openPendingDeposits(\''+k+'\')" style="flex:1;background:'+(filter===k?'var(--amber)':'var(--bg3)')+';color:'+(filter===k?'var(--on-amber)':'var(--text2)')+';border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">'+t+'</button>';
   let h='<div style="padding:16px"><div style="font-size:16px;font-weight:800;margin-bottom:10px">🔒 Fianzas</div>'
     +'<div style="display:flex;gap:6px;margin-bottom:12px">'+pill('pending','Pendientes')+pill('retained','Retenidas')+pill('all','Todas')+'</div>';
   if(!rows.length)h+='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Sin fianzas en esta lista</div>';
@@ -10763,7 +10763,7 @@ function _toggleExtra(id,dur,isFurg){
     chk.innerHTML=cb.checked?'&#10003;':'&nbsp;';
     chk.style.background=cb.checked?'var(--amber)':'var(--bg3)';
     chk.style.borderColor=cb.checked?'var(--amber)':'var(--border2)';
-    chk.style.color=cb.checked?'#000':'inherit';
+    chk.style.color=cb.checked?'var(--on-amber)':'inherit';
   }
   if(row)row.style.background=cb.checked?'#F59E0B12':'';
   _calcExtrasTotal(dur,isFurg||false);
@@ -11039,7 +11039,7 @@ function _openQuoteForm(q){
              border:1px solid ${chk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
       <div id="qchk_${id}" style="width:22px;height:22px;border-radius:6px;border:2px solid ${chk?'var(--amber)':'var(--border2)'};
            background:${chk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-           font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'#000':'inherit'};transition:all .15s">${chk?'✓':'&nbsp;'}</div>
+           font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'var(--on-amber)':'inherit'};transition:all .15s">${chk?'✓':'&nbsp;'}</div>
       <span style="font-size:18px">${icon}</span>
       <span style="flex:1;font-size:13px;font-weight:600">${label}
         <span style="font-size:10px;color:var(--text3);font-weight:400">${priceDisp} · ${note}</span>
@@ -11093,7 +11093,7 @@ function _openQuoteForm(q){
                  border:1px solid ${chk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
           <div id="qchk_${id}" style="width:22px;height:22px;border-radius:6px;border:2px solid ${chk?'var(--amber)':'var(--border2)'};
                background:${chk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-               font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'#000':'inherit'};transition:all .15s">${chk?'✓':'&nbsp;'}</div>
+               font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'var(--on-amber)':'inherit'};transition:all .15s">${chk?'✓':'&nbsp;'}</div>
           <span style="font-size:18px">${icon}</span>
           <span style="flex:1;font-size:13px;font-weight:600">${label}
             <span style="font-size:10px;color:var(--text3);font-weight:400">${note}</span>
@@ -11106,7 +11106,7 @@ function _openQuoteForm(q){
                border:1px solid ${kmSueltoChk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
         <div id="qchk_exKmPrepago" style="width:22px;height:22px;border-radius:6px;border:2px solid ${kmSueltoChk?'var(--amber)':'var(--border2)'};
              background:${kmSueltoChk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-             font-size:13px;font-weight:700;flex-shrink:0;color:${kmSueltoChk?'#000':'inherit'};transition:all .15s">${kmSueltoChk?'✓':'&nbsp;'}</div>
+             font-size:13px;font-weight:700;flex-shrink:0;color:${kmSueltoChk?'var(--on-amber)':'inherit'};transition:all .15s">${kmSueltoChk?'✓':'&nbsp;'}</div>
         <span style="font-size:18px">🔢</span>
         <span style="flex:1;font-size:13px;font-weight:600">Km sueltos
           <span style="font-size:10px;color:var(--text3);font-weight:400">0,15€/km</span>
@@ -11136,7 +11136,7 @@ function _openQuoteForm(q){
                border:1px solid ${chk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
         <div id="qchk_${id}" style="width:22px;height:22px;border-radius:6px;border:2px solid ${chk?'var(--amber)':'var(--border2)'};
              background:${chk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-             font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'#000':'inherit'};transition:all .15s">${chk?'✓':'&nbsp;'}</div>
+             font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'var(--on-amber)':'inherit'};transition:all .15s">${chk?'✓':'&nbsp;'}</div>
         <span style="font-size:18px">${icon}</span>
         <span style="flex:1;font-size:13px;font-weight:600">${label}
           <span style="font-size:10px;color:var(--text3);font-weight:400">${priceDisp} · ${note}</span>
@@ -11249,7 +11249,7 @@ function _toggleQExtra(row){
   } else {
     row.dataset.active='1';
     row.style.background='#F59E0B12';row.style.border='1px solid var(--amber)';
-    if(chk){chk.innerHTML='\u2713';chk.style.background='var(--amber)';chk.style.borderColor='var(--amber)';chk.style.color='#000';}
+    if(chk){chk.innerHTML='\u2713';chk.style.background='var(--amber)';chk.style.borderColor='var(--amber)';chk.style.color='var(--on-amber)';}
   }
   _calcQuoteTotal();
 }
