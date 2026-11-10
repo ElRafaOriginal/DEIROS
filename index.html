@@ -8822,6 +8822,8 @@ function setAgendaVtype(id){
 function _agIsMobile(){return !!(window.matchMedia&&window.matchMedia('(max-width:767px)').matches);}
 function agToday(){agY=new Date().getFullYear();agM=new Date().getMonth();agMobStart='';renderAgendaBody();}
 function agMobShift(n){agMobStart=addDays(agMobStart||todayStr(),n);renderAgendaBody();}
+let agMobMode='list',_agLastMobile=null;
+function agMobSetMode(m){agMobMode=m;renderAgendaBody();}
 function _agMobOpen(vid,bid){if(bid)showBookingById(bid);else openV(vid);}
 function renderAgendaMobile(res,activeV){
   const hoy=todayStr(),man=addDays(hoy,1);
@@ -8833,7 +8835,25 @@ function renderAgendaMobile(res,activeV){
     <button class="tap44" onclick="agToday()" style="${btn};flex:1;font-size:14px;font-weight:800;border-color:var(--amber);color:var(--amber)">Hoy</button>
     <button class="tap44" onclick="agMobShift(7)" aria-label="Semana siguiente" style="${btn}">›</button>
   </div>
+  <div style="display:flex;gap:6px;margin-bottom:10px">${[['list','Lista'],['week','Semana']].map(([m,l])=>`<button class="tap44" onclick="agMobSetMode('${m}')" aria-pressed="${agMobMode===m}" style="flex:1;min-height:44px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid ${agMobMode===m?'var(--amber)':'var(--border2)'};background:${agMobMode===m?'#F59E0B22':'var(--bg3)'};color:${agMobMode===m?'var(--amber)':'var(--text3)'}">${l}</button>`).join('')}</div>
   <div style="font-size:12px;color:var(--text2);margin-bottom:10px;text-align:center">${esc(fmtDMY(st0))} – ${esc(fmtDMY(addDays(st0,6)))}</div>`;
+  if(agMobMode==='week'){
+    const COL={rented:'#F59E0B',maintenance:'#3B82F6',blocked:'#EF4444'};
+    const D1=['D','L','M','X','J','V','S'];
+    h+=`<table style="width:100%;border-collapse:collapse;table-layout:fixed"><thead><tr><th style="width:34%;text-align:left;font-size:10px;color:var(--text3);padding:2px 4px">VEHÍCULO</th>${Array.from({length:7},(_,i)=>{const k=addDays(st0,i);const isT=k===hoy;return `<th style="text-align:center;font-size:10px;padding:2px 0;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}">${D1[new Date(k+'T12:00:00').getDay()]}<br>${Number(k.slice(8))}</th>`;}).join('')}</tr></thead><tbody>`;
+    activeV.forEach(v=>{
+      h+=`<tr><td style="padding:4px;border-bottom:1px solid var(--border);vertical-align:middle"><div style="font-size:12px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:10px;color:${safeColor(v.color)}">${esc(v.plate)}</div></td>`;
+      for(let i=0;i<7;i++){
+        const k=addDays(st0,i),st=dayStatus(v,k),c=COL[st];
+        let bid='';if(st==='rented'){const b=bookingForDay(v,k);if(b)bid=b.id;}
+        const isT=k===hoy;
+        h+=`<td style="padding:2px;border-bottom:1px solid var(--border);text-align:center"><div ${c?`class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')"`:''} style="min-height:34px;border-radius:4px;background:${c||'transparent'};${isT?'outline:1.5px solid var(--amber);':''}${c?'cursor:pointer;':''}">&nbsp;</div></td>`;
+      }
+      h+='</tr>';
+    });
+    h+=`</tbody></table><div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">${[['#F59E0B','Alquilado'],['#3B82F6','Mantenimiento'],['#EF4444','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}</div>`;
+    res.innerHTML=h;return;
+  }
   for(let i=0;i<7;i++){
     const k=addDays(st0,i);
     const dt=new Date(k+'T12:00:00');
@@ -8875,7 +8895,8 @@ function renderAgendaBody(){
   const res=document.getElementById('agenda-body');if(!res)return;
   const allActiveV=V.filter(v=>!v.archived);
   const activeV=allActiveV.filter(v=>(!_agFilterVtype||(v.vehicle_type||'turismo')===_agFilterVtype)&&(!_agFilterOwnership||((_agFilterOwnership==='own'&&v.vtype!=='managed')||(_agFilterOwnership==='managed'&&v.vtype==='managed'))));
-  if(_agIsMobile()){renderAgendaMobile(res,activeV);return;}
+  _agLastMobile=_agIsMobile();
+  if(_agLastMobile){renderAgendaMobile(res,activeV);return;}
   const today=new Date();
   const dim=new Date(agY,agM+1,0).getDate();
   const days=Array.from({length:dim},(_,i)=>i+1);
@@ -8954,6 +8975,15 @@ function renderAgenda(el){
 }
 function agPrev(){if(agM===0){agM=11;agY--;}else agM--;renderAgendaBody();}
 function agNext(){if(agM===11){agM=0;agY++;}else agM++;renderAgendaBody();}
+// Re-render automático al rotar / cambiar ancho si la Agenda está visible
+function _agOnResize(){
+  const el=document.getElementById('agenda-body');
+  if(!el||!el.offsetParent)return;
+  if(_agIsMobile()===_agLastMobile)return;
+  renderAgendaBody();
+}
+window.addEventListener('resize',_agOnResize);
+window.addEventListener('orientationchange',()=>setTimeout(_agOnResize,150));
 
 // ═══════════════════════════════════════════════════════════ ALQUILERES (nueva vista unificada)
 function renderRentals(el){
