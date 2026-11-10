@@ -3161,9 +3161,16 @@ function openContractForm(vId,bookingId){
 
   const isFurgoneta=(v.vehicle_type||'turismo').startsWith('l');
   openSheet(`<div class="stitle">📄 Contrato de alquiler</div>
-  <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Completa los datos que falten. Los campos del sistema se pre-rellenan automáticamente.</div>
+  <div style="font-size:11px;color:var(--text3);margin-bottom:14px"><span id="ctSub">Paso 1: empresa y vehículo</span></div>
+  <div class="wiz-bar">${['Empresa y vehículo','Cliente','Condiciones','Revisión'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="ctS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
 
-  <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:8px">🏢 ARRENDADOR</div>
+  <div data-ct="1">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple)">🏢 ARRENDADOR</div>
+    <button type="button" class="btn-g tap44" id="ctFoldBtnAr" style="min-height:44px;padding:0 14px" onclick="_ctFold('Ar')">Editar</button>
+  </div>
+  <div id="ctSumAr" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;font-size:13px;line-height:1.7"></div>
+  <div id="ctFldAr" style="display:none">
   <div class="r2">
     <div class="fg"><label class="lbl">NOMBRE / RAZÓN SOCIAL</label><input id="ctArNombre" value="${esc(co.nombre||'DEIROS')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">NIF / CIF</label><input id="ctArNif" value="${esc(co.nif||'')}" autocomplete="off"/></div>
@@ -3177,9 +3184,15 @@ function openContractForm(vId,bookingId){
     <div class="fg"><label class="lbl">CIUDAD DE FIRMA</label><input id="ctCiudad" value="${esc(co.ciudad||'Madrid')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">FECHA DEL CONTRATO</label><input id="ctFecha" value="${today}" autocomplete="off"/></div>
   </div>
+  </div>
 
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
-  <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">🚗 VEHÍCULO</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber)">🚗 VEHÍCULO</div>
+    <button type="button" class="btn-g tap44" id="ctFoldBtnV" style="min-height:44px;padding:0 14px" onclick="_ctFold('V')">Editar</button>
+  </div>
+  <div id="ctSumV" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;font-size:13px;line-height:1.7"></div>
+  <div id="ctFldV" style="display:none">
   <div class="r2">
     <div class="fg"><label class="lbl">MARCA</label><input id="ctVMake" value="${esc(v.make||(v.model&&v.model.includes(' ')?v.model.split(' ')[0]:''))}" placeholder="Ej: Renault" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">MODELO</label><input id="ctVModel" value="${esc(v.make?(v.model||v.name):(v.model&&v.model.includes(' ')?v.model.split(' ').slice(1).join(' '):v.model||v.name))}" placeholder="Ej: Clio" autocomplete="off"/></div>
@@ -3196,8 +3209,11 @@ function openContractForm(vId,bookingId){
     </div>
     <div class="fg"><label class="lbl">KM EN ENTREGA</label><input id="ctVKm" value="${esc(b.kmStart||v.km||'')}" inputmode="numeric"/></div>
   </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_ctGo(2)">Siguiente ›</button></div>
+  </div>
 
-  <div style="height:1px;background:var(--border);margin:12px 0"></div>
+  <div data-ct="2" style="display:none">
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">👤 ARRENDATARIO</div>
   <div class="r2">
     <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="ctClNombre" value="${esc(b.clientName||cl?.name||'')}" autocomplete="off"/></div>
@@ -3235,9 +3251,10 @@ function openContractForm(vId,bookingId){
       </div>
     </div>
   </div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_ctGo(1)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_ctGo(3)">Siguiente ›</button></div>
+  </div>
 
-
-  <div style="height:1px;background:var(--border);margin:12px 0"></div>
+  <div data-ct="3" style="display:none">
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--green);margin-bottom:8px">💶 CONDICIONES ECONÓMICAS</div>
   <div class="r2">
     <div class="fg"><label class="lbl">LUGAR ENTREGA</label><input id="ctEntLugar" value="${esc(co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
@@ -3399,15 +3416,20 @@ function openContractForm(vId,bookingId){
   <div class="fg"><label class="lbl">OBSERVACIONES ADICIONALES</label>
     <textarea id="ctObs" rows="2" style="font-size:13px;padding:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);width:100%;box-sizing:border-box">${esc(b.notes||'')}</textarea>
   </div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_ctGo(2)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_ctGo(4)">Siguiente ›</button></div>
+  </div>
 
-  <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer">
+  <div data-ct="4" style="display:none">
+  <div id="ctSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
+  <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;min-height:44px">
     <input type="checkbox" id="ctSaveDefaults" checked/>
     <span style="font-size:12px;color:var(--text3)">Guardar datos de empresa para futuros contratos</span>
   </label>
-
-  <button class="btn" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button>
+  <div style="display:flex;gap:10px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_ctGo(3)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button></div>
   <div style="height:8px"></div>
-  <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+  <button class="btn-g tap44" onclick="closeSheet()" style="width:100%;min-height:44px">Cancelar</button>
+  </div>`);
+  _ctSumUpd('Ar');_ctSumUpd('V');
   // Pre-check extras from the booking (b.extras array)
   if(b.extras&&b.extras.length){
     const _kmIds=['exBolsa200','exBolsa500','exBolsa1000','exKmIlimitados'];
@@ -3422,6 +3444,50 @@ function openContractForm(vId,bookingId){
   }
   // Update km total badge after pre-checking extras
   _ctKmUpdate();
+}
+
+// ── Contrato en 4 pasos: solo muestra/oculta contenedores; no guarda nada ─────
+function _ctVal(id){return (document.getElementById(id)?.value||'').trim();}
+function _ctSumUpd(k){
+  const el=document.getElementById('ctSum'+k);if(!el)return;
+  const row=(a,b)=>b?'<div>'+a+' <b>'+esc(b)+'</b></div>':'';
+  if(k==='Ar'){
+    el.innerHTML=row('🏢',_ctVal('ctArNombre'))+row('NIF',_ctVal('ctArNif'))+row('📍',_ctVal('ctArDir'))+row('📞',_ctVal('ctArTel'))+row('✉️',_ctVal('ctArEmail'))+row('Firma en',_ctVal('ctCiudad')+(_ctVal('ctFecha')?' · '+_ctVal('ctFecha'):''));
+  }else{
+    el.innerHTML=row('🚗',(_ctVal('ctVMake')+' '+_ctVal('ctVModel')).trim())+row('Matrícula',_ctVal('ctVPlate'))+row('Combustible',_ctVal('ctVFuel'))+row('Nivel entrega',_ctVal('ctFuelLevel'))+row('Km entrega',_ctVal('ctVKm'));
+  }
+}
+function _ctFold(k){
+  const fld=document.getElementById('ctFld'+k),btn=document.getElementById('ctFoldBtn'+k),sum=document.getElementById('ctSum'+k);
+  if(!fld)return;
+  const open=fld.style.display==='none';
+  fld.style.display=open?'':'none';
+  if(sum)sum.style.display=open?'none':'';
+  if(btn)btn.textContent=open?'Confirmar':'Editar';
+  if(!open)_ctSumUpd(k);
+}
+function _ctGo(n){
+  ['Ar','V'].forEach(k=>{const f=document.getElementById('ctFld'+k);if(f&&f.style.display!=='none')_ctFold(k);});
+  document.querySelectorAll('#SC [data-ct]').forEach(d=>{d.style.display=d.getAttribute('data-ct')===String(n)?'':'none';});
+  [1,2,3,4].forEach(i=>{const e=document.getElementById('ctS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
+  const sub=document.getElementById('ctSub');
+  if(sub)sub.textContent=['','Paso 1: empresa y vehículo','Paso 2: cliente','Paso 3: condiciones, km, fianza y extras','Paso 4: revisa y genera el PDF'][n];
+  if(n===4){
+    const row=(a,b)=>b?'<div>'+a+' <b>'+esc(b)+'</b></div>':'';
+    const ex=document.getElementById('exTotalAmt')?.textContent||'0,00 €';
+    const extra=document.getElementById('ctHasExtra')?.checked?_ctVal('ctEx2Nombre'):'';
+    const sd=document.getElementById('ctSummary');
+    if(sd)sd.innerHTML=row('🏢',_ctVal('ctArNombre'))
+      +row('🚗',(_ctVal('ctVMake')+' '+_ctVal('ctVModel')+' · '+_ctVal('ctVPlate')).trim())
+      +row('👤',_ctVal('ctClNombre')+(_ctVal('ctClNif')?' ('+_ctVal('ctClNif')+')':''))
+      +(extra?row('Conductor adicional',extra):'')
+      +row('Precio base',_ctVal('ctPrecioBase')?_ctVal('ctPrecioBase')+' €':'')
+      +row('Km incluidos',(document.getElementById('ctKmTotalBadge')?.textContent||'').trim())
+      +row('Fianza',_ctVal('ctFianza')?_ctVal('ctFianza')+' €':'')
+      +row('Pago',_ctVal('ctPago'))
+      +'<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">Total extras: <b style="color:var(--amber)">'+esc(ex)+'</b></div>';
+  }
+  const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
 
 // ── Helper universal de guardado PDF (móvil + escritorio) ────────────────────
