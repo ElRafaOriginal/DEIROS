@@ -544,7 +544,7 @@ select option{background:var(--bg);}
       <label style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);display:block;margin-bottom:6px">CONTRASEÑA</label>
       <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" style="width:100%"/>
     </div>
-    <button onclick="doLogin()" style="width:100%;background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:16px;font-family:var(--font);font-size:16px;font-weight:800;cursor:pointer;margin-bottom:12px">Entrar</button>
+    <button class="btn-pri" onclick="doLogin()" style="margin-bottom:12px">Entrar</button>
     <div id="loginError" style="text-align:center;font-size:13px;color:var(--red);min-height:20px"></div>
   </div>
 </div>
@@ -771,7 +771,7 @@ function renderClientDetail(el){
         ${cl.phone?`<div style="font-size:13px;color:var(--text3);margin-top:2px">📞 ${esc(cl.phone)}</div>`:''}
         ${cl.email?`<div style="font-size:13px;color:var(--text3);margin-top:2px">✉️ ${esc(cl.email)}</div>`:''}
       </div>
-      <button onclick="openEditClient('${escJs(cl.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+      <button class="btn-pri" onclick="openEditClient('${escJs(cl.id)}')" style="width:auto">✏️ Editar</button>
     </div>
     <div style="margin-bottom:10px">
       <div style="font-size:11px;color:var(--text3);margin-bottom:6px">VALORACIÓN</div>
@@ -5995,7 +5995,7 @@ function showBooking(k,_overrideId){
           Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}
         </div>`:''}
       </div>
-      <button onclick="restoreBooking('${escJs(b.id)}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:7px;padding:6px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩ Restablecer</button>
+      <button class="btn-dang" onclick="restoreBooking('${escJs(b.id)}')" style="width:auto;flex-shrink:0;white-space:nowrap">↩ Restablecer</button>
     </div>`:''}
     <div class="bk-sec">📋 INFORMACIÓN</div>
     <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
@@ -6067,8 +6067,8 @@ function showBooking(k,_overrideId){
         })()
         +'</div>';
       h+='<div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">';
-      h+='<button class="_bfbtn" data-bfid="'+esc(b.id)+'" data-bftype="income" style="background:#10B98120;color:var(--green);border:1px solid #10B98140;border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">+ Ingreso adicional</button>';
-      h+='<button class="_bfbtn" data-bfid="'+esc(b.id)+'" data-bftype="expense" style="background:#EF444420;color:var(--red);border:1px solid #EF444440;border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">+ Gasto</button>';
+      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
+      h+='<button class="_bfbtn btn-dang" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
       h+='</div></div>';return h;
     })()}
     ${(()=>{
@@ -6090,7 +6090,6 @@ function showBooking(k,_overrideId){
           const _st=_fianzaStatus(b);
           const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
           const _C={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:'#F97316'}[_st];
-          const _bs='border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--text)';
           const _is='background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;min-width:0';
           const _id=escJs(b.id);
           return `<div style="margin-bottom:10px">
@@ -6099,14 +6098,14 @@ function showBooking(k,_overrideId){
               ${_st==='retained'||_st==='partial'?`<span style="font-size:11px;color:var(--text3)">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
             </div>
             <div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-              ${_st!=='returned'?`<button class="tap44" onclick="setBookingFianzaStatus('${_id}','returned')" style="${_bs}">✅ Marcar devuelta</button>`:''}
-              ${_st!=='retained'?`<button class="tap44" onclick="retainFianzaFull('${_id}')" style="${_bs}">⛔ Retener toda</button>`:''}
-              ${_st!=='pending'?`<button class="tap44" onclick="setBookingFianzaStatus('${_id}','pending')" style="${_bs}">↩️ Volver a pendiente</button>`:''}
+              ${_st!=='returned'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','returned')">✅ Marcar devuelta</button>`:''}
+              ${_st!=='retained'?`<button class="tap44 btn-dang" onclick="retainFianzaFull('${_id}')">⛔ Retener toda</button>`:''}
+              ${_st!=='pending'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','pending')">↩️ Volver a pendiente</button>`:''}
             </div>
             <div class="g8" style="display:flex;gap:6px">
               <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:90px;font-family:var(--mono)"/>
               <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1"/>
-              <button class="tap44" onclick="retainFianzaPart('${_id}')" style="${_bs};white-space:nowrap">Retener parte</button>
+              <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')" style="width:auto;white-space:nowrap">Retener parte</button>
             </div>
           </div>`;
         })()}`:''}
@@ -6400,7 +6399,7 @@ function editBooking(id){
       <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
         👤 ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}
       </div>
-      <button type="button" onclick="unlinkBookingClient('${escJs(b.id)}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">✂️ Desvincular</button>
+      <button type="button" class="btn-dang" onclick="unlinkBookingClient('${escJs(b.id)}')" style="width:auto;white-space:nowrap;flex-shrink:0">✂️ Desvincular</button>
     </div>`:'<div style="margin-bottom:8px"></div>'}
     <div class="r2 fg">
       <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
@@ -7090,8 +7089,8 @@ function renderFin(v){
   <button class="btn" onclick="openAddEntry()" style="width:100%;margin-bottom:8px">＋ Añadir movimiento</button>
   <button class="btn-g" onclick="syncBookingExtensions()" style="width:100%;margin-bottom:8px;font-size:11px">🔄 Sincronizar ampliaciones</button>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-    <button onclick="openVehicleRecurring('${escJs(v.id)}')" style="background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">🔄 Recurrentes</button>
-    <button onclick="openReport('${escJs(v.id)}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">📄 Informe</button>
+    <button class="btn-sec" onclick="openVehicleRecurring('${escJs(v.id)}')">🔄 Recurrentes</button>
+    <button class="btn-sec" onclick="openReport('${escJs(v.id)}')">📄 Informe</button>
   </div>
   <div class="pills">
     ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setFF('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
@@ -7198,7 +7197,7 @@ function renderInfo(v){
   </button>`}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <div class="sec" style="margin-bottom:0">FICHA DEL VEHÍCULO</div>
-    <button onclick="openEditV('${escJs(v.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">✏️ Editar</button>
+    <button class="btn-pri" onclick="openEditV('${escJs(v.id)}')" style="width:auto">✏️ Editar</button>
   </div>
   ${(()=>{const isD=window.innerWidth>=768;
   const curKm=Number(v.km)||0;const maintKm=Number(v.maint_km)||0;
@@ -7323,7 +7322,7 @@ function renderInfo(v){
       +'<button onclick="dlMaintReport(\''+escJs(v.id)+'\')" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">📄 Informe de mantenimientos</button>';
   })()}
   ${isM&&v.ownerId?`<button onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="width:100%;background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Contrato de gestión</button>`:''}
-  <button onclick="exportExcel('${escJs(v.id)}')" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar a Excel</button>
+  <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')" style="margin-bottom:8px">📊 Exportar a Excel</button>
   <div style="height:8px"></div>
   ${v.archived?`<button onclick="restoreV('${escJs(v.id)}')" style="width:100%;background:transparent;color:var(--amber);border:1.5px solid ${safeColor(v.color)}60;border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">↩️ Reactivar vehículo</button>`:
   `<button onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="width:100%;background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
@@ -8516,7 +8515,7 @@ function deleteOwner(id){
   const linked=V.filter(v=>v.ownerId===id).length;
   openSheet(`<div class="stitle">🗑 Eliminar propietario</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">¿Eliminar a <strong>${esc(o.name)}</strong>?${linked?` Tiene <strong>${linked} vehículo${linked!==1?'s':''}</strong> asignado${linked!==1?'s':''} — quedarán sin propietario.`:''}</div>
-    <button onclick="confirmDeleteOwner('${escJs(id)}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar</button>
+    <button class="btn-dang" onclick="confirmDeleteOwner('${escJs(id)}')" style="margin-bottom:10px">Eliminar</button>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmDeleteOwner(id){
@@ -9253,8 +9252,8 @@ function renderBiz(el){
   let h=`<div class="anim">${isD?'<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start"><div>':''}
   ${buildBizChart()}
 
-  <button onclick="exportGlobalExcel()" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar todo a Excel</button>
-  <button onclick="openBizReportPicker()" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">📄 Informe de negocio (PDF)</button>
+  <button class="btn-sec" onclick="exportGlobalExcel()" style="margin-bottom:8px">📊 Exportar todo a Excel</button>
+  <button class="btn-sec" onclick="openBizReportPicker()" style="margin-bottom:14px">📄 Informe de negocio (PDF)</button>
   <div class="pills">
     ${['all','income','expense'].map(t=>{const a=bizFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setBizFilter('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
     <input type="month" value="${esc(safeMonth(bizMonth))}" onchange="setBizFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
@@ -9670,7 +9669,7 @@ function archiveV(id,reason){
   openSheet(`<div class="stitle">${icon} ${label}</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">${reason==='sold'?'El vehículo se moverá al archivo conservando todos sus datos.':'Este vehículo dejará de estar en gestión. Se moverá al archivo conservando todos sus registros.'}</div>
     <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
-    <button onclick="confirmArchive('${escJs(id)}','${escJs(reason)}')" style="width:100%;background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">${icon} Confirmar — ${label}</button>
+    <button class="btn-pri" onclick="confirmArchive('${escJs(id)}','${escJs(reason)}')" style="margin-bottom:10px">${icon} Confirmar — ${label}</button>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmArchive(id,reason){
@@ -9683,7 +9682,7 @@ function deleteV(id){
   openSheet(`<div class="stitle">🗑 Eliminar definitivamente</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">Se eliminarán todos los datos. Esta acción no se puede deshacer.</div>
     <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}</div></div>
-    <button onclick="confirmDelete('${escJs(id)}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar definitivamente</button>
+    <button class="btn-dang" onclick="confirmDelete('${escJs(id)}')" style="margin-bottom:10px">Eliminar definitivamente</button>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmDelete(id){V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
@@ -10354,7 +10353,7 @@ function openBackup(){
     </div>
     <button onclick="exportData()" style="width:100%;background:var(--green);color:var(--on-green);border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">⬇️ Exportar copia completa (JSON)</button>
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
-    <button onclick="recalcAllBookings();closeSheet();" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">🔄 Recalcular prorrateo de todos los alquileres</button>
+    <button class="btn-sec" onclick="recalcAllBookings();closeSheet();" style="margin-bottom:14px">🔄 Recalcular prorrateo de todos los alquileres</button>
     <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.5">Usa esto si tienes alquileres que cruzan de un mes a otro y no aparecen bien en la gráfica.</div>
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
     <div style="font-size:13px;color:var(--text3);margin-bottom:12px;line-height:1.6">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</div>
@@ -10840,7 +10839,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 function doLogout(){
   openSheet(`<div class="stitle">Cerrar sesión</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">¿Seguro que quieres cerrar sesión? Tus datos están guardados en la nube.</div>
-    <button onclick="auth.signOut();closeSheet();" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Cerrar sesión</button>
+    <button class="btn-dang" onclick="auth.signOut();closeSheet();" style="margin-bottom:10px">Cerrar sesión</button>
     <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
@@ -11050,7 +11049,7 @@ function showQuoteDetail(el){
   h+=`<button class="btn-g" onclick="openQuoteStatusMenu('${escJs(q.id)}')">🏷️ Estado</button>`;
   h+='</div>';
   h+=`<button class="btn-g" onclick="_quoteEditId=null;renderQuotes(document.getElementById('PC'))" style="width:100%;margin-bottom:8px">← Volver</button>`;
-  h+=`<button onclick="deleteQuote('${escJs(q.id)}')" style="width:100%;background:none;border:none;color:var(--red);font-size:13px;padding:8px;cursor:pointer">🗑️ Eliminar presupuesto</button>`;
+  h+=`<button class="btn-dang" onclick="deleteQuote('${escJs(q.id)}')">🗑️ Eliminar presupuesto</button>`;
   h+='</div>';
   el.innerHTML=h;
 }
