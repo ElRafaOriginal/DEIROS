@@ -6701,7 +6701,9 @@ function openNewRental(){
   const hh=String(new Date().getHours()).padStart(2,'0')+':00';
   const h1=String((new Date().getHours()+1)%24).padStart(2,'0')+':00';
   const _vNR=gV();const isFurgNR=(_vNR?.vehicle_type||'turismo').startsWith('l');const durNR=1;
-  openSheet(`<div class="stitle">Nuevo alquiler</div><div class="ssub">Plataforma, fechas, horas e importe</div>
+  openSheet(`<div class="stitle">Nuevo alquiler</div><div class="ssub" id="rwSub">Paso 1: lo imprescindible</div>
+    <div class="wiz-bar">${['Datos','Extras','Resumen'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="rwS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
+    <div data-rw="1">
     <div class="lbl">PLATAFORMA</div>
     <div class="plat-opts">
       ${Object.entries(PLATS).map(([k,p])=>`<div class="plat-opt${k==='amovens'?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">${k==='amovens'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#FB7AAC"></span>':k==='getaround'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#8B5CF6"></span>':p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${esc(p.label)}</div></div>`).join('')}
@@ -6714,11 +6716,6 @@ function openNewRental(){
     <div class="r2 fg"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">IMPORTE (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
     <div style="position:relative;margin-bottom:14px"><input type="number" id="rAmt" placeholder="0.00" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="sec" style="margin-bottom:10px">KILÓMETROS (opcional)</div>
-    <div class="r2 fg">
-      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
-      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
-    </div>
     <div class="sec" style="margin-bottom:6px">CLIENTE (opcional)</div>
     <input id="rCN" type="hidden"/>
     <input id="rCP" type="hidden"/>
@@ -6727,6 +6724,14 @@ function openNewRental(){
     <div class="r2 fg">
       <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" oninput="document.getElementById('rCP').value=this.value"/></div>
       <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()"/></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_rwGo(2)">Siguiente ›</button></div>
+    </div>
+    <div data-rw="2" style="display:none">
+    <div class="sec" style="margin-bottom:10px">KILÓMETROS (opcional)</div>
+    <div class="r2 fg">
+      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
+      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
     </div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off"/></div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
@@ -6760,10 +6765,40 @@ function openNewRental(){
       <span style="font-size:13px;font-weight:700">Total extras:</span>
       <span id="exTotalAmt" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--amber)">0,00 €</span>
     </div>
-    <div style="height:8px"></div>
-    <button class="btn" onclick="submitRental()">✅ Registrar alquiler</button>
-    <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_rwGo(1)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_rwGo(3)">Siguiente ›</button></div>
+    </div>
+    <div data-rw="3" style="display:none">
+      <div id="rwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
+      <div style="display:flex;gap:10px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_rwGo(2)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="submitRental()">✅ Registrar alquiler</button></div>
+    </div>`);
+}
+function _rwMark(id,bad){const e=document.getElementById(id);if(!e)return;e.style.borderColor=bad?'var(--red,#ef4444)':'';}
+function _rwValidate1(){
+  const g=id=>document.getElementById(id)?.value;
+  ['rSD','rST','rED','rET','rAmt'].forEach(id=>_rwMark(id,false));
+  const miss=['rSD','rST','rED','rET'].filter(id=>!g(id));
+  if(miss.length){miss.forEach(id=>_rwMark(id,true));alert('Completa las fechas y horas');return false;}
+  if(new Date(g('rED')+'T'+g('rET'))<=new Date(g('rSD')+'T'+g('rST'))){['rED','rET'].forEach(id=>_rwMark(id,true));alert('La fecha/hora de fin debe ser posterior al inicio');return false;}
+  const amt=parseFloat(g('rAmt'));
+  if(isNaN(amt)||amt<0){_rwMark('rAmt',true);alert('Introduce un importe válido');return false;}
+  return true;
+}
+function _rwGo(n){
+  const cur=[1,2,3].find(i=>document.querySelector('#SC [data-rw="'+i+'"]')?.style.display!=='none')||1;
+  if(n>cur&&!_rwValidate1())return;
+  document.querySelectorAll('#SC [data-rw]').forEach(d=>{d.style.display=d.getAttribute('data-rw')===String(n)?'':'none';});
+  [1,2,3].forEach(i=>{const e=document.getElementById('rwS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
+  const sub=document.getElementById('rwSub');
+  if(sub)sub.textContent=['','Paso 1: lo imprescindible','Paso 2: km, notas y extras','Paso 3: revisa y registra'][n];
+  if(n===3){
+    const g=id=>document.getElementById(id)?.value||'';
+    const cl=(document.getElementById('rClientPicker')?.value||'').trim();
+    const amt=parseFloat(g('rAmt'))||0;
+    const ex=parseFloat((document.getElementById('exTotalAmt')?.textContent||'0').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''))||0;
+    const f=x=>x.toFixed(2).replace('.',',')+' €';
+    document.getElementById('rwSummary').innerHTML='<div>🚗 <b>'+esc((PLATS[_plat]&&PLATS[_plat].label)||_plat)+'</b></div><div>📅 '+esc(g('rSD'))+' '+esc(g('rST'))+' → '+esc(g('rED'))+' '+esc(g('rET'))+'</div>'+(cl?'<div>👤 '+esc(cl)+'</div>':'')+'<div>Importe: <b>'+f(amt)+'</b></div><div>Extras: <b>'+f(ex)+'</b></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">Total: <b style="color:var(--amber);font-size:16px">'+f(amt+ex)+'</b></div>';
+  }
+  const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
 function _recalcRentalExtras(){
   const sd=document.getElementById('rSD')?.value;
