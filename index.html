@@ -6611,21 +6611,71 @@ function openNewRentalPicker(){
     return;
   }
   if(act.length===1){_newRentalFor(act[0].id);return;}
-  let h=`<div class="stitle">Nuevo alquiler</div><div class="ssub">¿Para qué vehículo?</div><div style="display:flex;flex-direction:column;gap:8px">`;
-  act.forEach(v=>{
-    h+=`<div onclick="_newRentalFor('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
+  const today=todayStr();
+  const info=act.map(v=>{
+    const bks=(v.bookings||[]).filter(b=>!b.cancelled);
+    const activeB=bks.find(b=>b.startDate<=today&&b.endDate>=today);
+    const nextB=bks.filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
+    return {v,activeB,nextB};
+  });
+  // Libres hoy primero (sort estable: se mantiene el orden original dentro de cada grupo)
+  info.sort((a,b)=>(a.activeB?1:0)-(b.activeB?1:0));
+  let h=`<div class="stitle">Nuevo alquiler</div><div class="ssub">¿Para qué vehículo?</div>`;
+  if(act.length>6)h+=`<input type="search" id="nrPickSearch" placeholder="Buscar por nombre o matrícula" autocomplete="off" oninput="_filterNewRentalPicker(this.value)" style="margin-bottom:10px"/>`;
+  h+=`<div id="nrPickList" style="display:flex;flex-direction:column;gap:8px">`;
+  info.forEach(({v,activeB,nextB})=>{
+    const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Libre hoy · próx. ${esc(nextB.startDate)}</span>`:`<span class="chip chip-gray">Libre</span>`;
+    const q=((v.name||'')+' '+(v.plate||'')).toLowerCase();
+    h+=`<div class="nr-pick" data-q="${esc(q)}" onclick="_newRentalFor('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
       <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
         <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
       </div>
+      <div>${statusTxt}</div>
       <div style="color:var(--text3);font-size:18px">›</div>
     </div>`;
   });
   h+=`</div>`;
   openSheet(h);
 }
-function _newRentalFor(id){closeSheet();openV(id);openNewRental();}
+function _filterNewRentalPicker(q){
+  q=(q||'').trim().toLowerCase();
+  document.querySelectorAll('#nrPickList .nr-pick').forEach(el=>{el.style.display=(!q||(el.dataset.q||'').includes(q))?'flex':'none';});
+}
+// Indicador: alta abierta desde Alquileres → al registrar o cancelar se vuelve a Alquileres
+let _nrFromRentals=false;
+function _newRentalFor(id){closeSheet();_nrFromRentals=false;openV(id);openNewRental();_nrFromRentals=true;}
+// Registrar: envuelve submitRental() sin modificarlo; vuelve solo si se creó el alquiler
+(function(){
+  const _submitOrig=submitRental;
+  submitRental=function(){
+    const keep=_nrFromRentals;
+    const v=gV();const n0=v?(v.bookings||[]).length:0;
+    _nrFromRentals=false; // el closeSheet() interno de submitRental no debe disparar goBack
+    _submitOrig.apply(this,arguments);
+    if(!keep)return;
+    const v2=gV();
+    if(v2&&(v2.bookings||[]).length>n0)goBack();
+    else _nrFromRentals=true; // validación fallida: el formulario sigue abierto
+  };
+  // Cancelar / cerrar hoja (botón, overlay, deslizar, atrás): vuelve a Alquileres
+  const _closeOrig=closeSheet;
+  closeSheet=function(){
+    _closeOrig.apply(this,arguments);
+    if(_nrFromRentals){_nrFromRentals=false;goBack();}
+  };
+  // FAB: etiqueta accesible según la vista
+  const _renderOrig=render;
+  render=function(){
+    _renderOrig.apply(this,arguments);
+    const f=document.getElementById('FAB');
+    if(f){
+      if(CV==='rentals'){f.title='Nuevo alquiler';f.setAttribute('aria-label','Nuevo alquiler');}
+      else{f.removeAttribute('title');f.removeAttribute('aria-label');}
+    }
+  };
+})();
 
 function openNewRental(){
   _plat='amovens';
