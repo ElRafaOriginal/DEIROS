@@ -19,7 +19,7 @@
 :root{
   /* DARK THEME (default) */
   --bg:#0a0f1a;--bg2:#111827;--bg3:#1a2235;--bg4:#243044;
-  --amber:#F59E0B;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--on-amber:#000;
+  --amber:#F59E0B;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--on-amber:#000;--on-green:#000;
   --text:#F0F4FF;--text2:#94A3B8;--text3:#8A9AB0;
   --border:#1e2d42;--border2:#2a3d56;
   --radius:14px;--rsm:8px;
@@ -29,7 +29,7 @@
 /* LIGHT THEME */
 :root.light{
   --bg:#F5F7FA;--bg2:#FFFFFF;--bg3:#EEF1F6;--bg4:#E2E7EF;
-  --amber:#B45309;--green:#047857;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;--on-amber:#FFFFFF;
+  --amber:#B45309;--green:#047857;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;--on-amber:#FFFFFF;--on-green:#FFFFFF;
   --text:#0F172A;--text2:#334155;--text3:#556275;
   --border:#DDE3ED;--border2:#C8D2E0;
 }
@@ -10251,7 +10251,7 @@ function openBackup(){
       <div><div style="font-size:13px;font-weight:700">${V.filter(v=>!v.archived).length} vehículos activos</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${V.filter(v=>v.archived).length} archivados · ${BF.length} mov. negocio · ${OW.length} propietarios · ${CL.length} clientes · ${QT.length} presupuestos</div></div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${new Date().toLocaleDateString('es-ES')}</div>
     </div>
-    <button onclick="exportData()" style="width:100%;background:var(--green);color:#000;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">⬇️ Exportar copia completa (JSON)</button>
+    <button onclick="exportData()" style="width:100%;background:var(--green);color:var(--on-green);border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">⬇️ Exportar copia completa (JSON)</button>
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
     <button onclick="recalcAllBookings();closeSheet();" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">🔄 Recalcular prorrateo de todos los alquileres</button>
     <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.5">Usa esto si tienes alquileres que cruzan de un mes a otro y no aparecen bien en la gráfica.</div>
