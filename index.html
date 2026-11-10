@@ -6045,7 +6045,7 @@ function showBooking(k,_overrideId){
       const _totTotal=_totAlq+_fianza;
       const _pend=Math.max(0,_totTotal-_abono);
       const _hasFianza=_fianza>0;
-      const _hasAbono=_abono>0||_hasFianza;
+      const _hasAbono=_abono>0||_hasFianza||_cobSinImp;
       return `<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">💳 COBROS Y FIANZA</div>
         ${_hasFianza?`<div style="display:flex;justify-content:space-between;align-items:center;background:#3B82F610;border:1px solid #3B82F630;border-radius:8px;padding:8px 12px;margin-bottom:8px">
