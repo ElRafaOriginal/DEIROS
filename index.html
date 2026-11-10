@@ -284,6 +284,14 @@ select option{background:var(--bg);}
   .tab,.back,.pill{display:flex;align-items:center;justify-content:center;}
   .back{justify-content:flex-start;}
   .pills{gap:8px;}
+  .bdel,._bfbtn,.to,.plat-opt{min-height:44px;}
+  .bdel{min-width:44px;}
+  ._bfbtn{display:inline-flex;align-items:center;justify-content:center;}
+  .plat-opt{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .plat-opts{gap:8px;}
+  .g8{gap:8px!important;}
+  input,select{min-height:44px;}
+  .page{padding-bottom:calc(90px + 56px + var(--sb));}
 }
 @media(min-width:768px){#hamburgerMenu,#hamburgerPanel,#hamburgerBtn{display:none!important;}}
 .hbar{display:block;width:18px;height:2px;background:var(--text2);border-radius:2px;transition:transform 0.2s,opacity 0.2s;}
@@ -5872,7 +5880,7 @@ function renderCal(v){
             '</div>'+
           '</div>'+
           // Action buttons
-          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+
+          '<div class="g8" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+
             '<button class="tap44" onclick="event.stopPropagation();toggleDelivery(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.delivered?'#10B98160':'var(--border2)')+';background:'+(b.delivered?'#10B98115':'var(--bg3)')+';color:'+(b.delivered?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
               (b.delivered?'🚗 Entregado':'🚗 Entregar')+'</button>'+
             '<button class="tap44" onclick="event.stopPropagation();toggleReturn(\''+escJs(bId)+'\')" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.returned?'#10B98160':'var(--border2)')+';background:'+(b.returned?'#10B98115':'var(--bg3)')+';color:'+(b.returned?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
@@ -6041,7 +6049,7 @@ function showBooking(k,_overrideId){
           return '<span style="font-family:var(--mono);font-size:18px;font-weight:800;color:'+(_t>=0?'var(--green)':'var(--red)')+'">'+fmt2(_t)+'</span>';
         })()
         +'</div>';
-      h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">';
+      h+='<div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">';
       h+='<button class="_bfbtn" data-bfid="'+esc(b.id)+'" data-bftype="income" style="background:#10B98120;color:var(--green);border:1px solid #10B98140;border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">+ Ingreso adicional</button>';
       h+='<button class="_bfbtn" data-bfid="'+esc(b.id)+'" data-bftype="expense" style="background:#EF444420;color:var(--red);border:1px solid #EF444440;border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">+ Gasto</button>';
       h+='</div></div>';return h;
@@ -6072,21 +6080,21 @@ function showBooking(k,_overrideId){
               <span style="font-size:11px;font-weight:700;color:${_C};border:1px solid ${_C};border-radius:99px;padding:2px 10px">${_L}</span>
               ${_st==='retained'||_st==='partial'?`<span style="font-size:11px;color:var(--text3)">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-              ${_st!=='returned'?`<button onclick="setBookingFianzaStatus('${_id}','returned')" style="${_bs}">✅ Marcar devuelta</button>`:''}
-              ${_st!=='retained'?`<button onclick="retainFianzaFull('${_id}')" style="${_bs}">⛔ Retener toda</button>`:''}
-              ${_st!=='pending'?`<button onclick="setBookingFianzaStatus('${_id}','pending')" style="${_bs}">↩️ Volver a pendiente</button>`:''}
+            <div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+              ${_st!=='returned'?`<button class="tap44" onclick="setBookingFianzaStatus('${_id}','returned')" style="${_bs}">✅ Marcar devuelta</button>`:''}
+              ${_st!=='retained'?`<button class="tap44" onclick="retainFianzaFull('${_id}')" style="${_bs}">⛔ Retener toda</button>`:''}
+              ${_st!=='pending'?`<button class="tap44" onclick="setBookingFianzaStatus('${_id}','pending')" style="${_bs}">↩️ Volver a pendiente</button>`:''}
             </div>
-            <div style="display:flex;gap:6px">
+            <div class="g8" style="display:flex;gap:6px">
               <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:90px;font-family:var(--mono)"/>
               <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1"/>
-              <button onclick="retainFianzaPart('${_id}')" style="${_bs};white-space:nowrap">Retener parte</button>
+              <button class="tap44" onclick="retainFianzaPart('${_id}')" style="${_bs};white-space:nowrap">Retener parte</button>
             </div>
           </div>`;
         })()}`:''}
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
+        <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
           <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
-          <button onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
+          <button class="tap44" onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:#000;border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -8745,9 +8753,9 @@ function renderAgendaBody(){
   const dim=new Date(agY,agM+1,0).getDate();
   const days=Array.from({length:dim},(_,i)=>i+1);
   let h=`<div id="agenda-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <div onclick="agPrev()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">‹</div>
+    <div class="tap44" onclick="agPrev()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">‹</div>
     <div style="font-size:17px;font-weight:800;letter-spacing:1px">${MON_ES[agM].toUpperCase()} ${agY}</div>
-    <div onclick="agNext()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">›</div>
+    <div class="tap44" onclick="agNext()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">›</div>
   </div>
   <div id="agenda-scroll" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px">
   <table class="agenda-table" style="min-width:${Number(dim*26+100)}px;width:100%">
