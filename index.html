@@ -1068,7 +1068,7 @@ function renderAnalytics(el){
   const _ps=active=>`border-color:${active?'var(--amber)':'var(--border2)'};background:${active?'#F59E0B22':'transparent'};color:${active?'var(--amber)':'var(--text3)'}`;
   let _filterUI=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px"><div style="display:flex;gap:5px;flex-wrap:wrap;flex:1"><div class="pill" onclick="setAnalyticsOwnership('')" style="${_ps(!_analyticsOwnership)}">Todos</div><div class="pill" onclick="setAnalyticsOwnership('own')" style="${_ps(_analyticsOwnership==='own')}">🔑 Propios</div><div class="pill" onclick="setAnalyticsOwnership('managed')" style="${_ps(_analyticsOwnership==='managed')}">🤝 Gestión</div>`;
   if(usedVtypes.length>1){_filterUI+=`<div style="width:100%;height:0"></div>`;usedVtypes.forEach(t=>{_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('${escJs(t.id)}')" style="${_ps(_analyticsVtype===t.id)}">${t.icon} ${t.label}</div>`;});_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('')" style="${_ps(!_analyticsVtype)}">Todos los tipos</div>`;}
-  _filterUI+=`</div><button onclick="openAnalyticsReportPicker()" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">📄 Informe PDF</button></div>`;
+  _filterUI+=`</div><button class="btn-pri" onclick="openAnalyticsReportPicker()" style="width:auto;white-space:nowrap;flex-shrink:0">📄 Informe PDF</button></div>`;
   if(!activeV.length){el.innerHTML=`<div class="anim">${_filterUI}<div class="empty"><div class="ei">🔍</div><div class="et">Sin resultados</div><div class="es">Cambia los filtros para ver vehículos</div></div></div>`;return;}
 
   let h=`<div class="anim">
@@ -1182,7 +1182,7 @@ function renderAnalytics(el){
       <input type="month" id="occMonth" value="${esc(safeMonth(new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')))}"
         onchange="renderOccupancy()"
         style="flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px"/>
-      <button onclick="renderOccupancy()" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Ver</button>
+      <button class="btn-pri" onclick="renderOccupancy()" style="width:auto">Ver</button>
     </div>
     <div id="occResults"></div>
   </div>
@@ -1193,7 +1193,7 @@ function renderAnalytics(el){
       <div><label class="lbl">PERÍODO A</label><input type="month" id="cmpA" style="font-size:14px;width:100%"/></div>
       <div><label class="lbl">PERÍODO B</label><input type="month" id="cmpB" style="font-size:14px;width:100%"/></div>
     </div>
-    <button onclick="runComparison()" style="width:100%;background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">Comparar períodos</button>
+    <button class="btn-pri" onclick="runComparison()">Comparar períodos</button>
     <div id="cmpResults" style="margin-top:14px"></div>
   </div>`;
 
@@ -2786,7 +2786,7 @@ function openPendingDeposits(filter){
       +'<span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--blue)">'+fmtF(b.fianza)+'</span></div>'
       +'<div style="font-size:11px;color:var(--text3);margin:2px 0 6px">'+esc(b.clientName||'—')+' · '+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;font-weight:700;color:'+COL[st]+'">'+LBL[st]+'</span>'
-      +'<button onclick="showBookingById(\''+escJs(b.id)+'\')" style="background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">Ver alquiler</button></div></div>';
+      +'<button class="btn-sec" onclick="showBookingById(\''+escJs(b.id)+'\')" style="width:auto;font-size:12px">Ver alquiler</button></div></div>';
   });
   openSheet(h+'</div>');
 }
@@ -2938,9 +2938,9 @@ function renderRecurring(el){
         </div>
       </div>
       <div style="display:flex;gap:8px">
-        <button onclick="toggleRecurring('${escJs(r.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">${r.active?'⏸ Pausar':'▶ Activar'}</button>
-        <button onclick="${editCall}" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
-        <button onclick="${delCall}" style="background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">×</button>
+        <button class="btn-sec" onclick="toggleRecurring('${escJs(r.id)}')" style="flex:1;font-size:12px">${r.active?'⏸ Pausar':'▶ Activar'}</button>
+        <button class="btn-sec" onclick="${editCall}" style="flex:1;font-size:12px">✏️ Editar</button>
+        <button class="btn-dang" onclick="${delCall}" style="width:auto;font-size:12px">×</button>
       </div>
     </div>`;
   }
@@ -2950,7 +2950,7 @@ function renderRecurring(el){
     <div class="sbox" style="border-left:4px solid var(--red)"><div class="sv" style="color:var(--red)">${fmt(totalMonthly)}</div><div class="sl">GASTO MENSUAL EQUIV.</div></div>
     <div class="sbox" style="border-left:4px solid var(--amber)"><div class="sv" style="color:var(--amber)">${visibleRR.filter(r=>r.active).length}</div><div class="sl">ACTIVOS</div></div>
   </div>
-  <button onclick="openAddRecurring()" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">＋ Nuevo gasto recurrente</button>`;
+  <button class="btn-pri" onclick="openAddRecurring()" style="margin-bottom:14px">＋ Nuevo gasto recurrente</button>`;
 
   if(!visibleRR.length){
     h+=`<div class="empty"><div class="ei">🔄</div><div class="et">Sin gastos recurrentes</div><div class="es">Seguros, suscripciones, parking… se aplicarán automáticamente cada período.</div></div>`;
@@ -3007,7 +3007,7 @@ function openVehicleRecurring(vId){
   openSheet(`<div class="stitle">🔄 Recurrentes — ${esc(v.name)}</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Gastos periódicos vinculados a este vehículo (seguro, revisión, parking...)</div>
     ${totalMonthly>0?`<div style="background:var(--bg3);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--text3)">Equivalente mensual</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmt(totalMonthly)}</span></div>`:''}
-    <button onclick="openAddRecurring(null,'${escJs(vId)}')" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">＋ Añadir recurrente</button>
+    <button class="btn-pri" onclick="openAddRecurring(null,'${escJs(vId)}')" style="margin-bottom:14px">＋ Añadir recurrente</button>
     ${vRR.length?vRR.map(r=>{
       const freqLabel={monthly:'Mensual',quarterly:'Trimestral',yearly:'Anual'}[r.freq]||r.freq;
       return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
@@ -7262,7 +7262,7 @@ function renderInfo(v){
         +(owner.phone?'<div style="font-size:11px;color:var(--text3);margin-top:2px">📞 '+esc(owner.phone)+'</div>':'')
         +(owner.email?'<div style="font-size:11px;color:var(--text3);">✉️ '+esc(owner.email)+'</div>':'')
         +'</div>'
-        +'<button onclick="openOwnerReport(\''+escJs(owner.id)+'\')" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">📄 Informe</button>'
+        +'<button class="btn-pri" onclick="openOwnerReport(\''+escJs(owner.id)+'\')" style="width:auto;font-size:12px">📄 Informe</button>'
         +'</div>';
     }
     return '<div style="margin-bottom:16px">'
@@ -7277,7 +7277,7 @@ function renderInfo(v){
     <div style="font-size:12px;color:var(--text3);margin-bottom:12px">% del beneficio neto que va al negocio.</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <div style="position:relative;flex:1"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal" style="padding-right:36px"/><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--purple);font-weight:700;font-family:var(--mono)">%</span></div>
-      <button onclick="saveComm('${escJs(v.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px 18px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
+      <button class="btn-pri" onclick="saveComm('${escJs(v.id)}')" style="width:auto;white-space:nowrap">Guardar</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${[10,20,25,30,35,40,50].map(p=>`<div onclick="document.getElementById('commInput').value=${p}" style="padding:5px 12px;border-radius:20px;border:1px solid #8B5CF640;background:#8B5CF610;color:var(--purple);font-size:12px;font-weight:700;cursor:pointer">${p}%</div>`).join('')}</div>`:''}
   <div class="divider"></div>
@@ -7321,11 +7321,11 @@ function renderInfo(v){
       +'</div>'
       +'<button onclick="dlMaintReport(\''+escJs(v.id)+'\')" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">📄 Informe de mantenimientos</button>';
   })()}
-  ${isM&&v.ownerId?`<button onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="width:100%;background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Contrato de gestión</button>`:''}
+  ${isM&&v.ownerId?`<button class="btn-sec" onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="margin-bottom:8px">📋 Contrato de gestión</button>`:''}
   <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')" style="margin-bottom:8px">📊 Exportar a Excel</button>
   <div style="height:8px"></div>
-  ${v.archived?`<button onclick="restoreV('${escJs(v.id)}')" style="width:100%;background:transparent;color:var(--amber);border:1.5px solid ${safeColor(v.color)}60;border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">↩️ Reactivar vehículo</button>`:
-  `<button onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="width:100%;background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
+  ${v.archived?`<button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="margin-bottom:8px">↩️ Reactivar vehículo</button>`:
+  `<button class="btn-sec" onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
   <button class="btn-d" onclick="deleteV('${escJs(v.id)}')">🗑 Eliminar definitivamente</button>
   </div>`;
   return h;
@@ -8224,8 +8224,8 @@ function renderOwnersBody(){
           <div style="font-size:10px;color:var(--text3);margin-top:1px">al prop.</div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
-          <div class="tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:32px;height:32px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">📄</div>
-          <div class="tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">✏️</div>
+          <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">📄</div>
+          <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">✏️</div>
         </div>
       </div>`;
     });
@@ -8248,8 +8248,8 @@ function renderOwnersBody(){
             ${owner.email?`<div style="font-size:11px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
           </div>
           <div style="display:flex;gap:6px">
-            <div class="tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:36px;height:36px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">📄</div>
-            <div class="tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">✏️</div>
+            <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">📄</div>
+            <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">✏️</div>
             <div class="tap44" onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🗑</div>
           </div>
         </div>
@@ -8368,10 +8368,10 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   }).join('')}
   <div style="height:12px"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-    <button onclick="openOwnerReport('${escJs(owner.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📄 Informe mensual</button>
-    <button onclick="openMgmtContractForm('${escJs(owner.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📋 Contrato gestión</button>
+    <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')">📄 Informe mensual</button>
+    <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')">📋 Contrato gestión</button>
   </div>
-  <button onclick="editOwner('${escJs(owner.id)}')" style="width:100%;background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar propietario</button>`;
+  <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')">✏️ Editar propietario</button>`;
   openSheet(h);
 }
 
@@ -8422,9 +8422,9 @@ function renderOwnerProfile(el){
         ${owner.iban?`<div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px"><span>🏦</span><span id="ibanDisplay" style="font-family:var(--mono)">${esc(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}</span><span onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${escJs(owner.iban)}':'${escJs(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}';" style="cursor:pointer;font-size:15px;padding:2px 6px;background:var(--bg3);border-radius:5px;border:1px solid var(--border2)">👁</span></div>`:''}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="openOwnerReport('${escJs(owner.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Informe PDF</button>
-        <button onclick="openMgmtContractForm('${escJs(owner.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📋 Contrato de gestión</button>
-        <button onclick="editOwner('${escJs(owner.id)}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">✏️ Editar</button>
+        <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:auto">📄 Informe PDF</button>
+        <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')" style="width:auto">📋 Contrato de gestión</button>
+        <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')" style="width:auto">✏️ Editar</button>
       </div>
     </div>
   </div>
@@ -8596,7 +8596,7 @@ function genOwnerReport(ownerId){
         <div style="font-size:16px;font-weight:800;color:#14B8A6">LIQUIDACIÓN PROPIETARIO</div>
         <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(o.name.toUpperCase())} · ${mLabel.toUpperCase()}</div>
       </div>
-      <button onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
+      <button class="btn-pri" onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')" style="margin-left:auto;width:auto;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
       <!-- Owner info -->
@@ -9641,9 +9641,9 @@ function renderArchiveBody(){
         <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">BENEFICIO</div></div>
       </div>
       <div style="display:flex;gap:8px">
-        <button onclick="openV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">👁 Ver datos</button>
-        <button onclick="restoreV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">↩️ Reactivar</button>
-        <button class="tap44" onclick="deleteV('${escJs(v.id)}')" style="width:40px;background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:9px;font-family:var(--font);font-size:14px;cursor:pointer">🗑</button>
+        <button class="btn-sec" onclick="openV('${escJs(v.id)}')" style="flex:1;font-size:12px">👁 Ver datos</button>
+        <button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="flex:1;font-size:12px">↩️ Reactivar</button>
+        <button class="btn-dang tap44" onclick="deleteV('${escJs(v.id)}')" style="width:44px;padding:0">🗑</button>
       </div>
     </div>`;
   });
@@ -10048,7 +10048,7 @@ function genReport(vId){
     <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
       <div class="tap44" onclick="document.getElementById('repOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
       <div><div style="font-size:16px;font-weight:800;color:var(--amber)">INFORME MENSUAL</div><div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(v.name)} · ${mLabel.toUpperCase()}</div></div>
-      <button onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
+      <button class="btn-pri" onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;width:auto;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
       <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid ${safeColor(v.color)}44">
@@ -10351,7 +10351,7 @@ function openBackup(){
       <div><div style="font-size:13px;font-weight:700">${V.filter(v=>!v.archived).length} vehículos activos</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${V.filter(v=>v.archived).length} archivados · ${BF.length} mov. negocio · ${OW.length} propietarios · ${CL.length} clientes · ${QT.length} presupuestos</div></div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${new Date().toLocaleDateString('es-ES')}</div>
     </div>
-    <button onclick="exportData()" style="width:100%;background:var(--green);color:var(--on-green);border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">⬇️ Exportar copia completa (JSON)</button>
+    <button class="btn-pri" onclick="exportData()" style="margin-bottom:10px">⬇️ Exportar copia completa (JSON)</button>
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
     <button class="btn-sec" onclick="recalcAllBookings();closeSheet();" style="margin-bottom:14px">🔄 Recalcular prorrateo de todos los alquileres</button>
     <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.5">Usa esto si tienes alquileres que cruzan de un mes a otro y no aparecen bien en la gráfica.</div>
