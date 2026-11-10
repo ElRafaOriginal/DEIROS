@@ -277,6 +277,7 @@ select option{background:var(--bg);}
 .pb-bg{height:3px;background:var(--bg4);border-radius:2px;margin-top:10px;overflow:hidden;}
 .pb-bar{height:100%;border-radius:2px;}
 @media(min-width:768px){#hamburgerMenu,#hamburgerPanel,#hamburgerBtn{display:none!important;}}
+@media(max-width:767px){.bkp-btn{min-height:44px;}}
 .hbar{display:block;width:18px;height:2px;background:var(--text2);border-radius:2px;transition:transform 0.2s,opacity 0.2s;}
 .hmenu-item{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;transition:background 0.15s;}
 .hmenu-item:hover,.hmenu-item:active{background:var(--bg3);}
@@ -1456,7 +1457,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const pFins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.date>=curM+'-01'&&e.date<=toM+'-31');
     const pInc=pFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const pExp=pFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const pBks=(v.bookings||[]).filter(b=>b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM);
+    const pBks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM);
     const pDays=new Set(pBks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size;
     const occ=periodDim>0?Math.round(pDays/periodDim*100):0;
     const rpdInc=pDays>0?Math.round(pInc/pDays*100)/100:0;
@@ -1491,7 +1492,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
 
   // Plataformas
   const platAgg={};
-  filtered.forEach(v=>(v.bookings||[]).filter(b=>b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM).forEach(b=>{
+  filtered.forEach(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM).forEach(b=>{
     const p=b.platform||'sinapp';
     if(!platAgg[p])platAgg[p]={count:0,inc:0,label:PLATS[p]?.label||p};
     platAgg[p].count++;platAgg[p].inc+=Number(b.amount)||0;
@@ -1508,7 +1509,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   const expColors=[[239,68,68],[245,158,11],[59,130,246],[139,92,246],[16,185,129],[156,163,175],[248,113,113],[96,165,250]];
 
   // Todos los alquileres del periodo
-  const allPBks=filtered.flatMap(v=>(v.bookings||[]).filter(b=>b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM).map(b=>({...b,_v:v})));
+  const allPBks=filtered.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM).map(b=>({...b,_v:v})));
 
   // Distribucion por duracion
   const durG={s:[],m:[],l:[]};
@@ -1526,7 +1527,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
 
   // Tiempo muerto
   const deadTimes=filtered.map(v=>{
-    const sb=[...(v.bookings||[]).filter(b=>b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM)].sort((a,b)=>a.startDate.localeCompare(b.startDate));
+    const sb=[...(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM)].sort((a,b)=>a.startDate.localeCompare(b.startDate));
     let tg=0,g=0;
     for(let i=1;i<sb.length;i++){const gap=Math.round((new Date(sb[i].startDate)-new Date(sb[i-1].endDate))/864e5);if(Number.isFinite(gap)&&gap>=0&&gap<4000){tg+=gap;g++;}}
     return{v,avg:g>0?Math.round(tg/g*10)/10:null,gaps:g};
@@ -1548,7 +1549,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   const turismos=filtered.filter(v=>!(v.vehicle_type||'turismo').startsWith('l'));
   const furgos=filtered.filter(v=>(v.vehicle_type||'turismo').startsWith('l'));
   const typeM=(vs)=>{
-    const bks=vs.flatMap(v=>(v.bookings||[]).filter(b=>b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM));
+    const bks=vs.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM));
     const inc=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
     const exp=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
     const days=new Set(bks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size||1;
@@ -10467,7 +10468,7 @@ function checkBackupReminder(){
   txt.textContent='Conviene exportar una copia de seguridad. Última: '+(last?new Date(last).toLocaleDateString('es-ES'):'nunca');
   const row=document.createElement('div');
   row.style.cssText='display:flex;gap:8px;justify-content:center;margin-top:8px';
-  const mk=(t,fn)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer';b.onclick=fn;return b;};
+  const mk=(t,fn)=>{const b=document.createElement('button');b.textContent=t;b.className='bkp-btn';b.style.cssText='background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer';b.onclick=fn;return b;};
   row.appendChild(mk('Hacer copia',()=>{el.remove();exportData();}));
   row.appendChild(mk('Más tarde',()=>el.remove()));
   el.appendChild(txt);el.appendChild(row);
