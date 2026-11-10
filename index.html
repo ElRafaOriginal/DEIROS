@@ -452,7 +452,7 @@ select option{background:var(--bg);}
       <div style="font-size:18px;font-weight:800;letter-spacing:1px;color:var(--amber)">DEIROS</div>
       <div style="font-size:11px;color:var(--text3);margin-top:2px">FLEET MANAGER</div>
     </div>
-    <div onclick="closeHamburger()" style="width:34px;height:34px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text3)">×</div>
+    <div class="tap44" onclick="closeHamburger()" style="width:34px;height:34px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text3)">×</div>
   </div>
   <div style="height:1px;background:var(--border);margin:0 20px 8px"></div>
   <!-- Menu items -->
@@ -729,9 +729,9 @@ function renderClients(el){
           style="padding-left:14px;font-size:14px"/>
       </div>
       <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-        <div id="ctog-extended" onclick="_clientsMode='extended';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">☰</div>
-        <div id="ctog-compact" onclick="_clientsMode='compact';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
-        <div id="ctog-grid" onclick="_clientsMode='grid';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
+        <div class="tap44" id="ctog-extended"onclick="_clientsMode='extended';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">☰</div>
+        <div class="tap44" id="ctog-compact"onclick="_clientsMode='compact';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
+        <div class="tap44" id="ctog-grid"onclick="_clientsMode='grid';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
       </div>
     </div>
     <div id="clients-results"></div></div>`;
@@ -5281,7 +5281,7 @@ function renderDash(el){
     </div>
   </div>
   ${(()=>{let n=0;activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&_fianzaStatus(b)==='pending')n++;}));
-    return `<div onclick="openPendingDeposits()" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid ${n?'#F59E0B40':'var(--border2)'};border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer"><span style="font-size:12px;font-weight:700;color:${n?'var(--amber)':'var(--text2)'}">🔒 Fianzas pendientes (${n})</span><span style="color:var(--text3)">›</span></div>`;})()}
+    return `<div class="tap44" onclick="openPendingDeposits()" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid ${n?'#F59E0B40':'var(--border2)'};border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer"><span style="font-size:12px;font-weight:700;color:${n?'var(--amber)':'var(--text2)'}">🔒 Fianzas pendientes (${n})</span><span style="color:var(--text3)">›</span></div>`;})()}
   <details style="margin-bottom:${isDesk?'24px':'12px'}">
     <summary style="font-size:11px;color:var(--text3);cursor:pointer;padding:6px 0;list-style:none">▸ Año ${now.getFullYear()} (acumulado)</summary>
     ${(()=>{
@@ -8140,8 +8140,8 @@ function renderOwnersBody(){
           <div style="font-size:10px;color:var(--text3);margin-top:1px">al prop.</div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
-          <div onclick="openOwnerReport('${escJs(owner.id)}')" style="width:32px;height:32px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">📄</div>
-          <div onclick="editOwner('${escJs(owner.id)}')" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">✏️</div>
+          <div class="tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:32px;height:32px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">📄</div>
+          <div class="tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">✏️</div>
         </div>
       </div>`;
     });
@@ -8164,9 +8164,9 @@ function renderOwnersBody(){
             ${owner.email?`<div style="font-size:11px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
           </div>
           <div style="display:flex;gap:6px">
-            <div onclick="openOwnerReport('${escJs(owner.id)}')" style="width:36px;height:36px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">📄</div>
-            <div onclick="editOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">✏️</div>
-            <div onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🗑</div>
+            <div class="tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:36px;height:36px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">📄</div>
+            <div class="tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">✏️</div>
+            <div class="tap44" onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🗑</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
@@ -8203,9 +8203,9 @@ function renderOwners(el){
         style="font-size:14px"/>
     </div>
     <div id="ownerToggleRow" style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-      <div id="otog-extended" onclick="_vOwnersMode='extended';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">☰</div>
-      <div id="otog-compact" onclick="_vOwnersMode='compact';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
-      <div id="otog-grid" onclick="_vOwnersMode='grid';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
+      <div class="tap44" id="otog-extended"onclick="_vOwnersMode='extended';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">☰</div>
+      <div class="tap44" id="otog-compact"onclick="_vOwnersMode='compact';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
+      <div class="tap44" id="otog-grid"onclick="_vOwnersMode='grid';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
     </div>
   </div>
   <div id="owners-results"></div></div>${isD?'</div>'+owStats+'</div>':''}`;
@@ -8507,7 +8507,7 @@ function genOwnerReport(ownerId){
   ov.style.cssText='position:fixed;inset:0;z-index:1000;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;';
   ov.innerHTML=`
     <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
-      <div onclick="document.getElementById('ownerRepOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
+      <div class="tap44" onclick="document.getElementById('ownerRepOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
       <div>
         <div style="font-size:16px;font-weight:800;color:#14B8A6">LIQUIDACIÓN PROPIETARIO</div>
         <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(o.name.toUpperCase())} · ${mLabel.toUpperCase()}</div>
@@ -9559,7 +9559,7 @@ function renderArchiveBody(){
       <div style="display:flex;gap:8px">
         <button onclick="openV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">👁 Ver datos</button>
         <button onclick="restoreV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">↩️ Reactivar</button>
-        <button onclick="deleteV('${escJs(v.id)}')" style="width:40px;background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:9px;font-family:var(--font);font-size:14px;cursor:pointer">🗑</button>
+        <button class="tap44" onclick="deleteV('${escJs(v.id)}')" style="width:40px;background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:9px;font-family:var(--font);font-size:14px;cursor:pointer">🗑</button>
       </div>
     </div>`;
   });
@@ -9962,7 +9962,7 @@ function genReport(vId){
   ov.id='repOv';ov.style.cssText='position:fixed;inset:0;z-index:1000;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;';
   ov.innerHTML=`
     <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
-      <div onclick="document.getElementById('repOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
+      <div class="tap44" onclick="document.getElementById('repOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
       <div><div style="font-size:16px;font-weight:800;color:var(--amber)">INFORME MENSUAL</div><div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(v.name)} · ${mLabel.toUpperCase()}</div></div>
       <button onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:#000;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
     </div>
