@@ -1011,10 +1011,10 @@ function renderAnalytics(el){
   // Per-vehicle metrics
   const metrics=activeV.map(v=>{
     const inc=tInc(v),exp=tExp(v),profit=inc-exp;
-    const days=tDays(v)||1;
+    const days=tDays(v);
     const bks=(v.bookings||[]);
-    const rpdInc=Math.round(inc/days);
-    const rpdProfit=Math.round(profit/days);
+    const rpdInc=Math.round(inc/(days||1));
+    const rpdProfit=Math.round(profit/(days||1));
     const pp=Number(v.purchase_price)||0;
     const roi=pp>0?Math.round((profit/pp)*100):null;
     const paidOff=pp>0&&profit>=pp;
@@ -1023,7 +1023,7 @@ function renderAnalytics(el){
     const now=new Date();
     const curM=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
     const dimM=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-    const mDays=new Set(bks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)===curM)).size;
+    const mDays=new Set(bks.filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)===curM)).size;
     const occ=Math.round(mDays/dimM*100);
     // Platform breakdown
     const platBk={amovens:0,getaround:0,sinapp:0};
@@ -5054,7 +5054,7 @@ function dayStatus(v,k){if(rentedSet(v).has(k))return'rented';return v.calendar?
 function bookingForDay(v,k){return(v.bookings||[]).find(b=>!b.returned&&k>=b.startDate&&k<=b.endDate);}
 function tInc(v){return _getVehicleAllFinances(v).filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);}
 function tExp(v){return _getVehicleAllFinances(v).filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);}
-function tDays(v){return rentedSet(v).size;}
+function tDays(v){return new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking)).size;}
 function bizContrib(v){
   if(v.vtype!=='managed')return{inc:tInc(v),exp:tExp(v)};
   const comm=(Number(v.commission)||30)/100;
