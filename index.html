@@ -487,7 +487,7 @@ select option{background:var(--bg);}
   <div class="ni" onclick="nav('vehicles')" id="ni-vehicles"><div class="ni-icon">🚗</div><div class="ni-lbl">FLOTA</div><div class="ni-dot" id="nd-vehicles"></div></div>
   <div class="ni" onclick="nav('biz')" id="ni-biz"><div class="ni-icon">💼</div><div class="ni-lbl">NEGOCIO</div><div class="ni-dot" id="nd-biz"></div></div>
 </nav>
-<div class="fab" id="FAB" onclick="fabClick()" style="display:none">＋</div>
+<div class="fab" id="FAB" title="Nuevo" aria-label="Nuevo" onclick="fabClick()" style="display:none">＋</div>
 <div class="ov" id="OV" onclick="closeSheet()"></div>
 <div class="sheet" id="SH"><div class="sh"></div><div id="SC"></div></div>
 
@@ -5136,7 +5136,7 @@ function nav(view){
   render();
 }
 function openV(id){AV=id;AT='calendar';calY=new Date().getFullYear();calM=new Date().getMonth();history.pushState(null,'');document.getElementById('BN').style.display='none';document.getElementById('FAB').style.display='none';render();}
-function goBack(){AV=null;document.getElementById('BN').style.display='flex';document.getElementById('FAB').style.display=(CV==='vehicles'||CV==='biz'||CV==='owners'||CV==='clients'||CV==='rentals')?'flex':'none';render();}
+function goBack(){AV=null;_fabLabel('Nuevo');document.getElementById('BN').style.display='flex';document.getElementById('FAB').style.display=(CV==='vehicles'||CV==='biz'||CV==='owners'||CV==='clients'||CV==='rentals')?'flex':'none';render();}
 function fabClick(){if(CV==='vehicles')openAddV();else if(CV==='biz')openAddBiz();else if(CV==='owners')openAddOwner();else if(CV==='clients')openAddClient();else if(CV==='quotes')openNewQuote();else if(CV==='rentals')openNewRentalPicker();}
 
 // ═══════════════════════════════════════════════════════════ RENDER
@@ -6604,7 +6604,9 @@ function deleteBooking(id){
 }
 
 // ═══════════════════════════════════════════════════════════ NEW RENTAL
+function _fabLabel(t){const f=document.getElementById('FAB');if(f){f.title=t;f.setAttribute('aria-label',t);}}
 function openNewRentalPicker(){
+  _fabLabel('Nuevo alquiler');
   const act=V.filter(v=>!v.archived);
   if(!act.length){
     openSheet(`<div class="stitle">Nuevo alquiler</div><div class="empty"><div class="ei">🚗</div><div class="et">Sin vehículos — añade uno en Flota</div></div>`);
@@ -6645,7 +6647,7 @@ function _filterNewRentalPicker(q){
 }
 // Indicador: alta abierta desde Alquileres → al registrar o cancelar se vuelve a Alquileres
 let _nrFromRentals=false;
-function _newRentalFor(id){closeSheet();_nrFromRentals=false;openV(id);openNewRental();_nrFromRentals=true;}
+function _newRentalFor(id){closeSheet();_fabLabel('Nuevo');_nrFromRentals=false;openV(id);openNewRental();_nrFromRentals=true;}
 // Registrar: envuelve submitRental() sin modificarlo; vuelve solo si se creó el alquiler
 (function(){
   const _submitOrig=submitRental;
@@ -6663,17 +6665,8 @@ function _newRentalFor(id){closeSheet();_nrFromRentals=false;openV(id);openNewRe
   const _closeOrig=closeSheet;
   closeSheet=function(){
     _closeOrig.apply(this,arguments);
+    if(!_nrFromRentals)_fabLabel('Nuevo'); // cerrar el selector sin elegir también restaura la etiqueta
     if(_nrFromRentals){_nrFromRentals=false;goBack();}
-  };
-  // FAB: etiqueta accesible según la vista
-  const _renderOrig=render;
-  render=function(){
-    _renderOrig.apply(this,arguments);
-    const f=document.getElementById('FAB');
-    if(f){
-      if(CV==='rentals'){f.title='Nuevo alquiler';f.setAttribute('aria-label','Nuevo alquiler');}
-      else{f.removeAttribute('title');f.removeAttribute('aria-label');}
-    }
   };
 })();
 
