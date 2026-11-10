@@ -864,8 +864,8 @@ function setAnalyticsVtype(id){_analyticsVtype=id;renderAnalytics(document.getEl
 function _calcOcc(v, monthKey){
   // Count unique days occupied in the given month
   const dim=new Date(parseInt(monthKey.slice(0,4)),parseInt(monthKey.slice(5,7)),0).getDate();
-  const bks=(v.bookings||[]).filter(b=>b.startDate.slice(0,7)===monthKey||b.endDate.slice(0,7)===monthKey||
-    (b.startDate<monthKey+'-01'&&b.endDate>monthKey+'-'+String(dim).padStart(2,'0')));
+  const bks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&(b.startDate.slice(0,7)===monthKey||b.endDate.slice(0,7)===monthKey||
+    (b.startDate<monthKey+'-01'&&b.endDate>monthKey+'-'+String(dim).padStart(2,'0'))));
   const days=new Set(bks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)===monthKey)).size;
   const pct=Math.round(days/dim*100);
   const inc=_getVehicleAllFinances(v).filter(e=>e.type==='income'&&e.date.startsWith(monthKey))
@@ -888,7 +888,7 @@ function _globalOcc(monthKey){
 
 function _allTimeOcc(v){
   // Find first and last booking date
-  const bks=v.bookings||[];
+  const bks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation);
   if(!bks.length)return{pct:0,days:0,totalDays:0};
   const first=bks.reduce((mn,b)=>b.startDate<mn?b.startDate:mn,bks[0].startDate);
   const last=bks.reduce((mx,b)=>b.endDate>mx?b.endDate:mx,bks[0].endDate);
