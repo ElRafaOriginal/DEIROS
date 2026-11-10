@@ -6796,7 +6796,7 @@ function _rwGo(n){
     const amt=parseFloat(g('rAmt'))||0;
     const ex=parseFloat((document.getElementById('exTotalAmt')?.textContent||'0').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''))||0;
     const f=x=>x.toFixed(2).replace('.',',')+' €';
-    document.getElementById('rwSummary').innerHTML='<div>🚗 <b>'+esc((PLATS[_plat]&&PLATS[_plat].label)||_plat)+'</b></div><div>📅 '+esc(g('rSD'))+' '+esc(g('rST'))+' → '+esc(g('rED'))+' '+esc(g('rET'))+'</div>'+(cl?'<div>👤 '+esc(cl)+'</div>':'')+'<div>Importe: <b>'+f(amt)+'</b></div><div>Extras: <b>'+f(ex)+'</b></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">Total: <b style="color:var(--amber);font-size:16px">'+f(amt+ex)+'</b></div>';
+    document.getElementById('rwSummary').innerHTML='<div>🚗 <b>'+esc((PLATS[_plat]&&PLATS[_plat].label)||_plat)+'</b></div><div>📅 '+esc(fmtDMY(g('rSD')))+' '+esc(g('rST'))+' → '+esc(fmtDMY(g('rED')))+' '+esc(g('rET'))+'</div>'+(cl?'<div>👤 '+esc(cl)+'</div>':'')+'<div>Importe: <b>'+f(amt)+'</b></div><div>Extras: <b>'+f(ex)+'</b></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">Total: <b style="color:var(--amber);font-size:16px">'+f(amt+ex)+'</b></div>';
   }
   const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
