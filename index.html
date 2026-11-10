@@ -207,6 +207,15 @@ select option{background:var(--bg);}
 .btn:active{opacity:0.85;}
 .btn-g{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;min-height:44px;}
 .btn-d{background:transparent;color:var(--red);border:1.5px solid #EF444430;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;width:100%;min-height:44px;}
+/* Sistema de 3 botones: primario / secundario / peligro (ajustan a su contenedor) */
+.btn-pri,.btn-sec,.btn-dang{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--rsm);padding:11px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;min-height:44px;width:100%;box-sizing:border-box;}
+.btn-pri{background:var(--amber);color:var(--on-amber);border:1.5px solid var(--amber);}
+.btn-sec{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);}
+.btn-sec.on-green{background:var(--green);color:var(--on-green);border-color:var(--green);}
+.btn-dang{background:transparent;color:var(--red);border:1.5px solid #EF444440;}
+.btn-pri:active,.btn-sec:active,.btn-dang:active{opacity:.85;}
+@media(min-width:768px){.btn-pri,.btn-sec,.btn-dang{padding:12px 18px;}}
+.bk-sec{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 8px;}
 /* CARDS */
 .vcard{padding:16px;border-radius:var(--radius);margin-bottom:12px;border:1.5px solid;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.15s;}
 .vcard:active{transform:scale(0.98);}
@@ -5988,6 +5997,7 @@ function showBooking(k,_overrideId){
       </div>
       <button onclick="restoreBooking('${escJs(b.id)}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:7px;padding:6px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩ Restablecer</button>
     </div>`:''}
+    <div class="bk-sec">📋 INFORMACIÓN</div>
     <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
         <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.startTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.startDate))}</div></div>
@@ -6024,6 +6034,7 @@ function showBooking(k,_overrideId){
       ${b.clientName?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">👤 ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
       ${b.notes?`<div style="margin-top:6px;font-size:13px;color:var(--text2)">📝 ${esc(b.notes)}</div>`:''}
     </div>
+    <div class="bk-sec">💰 INGRESOS, COBROS Y FIANZA</div>
     ${(()=>{
       const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
       const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
@@ -6101,7 +6112,7 @@ function showBooking(k,_overrideId){
         })()}`:''}
         <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
           <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
-          <button class="tap44" onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
+          <button class="tap44" onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;width:auto">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -6150,20 +6161,21 @@ function showBooking(k,_overrideId){
         })()}`:''}
       </div>`;
     })()}
+    <div class="bk-sec">⚡ ACCIONES</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.delivered?'#3B82F620':'var(--bg3)'};color:${b.delivered?'var(--blue)':'var(--text2)'};border:1.5px solid ${b.delivered?'#3B82F640':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.delivered?'🚗 Entregado ✓':'🚗 Marcar entregado'}</button>
-      <button onclick="toggleReturn('${escJs(b.id)}')" style="background:${b.returned?'#10B98120':'var(--bg3)'};color:${b.returned?'var(--green)':'var(--text2)'};border:1.5px solid ${b.returned?'#10B98140':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.returned?'✅ Devuelto ✓':'🔑 Marcar devuelto'}</button>
+      <button class="btn-pri" onclick="editBooking('${escJs(b.id)}')">✏️ Editar</button>
+      <button class="btn-pri" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">📅 Ampliar</button>
+      <button class="btn-pri" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">📄 Contrato</button>
+      <button class="btn-pri" onclick="generateReceiptPDF('${escJs(b.id)}')">🧾 Recibo</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.paid?'#10B98120':'#F59E0B20'};color:${b.paid?'var(--green)':'var(--amber)'};border:1.5px solid ${b.paid?'#10B98140':'#F59E0B40'};border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">${b.paid?'✅ Cobrado':'⏳ Marcar cobrado'}</button>
-      <button onclick="editBooking('${escJs(b.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar</button>
-      <button class="btn-d" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">🗑 Eliminar</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+      <button class="btn-sec${b.delivered?' on-green':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?'🚗 Entregado ✓':'🚗 Marcar entregado'}</button>
+      <button class="btn-sec${b.returned?' on-green':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?'✅ Devuelto ✓':'🔑 Marcar devuelto'}</button>
+      <button class="btn-sec${b.paid?' on-green':''}" onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.paid?'✅ Cobrado':'⏳ Marcar cobrado'}</button>
     </div>
-    ${!b.cancelled?`<button onclick="openCancelBooking('${escJs(b.id)}')" style="width:100%;background:#EF444415;color:var(--red);border:1.5px solid #EF444435;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">🚫 Cancelar alquiler</button>`:''}
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <button onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Contrato</button>
-      <button onclick="generateReceiptPDF('${escJs(b.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🧾 Recibo</button>
-      <button onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)" style="background:#3B82F620;color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📅 Ampliar</button>
+    <div style="display:grid;grid-template-columns:${!b.cancelled?'1fr 1fr':'1fr'};gap:8px">
+      ${!b.cancelled?`<button class="btn-dang" onclick="openCancelBooking('${escJs(b.id)}')">🚫 Cancelar alquiler</button>`:''}
+      <button class="btn-dang" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">🗑 Eliminar</button>
     </div>
     </div>`);
 }
