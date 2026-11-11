@@ -3427,7 +3427,7 @@ function openContractForm(vId,bookingId){
   </label>
   <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_ctGo(3)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button></div>
   <div style="height:8px"></div>
-  <button class="btn-g tap44" onclick="closeSheet()" style="width:100%;min-height:44px">Cancelar</button>
+  <button class="btn-sec tap44" onclick="closeSheet()" style="width:100%;min-height:44px">Cancelar</button>
   </div>`);
   _ctSumUpd('Ar');_ctSumUpd('V');
   // Pre-check extras from the booking (b.extras array)
