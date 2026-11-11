@@ -19,7 +19,7 @@
 :root{
   /* DARK THEME (default) */
   --bg:#0a0f1a;--bg2:#111827;--bg3:#1a2235;--bg4:#243044;
-  --amber:#F59E0B;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--on-amber:#000;--on-green:#000;
+  --amber:#F59E0B;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--on-amber:#000;--on-green:#000;--danger-text:#F87171;
   --text:#F0F4FF;--text2:#94A3B8;--text3:#8A9AB0;
   --border:#1e2d42;--border2:#2a3d56;
   --radius:14px;--rsm:8px;
@@ -29,7 +29,7 @@
 /* LIGHT THEME */
 :root.light{
   --bg:#F5F7FA;--bg2:#FFFFFF;--bg3:#EEF1F6;--bg4:#E2E7EF;
-  --amber:#B45309;--green:#047857;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;--on-amber:#FFFFFF;--on-green:#FFFFFF;
+  --amber:#B45309;--green:#047857;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;--on-amber:#FFFFFF;--on-green:#FFFFFF;--danger-text:#B91C1C;
   --text:#0F172A;--text2:#334155;--text3:#556275;
   --border:#DDE3ED;--border2:#C8D2E0;
 }
@@ -204,13 +204,16 @@ select option{background:var(--bg);}
 .btn{background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:14px 20px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;width:100%;min-height:50px;}
 .btn:active{opacity:0.85;}
 .btn-g{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;min-height:44px;}
-.btn-d{background:transparent;color:var(--red);border:1.5px solid #EF444430;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;width:100%;min-height:44px;}
+.btn-d{background:transparent;color:var(--danger-text);border:1.5px solid #EF444430;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;width:100%;min-height:44px;}
 /* Sistema de 3 botones: primario / secundario / peligro (ajustan a su contenedor) */
 .btn-pri,.btn-sec,.btn-dang{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--rsm);padding:11px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;min-height:44px;width:100%;box-sizing:border-box;}
 .btn-pri{background:var(--amber);color:var(--on-amber);border:1.5px solid var(--amber);}
 .btn-sec{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);}
 .btn-sec.on-green{background:var(--green);color:var(--on-green);border-color:var(--green);}
-.btn-dang{background:transparent;color:var(--red);border:1.5px solid #EF444440;}
+.btn-dang{background:transparent;color:var(--danger-text);border:1.5px solid var(--danger-text);}
+.own-actions{display:flex;flex-direction:column;gap:8px}
+.own-actions>button{width:100%}
+@media(min-width:768px){.own-actions{flex-direction:row}.own-actions>button{flex:1;width:auto}}
 .btn-pri:active,.btn-sec:active,.btn-dang:active{opacity:.85;}
 @media(min-width:768px){.btn-pri,.btn-sec,.btn-dang{padding:12px 18px;}}
 .bk-sec{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 8px;}
@@ -8418,10 +8421,10 @@ function renderOwnerProfile(el){
         ${owner.email?`<div style="font-size:13px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
         ${owner.iban?`<div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px"><span>🏦</span><span id="ibanDisplay" style="font-family:var(--mono)">${esc(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}</span><span onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${escJs(owner.iban)}':'${escJs(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}';" style="cursor:pointer;font-size:15px;padding:2px 6px;background:var(--bg3);border-radius:5px;border:1px solid var(--border2)">👁</span></div>`:''}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:auto">📄 Informe PDF</button>
-        <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')" style="width:auto">📋 Contrato de gestión</button>
-        <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')" style="width:auto">✏️ Editar</button>
+      <div class="own-actions">
+        <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')">📄 Informe PDF</button>
+        <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')">📋 Contrato de gestión</button>
+        <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')">✏️ Editar</button>
       </div>
     </div>
   </div>
