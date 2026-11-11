@@ -3185,9 +3185,16 @@ function openContractForm(vId,bookingId){
 
   const isFurgoneta=(v.vehicle_type||'turismo').startsWith('l');
   openSheet(`<div class="stitle">📄 Contrato de alquiler</div>
-  <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Completa los datos que falten. Los campos del sistema se pre-rellenan automáticamente.</div>
+  <div style="font-size:11px;color:var(--text3);margin-bottom:14px"><span id="ctSub">Paso 1: empresa y vehículo</span></div>
+  <div class="wiz-bar">${['Empresa y vehículo','Cliente','Condiciones','Revisión'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="ctS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
 
-  <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:8px">🏢 ARRENDADOR</div>
+  <div data-ct="1">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple)">🏢 ARRENDADOR</div>
+    <button type="button" class="btn-g tap44" id="ctFoldBtnAr" style="min-height:44px;padding:0 14px" onclick="_ctFold('Ar')">Editar</button>
+  </div>
+  <div id="ctSumAr" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;font-size:13px;line-height:1.7"></div>
+  <div id="ctFldAr" style="display:none">
   <div class="r2">
     <div class="fg"><label class="lbl">NOMBRE / RAZÓN SOCIAL</label><input id="ctArNombre" value="${esc(co.nombre||'DEIROS')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">NIF / CIF</label><input id="ctArNif" value="${esc(co.nif||'')}" autocomplete="off"/></div>
@@ -3201,9 +3208,15 @@ function openContractForm(vId,bookingId){
     <div class="fg"><label class="lbl">CIUDAD DE FIRMA</label><input id="ctCiudad" value="${esc(co.ciudad||'Madrid')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">FECHA DEL CONTRATO</label><input id="ctFecha" value="${today}" autocomplete="off"/></div>
   </div>
+  </div>
 
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
-  <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">🚗 VEHÍCULO</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber)">🚗 VEHÍCULO</div>
+    <button type="button" class="btn-g tap44" id="ctFoldBtnV" style="min-height:44px;padding:0 14px" onclick="_ctFold('V')">Editar</button>
+  </div>
+  <div id="ctSumV" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;font-size:13px;line-height:1.7"></div>
+  <div id="ctFldV" style="display:none">
   <div class="r2">
     <div class="fg"><label class="lbl">MARCA</label><input id="ctVMake" value="${esc(v.make||(v.model&&v.model.includes(' ')?v.model.split(' ')[0]:''))}" placeholder="Ej: Renault" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">MODELO</label><input id="ctVModel" value="${esc(v.make?(v.model||v.name):(v.model&&v.model.includes(' ')?v.model.split(' ').slice(1).join(' '):v.model||v.name))}" placeholder="Ej: Clio" autocomplete="off"/></div>
@@ -3220,8 +3233,11 @@ function openContractForm(vId,bookingId){
     </div>
     <div class="fg"><label class="lbl">KM EN ENTREGA</label><input id="ctVKm" value="${esc(b.kmStart||v.km||'')}" inputmode="numeric"/></div>
   </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_ctGo(2)">Siguiente ›</button></div>
+  </div>
 
-  <div style="height:1px;background:var(--border);margin:12px 0"></div>
+  <div data-ct="2" style="display:none">
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">👤 ARRENDATARIO</div>
   <div class="r2">
     <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="ctClNombre" value="${esc(b.clientName||cl?.name||'')}" autocomplete="off"/></div>
@@ -3259,9 +3275,10 @@ function openContractForm(vId,bookingId){
       </div>
     </div>
   </div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_ctGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_ctGo(3)">Siguiente ›</button></div>
+  </div>
 
-
-  <div style="height:1px;background:var(--border);margin:12px 0"></div>
+  <div data-ct="3" style="display:none">
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--green);margin-bottom:8px">💶 CONDICIONES ECONÓMICAS</div>
   <div class="r2">
     <div class="fg"><label class="lbl">LUGAR ENTREGA</label><input id="ctEntLugar" value="${esc(co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
@@ -3423,15 +3440,20 @@ function openContractForm(vId,bookingId){
   <div class="fg"><label class="lbl">OBSERVACIONES ADICIONALES</label>
     <textarea id="ctObs" rows="2" style="font-size:13px;padding:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);width:100%;box-sizing:border-box">${esc(b.notes||'')}</textarea>
   </div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_ctGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_ctGo(4)">Siguiente ›</button></div>
+  </div>
 
-  <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer">
+  <div data-ct="4" style="display:none">
+  <div id="ctSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
+  <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;min-height:44px">
     <input type="checkbox" id="ctSaveDefaults" checked/>
     <span style="font-size:12px;color:var(--text3)">Guardar datos de empresa para futuros contratos</span>
   </label>
-
-  <button class="btn-pri" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button>
+  <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_ctGo(3)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button></div>
   <div style="height:8px"></div>
-  <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+  <button class="btn-sec tap44" onclick="closeSheet()" style="width:100%;min-height:44px">Cancelar</button>
+  </div>`);
+  _ctSumUpd('Ar');_ctSumUpd('V');
   // Pre-check extras from the booking (b.extras array)
   if(b.extras&&b.extras.length){
     const _kmIds=['exBolsa200','exBolsa500','exBolsa1000','exKmIlimitados'];
@@ -3446,6 +3468,66 @@ function openContractForm(vId,bookingId){
   }
   // Update km total badge after pre-checking extras
   _ctKmUpdate();
+}
+
+// ── Contrato en 4 pasos: solo muestra/oculta contenedores; no guarda nada ─────
+function _ctVal(id){return (document.getElementById(id)?.value||'').trim();}
+function _ctSumUpd(k){
+  const el=document.getElementById('ctSum'+k);if(!el)return;
+  const row=(a,b)=>b?'<div>'+a+' <b>'+esc(b)+'</b></div>':'';
+  if(k==='Ar'){
+    el.innerHTML=row('🏢',_ctVal('ctArNombre'))+row('NIF',_ctVal('ctArNif'))+row('📍',_ctVal('ctArDir'))+row('📞',_ctVal('ctArTel'))+row('✉️',_ctVal('ctArEmail'))+row('Firma en',_ctVal('ctCiudad')+(_ctVal('ctFecha')?' · '+_ctVal('ctFecha'):''));
+  }else{
+    el.innerHTML=row('🚗',(_ctVal('ctVMake')+' '+_ctVal('ctVModel')).trim())+row('Matrícula',_ctVal('ctVPlate'))+row('Combustible',_ctVal('ctVFuel'))+row('Nivel entrega',_ctVal('ctFuelLevel'))+row('Km entrega',_ctVal('ctVKm'));
+  }
+}
+function _ctFold(k){
+  const fld=document.getElementById('ctFld'+k),btn=document.getElementById('ctFoldBtn'+k),sum=document.getElementById('ctSum'+k);
+  if(!fld)return;
+  const open=fld.style.display==='none';
+  fld.style.display=open?'':'none';
+  if(sum)sum.style.display=open?'none':'';
+  if(btn)btn.textContent=open?'Confirmar':'Editar';
+  if(!open)_ctSumUpd(k);
+}
+function _ctValidate(cur){
+  const need=cur===1?[['ctArNombre','ctFldAr','Ar'],['ctArNif','ctFldAr','Ar'],['ctArDir','ctFldAr','Ar']]
+    :cur===2?[['ctClNombre'],['ctClNif']]:[];
+  if(!need.length)return true;
+  need.forEach(x=>_rwMark(x[0],false));
+  const miss=need.filter(x=>!_ctVal(x[0]));
+  if(!miss.length)return true;
+  miss.forEach(x=>_rwMark(x[0],true));
+  // si el grupo está plegado, lo desplegamos para que se vean los campos marcados
+  miss.forEach(x=>{if(x[1]){const f=document.getElementById(x[1]);if(f&&f.style.display==='none')_ctFold(x[2]);}});
+  const first=document.getElementById(miss[0][0]);if(first)first.focus();
+  alert(cur===1?'Completa nombre, NIF y domicilio del arrendador':'Completa nombre y NIF del cliente');
+  return false;
+}
+function _ctGo(n){
+  const _cur=(()=>{const d=[...document.querySelectorAll('#SC [data-ct]')].find(x=>x.style.display!=='none');return d?+d.getAttribute('data-ct'):1;})();
+  if(n>_cur&&!_ctValidate(_cur))return;
+  ['Ar','V'].forEach(k=>{const f=document.getElementById('ctFld'+k);if(f&&f.style.display!=='none')_ctFold(k);});
+  document.querySelectorAll('#SC [data-ct]').forEach(d=>{d.style.display=d.getAttribute('data-ct')===String(n)?'':'none';});
+  [1,2,3,4].forEach(i=>{const e=document.getElementById('ctS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
+  const sub=document.getElementById('ctSub');
+  if(sub)sub.textContent=['','Paso 1: empresa y vehículo','Paso 2: cliente','Paso 3: condiciones, km, fianza y extras','Paso 4: revisa y genera el PDF'][n];
+  if(n===4){
+    const row=(a,b)=>b?'<div>'+a+' <b>'+esc(b)+'</b></div>':'';
+    const ex=document.getElementById('exTotalAmt')?.textContent||'0,00 €';
+    const extra=document.getElementById('ctHasExtra')?.checked?_ctVal('ctEx2Nombre'):'';
+    const sd=document.getElementById('ctSummary');
+    if(sd)sd.innerHTML=row('🏢',_ctVal('ctArNombre'))
+      +row('🚗',(_ctVal('ctVMake')+' '+_ctVal('ctVModel')+' · '+_ctVal('ctVPlate')).trim())
+      +row('👤',_ctVal('ctClNombre')+(_ctVal('ctClNif')?' ('+_ctVal('ctClNif')+')':''))
+      +(extra?row('Conductor adicional',extra):'')
+      +row('Precio base',_ctVal('ctPrecioBase')?_ctVal('ctPrecioBase')+' €':'')
+      +row('Km incluidos',(document.getElementById('ctKmTotalBadge')?.textContent||'').trim())
+      +row('Fianza',_ctVal('ctFianza')?_ctVal('ctFianza')+' €':'')
+      +row('Pago',_ctVal('ctPago'))
+      +'<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">Total extras: <b style="color:var(--amber)">'+esc(ex)+'</b></div>';
+  }
+  const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
 
 // ── Helper universal de guardado PDF (móvil + escritorio) ────────────────────
@@ -6726,7 +6808,9 @@ function openNewRental(){
   const hh=String(new Date().getHours()).padStart(2,'0')+':00';
   const h1=String((new Date().getHours()+1)%24).padStart(2,'0')+':00';
   const _vNR=gV();const isFurgNR=(_vNR?.vehicle_type||'turismo').startsWith('l');const durNR=1;
-  openSheet(`<div class="stitle">Nuevo alquiler</div><div class="ssub">Plataforma, fechas, horas e importe</div>
+  openSheet(`<div class="stitle">Nuevo alquiler</div><div class="ssub" id="rwSub">Paso 1: lo imprescindible</div>
+    <div class="wiz-bar">${['Datos','Extras','Resumen'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="rwS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
+    <div data-rw="1">
     <div class="lbl">PLATAFORMA</div>
     <div class="plat-opts">
       ${Object.entries(PLATS).map(([k,p])=>`<div class="plat-opt${k==='amovens'?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">${k==='amovens'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#FB7AAC"></span>':k==='getaround'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#8B5CF6"></span>':p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${esc(p.label)}</div></div>`).join('')}
@@ -6739,11 +6823,6 @@ function openNewRental(){
     <div class="r2 fg"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">IMPORTE (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
     <div style="position:relative;margin-bottom:14px"><input type="number" id="rAmt" placeholder="0.00" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="sec" style="margin-bottom:10px">KILÓMETROS (opcional)</div>
-    <div class="r2 fg">
-      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
-      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
-    </div>
     <div class="sec" style="margin-bottom:6px">CLIENTE (opcional)</div>
     <input id="rCN" type="hidden"/>
     <input id="rCP" type="hidden"/>
@@ -6752,6 +6831,14 @@ function openNewRental(){
     <div class="r2 fg">
       <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" oninput="document.getElementById('rCP').value=this.value"/></div>
       <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()"/></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_rwGo(2)">Siguiente ›</button></div>
+    </div>
+    <div data-rw="2" style="display:none">
+    <div class="sec" style="margin-bottom:10px">KILÓMETROS (opcional)</div>
+    <div class="r2 fg">
+      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
+      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
     </div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off"/></div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
@@ -6785,10 +6872,40 @@ function openNewRental(){
       <span style="font-size:13px;font-weight:700">Total extras:</span>
       <span id="exTotalAmt" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--amber)">0,00 €</span>
     </div>
-    <div style="height:8px"></div>
-    <button class="btn-pri" onclick="submitRental()">✅ Registrar alquiler</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_rwGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_rwGo(3)">Siguiente ›</button></div>
+    </div>
+    <div data-rw="3" style="display:none">
+      <div id="rwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
+      <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_rwGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="submitRental()">✅ Registrar alquiler</button></div>
+    </div>`);
+}
+function _rwMark(id,bad){const e=document.getElementById(id);if(!e)return;e.style.borderColor=bad?'var(--red,#ef4444)':'';}
+function _rwValidate1(){
+  const g=id=>document.getElementById(id)?.value;
+  ['rSD','rST','rED','rET','rAmt'].forEach(id=>_rwMark(id,false));
+  const miss=['rSD','rST','rED','rET'].filter(id=>!g(id));
+  if(miss.length){miss.forEach(id=>_rwMark(id,true));alert('Completa las fechas y horas');return false;}
+  if(new Date(g('rED')+'T'+g('rET'))<=new Date(g('rSD')+'T'+g('rST'))){['rED','rET'].forEach(id=>_rwMark(id,true));alert('La fecha/hora de fin debe ser posterior al inicio');return false;}
+  const amt=parseFloat(g('rAmt'));
+  if(isNaN(amt)||amt<0){_rwMark('rAmt',true);alert('Introduce un importe válido');return false;}
+  return true;
+}
+function _rwGo(n){
+  const cur=[1,2,3].find(i=>document.querySelector('#SC [data-rw="'+i+'"]')?.style.display!=='none')||1;
+  if(n>cur&&!_rwValidate1())return;
+  document.querySelectorAll('#SC [data-rw]').forEach(d=>{d.style.display=d.getAttribute('data-rw')===String(n)?'':'none';});
+  [1,2,3].forEach(i=>{const e=document.getElementById('rwS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
+  const sub=document.getElementById('rwSub');
+  if(sub)sub.textContent=['','Paso 1: lo imprescindible','Paso 2: km, notas y extras','Paso 3: revisa y registra'][n];
+  if(n===3){
+    const g=id=>document.getElementById(id)?.value||'';
+    const cl=(document.getElementById('rClientPicker')?.value||'').trim();
+    const amt=parseFloat(g('rAmt'))||0;
+    const ex=parseFloat((document.getElementById('exTotalAmt')?.textContent||'0').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''))||0;
+    const f=x=>x.toFixed(2).replace('.',',')+' €';
+    document.getElementById('rwSummary').innerHTML='<div>🚗 <b>'+esc((PLATS[_plat]&&PLATS[_plat].label)||_plat)+'</b></div><div>📅 '+esc(fmtDMY(g('rSD')))+' '+esc(g('rST'))+' → '+esc(fmtDMY(g('rED')))+' '+esc(g('rET'))+'</div>'+(cl?'<div>👤 '+esc(cl)+'</div>':'')+'<div>Importe: <b>'+f(amt)+'</b></div><div>Extras: <b>'+f(ex)+'</b></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">Total: <b style="color:var(--amber);font-size:16px">'+f(amt+ex)+'</b></div>';
+  }
+  const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
 function _recalcRentalExtras(){
   const sd=document.getElementById('rSD')?.value;
@@ -11280,7 +11397,9 @@ function _openQuoteForm(q){
     </div>`;
   }).join('');
 
-  openSheet(`<div class="stitle">${q?'✏️ Editar presupuesto':'📝 Nuevo presupuesto'}</div>
+  openSheet(`<div class="stitle">${q?'✏️ Editar presupuesto':'📝 Nuevo presupuesto'}</div><div class="ssub" id="qwSub">Paso 1: vehículo y fechas</div>
+    <div class="wiz-bar">${['Vehículo','Extras','Total'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="qwS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
+    <div data-qw="1">
     <div class="fg"><label class="lbl">VEHÍCULO *</label>
       <select id="qVehicle" onchange="_loadQuoteExtrasUpdate()"><option value="">— Seleccionar —</option>${vOpts}</select></div>
     <div class="r2">
@@ -11299,6 +11418,9 @@ function _openQuoteForm(q){
         <input type="number" id="qDiscount" step="0.01" inputmode="decimal" placeholder="0"
           value="${esc(q&&q.discount?q.discount:'')}" oninput="_calcQuoteTotal()"/></div>
     </div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_qwGo(2)">Siguiente ›</button></div>
+    </div>
+    <div data-qw="2" style="display:none">
     <div class="fg"><label class="lbl">NOMBRE DEL CLIENTE (opcional)</label>
       <input id="qClient" value="${esc(q?q.clientName||'':'')}" placeholder="Nombre del cliente" autocomplete="off"/></div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">⭐ SUPLEMENTOS</div>
@@ -11372,7 +11494,11 @@ function _openQuoteForm(q){
         </span>
       </div>`;
     }).join('')}</div>
-    <div class="fg"><label class="lbl">FIANZA (€) <span style="font-size:9px;color:var(--text3)">reembolsable, no suma al total</span></label>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_qwGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_qwGo(3)">Siguiente ›</button></div>
+    </div>
+    <div data-qw="3" style="display:none">
+    <div id="qwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
+    <div class="fg"><label class="lbl">FIANZA (€)<span style="font-size:9px;color:var(--text3)">reembolsable, no suma al total</span></label>
       <input type="number" id="qFianza" step="0.01" inputmode="decimal" placeholder="200"
         value="${esc(q&&q.fianza?q.fianza:'')}"/></div>
     <div class="fg"><label class="lbl">OBSERVACIONES (aparecerán en el PDF)</label>
@@ -11389,9 +11515,8 @@ function _openQuoteForm(q){
         <span id="qTotalOut" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">—</span>
       </div>
     </div>
-    <button class="btn-pri" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button>
-    <div style="height:8px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_qwGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button></div>
+    </div>`);
 
   setTimeout(()=>{
     if(q&&q.vehicleId){
@@ -11403,6 +11528,32 @@ function _openQuoteForm(q){
 }
 
 function _loadQuoteExtrasUpdate(){_calcQuoteTotal();}
+
+function _qwValidate1(){
+  const g=id=>document.getElementById(id)?.value;
+  ['qVehicle','qStart','qEnd'].forEach(id=>_rwMark(id,false));
+  const miss=['qVehicle','qStart','qEnd'].filter(id=>!g(id));
+  if(miss.length){miss.forEach(id=>_rwMark(id,true));alert('Selecciona vehículo y fechas.');return false;}
+  const st=g('qStartT')||'09:00',et=g('qEndT')||'09:00';
+  if(new Date(g('qEnd')+'T'+et)<=new Date(g('qStart')+'T'+st)){['qEnd','qEndT'].forEach(id=>_rwMark(id,true));alert('La fecha/hora de fin debe ser posterior al inicio');return false;}
+  return true;
+}
+function _qwGo(n){
+  const cur=[1,2,3].find(i=>document.querySelector('#SC [data-qw="'+i+'"]')?.style.display!=='none')||1;
+  if(n>cur&&!_qwValidate1())return;
+  document.querySelectorAll('#SC [data-qw]').forEach(d=>{d.style.display=d.getAttribute('data-qw')===String(n)?'':'none';});
+  [1,2,3].forEach(i=>{const e=document.getElementById('qwS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
+  const sub=document.getElementById('qwSub');
+  if(sub)sub.textContent=['','Paso 1: vehículo y fechas','Paso 2: cliente y extras','Paso 3: total y guardar'][n];
+  if(n===3){
+    _calcQuoteTotal();
+    const g=id=>document.getElementById(id)?.value||'';
+    const veh=V.find(x=>x.id===g('qVehicle'));
+    const cl=g('qClient').trim();
+    document.getElementById('qwSummary').innerHTML='<div>🚗 <b>'+esc(veh?veh.name+' · '+veh.plate:'—')+'</b></div><div>📅 '+esc(fmtDMY(g('qStart')))+' '+esc(g('qStartT'))+' → '+esc(fmtDMY(g('qEnd')))+' '+esc(g('qEndT'))+'</div>'+(cl?'<div>👤 '+esc(cl)+'</div>':'');
+  }
+  const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
+}
 
 function _kmDia(d, cfg){
   // km incluidos el día d-ésimo del alquiler (d empieza en 1)
