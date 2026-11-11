@@ -3210,7 +3210,7 @@ function openContractForm(vId,bookingId){
     <div class="fg"><label class="lbl">KM EN ENTREGA</label><input id="ctVKm" value="${esc(b.kmStart||v.km||'')}" inputmode="numeric"/></div>
   </div>
   </div>
-  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_ctGo(2)">Siguiente ›</button></div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_ctGo(2)">Siguiente ›</button></div>
   </div>
 
   <div data-ct="2" style="display:none">
@@ -3251,7 +3251,7 @@ function openContractForm(vId,bookingId){
       </div>
     </div>
   </div>
-  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_ctGo(1)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_ctGo(3)">Siguiente ›</button></div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_ctGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_ctGo(3)">Siguiente ›</button></div>
   </div>
 
   <div data-ct="3" style="display:none">
@@ -3416,7 +3416,7 @@ function openContractForm(vId,bookingId){
   <div class="fg"><label class="lbl">OBSERVACIONES ADICIONALES</label>
     <textarea id="ctObs" rows="2" style="font-size:13px;padding:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);width:100%;box-sizing:border-box">${esc(b.notes||'')}</textarea>
   </div>
-  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_ctGo(2)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_ctGo(4)">Siguiente ›</button></div>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_ctGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_ctGo(4)">Siguiente ›</button></div>
   </div>
 
   <div data-ct="4" style="display:none">
@@ -3425,7 +3425,7 @@ function openContractForm(vId,bookingId){
     <input type="checkbox" id="ctSaveDefaults" checked/>
     <span style="font-size:12px;color:var(--text3)">Guardar datos de empresa para futuros contratos</span>
   </label>
-  <div style="display:flex;gap:10px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_ctGo(3)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button></div>
+  <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_ctGo(3)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button></div>
   <div style="height:8px"></div>
   <button class="btn-g tap44" onclick="closeSheet()" style="width:100%;min-height:44px">Cancelar</button>
   </div>`);
@@ -3466,7 +3466,23 @@ function _ctFold(k){
   if(btn)btn.textContent=open?'Confirmar':'Editar';
   if(!open)_ctSumUpd(k);
 }
+function _ctValidate(cur){
+  const need=cur===1?[['ctArNombre','ctFldAr','Ar'],['ctArNif','ctFldAr','Ar'],['ctArDir','ctFldAr','Ar']]
+    :cur===2?[['ctClNombre'],['ctClNif']]:[];
+  if(!need.length)return true;
+  need.forEach(x=>_rwMark(x[0],false));
+  const miss=need.filter(x=>!_ctVal(x[0]));
+  if(!miss.length)return true;
+  miss.forEach(x=>_rwMark(x[0],true));
+  // si el grupo está plegado, lo desplegamos para que se vean los campos marcados
+  miss.forEach(x=>{if(x[1]){const f=document.getElementById(x[1]);if(f&&f.style.display==='none')_ctFold(x[2]);}});
+  const first=document.getElementById(miss[0][0]);if(first)first.focus();
+  alert(cur===1?'Completa nombre, NIF y domicilio del arrendador':'Completa nombre y NIF del cliente');
+  return false;
+}
 function _ctGo(n){
+  const _cur=(()=>{const d=[...document.querySelectorAll('#SC [data-ct]')].find(x=>x.style.display!=='none');return d?+d.getAttribute('data-ct'):1;})();
+  if(n>_cur&&!_ctValidate(_cur))return;
   ['Ar','V'].forEach(k=>{const f=document.getElementById('ctFld'+k);if(f&&f.style.display!=='none')_ctFold(k);});
   document.querySelectorAll('#SC [data-ct]').forEach(d=>{d.style.display=d.getAttribute('data-ct')===String(n)?'':'none';});
   [1,2,3,4].forEach(i=>{const e=document.getElementById('ctS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
@@ -6791,7 +6807,7 @@ function openNewRental(){
       <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" oninput="document.getElementById('rCP').value=this.value"/></div>
       <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()"/></div>
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_rwGo(2)">Siguiente ›</button></div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_rwGo(2)">Siguiente ›</button></div>
     </div>
     <div data-rw="2" style="display:none">
     <div class="sec" style="margin-bottom:10px">KILÓMETROS (opcional)</div>
@@ -6831,11 +6847,11 @@ function openNewRental(){
       <span style="font-size:13px;font-weight:700">Total extras:</span>
       <span id="exTotalAmt" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--amber)">0,00 €</span>
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_rwGo(1)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_rwGo(3)">Siguiente ›</button></div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_rwGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_rwGo(3)">Siguiente ›</button></div>
     </div>
     <div data-rw="3" style="display:none">
       <div id="rwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
-      <div style="display:flex;gap:10px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_rwGo(2)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="submitRental()">✅ Registrar alquiler</button></div>
+      <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_rwGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="submitRental()">✅ Registrar alquiler</button></div>
     </div>`);
 }
 function _rwMark(id,bad){const e=document.getElementById(id);if(!e)return;e.style.borderColor=bad?'var(--red,#ef4444)':'';}
@@ -11262,7 +11278,7 @@ function _openQuoteForm(q){
         <input type="number" id="qDiscount" step="0.01" inputmode="decimal" placeholder="0"
           value="${esc(q&&q.discount?q.discount:'')}" oninput="_calcQuoteTotal()"/></div>
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_qwGo(2)">Siguiente ›</button></div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_qwGo(2)">Siguiente ›</button></div>
     </div>
     <div data-qw="2" style="display:none">
     <div class="fg"><label class="lbl">NOMBRE DEL CLIENTE (opcional)</label>
@@ -11338,7 +11354,7 @@ function _openQuoteForm(q){
         </span>
       </div>`;
     }).join('')}</div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_qwGo(1)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_qwGo(3)">Siguiente ›</button></div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_qwGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_qwGo(3)">Siguiente ›</button></div>
     </div>
     <div data-qw="3" style="display:none">
     <div id="qwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
@@ -11359,7 +11375,7 @@ function _openQuoteForm(q){
         <span id="qTotalOut" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">—</span>
       </div>
     </div>
-    <div style="display:flex;gap:10px"><button class="btn-g tap44" style="flex:1;min-height:44px" onclick="_qwGo(2)">‹ Atrás</button><button class="btn tap44" style="flex:2;min-height:44px" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button></div>
+    <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_qwGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button></div>
     </div>`);
 
   setTimeout(()=>{
