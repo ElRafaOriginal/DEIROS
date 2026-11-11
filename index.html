@@ -19,7 +19,7 @@
 :root{
   /* DARK THEME (default) */
   --bg:#0a0f1a;--bg2:#111827;--bg3:#1a2235;--bg4:#243044;
-  --amber:#F59E0B;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--on-amber:#000;--on-green:#000;
+  --amber:#F59E0B;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--on-amber:#000;--on-green:#000;--danger-text:#F87171;
   --text:#F0F4FF;--text2:#94A3B8;--text3:#8A9AB0;
   --border:#1e2d42;--border2:#2a3d56;
   --radius:14px;--rsm:8px;
@@ -29,7 +29,7 @@
 /* LIGHT THEME */
 :root.light{
   --bg:#F5F7FA;--bg2:#FFFFFF;--bg3:#EEF1F6;--bg4:#E2E7EF;
-  --amber:#B45309;--green:#047857;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;--on-amber:#FFFFFF;--on-green:#FFFFFF;
+  --amber:#B45309;--green:#047857;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;--on-amber:#FFFFFF;--on-green:#FFFFFF;--danger-text:#B91C1C;
   --text:#0F172A;--text2:#334155;--text3:#556275;
   --border:#DDE3ED;--border2:#C8D2E0;
 }
@@ -117,18 +117,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   .desk-page-title{font-size:20px;font-weight:800;letter-spacing:0.5px;color:var(--text);}
   .desk-page-sub{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:1px;}
   .desk-actions{display:flex;gap:10px;align-items:center;}
-  .desk-btn{
-    background:var(--amber);color:var(--on-amber);border:none;
-    border-radius:8px;padding:8px 16px;
+  /* .desk-btn = .btn-pri, .desk-btn-ghost = .btn-sec (mismo aspecto, ancho automático) */
+  .desk-btn,.desk-btn-ghost{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border-radius:var(--rsm);padding:11px 18px;
     font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;
-    display:flex;align-items:center;gap:6px;
+    min-height:44px;width:auto;box-sizing:border-box;white-space:nowrap;
   }
-  .desk-btn-ghost{
-    background:var(--bg3);color:var(--text2);border:1px solid var(--border2);
-    border-radius:8px;padding:8px 14px;
-    font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;
-    display:flex;align-items:center;gap:6px;
-  }
+  .desk-btn{background:var(--amber);color:var(--on-amber);border:1.5px solid var(--amber);}
+  .desk-btn-ghost{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);}
+  .desk-btn:active,.desk-btn-ghost:active{opacity:.85;}
 
   /* Content — full width, no artificial max */
   .page{
@@ -206,7 +204,19 @@ select option{background:var(--bg);}
 .btn{background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:14px 20px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;width:100%;min-height:50px;}
 .btn:active{opacity:0.85;}
 .btn-g{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;min-height:44px;}
-.btn-d{background:transparent;color:var(--red);border:1.5px solid #EF444430;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;width:100%;min-height:44px;}
+.btn-d{background:transparent;color:var(--danger-text);border:1.5px solid #EF444430;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;width:100%;min-height:44px;}
+/* Sistema de 3 botones: primario / secundario / peligro (ajustan a su contenedor) */
+.btn-pri,.btn-sec,.btn-dang{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--rsm);padding:11px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;min-height:44px;width:100%;box-sizing:border-box;}
+.btn-pri{background:var(--amber);color:var(--on-amber);border:1.5px solid var(--amber);}
+.btn-sec{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);}
+.btn-sec.on-green{background:var(--green);color:var(--on-green);border-color:var(--green);}
+.btn-dang{background:transparent;color:var(--danger-text);border:1.5px solid var(--danger-text);}
+.own-actions{display:flex;flex-direction:column;gap:8px}
+.own-actions>button{width:100%}
+@media(min-width:768px){.own-actions{flex-direction:row}.own-actions>button{flex:1;width:auto}}
+.btn-pri:active,.btn-sec:active,.btn-dang:active{opacity:.85;}
+@media(min-width:768px){.btn-pri,.btn-sec,.btn-dang{padding:12px 18px;}}
+.bk-sec{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 8px;}
 /* CARDS */
 .vcard{padding:16px;border-radius:var(--radius);margin-bottom:12px;border:1.5px solid;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.15s;}
 .vcard:active{transform:scale(0.98);}
@@ -535,7 +545,7 @@ select option{background:var(--bg);}
       <label style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);display:block;margin-bottom:6px">CONTRASEÑA</label>
       <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" style="width:100%"/>
     </div>
-    <button onclick="doLogin()" style="width:100%;background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:16px;font-family:var(--font);font-size:16px;font-weight:800;cursor:pointer;margin-bottom:12px">Entrar</button>
+    <button class="btn-pri" onclick="doLogin()" style="margin-bottom:12px">Entrar</button>
     <div id="loginError" style="text-align:center;font-size:13px;color:var(--red);min-height:20px"></div>
   </div>
 </div>
@@ -762,7 +772,7 @@ function renderClientDetail(el){
         ${cl.phone?`<div style="font-size:13px;color:var(--text3);margin-top:2px">📞 ${esc(cl.phone)}</div>`:''}
         ${cl.email?`<div style="font-size:13px;color:var(--text3);margin-top:2px">✉️ ${esc(cl.email)}</div>`:''}
       </div>
-      <button onclick="openEditClient('${escJs(cl.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+      <button class="btn-pri" onclick="openEditClient('${escJs(cl.id)}')" style="width:auto">✏️ Editar</button>
     </div>
     <div style="margin-bottom:10px">
       <div style="font-size:11px;color:var(--text3);margin-bottom:6px">VALORACIÓN</div>
@@ -797,7 +807,7 @@ function renderClientDetail(el){
   });
 
   h+=`<div style="height:16px"></div>
-  <button onclick="deleteClient('${escJs(cl.id)}')" class="btn-d">🗑 Eliminar cliente</button>
+  <button onclick="deleteClient('${escJs(cl.id)}')" class="btn-dang">🗑 Eliminar cliente</button>
   </div>`;
   el.innerHTML=h;
 }
@@ -817,9 +827,9 @@ function openAddClient(){
     </div>
     <div class="fg"><label class="lbl">EMAIL</label><input id="clEmail" type="email" placeholder="email@ejemplo.com" inputmode="email"/></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="clNotes" placeholder="Observaciones..." autocomplete="off"/></div>
-    <button class="btn" onclick="submitAddClient()">Crear cliente</button>
+    <button class="btn-pri" onclick="submitAddClient()">Crear cliente</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function submitAddClient(){
@@ -852,9 +862,9 @@ function openEditClient(id){
     </div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="eclNotes" value="${esc(cl.notes||'')}" autocomplete="off"/></div>
-    <button class="btn" onclick="submitEditClient('${escJs(id)}')">💾 Guardar</button>
+    <button class="btn-pri" onclick="submitEditClient('${escJs(id)}')">💾 Guardar</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function submitEditClient(id){
@@ -1059,7 +1069,7 @@ function renderAnalytics(el){
   const _ps=active=>`border-color:${active?'var(--amber)':'var(--border2)'};background:${active?'#F59E0B22':'transparent'};color:${active?'var(--amber)':'var(--text3)'}`;
   let _filterUI=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px"><div style="display:flex;gap:5px;flex-wrap:wrap;flex:1"><div class="pill" onclick="setAnalyticsOwnership('')" style="${_ps(!_analyticsOwnership)}">Todos</div><div class="pill" onclick="setAnalyticsOwnership('own')" style="${_ps(_analyticsOwnership==='own')}">🔑 Propios</div><div class="pill" onclick="setAnalyticsOwnership('managed')" style="${_ps(_analyticsOwnership==='managed')}">🤝 Gestión</div>`;
   if(usedVtypes.length>1){_filterUI+=`<div style="width:100%;height:0"></div>`;usedVtypes.forEach(t=>{_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('${escJs(t.id)}')" style="${_ps(_analyticsVtype===t.id)}">${t.icon} ${t.label}</div>`;});_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('')" style="${_ps(!_analyticsVtype)}">Todos los tipos</div>`;}
-  _filterUI+=`</div><button onclick="openAnalyticsReportPicker()" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">📄 Informe PDF</button></div>`;
+  _filterUI+=`</div><button class="btn-pri" onclick="openAnalyticsReportPicker()" style="width:auto;white-space:nowrap;flex-shrink:0">📄 Informe PDF</button></div>`;
   if(!activeV.length){el.innerHTML=`<div class="anim">${_filterUI}<div class="empty"><div class="ei">🔍</div><div class="et">Sin resultados</div><div class="es">Cambia los filtros para ver vehículos</div></div></div>`;return;}
 
   let h=`<div class="anim">
@@ -1173,7 +1183,7 @@ function renderAnalytics(el){
       <input type="month" id="occMonth" value="${esc(safeMonth(new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')))}"
         onchange="renderOccupancy()"
         style="flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px"/>
-      <button onclick="renderOccupancy()" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Ver</button>
+      <button class="btn-pri" onclick="renderOccupancy()" style="width:auto">Ver</button>
     </div>
     <div id="occResults"></div>
   </div>
@@ -1184,7 +1194,7 @@ function renderAnalytics(el){
       <div><label class="lbl">PERÍODO A</label><input type="month" id="cmpA" style="font-size:14px;width:100%"/></div>
       <div><label class="lbl">PERÍODO B</label><input type="month" id="cmpB" style="font-size:14px;width:100%"/></div>
     </div>
-    <button onclick="runComparison()" style="width:100%;background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">Comparar períodos</button>
+    <button class="btn-pri" onclick="runComparison()">Comparar períodos</button>
     <div id="cmpResults" style="margin-top:14px"></div>
   </div>`;
 
@@ -1385,9 +1395,9 @@ function openAnalyticsReportPicker(){
       ${presets.map(([lbl,f,t])=>`<button onclick="document.getElementById('arFrom').value='${escJs(f)}';document.getElementById('arTo').value='${escJs(t)}'"
         style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:8px 4px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer">${lbl}</button>`).join('')}
     </div>
-    <button class="btn" onclick="generateAnalyticsPDF(document.getElementById('arFrom').value,document.getElementById('arTo').value);closeSheet()">📄 Generar informe PDF</button>
+    <button class="btn-pri" onclick="generateAnalyticsPDF(document.getElementById('arFrom').value,document.getElementById('arTo').value);closeSheet()">📄 Generar informe PDF</button>
     <div style="height:8px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function generateAnalyticsPDF(fromMonth,toMonth){
@@ -2462,10 +2472,10 @@ function openExtendBooking(bookingId){
     +'<div id="extCalcBox" style="border-radius:8px;padding:12px;margin-bottom:12px;text-align:center;background:var(--bg3);border:1px solid var(--border2)">'
     +'<span style="font-size:12px;color:var(--text3)">Introduce el nuevo total para ver la diferencia</span>'
     +'</div>'
-    +'<button class="btn" onclick="_confirmExtend()">✅ Confirmar ampliación</button>'
+    +'<button class="btn-pri" onclick="_confirmExtend()">✅ Confirmar ampliación</button>'
     +'<div style="height:8px"></div>'
-    +'<button onclick="generateExtensionPDF()" style="width:100%;background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Generar Anexo de Ampliación</button>'
-    +'<button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+    +'<button onclick="generateExtensionPDF()" class="btn-pri" style="margin-bottom:8px">📋 Generar Anexo de Ampliación</button>'
+    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
 function _extUpdateCalc(curTotal){
@@ -2588,9 +2598,9 @@ function openReturnModal(bookingId){
     +'<div class="r2"><div class="fg"><label class="lbl">COMBUSTIBLE FALTANTE (%)</label><input id="retFuelPct" type="number" min="0" max="100" step="1" inputmode="numeric" value="0" oninput="_retFuelAmtSync()"/></div>'
     +'<div class="fg"><label class="lbl">IMPORTE COMBUSTIBLE (€)</label><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div></div>'
     +'<div style="font-size:10px;color:var(--text3);margin:-6px 0 12px">Importes sugeridos y editables. Con 0 no se crea cobro.</div>'
-    +'<button class="btn" onclick="_confirmReturn()">\u2705 Confirmar devoluci\u00f3n</button>'
+    +'<button class="btn-pri" onclick="_confirmReturn()">\u2705 Confirmar devoluci\u00f3n</button>'
     +'<div style="height:8px"></div>'
-    +'<button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
 function _fuelFrac(s){if(!s)return 1;s=s.toLowerCase();if(s.includes('100')||s.includes('lleno'))return 1;if(s.includes('3/4'))return 0.75;if(s.includes('1/2'))return 0.5;if(s.includes('1/4'))return 0.25;return 0.05;}
@@ -2658,9 +2668,9 @@ function openBookingFinance(bookingId,type){
     +'<div class="r2"><div class="fg"><label class="lbl">IMPORTE (€) *</label><input id="bfAmt" type="number" step="0.01" inputmode="decimal"/></div>'
     +'<div class="fg"><label class="lbl">FECHA</label><input id="bfDate" type="date" value="'+esc(safeDate(today))+'"/></div></div>'
     +'<div class="fg"><label class="lbl">OBSERVACIONES</label><input id="bfNotes" autocomplete="off"/></div>'
-    +'<button class="btn" onclick="_saveBookingFinance()">💾 Guardar</button>'
+    +'<button class="btn-pri" onclick="_saveBookingFinance()">💾 Guardar</button>'
     +'<div style="height:8px"></div>'
-    +'<button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 function _saveBookingFinance(){
   const bookingId=window._bfBookingId;
@@ -2777,7 +2787,7 @@ function openPendingDeposits(filter){
       +'<span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--blue)">'+fmtF(b.fianza)+'</span></div>'
       +'<div style="font-size:11px;color:var(--text3);margin:2px 0 6px">'+esc(b.clientName||'—')+' · '+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;font-weight:700;color:'+COL[st]+'">'+LBL[st]+'</span>'
-      +'<button onclick="showBookingById(\''+escJs(b.id)+'\')" style="background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">Ver alquiler</button></div></div>';
+      +'<button class="btn-sec" onclick="showBookingById(\''+escJs(b.id)+'\')" style="width:auto;font-size:12px">Ver alquiler</button></div></div>';
   });
   openSheet(h+'</div>');
 }
@@ -2929,9 +2939,9 @@ function renderRecurring(el){
         </div>
       </div>
       <div style="display:flex;gap:8px">
-        <button onclick="toggleRecurring('${escJs(r.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">${r.active?'⏸ Pausar':'▶ Activar'}</button>
-        <button onclick="${editCall}" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
-        <button onclick="${delCall}" style="background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">×</button>
+        <button class="btn-sec" onclick="toggleRecurring('${escJs(r.id)}')" style="flex:1;font-size:12px">${r.active?'⏸ Pausar':'▶ Activar'}</button>
+        <button class="btn-sec" onclick="${editCall}" style="flex:1;font-size:12px">✏️ Editar</button>
+        <button class="btn-dang" onclick="${delCall}" style="width:auto;font-size:12px">×</button>
       </div>
     </div>`;
   }
@@ -2941,7 +2951,7 @@ function renderRecurring(el){
     <div class="sbox" style="border-left:4px solid var(--red)"><div class="sv" style="color:var(--red)">${fmt(totalMonthly)}</div><div class="sl">GASTO MENSUAL EQUIV.</div></div>
     <div class="sbox" style="border-left:4px solid var(--amber)"><div class="sv" style="color:var(--amber)">${visibleRR.filter(r=>r.active).length}</div><div class="sl">ACTIVOS</div></div>
   </div>
-  <button onclick="openAddRecurring()" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">＋ Nuevo gasto recurrente</button>`;
+  <button class="btn-pri" onclick="openAddRecurring()" style="margin-bottom:14px">＋ Nuevo gasto recurrente</button>`;
 
   if(!visibleRR.length){
     h+=`<div class="empty"><div class="ei">🔄</div><div class="et">Sin gastos recurrentes</div><div class="es">Seguros, suscripciones, parking… se aplicarán automáticamente cada período.</div></div>`;
@@ -2998,7 +3008,7 @@ function openVehicleRecurring(vId){
   openSheet(`<div class="stitle">🔄 Recurrentes — ${esc(v.name)}</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Gastos periódicos vinculados a este vehículo (seguro, revisión, parking...)</div>
     ${totalMonthly>0?`<div style="background:var(--bg3);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--text3)">Equivalente mensual</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmt(totalMonthly)}</span></div>`:''}
-    <button onclick="openAddRecurring(null,'${escJs(vId)}')" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">＋ Añadir recurrente</button>
+    <button class="btn-pri" onclick="openAddRecurring(null,'${escJs(vId)}')" style="margin-bottom:14px">＋ Añadir recurrente</button>
     ${vRR.length?vRR.map(r=>{
       const freqLabel={monthly:'Mensual',quarterly:'Trimestral',yearly:'Anual'}[r.freq]||r.freq;
       return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
@@ -3007,13 +3017,13 @@ function openVehicleRecurring(vId){
           <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(r.category||'')} · ${freqLabel} · ${r.active?'<span style=\'color:var(--green)\'>Activo</span>':'<span style=\'color:var(--text3)\'>Pausado</span>'}</div>
         </div>
         <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmt(r.amount)}</div>
-        <div onclick="toggleRecurring('${escJs(r.id)}');openVehicleRecurring('${escJs(vId)}')" style="font-size:18px;cursor:pointer;color:var(--text3)">${r.active?'⏸':'▶'}</div>
-        <div onclick="openAddRecurring('${escJs(r.id)}','${escJs(vId)}')" style="font-size:17px;cursor:pointer;color:var(--amber)">✏️</div>
-        <div onclick="if(confirm('¿Eliminar?')){RR=RR.filter(r=>r.id!=='${escJs(r.id)}');save();openVehicleRecurring('${escJs(vId)}');}" style="font-size:18px;cursor:pointer;color:var(--red)">×</div>
+        <button class="btn-sec tap44" onclick="toggleRecurring('${escJs(r.id)}');openVehicleRecurring('${escJs(vId)}')" style="width:auto;padding:0 12px;font-size:16px">${r.active?'⏸':'▶'}</button>
+        <button class="btn-sec tap44" onclick="openAddRecurring('${escJs(r.id)}','${escJs(vId)}')" style="width:auto;padding:0 12px;font-size:16px">✏️</button>
+        <button class="btn-dang tap44" onclick="if(confirm('¿Eliminar?')){RR=RR.filter(r=>r.id!=='${escJs(r.id)}');save();openVehicleRecurring('${escJs(vId)}');}" style="width:auto;padding:0 12px;font-size:18px">×</button>
       </div>`;
     }).join(''):'<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:13px">Sin gastos recurrentes para este vehículo</div>'}
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
 }
 
 function openAddRecurring(editId,vId){
@@ -3047,9 +3057,9 @@ function openAddRecurring(editId,vId){
     <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="rrAmt" type="number" step="0.01" value="${esc(r?r.amount:'')}" placeholder="0.00" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">APLICAR DESDE</label><input id="rrStart" type="month" value="${esc(safeMonth((r&&r.startDate?r.startDate.slice(0,7):todayStr().slice(0,7))))}"/></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="rrNotes" value="${esc(r?r.notes||'':'')}" placeholder="Opcional..." autocomplete="off"/></div>
-    <button class="btn" onclick="submitRecurring('${escJs(editId||'')}','${escJs(vId||'')}')">${r?'💾 Guardar':'Añadir'}</button>
+    <button class="btn-pri" onclick="submitRecurring('${escJs(editId||'')}','${escJs(vId||'')}')">${r?'💾 Guardar':'Añadir'}</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
   // Live plate hint
   if(!vId&&!editId){
     const inp=document.getElementById('rrPlate');
@@ -3405,9 +3415,9 @@ function openContractForm(vId,bookingId){
     <span style="font-size:12px;color:var(--text3)">Guardar datos de empresa para futuros contratos</span>
   </label>
 
-  <button class="btn" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button>
+  <button class="btn-pri" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">📄 Generar contrato PDF</button>
   <div style="height:8px"></div>
-  <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+  <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
   // Pre-check extras from the booking (b.extras array)
   if(b.extras&&b.extras.length){
     const _kmIds=['exBolsa200','exBolsa500','exBolsa1000','exKmIlimitados'];
@@ -4345,9 +4355,9 @@ function openMgmtContractForm(ownerId,vId){
     <span style="font-size:12px;color:var(--text3)">Guardar datos del gestor para futuros contratos</span>
   </label>
 
-  <button class="btn" onclick="generateMgmtContractPDF('${escJs(ownerId)}','${vId||''}')">📋 Generar contrato PDF</button>
+  <button class="btn-pri" onclick="generateMgmtContractPDF('${escJs(ownerId)}','${vId||''}')">📋 Generar contrato PDF</button>
   <div style="height:8px"></div>
-  <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+  <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function generateMgmtContractPDF(ownerId,vIdParam){
@@ -5923,7 +5933,7 @@ function renderCal(v){
 
   // ── Final layout ──────────────────────────────────────────────────────
   const calPanel=`
-  <button class="btn" onclick="openNewRental()" style="margin-bottom:12px;width:100%">🚗 + Nuevo alquiler</button>
+  <button class="btn-pri" onclick="openNewRental()" style="margin-bottom:12px;width:100%">🚗 + Nuevo alquiler</button>
   ${isD
     ? `<div style="display:grid;grid-template-columns:33% 1fr;gap:16px;align-items:start">
         <div style="position:sticky;top:16px">${miniCal}</div>
@@ -5986,8 +5996,9 @@ function showBooking(k,_overrideId){
           Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}
         </div>`:''}
       </div>
-      <button onclick="restoreBooking('${escJs(b.id)}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:7px;padding:6px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩ Restablecer</button>
+      <button class="btn-dang" onclick="restoreBooking('${escJs(b.id)}')" style="width:auto;flex-shrink:0;white-space:nowrap">↩ Restablecer</button>
     </div>`:''}
+    <div class="bk-sec">📋 INFORMACIÓN</div>
     <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
         <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.startTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.startDate))}</div></div>
@@ -6024,6 +6035,7 @@ function showBooking(k,_overrideId){
       ${b.clientName?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">👤 ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
       ${b.notes?`<div style="margin-top:6px;font-size:13px;color:var(--text2)">📝 ${esc(b.notes)}</div>`:''}
     </div>
+    <div class="bk-sec">💰 INGRESOS, COBROS Y FIANZA</div>
     ${(()=>{
       const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
       const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
@@ -6056,8 +6068,8 @@ function showBooking(k,_overrideId){
         })()
         +'</div>';
       h+='<div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">';
-      h+='<button class="_bfbtn" data-bfid="'+esc(b.id)+'" data-bftype="income" style="background:#10B98120;color:var(--green);border:1px solid #10B98140;border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">+ Ingreso adicional</button>';
-      h+='<button class="_bfbtn" data-bfid="'+esc(b.id)+'" data-bftype="expense" style="background:#EF444420;color:var(--red);border:1px solid #EF444440;border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">+ Gasto</button>';
+      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
+      h+='<button class="_bfbtn btn-dang" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
       h+='</div></div>';return h;
     })()}
     ${(()=>{
@@ -6079,7 +6091,6 @@ function showBooking(k,_overrideId){
           const _st=_fianzaStatus(b);
           const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
           const _C={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:'#F97316'}[_st];
-          const _bs='border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg2);color:var(--text)';
           const _is='background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;min-width:0';
           const _id=escJs(b.id);
           return `<div style="margin-bottom:10px">
@@ -6088,20 +6099,20 @@ function showBooking(k,_overrideId){
               ${_st==='retained'||_st==='partial'?`<span style="font-size:11px;color:var(--text3)">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
             </div>
             <div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-              ${_st!=='returned'?`<button class="tap44" onclick="setBookingFianzaStatus('${_id}','returned')" style="${_bs}">✅ Marcar devuelta</button>`:''}
-              ${_st!=='retained'?`<button class="tap44" onclick="retainFianzaFull('${_id}')" style="${_bs}">⛔ Retener toda</button>`:''}
-              ${_st!=='pending'?`<button class="tap44" onclick="setBookingFianzaStatus('${_id}','pending')" style="${_bs}">↩️ Volver a pendiente</button>`:''}
+              ${_st!=='returned'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','returned')">✅ Marcar devuelta</button>`:''}
+              ${_st!=='retained'?`<button class="tap44 btn-dang" onclick="retainFianzaFull('${_id}')">⛔ Retener toda</button>`:''}
+              ${_st!=='pending'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','pending')">↩️ Volver a pendiente</button>`:''}
             </div>
             <div class="g8" style="display:flex;gap:6px">
               <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:90px;font-family:var(--mono)"/>
               <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1"/>
-              <button class="tap44" onclick="retainFianzaPart('${_id}')" style="${_bs};white-space:nowrap">Retener parte</button>
+              <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')" style="width:auto;white-space:nowrap">Retener parte</button>
             </div>
           </div>`;
         })()}`:''}
         <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
           <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
-          <button class="tap44" onclick="setBookingAbono('${escJs(b.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
+          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="color:var(--on-amber);white-space:nowrap;width:auto">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -6150,20 +6161,21 @@ function showBooking(k,_overrideId){
         })()}`:''}
       </div>`;
     })()}
+    <div class="bk-sec">⚡ ACCIONES</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.delivered?'#3B82F620':'var(--bg3)'};color:${b.delivered?'var(--blue)':'var(--text2)'};border:1.5px solid ${b.delivered?'#3B82F640':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.delivered?'🚗 Entregado ✓':'🚗 Marcar entregado'}</button>
-      <button onclick="toggleReturn('${escJs(b.id)}')" style="background:${b.returned?'#10B98120':'var(--bg3)'};color:${b.returned?'var(--green)':'var(--text2)'};border:1.5px solid ${b.returned?'#10B98140':'var(--border2)'};border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">${b.returned?'✅ Devuelto ✓':'🔑 Marcar devuelto'}</button>
+      <button class="btn-pri" onclick="editBooking('${escJs(b.id)}')">✏️ Editar</button>
+      <button class="btn-pri" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">📅 Ampliar</button>
+      <button class="btn-pri" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">📄 Contrato</button>
+      <button class="btn-pri" onclick="generateReceiptPDF('${escJs(b.id)}')">🧾 Recibo</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <button onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))" style="background:${b.paid?'#10B98120':'#F59E0B20'};color:${b.paid?'var(--green)':'var(--amber)'};border:1.5px solid ${b.paid?'#10B98140':'#F59E0B40'};border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">${b.paid?'✅ Cobrado':'⏳ Marcar cobrado'}</button>
-      <button onclick="editBooking('${escJs(b.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar</button>
-      <button class="btn-d" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">🗑 Eliminar</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+      <button class="btn-sec${b.delivered?' on-green':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?'🚗 Entregado ✓':'🚗 Marcar entregado'}</button>
+      <button class="btn-sec${b.returned?' on-green':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?'✅ Devuelto ✓':'🔑 Marcar devuelto'}</button>
+      <button class="btn-sec${b.paid?' on-green':''}" onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.paid?'✅ Cobrado':'⏳ Marcar cobrado'}</button>
     </div>
-    ${!b.cancelled?`<button onclick="openCancelBooking('${escJs(b.id)}')" style="width:100%;background:#EF444415;color:var(--red);border:1.5px solid #EF444435;border-radius:var(--rsm);padding:11px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">🚫 Cancelar alquiler</button>`:''}
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <button onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Contrato</button>
-      <button onclick="generateReceiptPDF('${escJs(b.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🧾 Recibo</button>
-      <button onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)" style="background:#3B82F620;color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📅 Ampliar</button>
+    <div style="display:grid;grid-template-columns:${!b.cancelled?'1fr 1fr':'1fr'};gap:8px">
+      ${!b.cancelled?`<button class="btn-dang" onclick="openCancelBooking('${escJs(b.id)}')">🚫 Cancelar alquiler</button>`:''}
+      <button class="btn-dang" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">🗑 Eliminar</button>
     </div>
     </div>`);
 }
@@ -6215,11 +6227,10 @@ function openCancelBooking(bookingId){
     </div>
 
     <div style="height:6px"></div>
-    <button onclick="submitCancelBooking('${escJs(bookingId)}')"
-      style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px">
+    <button onclick="submitCancelBooking('${escJs(bookingId)}')" class="btn-dang" style="margin-bottom:8px">
       🚫 Confirmar cancelación
     </button>
-    <button onclick="closeSheet()" class="btn-g" style="width:100%">Volver</button>
+    <button onclick="closeSheet()" class="btn-sec">Volver</button>
   `);
   // Estado inicial
   window._cancelBy=null;
@@ -6388,7 +6399,7 @@ function editBooking(id){
       <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
         👤 ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}
       </div>
-      <button type="button" onclick="unlinkBookingClient('${escJs(b.id)}')" style="background:#EF444420;color:var(--red);border:1.5px solid #EF444440;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">✂️ Desvincular</button>
+      <button type="button" class="btn-dang" onclick="unlinkBookingClient('${escJs(b.id)}')" style="width:auto;white-space:nowrap;flex-shrink:0">✂️ Desvincular</button>
     </div>`:'<div style="margin-bottom:8px"></div>'}
     <div class="r2 fg">
       <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
@@ -6419,9 +6430,9 @@ function editBooking(id){
       <span style="font-size:13px;font-weight:700">Total extras:</span>
       <span id="exTotalAmt" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">0,00 €</span>
     </div>
-    <button class="btn" onclick="submitEditBooking('${escJs(id)}')">💾 Guardar cambios</button>
+    <button class="btn-pri" onclick="submitEditBooking('${escJs(id)}')">💾 Guardar cambios</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
   // Pre-check extras already on the booking
   if(b.extras&&b.extras.length){
     const _kmIds=['exBolsa200','exBolsa500','exBolsa1000','exKmIlimitados'];
@@ -6761,9 +6772,9 @@ function openNewRental(){
       <span id="exTotalAmt" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--amber)">0,00 €</span>
     </div>
     <div style="height:8px"></div>
-    <button class="btn" onclick="submitRental()">✅ Registrar alquiler</button>
+    <button class="btn-pri" onclick="submitRental()">✅ Registrar alquiler</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function _recalcRentalExtras(){
   const sd=document.getElementById('rSD')?.value;
@@ -7075,11 +7086,11 @@ function renderFin(v){
     <div class="kbox"><div class="kv" style="color:var(--purple)">${fmt(rpd)}</div><div class="kl">€/DÍA</div></div>
   </div>
   ${isD?'</div><div style="height:100%;display:flex;flex-direction:column;min-height:0">':''}
-  <button class="btn" onclick="openAddEntry()" style="width:100%;margin-bottom:8px">＋ Añadir movimiento</button>
-  <button class="btn-g" onclick="syncBookingExtensions()" style="width:100%;margin-bottom:8px;font-size:11px">🔄 Sincronizar ampliaciones</button>
+  <button class="btn-pri" onclick="openAddEntry()" style="width:100%;margin-bottom:8px">＋ Añadir movimiento</button>
+  <button class="btn-sec" onclick="syncBookingExtensions()" style="width:100%;margin-bottom:8px;font-size:11px">🔄 Sincronizar ampliaciones</button>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-    <button onclick="openVehicleRecurring('${escJs(v.id)}')" style="background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">🔄 Recurrentes</button>
-    <button onclick="openReport('${escJs(v.id)}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 0;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-align:center">📄 Informe</button>
+    <button class="btn-sec" onclick="openVehicleRecurring('${escJs(v.id)}')">🔄 Recurrentes</button>
+    <button class="btn-sec" onclick="openReport('${escJs(v.id)}')">📄 Informe</button>
   </div>
   <div class="pills">
     ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setFF('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
@@ -7128,8 +7139,8 @@ function openAddEntry(){
       <div class="fg"><label class="lbl">PRÓXIMA FECHA (opcional)</label><input id="eMaintNextDate" type="date"/></div>
       <div class="fg"><label class="lbl">TALLER / PROVEEDOR</label><input id="eMaintShop" placeholder="Nombre del taller..." autocomplete="off"/></div>
     </div>
-    <button class="btn" onclick="submitEntry()">Añadir</button><div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-pri" onclick="submitEntry()">Añadir</button><div style="height:10px"></div>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function toggleMaintFields(){
   const cat=document.getElementById('eCat');
@@ -7186,7 +7197,7 @@ function renderInfo(v){
   </button>`}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <div class="sec" style="margin-bottom:0">FICHA DEL VEHÍCULO</div>
-    <button onclick="openEditV('${escJs(v.id)}')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">✏️ Editar</button>
+    <button class="btn-pri" onclick="openEditV('${escJs(v.id)}')" style="width:auto">✏️ Editar</button>
   </div>
   ${(()=>{const isD=window.innerWidth>=768;
   const curKm=Number(v.km)||0;const maintKm=Number(v.maint_km)||0;
@@ -7251,7 +7262,7 @@ function renderInfo(v){
         +(owner.phone?'<div style="font-size:11px;color:var(--text3);margin-top:2px">📞 '+esc(owner.phone)+'</div>':'')
         +(owner.email?'<div style="font-size:11px;color:var(--text3);">✉️ '+esc(owner.email)+'</div>':'')
         +'</div>'
-        +'<button onclick="openOwnerReport(\''+escJs(owner.id)+'\')" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">📄 Informe</button>'
+        +'<button class="btn-pri" onclick="openOwnerReport(\''+escJs(owner.id)+'\')" style="width:auto;font-size:12px">📄 Informe</button>'
         +'</div>';
     }
     return '<div style="margin-bottom:16px">'
@@ -7266,7 +7277,7 @@ function renderInfo(v){
     <div style="font-size:12px;color:var(--text3);margin-bottom:12px">% del beneficio neto que va al negocio.</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <div style="position:relative;flex:1"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal" style="padding-right:36px"/><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--purple);font-weight:700;font-family:var(--mono)">%</span></div>
-      <button onclick="saveComm('${escJs(v.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:12px 18px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">Guardar</button>
+      <button class="btn-pri" onclick="saveComm('${escJs(v.id)}')" style="width:auto;white-space:nowrap">Guardar</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${[10,20,25,30,35,40,50].map(p=>`<div onclick="document.getElementById('commInput').value=${p}" style="padding:5px 12px;border-radius:20px;border:1px solid #8B5CF640;background:#8B5CF610;color:var(--purple);font-size:12px;font-weight:700;cursor:pointer">${p}%</div>`).join('')}</div>`:''}
   <div class="divider"></div>
@@ -7308,14 +7319,14 @@ function renderInfo(v){
           +'</div>';
       }).join('')
       +'</div>'
-      +'<button onclick="dlMaintReport(\''+escJs(v.id)+'\')" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">📄 Informe de mantenimientos</button>';
+      +'<button onclick="dlMaintReport(\''+escJs(v.id)+'\')" class="btn-sec" style="margin-bottom:12px">📄 Informe de mantenimientos</button>';
   })()}
-  ${isM&&v.ownerId?`<button onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="width:100%;background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Contrato de gestión</button>`:''}
-  <button onclick="exportExcel('${escJs(v.id)}')" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar a Excel</button>
+  ${isM&&v.ownerId?`<button class="btn-sec" onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="margin-bottom:8px">📋 Contrato de gestión</button>`:''}
+  <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')" style="margin-bottom:8px">📊 Exportar a Excel</button>
   <div style="height:8px"></div>
-  ${v.archived?`<button onclick="restoreV('${escJs(v.id)}')" style="width:100%;background:transparent;color:var(--amber);border:1.5px solid ${safeColor(v.color)}60;border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">↩️ Reactivar vehículo</button>`:
-  `<button onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="width:100%;background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
-  <button class="btn-d" onclick="deleteV('${escJs(v.id)}')">🗑 Eliminar definitivamente</button>
+  ${v.archived?`<button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="margin-bottom:8px">↩️ Reactivar vehículo</button>`:
+  `<button class="btn-sec" onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="margin-bottom:8px">${isM?'🤝 Fin de gestión':'🏷️ Vendido'}</button>`}
+  <button class="btn-dang" onclick="deleteV('${escJs(v.id)}')">🗑 Eliminar definitivamente</button>
   </div>`;
   return h;
 }
@@ -7396,9 +7407,9 @@ function openEditV(id){
           ${['A todo riesgo','A terceros','A terceros ampliado'].map(x=>'<option'+(x===(v.insurance_type||'')?' selected':'')+'>'+x+'</option>').join('')}
         </select>
       </div>
-    <button class="btn" onclick="submitEditV()">💾 Guardar cambios</button>
+    <button class="btn-pri" onclick="submitEditV()">💾 Guardar cambios</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function selEditVtype(t){
@@ -7677,9 +7688,9 @@ function openBizReportPicker(){
       <div class="fg"><label class="lbl">DESDE</label><input type="month" id="bizRptFrom" value="${esc(safeMonth(ym(y,0)))}" max="${esc(safeMonth(curM))}" style="font-size:14px"/></div>
       <div class="fg"><label class="lbl">HASTA</label><input type="month" id="bizRptTo" value="${esc(safeMonth(curM))}" max="${esc(safeMonth(curM))}" style="font-size:14px"/></div>
     </div>
-    <button class="btn" onclick="(()=>{const f=document.getElementById('bizRptFrom').value;const t=document.getElementById('bizRptTo').value;if(!f||!t){alert('Selecciona ambos meses');return;}if(f>t){alert('El mes de inicio debe ser anterior al final');return;}dlBizReport(f,t,(()=>{const[fy,fm]=f.split('-');const[ty,tm]=t.split('-');const MN2=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return f===t?'MES: '+MN2[parseInt(fm)-1]+' '+fy:'PERÍODO: '+MN2[parseInt(fm)-1]+' '+fy+' — '+MN2[parseInt(tm)-1]+' '+ty;})();})()">Generar informe</button>
+    <button class="btn-pri" onclick="(()=>{const f=document.getElementById('bizRptFrom').value;const t=document.getElementById('bizRptTo').value;if(!f||!t){alert('Selecciona ambos meses');return;}if(f>t){alert('El mes de inicio debe ser anterior al final');return;}dlBizReport(f,t,(()=>{const[fy,fm]=f.split('-');const[ty,tm]=t.split('-');const MN2=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return f===t?'MES: '+MN2[parseInt(fm)-1]+' '+fy:'PERÍODO: '+MN2[parseInt(fm)-1]+' '+fy+' — '+MN2[parseInt(tm)-1]+' '+ty;})();})()">Generar informe</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function dlBizReport(fromMonth,toMonth,periodLabel){
@@ -8213,8 +8224,8 @@ function renderOwnersBody(){
           <div style="font-size:10px;color:var(--text3);margin-top:1px">al prop.</div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
-          <div class="tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:32px;height:32px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">📄</div>
-          <div class="tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">✏️</div>
+          <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">📄</div>
+          <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">✏️</div>
         </div>
       </div>`;
     });
@@ -8237,8 +8248,8 @@ function renderOwnersBody(){
             ${owner.email?`<div style="font-size:11px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
           </div>
           <div style="display:flex;gap:6px">
-            <div class="tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:36px;height:36px;background:#8B5CF620;border:1px solid #8B5CF640;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">📄</div>
-            <div class="tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">✏️</div>
+            <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">📄</div>
+            <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">✏️</div>
             <div class="tap44" onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🗑</div>
           </div>
         </div>
@@ -8357,10 +8368,10 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   }).join('')}
   <div style="height:12px"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-    <button onclick="openOwnerReport('${escJs(owner.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📄 Informe mensual</button>
-    <button onclick="openMgmtContractForm('${escJs(owner.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">📋 Contrato gestión</button>
+    <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')">📄 Informe mensual</button>
+    <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')">📋 Contrato gestión</button>
   </div>
-  <button onclick="editOwner('${escJs(owner.id)}')" style="width:100%;background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar propietario</button>`;
+  <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')">✏️ Editar propietario</button>`;
   openSheet(h);
 }
 
@@ -8410,10 +8421,10 @@ function renderOwnerProfile(el){
         ${owner.email?`<div style="font-size:13px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
         ${owner.iban?`<div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px"><span>🏦</span><span id="ibanDisplay" style="font-family:var(--mono)">${esc(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}</span><span onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${escJs(owner.iban)}':'${escJs(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}';" style="cursor:pointer;font-size:15px;padding:2px 6px;background:var(--bg3);border-radius:5px;border:1px solid var(--border2)">👁</span></div>`:''}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="openOwnerReport('${escJs(owner.id)}')" style="background:var(--purple);color:#fff;border:none;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📄 Informe PDF</button>
-        <button onclick="openMgmtContractForm('${escJs(owner.id)}')" style="background:#8B5CF620;color:var(--purple);border:1.5px solid #8B5CF640;border-radius:var(--rsm);padding:10px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">📋 Contrato de gestión</button>
-        <button onclick="editOwner('${escJs(owner.id)}')" style="background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">✏️ Editar</button>
+      <div class="own-actions">
+        <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')">📄 Informe PDF</button>
+        <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')">📋 Contrato de gestión</button>
+        <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')">✏️ Editar</button>
       </div>
     </div>
   </div>
@@ -8462,9 +8473,9 @@ function openAddOwner(){
     </div>
     <div class="fg"><label class="lbl">EMAIL</label><input id="owE" type="email" placeholder="email@..." inputmode="email"/></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="owNo" placeholder="Observaciones..."/></div>
-    <button class="btn" onclick="submitOwner()">Crear propietario</button>
+    <button class="btn-pri" onclick="submitOwner()">Crear propietario</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function submitOwner(){
@@ -8486,9 +8497,9 @@ function editOwner(id){
     <div class="fg"><label class="lbl">EMAIL</label><input id="owE" type="email" value="${esc(o.email||'')}" inputmode="email"/></div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="owNo" value="${esc(o.notes||'')}" placeholder="Observaciones..."/></div>
     <div class="fg"><label class="lbl">IBAN (cuenta bancaria)</label><input id="owIBAN" value="${esc(o.iban||'')}" placeholder="ES00 0000 0000 0000 0000 0000" autocomplete="off" style="font-family:var(--mono)"/></div>
-    <button class="btn" onclick="submitEditOwner('${escJs(id)}')">Guardar cambios</button>
+    <button class="btn-pri" onclick="submitEditOwner('${escJs(id)}')">Guardar cambios</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function submitEditOwner(id){
@@ -8504,8 +8515,8 @@ function deleteOwner(id){
   const linked=V.filter(v=>v.ownerId===id).length;
   openSheet(`<div class="stitle">🗑 Eliminar propietario</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">¿Eliminar a <strong>${esc(o.name)}</strong>?${linked?` Tiene <strong>${linked} vehículo${linked!==1?'s':''}</strong> asignado${linked!==1?'s':''} — quedarán sin propietario.`:''}</div>
-    <button onclick="confirmDeleteOwner('${escJs(id)}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar</button>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-dang" onclick="confirmDeleteOwner('${escJs(id)}')" style="margin-bottom:10px">Eliminar</button>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmDeleteOwner(id){
   OW=OW.filter(o=>o.id!==id);
@@ -8529,9 +8540,9 @@ function offerSaveLiquidacion(ownerId,month,amount){
       <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--green)">${fmt(amount)}</div>
       <div style="font-size:12px;color:var(--text3);margin-top:4px">${esc(safeMonth(month))}</div>
     </div>
-    <button class="btn" onclick="saveLiquidacion('${escJs(ownerId)}','${escJs(month)}',${Number(amount)||0});closeSheet();alert('✅ Liquidación guardada en el historial')">✅ Marcar como pagada</button>
+    <button class="btn-pri" onclick="saveLiquidacion('${escJs(ownerId)}','${escJs(month)}',${Number(amount)||0});closeSheet();alert('✅ Liquidación guardada en el historial')">✅ Marcar como pagada</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cerrar sin registrar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cerrar sin registrar</button>`);
 }
 function openOwnerReport(ownerId){
   const o=OW.find(o=>o.id===ownerId);if(!o)return;
@@ -8543,9 +8554,9 @@ function openOwnerReport(ownerId){
     <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${esc(o.name)}</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:20px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}: ${esc(vehicles.map(v=>v.name).join(', '))}</div>
     <div class="fg"><label class="lbl">MES DEL INFORME</label><input type="month" id="repOwnerMonth" value="${esc(safeMonth(defMonth))}" style="font-size:16px"/></div>
-    <button class="btn" onclick="genOwnerReport('${escJs(ownerId)}')">Ver informe</button>
+    <button class="btn-pri" onclick="genOwnerReport('${escJs(ownerId)}')">Ver informe</button>
     <div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function genOwnerReport(ownerId){
@@ -8585,7 +8596,7 @@ function genOwnerReport(ownerId){
         <div style="font-size:16px;font-weight:800;color:#14B8A6">LIQUIDACIÓN PROPIETARIO</div>
         <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(o.name.toUpperCase())} · ${mLabel.toUpperCase()}</div>
       </div>
-      <button onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
+      <button class="btn-pri" onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')" style="margin-left:auto;width:auto;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
       <!-- Owner info -->
@@ -9069,7 +9080,7 @@ function renderContracts(el){
       <div style="font-size:36px;margin-bottom:10px">💼</div>
       <div style="font-size:15px;font-weight:800;margin-bottom:6px">Sección Negocio</div>
       <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">Los números reales de Deiros: ingresos propios + comisiones de gestión (sin sumar el total de vehículos ajenos)</div>
-      <button onclick="nav('biz')" style="background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:12px 24px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">Ir a Negocio →</button>
+      <button onclick="nav('biz')" class="btn-pri" style="width:auto">Ir a Negocio →</button>
     </div>
     </div>`;
 
@@ -9159,7 +9170,7 @@ function _renderWizardStep(){
       </div>`;
     });
     if(!bks.length)h+=`<div style="background:var(--bg3);border-radius:10px;padding:16px;text-align:center;color:var(--text3);font-size:13px">Este vehículo no tiene reservas. Ve a la ficha del vehículo para crear una.</div>`;
-    h+=`<div style="margin-top:6px"><button class="btn-g" onclick="_ctWizStep=1;_renderWizardStep()" style="width:100%">← Cambiar vehículo</button></div>`;
+    h+=`<div style="margin-top:6px"><button class="btn-sec" onclick="_ctWizStep=1;_renderWizardStep()" style="width:100%">← Cambiar vehículo</button></div>`;
     h+=`</div>`;
     openSheet(h);
 
@@ -9241,8 +9252,8 @@ function renderBiz(el){
   let h=`<div class="anim">${isD?'<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start"><div>':''}
   ${buildBizChart()}
 
-  <button onclick="exportGlobalExcel()" style="width:100%;background:var(--bg3);color:var(--green);border:1.5px solid #10B98140;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">📊 Exportar todo a Excel</button>
-  <button onclick="openBizReportPicker()" style="width:100%;background:var(--bg3);color:var(--blue);border:1.5px solid #3B82F640;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">📄 Informe de negocio (PDF)</button>
+  <button class="btn-sec" onclick="exportGlobalExcel()" style="margin-bottom:8px">📊 Exportar todo a Excel</button>
+  <button class="btn-sec" onclick="openBizReportPicker()" style="margin-bottom:14px">📄 Informe de negocio (PDF)</button>
   <div class="pills">
     ${['all','income','expense'].map(t=>{const a=bizFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setBizFilter('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'#F59E0B22':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
     <input type="month" value="${esc(safeMonth(bizMonth))}" onchange="setBizFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
@@ -9589,8 +9600,8 @@ function openAddBiz(){
     <div class="fg"><label class="lbl">CATEGORÍA</label><select id="bCat">${BIZ_EXP.map(x=>'<option>'+x+'</option>').join('')}</select></div>
     <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="bAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">DESCRIPCIÓN (opcional)</label><input id="bDesc" placeholder="Nota..." autocomplete="off"/></div>
-    <button class="btn" onclick="submitBiz()">Añadir</button><div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-pri" onclick="submitBiz()">Añadir</button><div style="height:10px"></div>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function swBiz(t){
   _bizEtype=t;
@@ -9630,9 +9641,9 @@ function renderArchiveBody(){
         <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">BENEFICIO</div></div>
       </div>
       <div style="display:flex;gap:8px">
-        <button onclick="openV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">👁 Ver datos</button>
-        <button onclick="restoreV('${escJs(v.id)}')" style="flex:1;background:var(--bg3);color:var(--amber);border:1px solid #F59E0B40;border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">↩️ Reactivar</button>
-        <button class="tap44" onclick="deleteV('${escJs(v.id)}')" style="width:40px;background:var(--bg3);color:var(--red);border:1px solid #EF444430;border-radius:8px;padding:9px;font-family:var(--font);font-size:14px;cursor:pointer">🗑</button>
+        <button class="btn-sec" onclick="openV('${escJs(v.id)}')" style="flex:1;font-size:12px">👁 Ver datos</button>
+        <button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="flex:1;font-size:12px">↩️ Reactivar</button>
+        <button class="btn-dang tap44" onclick="deleteV('${escJs(v.id)}')" style="width:44px;padding:0">🗑</button>
       </div>
     </div>`;
   });
@@ -9658,8 +9669,8 @@ function archiveV(id,reason){
   openSheet(`<div class="stitle">${icon} ${label}</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">${reason==='sold'?'El vehículo se moverá al archivo conservando todos sus datos.':'Este vehículo dejará de estar en gestión. Se moverá al archivo conservando todos sus registros.'}</div>
     <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
-    <button onclick="confirmArchive('${escJs(id)}','${escJs(reason)}')" style="width:100%;background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">${icon} Confirmar — ${label}</button>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-pri" onclick="confirmArchive('${escJs(id)}','${escJs(reason)}')" style="margin-bottom:10px">${icon} Confirmar — ${label}</button>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmArchive(id,reason){
   const v=V.find(v=>v.id===id);if(!v)return;
@@ -9671,8 +9682,8 @@ function deleteV(id){
   openSheet(`<div class="stitle">🗑 Eliminar definitivamente</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">Se eliminarán todos los datos. Esta acción no se puede deshacer.</div>
     <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}</div></div>
-    <button onclick="confirmDelete('${escJs(id)}')" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Eliminar definitivamente</button>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-dang" onclick="confirmDelete('${escJs(id)}')" style="margin-bottom:10px">Eliminar definitivamente</button>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function confirmDelete(id){V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
 
@@ -9742,8 +9753,8 @@ function openAddV(){
         <span id="photoPreview" style="font-size:13px;color:var(--text3)">📷 Pulsa para seleccionar foto</span>
       </button>
     </div>
-    <button class="btn" onclick="submitV()">Crear vehículo</button><div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-pri" onclick="submitV()">Crear vehículo</button><div style="height:10px"></div>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 // Programmatic file picker — works on mobile where label/input in innerHTML fails
 function _pickFile(accept, cb){
@@ -10006,8 +10017,8 @@ function openReport(vId){
   const def=finMonth||(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'));
   openSheet(`<div class="stitle">📄 Informe mensual</div><div class="ssub">${esc(v.name)} · ${esc(v.plate)}</div>
     <div class="fg"><label class="lbl">SELECCIONA MES</label><input type="month" id="repMonth" value="${esc(safeMonth(def))}" style="font-size:16px"/></div>
-    <button class="btn" onclick="genReport('${escJs(vId)}')">Ver informe</button><div style="height:10px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-pri" onclick="genReport('${escJs(vId)}')">Ver informe</button><div style="height:10px"></div>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 function genReport(vId){
   const v=V.find(x=>x.id===vId);if(!v)return;
@@ -10037,7 +10048,7 @@ function genReport(vId){
     <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
       <div class="tap44" onclick="document.getElementById('repOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">←</div>
       <div><div style="font-size:16px;font-weight:800;color:var(--amber)">INFORME MENSUAL</div><div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(v.name)} · ${mLabel.toUpperCase()}</div></div>
-      <button onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;background:var(--amber);color:var(--on-amber);border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">⬇️ PDF</button>
+      <button class="btn-pri" onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;width:auto;flex-shrink:0">⬇️ PDF</button>
     </div>
     <div style="padding:16px">
       <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid ${safeColor(v.color)}44">
@@ -10340,9 +10351,9 @@ function openBackup(){
       <div><div style="font-size:13px;font-weight:700">${V.filter(v=>!v.archived).length} vehículos activos</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${V.filter(v=>v.archived).length} archivados · ${BF.length} mov. negocio · ${OW.length} propietarios · ${CL.length} clientes · ${QT.length} presupuestos</div></div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${new Date().toLocaleDateString('es-ES')}</div>
     </div>
-    <button onclick="exportData()" style="width:100%;background:var(--green);color:var(--on-green);border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">⬇️ Exportar copia completa (JSON)</button>
+    <button class="btn-pri" onclick="exportData()" style="margin-bottom:10px">⬇️ Exportar copia completa (JSON)</button>
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
-    <button onclick="recalcAllBookings();closeSheet();" style="width:100%;background:var(--bg3);color:var(--amber);border:1.5px solid #F59E0B40;border-radius:var(--rsm);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">🔄 Recalcular prorrateo de todos los alquileres</button>
+    <button class="btn-sec" onclick="recalcAllBookings();closeSheet();" style="margin-bottom:14px">🔄 Recalcular prorrateo de todos los alquileres</button>
     <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.5">Usa esto si tienes alquileres que cruzan de un mes a otro y no aparecen bien en la gráfica.</div>
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
     <div style="font-size:13px;color:var(--text3);margin-bottom:12px;line-height:1.6">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</div>
@@ -10351,7 +10362,7 @@ function openBackup(){
       <input type="file" accept=".json" onchange="importData(event)" style="display:none"/>
     </label>
     <div style="font-size:11px;color:var(--red);margin-bottom:14px;line-height:1.5">Un fichero completo sustituye todos esos datos (antes se descarga una copia del estado actual). Un fichero antiguo, solo con vehículos y finanzas, sustituye únicamente esos dos apartados y no borra el resto.</div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
 }
 function _isPlainObject(x){return !!x&&typeof x==='object'&&!Array.isArray(x);}
 function _collectPhotos(){
@@ -10703,7 +10714,7 @@ function openNotifSettings(){
       <div style="font-size:14px;font-weight:700;color:var(--text)">${permLabel}</div>
       ${perm==='denied'?'<div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Ve a Ajustes → Privacidad → Notificaciones y permite DEIROS Fleet.</div>':''}
     </div>
-    ${perm==='default'?`<button class="btn" onclick="Notification.requestPermission().then(p=>{closeSheet();if(p==='granted'){showNotif('DEIROS Fleet','✅ Notificaciones activadas');}else{alert('Permiso denegado. Actívalas desde los ajustes del navegador.');}})">Activar notificaciones</button><div style="height:10px"></div>`:''}
+    ${perm==='default'?`<button class="btn-pri" onclick="Notification.requestPermission().then(p=>{closeSheet();if(p==='granted'){showNotif('DEIROS Fleet','✅ Notificaciones activadas');}else{alert('Permiso denegado. Actívalas desde los ajustes del navegador.');}})">Activar notificaciones</button><div style="height:10px"></div>`:''}
     <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">ALERTAS ACTIVAS (${alerts.length})</div>
       ${alerts.length?alerts.slice(0,8).map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
@@ -10711,8 +10722,8 @@ function openNotifSettings(){
         <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
       </div>`).join(''):'<div style="font-size:12px;color:var(--text3)">Sin alertas próximas 🎉</div>'}
     </div>
-    ${perm==='granted'?`<button onclick="localStorage.removeItem('wg_lastNotifCheck');checkAlertNotifs();closeSheet();alert('Notificación enviada (si hay alertas activas)');" style="width:100%;background:var(--bg3);color:var(--text2);border:1.5px solid var(--border2);border-radius:var(--rsm);padding:12px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">🔁 Forzar comprobación ahora</button>`:''}
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
+    ${perm==='granted'?`<button onclick="localStorage.removeItem('wg_lastNotifCheck');checkAlertNotifs();closeSheet();alert('Notificación enviada (si hay alertas activas)');" class="btn-sec" style="margin-bottom:10px">🔁 Forzar comprobación ahora</button>`:''}
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
 }
 
 
@@ -10828,8 +10839,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 function doLogout(){
   openSheet(`<div class="stitle">Cerrar sesión</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">¿Seguro que quieres cerrar sesión? Tus datos están guardados en la nube.</div>
-    <button onclick="auth.signOut();closeSheet();" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Cerrar sesión</button>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-dang" onclick="auth.signOut();closeSheet();" style="margin-bottom:10px">Cerrar sesión</button>
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 }
 
 function showLoading(show){
@@ -11028,17 +11039,17 @@ function showQuoteDetail(el){
   }
   // Actions
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
-  h+=`<button class="btn" onclick="generateQuotePDF('${escJs(q.id)}')">📄 PDF</button>`;
+  h+=`<button class="btn-pri" onclick="generateQuotePDF('${escJs(q.id)}')">📄 PDF</button>`;
   if(q.status!=='convertido'){
-    h+=`<button class="btn" onclick="convertQuoteToBooking('${escJs(q.id)}')" style="background:var(--blue)">🚗 Convertir en alquiler</button>`;
+    h+=`<button class="btn-pri" onclick="convertQuoteToBooking('${escJs(q.id)}')">🚗 Convertir en alquiler</button>`;
   } else {
-    h+=`<button class="btn-g" disabled>✅ Ya convertido</button>`;
+    h+=`<button class="btn-sec" disabled>✅ Ya convertido</button>`;
   }
-  h+=`<button class="btn-g" onclick="openEditQuote('${escJs(q.id)}')">✏️ Editar</button>`;
-  h+=`<button class="btn-g" onclick="openQuoteStatusMenu('${escJs(q.id)}')">🏷️ Estado</button>`;
+  h+=`<button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">✏️ Editar</button>`;
+  h+=`<button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">🏷️ Estado</button>`;
   h+='</div>';
-  h+=`<button class="btn-g" onclick="_quoteEditId=null;renderQuotes(document.getElementById('PC'))" style="width:100%;margin-bottom:8px">← Volver</button>`;
-  h+=`<button onclick="deleteQuote('${escJs(q.id)}')" style="width:100%;background:none;border:none;color:var(--red);font-size:13px;padding:8px;cursor:pointer">🗑️ Eliminar presupuesto</button>`;
+  h+=`<button class="btn-sec" onclick="_quoteEditId=null;renderQuotes(document.getElementById('PC'))" style="width:100%;margin-bottom:8px">← Volver</button>`;
+  h+=`<button class="btn-dang" onclick="deleteQuote('${escJs(q.id)}')">🗑️ Eliminar presupuesto</button>`;
   h+='</div>';
   el.innerHTML=h;
 }
@@ -11081,7 +11092,7 @@ function _fvSearch(){
   res.innerHTML=free.map(v=>`<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">
     <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">${esc(v.name)}</div>
     <div style="font-size:11px;color:var(--text3)">${esc(v.plate||'')} · ${(v.vehicle_type||'turismo').startsWith('l')?'Furgoneta':'Turismo'}</div></div>
-    <button class="btn" onclick="_fvQuote('${escJs(v.id)}')">Presupuesto</button></div>`).join('');
+    <button class="btn-pri" onclick="_fvQuote('${escJs(v.id)}')">Presupuesto</button></div>`).join('');
 }
 function _fvQuote(vid){
   const s=document.getElementById('fvStart').value,e=document.getElementById('fvEnd').value;
@@ -11249,9 +11260,9 @@ function _openQuoteForm(q){
         <span id="qTotalOut" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">—</span>
       </div>
     </div>
-    <button class="btn" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button>
+    <button class="btn-pri" onclick="_saveQuote()">${q?'💾 Guardar cambios':'✅ Crear presupuesto'}</button>
     <div style="height:8px"></div>
-    <button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
 
   setTimeout(()=>{
     if(q&&q.vehicleId){
@@ -11495,7 +11506,7 @@ function openQuoteStatusMenu(id){
   const statuses=[['pendiente','⏳','Pendiente','var(--amber)'],['aceptado','✅','Aceptado','var(--green)'],['rechazado','❌','Rechazado','var(--red)'],['convertido','🚗','Convertido','var(--blue)']];
   openSheet('<div class="stitle">🏷️ Cambiar estado</div>'
     +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')" style="width:100%;background:${safeColor(q.status===s?col:'var(--bg3)')};border:1.5px solid ${safeColor(q.status===s?col:'var(--border2)')};color:${safeColor(q.status===s?col:'var(--text2)')};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${icon} ${esc(lbl)}</button>`).join('')
-    +'<button class="btn-g" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
 function setQuoteStatus(id,status){
