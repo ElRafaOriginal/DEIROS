@@ -306,6 +306,19 @@ select option{background:var(--bg);}
   label:has(>input[type=checkbox]:not([style*="display:none"])){min-height:44px;}
   .page{padding-bottom:calc(90px + 56px + var(--sb));}
 }
+/* QUICK ACTIONS (móvil): Nuevo alquiler + Coches libres a un toque */
+.qa{display:none;}
+@media(max-width:767px){
+  .qa{position:fixed;left:0;right:0;bottom:var(--bn-h,73px);z-index:190;display:flex;gap:8px;padding:6px 12px;background:var(--bg2);border-top:1px solid var(--border);}
+  #BN[style*="none"]~.qa{display:none;}
+  .qa-b{flex:1;min-height:44px;border-radius:var(--rsm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .qa-new{background:var(--amber);color:var(--on-amber);border:none;}
+  .qa-free{background:var(--bg3);color:var(--text);border:1.5px solid var(--border2);}
+  .qa-b:active{opacity:0.85;}
+  .page{padding-bottom:calc(90px + 56px + 56px + var(--sb));}
+  .fab{bottom:calc(var(--bn-h,73px) + 57px + 12px);}
+}
+@media(min-width:768px){.qa{display:none!important;}}
 @media(min-width:768px){#hamburgerMenu,#hamburgerPanel,#hamburgerBtn{display:none!important;}}
 @media(max-width:767px){.bkp-btn{min-height:44px;}}
 .hbar{display:block;width:18px;height:2px;background:var(--text2);border-radius:2px;transition:transform 0.2s,opacity 0.2s;}
@@ -518,6 +531,7 @@ select option{background:var(--bg);}
   <div class="ni" onclick="nav('vehicles')" id="ni-vehicles"><div class="ni-icon">🚗</div><div class="ni-lbl">FLOTA</div><div class="ni-dot" id="nd-vehicles"></div></div>
   <div class="ni" onclick="nav('biz')" id="ni-biz"><div class="ni-icon">💼</div><div class="ni-lbl">NEGOCIO</div><div class="ni-dot" id="nd-biz"></div></div>
 </nav>
+<div class="qa" id="QA"><button type="button" class="qa-b qa-new" onclick="openNewRentalPicker()">＋ Nuevo alquiler</button><button type="button" class="qa-b qa-free" onclick="openFreeVehiclesSearch()">🔍 Coches libres</button></div>
 <div class="fab" id="FAB" title="Nuevo" aria-label="Nuevo" onclick="fabClick()" style="display:none">＋</div>
 <div class="ov" id="OV" onclick="closeSheet()"></div>
 <div class="sheet" id="SH"><div class="sh"></div><div id="SC"></div></div>
@@ -10549,6 +10563,36 @@ function exportData(){
   try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
   const _bn=document.getElementById('backupReminder');if(_bn)_bn.remove();
 }
+// Altura real de #BN -> --bn-h (ya incluye padding y safe-area). Solo se mide si #BN es visible.
+// Además recoloca #backupReminder por encima de #QA mientras #QA sea visible.
+function _syncBottomBars(){
+  const bn=document.getElementById('BN'),qa=document.getElementById('QA');
+  if(bn&&getComputedStyle(bn).display!=='none'){
+    const h=bn.getBoundingClientRect().height;
+    if(h>0)document.documentElement.style.setProperty('--bn-h',h+'px');
+  }
+  const el=document.getElementById('backupReminder');
+  if(el){
+    let b=80;
+    if(qa&&getComputedStyle(qa).display!=='none'){
+      const r=qa.getBoundingClientRect();
+      if(r.height>0)b=Math.ceil(document.documentElement.clientHeight-r.top)+8;
+    }
+    el.style.bottom=b+'px';
+  }
+}
+(function(){
+  const run=()=>requestAnimationFrame(_syncBottomBars);
+  window.addEventListener('resize',run);
+  window.addEventListener('orientationchange',run);
+  window.addEventListener('load',run);
+  if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
+  const bn=document.getElementById('BN');
+  if(bn){
+    if(window.MutationObserver)new MutationObserver(run).observe(bn,{attributes:true,attributeFilter:['style','class']});
+    if(window.ResizeObserver)new ResizeObserver(run).observe(bn);
+  }
+})();
 // Recordatorio mensual (no modal) de exportar la copia de seguridad
 function checkBackupReminder(){
   const DIA=86400000,now=Date.now();
@@ -10574,6 +10618,7 @@ function checkBackupReminder(){
   row.appendChild(mk('Más tarde',()=>el.remove()));
   el.appendChild(txt);el.appendChild(row);
   document.body.appendChild(el);
+  _syncBottomBars();
 }
 function importData(event){
   const file=event.target.files[0];if(!file)return;
