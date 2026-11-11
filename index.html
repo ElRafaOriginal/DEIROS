@@ -4846,7 +4846,7 @@ let CV='dashboard',AV=null,AT='calendar';
 let calY=new Date().getFullYear(),calM=new Date().getMonth(),calSel='maintenance';
 let finFilter='all',finMonth='',chartYear=new Date().getFullYear();
 let bizFilter='all',bizMonth='',bizChartYear=new Date().getFullYear();
-let agY=new Date().getFullYear(),agM=new Date().getMonth();
+let agY=new Date().getFullYear(),agM=new Date().getMonth(),agMobStart='';
 let dashChartYear=new Date().getFullYear(),dashFinMonth='';
 let _vtype='own',_plat='amovens',_etype='expense',_bizEtype='expense';
 let _filterVtype='',_agFilterVtype='';
@@ -5194,7 +5194,7 @@ function render(){
   else if(CV==='rentals')renderRentals(el);
   else if(CV==='vehicles')renderList(el);
   else if(CV==='contracts')renderContracts(el);
-  else if(CV==='agenda'){agY=new Date().getFullYear();agM=new Date().getMonth();renderAgenda(el);}
+  else if(CV==='agenda'){agY=new Date().getFullYear();agM=new Date().getMonth();agMobStart='';renderAgenda(el);}
   else if(CV==='owners')renderOwners(el);
   else if(CV==='biz')renderBiz(el);
   else if(CV==='archive')renderArchive(el);
@@ -8844,28 +8844,103 @@ function setAgendaVtype(id){
   });
   renderAgendaBody();
 }
+function _agIsMobile(){return !!(window.matchMedia&&window.matchMedia('(max-width:767px)').matches);}
+function agToday(){agY=new Date().getFullYear();agM=new Date().getMonth();agMobStart='';renderAgendaBody();}
+function agMobShift(n){agMobStart=addDays(agMobStart||todayStr(),n);renderAgendaBody();}
+let agMobMode='list',_agLastMobile=null;
+function agMobSetMode(m){agMobMode=m;renderAgendaBody();}
+function _agMobOpen(vid,bid){if(bid)showBookingById(bid);else openV(vid);}
+function renderAgendaMobile(res,activeV){
+  const hoy=todayStr(),man=addDays(hoy,1);
+  const st0=agMobStart||hoy;
+  const DOW=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const btn='min-height:44px;min-width:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text);cursor:pointer;font-family:var(--font)';
+  let h=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <button class="tap44" onclick="agMobShift(-7)" aria-label="Semana anterior" style="${btn}">‹</button>
+    <button class="tap44" onclick="agToday()" style="${btn};flex:1;font-size:14px;font-weight:800;border-color:var(--amber);color:var(--amber)">Hoy</button>
+    <button class="tap44" onclick="agMobShift(7)" aria-label="Semana siguiente" style="${btn}">›</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:10px">${[['list','Lista'],['week','Semana']].map(([m,l])=>`<button class="tap44" onclick="agMobSetMode('${m}')" aria-pressed="${agMobMode===m}" style="flex:1;min-height:44px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid ${agMobMode===m?'var(--amber)':'var(--border2)'};background:${agMobMode===m?'#F59E0B22':'var(--bg3)'};color:${agMobMode===m?'var(--amber)':'var(--text3)'}">${l}</button>`).join('')}</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;text-align:center">${esc(fmtDMY(st0))} – ${esc(fmtDMY(addDays(st0,6)))}</div>`;
+  if(agMobMode==='week'){
+    const COL={rented:'#F59E0B',maintenance:'#3B82F6',blocked:'#EF4444'};
+    const D1=['D','L','M','X','J','V','S'];
+    h+=`<table style="width:100%;border-collapse:collapse;table-layout:fixed"><thead><tr><th style="width:34%;text-align:left;font-size:10px;color:var(--text3);padding:2px 4px">VEHÍCULO</th>${Array.from({length:7},(_,i)=>{const k=addDays(st0,i);const isT=k===hoy;return `<th style="text-align:center;font-size:10px;padding:2px 0;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}">${D1[new Date(k+'T12:00:00').getDay()]}<br>${Number(k.slice(8))}</th>`;}).join('')}</tr></thead><tbody>`;
+    activeV.forEach(v=>{
+      h+=`<tr><td style="padding:4px;border-bottom:1px solid var(--border);vertical-align:middle"><div style="font-size:12px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:10px;color:${safeColor(v.color)}">${esc(v.plate)}</div></td>`;
+      for(let i=0;i<7;i++){
+        const k=addDays(st0,i),st=dayStatus(v,k),c=COL[st];
+        let bid='';if(st==='rented'){const b=bookingForDay(v,k);if(b)bid=b.id;}
+        const isT=k===hoy;
+        h+=`<td style="padding:2px;border-bottom:1px solid var(--border);text-align:center"><div ${c?`class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')"`:''} style="min-height:34px;border-radius:4px;background:${c||'transparent'};${isT?'outline:1.5px solid var(--amber);':''}${c?'cursor:pointer;':''}">&nbsp;</div></td>`;
+      }
+      h+='</tr>';
+    });
+    h+=`</tbody></table><div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">${[['#F59E0B','Alquilado'],['#3B82F6','Mantenimiento'],['#EF4444','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}</div>`;
+    res.innerHTML=h;return;
+  }
+  for(let i=0;i<7;i++){
+    const k=addDays(st0,i);
+    const dt=new Date(k+'T12:00:00');
+    const isT=k===hoy;
+    const lbl=isT?'Hoy':k===man?'Mañana':DOW[dt.getDay()];
+    const free=[];
+    let cards='';
+    activeV.forEach(v=>{
+      const st=dayStatus(v,k);
+      if(st!=='rented'&&st!=='maintenance'&&st!=='blocked'){free.push(v);return;}
+      let color,title,sub='',bid='';
+      if(st==='rented'){
+        color='#F59E0B';title='Alquilado';
+        const b=bookingForDay(v,k);
+        if(b){
+          bid=b.id;
+          const p=PLATS[b.platform];
+          sub=(b.clientName?esc(b.clientName)+' · ':'')+esc(p?p.label:(b.platform||''))+'<br>'+esc(fmtDMY(b.startDate))+(b.startTime?' '+esc(b.startTime):'')+' → '+esc(fmtDMY(b.endDate))+(b.endTime?' '+esc(b.endTime):'');
+        }
+      }else if(st==='maintenance'){color='#3B82F6';title='Mantenimiento';}
+      else{color='#EF4444';title='Bloqueado';}
+      cards+=`<div class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')" style="padding:10px 12px;margin-bottom:6px;background:var(--bg2);border:1px solid var(--border);border-left:5px solid ${color};border-radius:10px;min-height:44px;cursor:pointer">
+        <div style="font-size:14px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)} <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:${safeColor(v.color)}">${esc(v.plate)}</span></div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;word-break:break-word"><strong style="color:${color}">${title}</strong>${sub?' · '+sub:''}</div>
+      </div>`;
+    });
+    h+=`<div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 10px;border-radius:8px;${isT?'background:#F59E0B22;border:1.5px solid var(--amber);':'background:var(--bg3);border:1px solid var(--border);'}">
+        <span style="font-size:15px;font-weight:800;color:${isT?'var(--amber)':'var(--text)'}">${lbl}</span>
+        <span style="font-size:12px;color:var(--text2)">${(isT||k===man)?DOW[dt.getDay()]+' · ':''}${esc(fmtDMY(k))}</span>
+      </div>
+      ${cards}
+      ${free.length?`<div style="font-size:12px;color:var(--text2);padding:2px 4px;word-break:break-word"><strong style="color:var(--green)">Libres (${free.length}):</strong> ${free.map(v=>esc(v.name)).join(', ')}</div>`:''}
+    </div>`;
+  }
+  res.innerHTML=h;
+}
 function renderAgendaBody(){
   const res=document.getElementById('agenda-body');if(!res)return;
   const allActiveV=V.filter(v=>!v.archived);
   const activeV=allActiveV.filter(v=>(!_agFilterVtype||(v.vehicle_type||'turismo')===_agFilterVtype)&&(!_agFilterOwnership||((_agFilterOwnership==='own'&&v.vtype!=='managed')||(_agFilterOwnership==='managed'&&v.vtype==='managed'))));
+  _agLastMobile=_agIsMobile();
+  if(_agLastMobile){renderAgendaMobile(res,activeV);return;}
   const today=new Date();
   const dim=new Date(agY,agM+1,0).getDate();
   const days=Array.from({length:dim},(_,i)=>i+1);
   let h=`<div id="agenda-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div class="tap44" onclick="agPrev()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">‹</div>
     <div style="font-size:17px;font-weight:800;letter-spacing:1px">${MON_ES[agM].toUpperCase()} ${agY}</div>
-    <div class="tap44" onclick="agNext()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">›</div>
+    <div style="display:flex;gap:8px"><button class="tap44" onclick="agToday()" style="min-height:40px;padding:0 14px;background:var(--bg3);border:1px solid var(--amber);color:var(--amber);border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Hoy</button>
+    <div class="tap44" onclick="agNext()" style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">›</div></div>
   </div>
   <div id="agenda-scroll" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px">
-  <table class="agenda-table" style="min-width:${Number(dim*26+100)}px;width:100%">
+  <table class="agenda-table" style="min-width:${Number(dim*26+140)}px;width:100%">
     <thead><tr>
-      <th style="width:88px;min-width:88px;padding:4px 6px;font-size:9px;letter-spacing:1px;color:var(--text3);text-align:left;position:sticky;left:0;background:var(--bg);z-index:2">VEHÍCULO</th>
+      <th style="width:140px;min-width:100px;padding:4px 6px;font-size:9px;letter-spacing:1px;color:var(--text3);text-align:left;position:sticky;left:0;background:var(--bg);z-index:2">VEHÍCULO</th>
       ${days.map(d=>{const isT=d===today.getDate()&&agM===today.getMonth()&&agY===today.getFullYear();const dow=['D','L','M','X','J','V','S'][new Date(agY,agM,d).getDay()];return `<th style="width:26px;min-width:26px;padding:2px;text-align:center;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}font-size:9px">${d}<br>${dow}</th>`;}).join('')}
     </tr></thead>
     <tbody>
     ${activeV.map(v=>`<tr onclick="openV('${escJs(v.id)}')" style="cursor:pointer">
       <td style="padding:3px 6px;position:sticky;left:0;background:var(--bg2);z-index:1;border-bottom:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px">${esc(v.name)}</div>
+        <div style="font-size:11px;font-weight:700;word-break:break-word;max-width:140px">${esc(v.name)}</div>
         <div style="font-family:var(--mono);font-size:9px;color:${safeColor(v.color)}">${esc(v.plate)}</div>
       </td>
       ${days.map(d=>{
@@ -8889,7 +8964,7 @@ function renderAgendaBody(){
     if(scrollEl){
       const today=new Date().getDate();
       // Each day col is ~26px wide, vehicle col is 88px
-      const scrollTo=88+(today-2)*26;
+      const scrollTo=(today-2)*26;
       scrollEl.scrollLeft=Math.max(0,scrollTo);
     }
   }
@@ -8925,6 +9000,15 @@ function renderAgenda(el){
 }
 function agPrev(){if(agM===0){agM=11;agY--;}else agM--;renderAgendaBody();}
 function agNext(){if(agM===11){agM=0;agY++;}else agM++;renderAgendaBody();}
+// Re-render automático al rotar / cambiar ancho si la Agenda está visible
+function _agOnResize(){
+  const el=document.getElementById('agenda-body');
+  if(!el||!el.offsetParent)return;
+  if(_agIsMobile()===_agLastMobile)return;
+  renderAgendaBody();
+}
+window.addEventListener('resize',_agOnResize);
+window.addEventListener('orientationchange',()=>setTimeout(_agOnResize,150));
 
 // ═══════════════════════════════════════════════════════════ ALQUILERES (nueva vista unificada)
 function renderRentals(el){
