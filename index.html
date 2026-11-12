@@ -2232,7 +2232,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
         [fE(mP),mg+142,'right',mP>=0?GREEN:RED,true],[String(mBk),W-mg,'right'],
       ],i%2===1);
     });
-    doc.setFillColor(...GREEN);doc.rect(mg,y,cW,8,'F');
+    doc.setFillColor(...PDFS.K);doc.rect(mg,y,cW,8,'F');
     doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
     doc.text('TOTAL PERÍODO',mg+3,y+5.5);doc.text(fE(totInc),mg+62,y+5.5,{align:'right'});
     doc.text(fE(totExp),mg+100,y+5.5,{align:'right'});
@@ -2241,7 +2241,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     y+=12;
   }
 
-  _pdfFooter(doc,W,Math.min(y+6,280));
+  _pdfBrand(doc,'INFORME DE ANALÍTICAS',[periodStr,filterLabel]);
   _savePDF(doc,'Informe_Analiticas_'+curM+'_'+toM+'.pdf');
   }catch(e){alert('Error al generar el informe analítico:\n'+e.message+'\n'+(e.stack||'').slice(0,300));}
 }
@@ -11740,30 +11740,9 @@ function generateQuotePDF(id){
   const _liveTotal=Math.max(0,Number(q.baseAmount||0)+_extrasSum-Number(q.discount||0));
   const _liveBase=Number(q.baseAmount||0);
 
-  // ── Header ──
-  doc.setFillColor(18,10,35);
-  doc.rect(0,0,W,40,'F');
-  doc.setFillColor(106,13,173);
-  doc.rect(0,37,W,3,'F');
-  // Logo text
-  doc.setTextColor(255,215,0);
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(26);
-  doc.text('DEIROS',M,24);
-  doc.setFontSize(8);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(160,140,200);
-  doc.text('ALQUILER DE VEH\u00cdCULOS \u00b7 MADRID',M,31);
-  // Right: PRESUPUESTO
-  doc.setFontSize(20);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(255,255,255);
-  doc.text('PRESUPUESTO',W-M,24,{align:'right'});
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(180,160,220);
-  doc.text(q.num,W-M,31,{align:'right'});
-  y=48;
+  // Cabecera común: la pinta _pdfBrand al final.
+  //('\u00cdCULOS \u00b7 MADRID',M,31);
+  y=PDFS.TOP;
 
   // ── Meta row ──
   doc.setFillColor(242,240,250);
@@ -11826,9 +11805,7 @@ function generateQuotePDF(id){
   y+=32;
 
   // ── Price breakdown ──
-  doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(40,30,70);
-  doc.text('DESGLOSE DEL PRECIO',M,y);y+=4;
-  doc.setDrawColor(180,160,220);doc.setLineWidth(0.5);doc.line(M,y,W-M,y);doc.setLineWidth(0.2);y+=5;
+  y=_pdfTh(doc,y-4,[['DESGLOSE DEL PRECIO',M+2],['IMPORTE',W-M,'right']])+6;
 
   // Base
   doc.setFontSize(9.5);doc.setFont('helvetica','normal');doc.setTextColor(40,30,70);
@@ -11929,7 +11906,7 @@ function generateQuotePDF(id){
     '\u2022 Las multas de tr\u00e1fico generadas durante el alquiler son responsabilidad del conductor.',
     '\u2022 Este presupuesto tiene validez de 15 d\u00edas desde la fecha de emisi\u00f3n.',
   ];
-  if(y>240){doc.addPage();y=M;}
+  if(y>240){doc.addPage();y=PDFS.TOP;}
   doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(60,50,80);
   doc.text('CONDICIONES GENERALES',M,y);y+=3;
   doc.setDrawColor(200,180,230);doc.line(M,y,W-M,y);y+=3;
@@ -11938,16 +11915,8 @@ function generateQuotePDF(id){
     const ls=doc.splitTextToSize(line,CW);doc.text(ls,M,y);y+=ls.length*4.2;
   });
 
-  // ── Footer ──
-  doc.setFillColor(18,10,35);
-  doc.rect(0,283,W,14,'F');
-  doc.setFillColor(106,13,173);doc.rect(0,283,W,1,'F');
-  doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(255,215,0);
-  doc.text('DEIROS',M,290);
-  doc.setFont('helvetica','normal');doc.setTextColor(160,150,200);
-  doc.text(_coPie,M+22,290);
-  doc.setTextColor(130,120,170);
-  doc.text(q.num+' \u00b7 Emitido: '+fmtDMY(ymd(new Date(q.createdAt))),W-M,290,{align:'right'});
+  // Pie común: lo pinta _pdfBrand.
+  //('\u00b7 Emitido: '+fmtDMY(ymd(new Date(q.createdAt))),W-M,290,{align:'right'});
 
   // ══════════════════════════════════════════════════════════════════════════
   // PÁGINA 2 — Personaliza tu alquiler (packs + bolsas km)
@@ -11956,13 +11925,11 @@ function generateQuotePDF(id){
   let u=0;
 
   // ── Header ───────────────────────────────────────────────────────────────
-  doc.setFillColor(18,10,35);doc.rect(0,0,W,32,'F');
-  doc.setFillColor(106,13,173);doc.rect(0,29,W,3,'F');
-  doc.setFontSize(19);doc.setFont('helvetica','bold');doc.setTextColor(255,215,0);
-  doc.text('PERSONALIZA TU ALQUILER',M,16);
-  doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(180,155,230);
-  doc.text('Opciones exclusivas para que tu experiencia sea perfecta. Solicitalas al confirmar tu reserva.',M,24);
-  u=39;
+  doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.P);
+  doc.text('PERSONALIZA TU ALQUILER',M,PDFS.TOP+2);
+  doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(100,85,140);
+  doc.text('Opciones exclusivas para que tu experiencia sea perfecta. Solicítalas al confirmar tu reserva.',M,PDFS.TOP+8);
+  u=PDFS.TOP+16;
 
   // ── BOLSAS DE KILOMETROS ──────────────────────────────────────────────────
   doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(25,15,50);
@@ -12037,7 +12004,7 @@ function generateQuotePDF(id){
     ['Pack Camping', '49,99€','Tienda 2 personas, sacos, esterillas y linterna frontal. Aventura total.'],
     ['Pack Mascota', '19,99€','Funda trasera y arnes homologado. Tu mascota viaja comoda y segura.'],
   ];
-  var _accentColors=[[106,13,173],[60,140,200],[30,160,100],[220,130,0],[180,60,60],[100,170,60]];
+  var _accentColors=[[106,13,173],[60,140,200],[30,160,100],[180,83,9],[180,60,60],[100,170,60]];
   _pkData.forEach(function(pk,i){
     var col=i%3,row=Math.floor(i/3);
     var px=M+col*(_pW+4),py=u+row*(_pH+4);
@@ -12089,15 +12056,7 @@ function generateQuotePDF(id){
     doc.text([co.telefono,co.email].filter(Boolean).join('  ·  ')||_coPie,W/2,u+14,{align:'center'});
   }
 
-  // ── Footer p2 ─────────────────────────────────────────────────────────────
-  doc.setFillColor(18,10,35);doc.rect(0,283,W,14,'F');
-  doc.setFillColor(106,13,173);doc.rect(0,283,W,1,'F');
-  doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(255,215,0);
-  doc.text('DEIROS',M,290);
-  doc.setFont('helvetica','normal');doc.setTextColor(160,150,200);
-  doc.text(_coPie,M+22,290);
-  doc.setTextColor(130,120,170);
-  doc.text('Personaliza tu alquiler · '+q.num,W-M,290,{align:'right'});
+  _pdfBrand(doc,'PRESUPUESTO',[q.num,'Emitido el '+fmtDMY(ymd(new Date(q.createdAt)))]);
 
   _savePDF(doc,'Presupuesto-'+q.num+'.pdf');
 }
