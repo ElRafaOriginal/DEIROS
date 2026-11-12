@@ -41,5 +41,5 @@ jobs:
           additional_permissions: |
             actions: read
           claude_args: |
-            --max-turns 15
+            --max-turns 30
             --allowedTools "Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git fetch origin:*),Bash(git merge origin/main:*)"
