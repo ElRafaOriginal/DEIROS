@@ -99,7 +99,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     user-select:none;
   }
   .desk-ni:hover{background:var(--bg3);color:var(--text2);}
-  .desk-ni.active{background:var(--amber)18;color:var(--amber);}
+  .desk-ni.active{background:var(--acc-m);color:var(--amber);}
   .desk-ni .desk-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
   .desk-ni .desk-lbl{letter-spacing:0.5px;}
   .desk-badge{width:6px;height:6px;border-radius:50%;background:var(--red);margin-left:auto;flex-shrink:0;}
@@ -396,7 +396,7 @@ select option{background:var(--bg);}
   user-select:none;
 }
 .desk-ni-sm:hover{background:var(--bg3);color:var(--text2);}
-.desk-ni-sm.active{background:var(--amber)18;color:var(--amber);}
+.desk-ni-sm.active{background:var(--acc-m);color:var(--amber);}
 .desk-ni-sm .desk-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
 </style>
 </head>
@@ -405,7 +405,7 @@ select option{background:var(--bg);}
 <!-- DESKTOP SIDEBAR (hidden on mobile via CSS) -->
 <div id="deskSidebar" style="display:none">
   <div class="desk-logo">
-    <div class="desk-logo-title">DEIROS</div>
+    <img class="logo-osc" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="150" height="45" style="margin-left:-12px"/><img class="logo-cla" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="150" height="45" style="margin-left:-12px"/>
     <div class="desk-logo-sub">FLEET MANAGER</div>
   </div>
   <div class="desk-nav">
@@ -488,7 +488,7 @@ select option{background:var(--bg);}
   <!-- Header -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px">
     <div>
-      <div style="font-size:18px;font-weight:800;letter-spacing:1px;color:var(--amber)">DEIROS</div>
+      <img class="logo-osc" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="130" height="39" style="margin-left:-11px"/><img class="logo-cla" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="130" height="39" style="margin-left:-11px"/>
       <div style="font-size:11px;color:var(--text3);margin-top:2px">FLEET MANAGER</div>
     </div>
     <div class="tap44" onclick="closeHamburger()" style="width:34px;height:34px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text3)">×</div>
@@ -551,8 +551,7 @@ select option{background:var(--bg);}
 
 <!-- LOADING SCREEN -->
 <div id="loadingScreen" style="position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-  <div style="font-size:48px">🚗</div>
-  <div style="font-size:22px;font-weight:800;color:var(--amber);letter-spacing:2px">DEIROS FLEET</div>
+  <img class="logo-osc" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="220" height="66"/><img class="logo-cla" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="220" height="66"/>
   <div style="font-size:13px;color:var(--text3);letter-spacing:1px">Conectando...</div>
 </div>
 
@@ -560,8 +559,7 @@ select option{background:var(--bg);}
 <div id="loginScreen" style="position:fixed;inset:0;z-index:1999;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px">
   <div style="width:100%;max-width:360px">
     <div style="text-align:center;margin-bottom:40px">
-      <div style="font-size:52px;margin-bottom:12px">🚗</div>
-      <div style="font-size:26px;font-weight:800;color:var(--amber);letter-spacing:2px">DEIROS FLEET</div>
+      <img class="logo-osc" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="240" height="72" style="margin:0 auto"/><img class="logo-cla" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="240" height="72" style="margin:0 auto"/>
       <div style="font-size:12px;color:var(--text3);letter-spacing:2px;margin-top:4px">GESTIÓN DE ALQUILERES</div>
     </div>
     <div style="margin-bottom:14px">
@@ -4593,7 +4591,7 @@ function _setSaveStatus(state,msg){
     document.body.appendChild(el);
   }
   clearTimeout(_saveStatusTimer);
-  if(state==='saving'){el.style.display='block';el.style.background='#F59E0B';el.style.color='#000';el.textContent='Guardando…';}
+  if(state==='saving'){el.style.display='block';el.style.background='var(--amber)';el.style.color='var(--on-amber)';el.textContent='Guardando…';}
   else if(state==='saved'){el.style.display='block';el.style.background='#10B981';el.style.color='#000';el.textContent='Guardado';_saveStatusTimer=setTimeout(function(){el.style.display='none';},1800);}
   else if(state==='error'){el.style.display='block';el.style.background='#EF4444';el.style.color='#fff';el.textContent=msg||'Error al guardar';}
   else el.style.display='none';
