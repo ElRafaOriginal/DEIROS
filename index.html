@@ -8876,7 +8876,7 @@ function dlOwnerReport(ownerId,month){
   if(_liq){
     const _dif=Math.round((totOwner-(Number(_liq.amount)||0))*100)/100;
     doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(120,120,140);
-    doc.text('Liquidación registrada como pagada'+(_liq.paidAt?' el '+new Date(_liq.paidAt).toLocaleDateString('es-ES'):'')+': '+fmtE(_liq.amount)+(Math.abs(_dif)>=0.01?'. El cálculo actual difiere en '+fmtE(_dif)+': revisa los movimientos de ese mes posteriores al pago.':'.'),margin,y+16,{maxWidth:cW});
+    doc.text('Liquidación registrada como pagada'+(_liq.paidAt?' el '+new Date(_liq.paidAt).toLocaleDateString('es-ES'):'')+': '+fmtE(_liq.amount)+(Math.abs(_dif)>=0.01?'. El cálculo actual difiere en '+fmtE(_dif)+' (por movimientos posteriores al pago o por el cambio de la regla de comisión).':'.'),margin,y+16,{maxWidth:cW});
     y+=10;
   }
   _pdfFooter(doc,W,Math.min(y+18,282));
