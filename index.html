@@ -1076,7 +1076,7 @@ function renderAnalytics(el){
     bks.forEach(b=>{if(platBk[b.platform]!==undefined){platBk[b.platform]++;platInc[b.platform]+=(Number(b.amount)||0);}});
     const bestPlat=Object.entries(platInc).sort((a,b)=>b[1]-a[1])[0];
     const _comm=(Number(v.commission)||30)/100;
-    const bizShare=v.vtype==='managed'?Math.max(0,profit*_comm):profit;
+    const bizShare=v.vtype==='managed'?inc*_comm:profit; // comisión sobre lo facturado
     return{v,inc,exp,profit,days,bks:bks.length,rpdInc,rpdProfit,pp,roi,paidOff,daysToPayOff,occ,bestPlat,bizShare};
   }).sort((a,b)=>b.rpdInc-a.rpdInc);
 
@@ -1169,9 +1169,9 @@ function renderAnalytics(el){
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         ${_ownMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">🔑 PROPIOS (${_ownMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${_ownProfit>=0?'var(--green)':'var(--red)'}">${fmt(_ownProfit)}</div><div style="font-size:9px;color:var(--text3)">beneficio 100%</div></div>`:''}
-        ${_mgdMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">🤝 GESTIÓN (${_mgdMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--purple)">${fmt(_mgdShare)}</div><div style="font-size:9px;color:var(--text3)">comisión de ${fmt(_mgdProfit)} bruto</div></div>`:''}
+        ${_mgdMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">🤝 GESTIÓN (${_mgdMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--purple)">${fmt(_mgdShare)}</div><div style="font-size:9px;color:var(--text3)">comisión sobre lo facturado</div></div>`:''}
       </div>
-      ${_mgdMs.map(m=>{const _c=Number(m.v.commission)||30;return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-top:6px"><span style="font-size:11px;color:var(--text2)">🤝 ${esc(m.v.name)} · comisión ${_c}%</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--purple)">${fmt(m.bizShare)} <span style="font-size:9px;font-weight:400;color:var(--text3)">de ${fmt(m.profit)} bruto</span></span></div>`;}).join('')}
+      ${_mgdMs.map(m=>{const _c=Number(m.v.commission)||30;return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-top:6px"><span style="font-size:11px;color:var(--text2)">🤝 ${esc(m.v.name)} · comisión ${_c}%</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--purple)">${fmt(m.bizShare)} <span style="font-size:9px;font-weight:400;color:var(--text3)">de ${fmt(m.inc)} facturado</span></span></div>`;}).join('')}
     </div>`;
   })()}
 
@@ -1515,7 +1515,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const roi=pp>0?Math.round(allProfit/pp*100):null;
     const paidOff=pp>0&&allProfit>=pp;
     const _pcomm=(Number(v.commission)||30)/100;
-    const bizShare=v.vtype==='managed'?Math.max(0,(pInc-pExp)*_pcomm):(pInc-pExp);
+    const bizShare=v.vtype==='managed'?pInc*_pcomm:(pInc-pExp); // comisión sobre lo facturado
     return{v,pInc,pExp,pProfit:pInc-pExp,pBks:pBks.length,pDays,occ,rpdInc,avgP,avgDur,pp,roi,paidOff,allProfit,bizShare};
   }).sort((a,b)=>b.rpdInc-a.rpdInc);
 
@@ -1813,7 +1813,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     doc.setTextColor(255,255,255);doc.text(String(totBks),W-mg,y+5.5,{align:'right'});
     y+=8;
     doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('(G) Vehículo en gestión: Part.Negocio = Beneficio actividad × comisión del propietario',mg,y+4);
+    doc.text('(G) Vehículo en gestión: Part.Negocio = Ingresos facturados × comisión del gestor',mg,y+4);
     y+=8;
   } else {
     _tblH([
@@ -5208,9 +5208,8 @@ function tDays(v){return new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.can
 function bizContrib(v){
   if(v.vtype!=='managed')return{inc:tInc(v),exp:tExp(v)};
   const comm=(Number(v.commission)||30)/100;
-  const profit=tInc(v)-tExp(v);
-  const share=profit*comm;
-  return{inc:share>0?share:0,exp:share<0?Math.abs(share):0};
+  const share=tInc(v)*comm; // comisión sobre lo facturado (0 si no factura), aunque haya pérdidas
+  return{inc:share,exp:0};
 }
 function getAlerts(){
   const now=new Date();
@@ -5642,7 +5641,7 @@ function vcardH(v){
   const ePct=total>0?Math.max(0,Math.min(100,vE/total*100)):50;
   const isM=v.vtype==='managed';
   const comm=isM?(Number(v.commission)||30):null;
-  const share=isM?vP*(comm/100):null;
+  const share=isM?vI*(comm/100):null;
   return `<div class="vcard" style="background:${safeColor(v.color)}0d;border-color:${safeColor(v.color)}44" onclick="openV('${escJs(v.id)}')">
     <div style="position:absolute;top:0;right:0;width:60px;height:60px;background:${safeColor(v.color)}10;border-radius:0 14px 0 60px"></div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
@@ -8463,7 +8462,7 @@ function buildOwnersStats(){
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
       <div class="sec" style="margin-bottom:14px">LIQUIDACIONES PENDIENTES</div>
-      ${OW.map(o=>{const vs=V.filter(v=>!v.archived&&v.ownerId===o.id);const tot=vs.reduce((s,v)=>{const profit=tInc(v)-tExp(v);return s+profit*(1-(Number(v.commission)||30)/100);},0);return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openOwnerReport('${escJs(o.id)}')"><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700">${esc(o.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${vs.length} vehículo${vs.length!==1?'s':''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--amber)">${fmt(tot)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Total acum.</div></div></div>`;}).join('')||'<div style="font-size:13px;color:var(--text3);padding:10px 0">Sin propietarios registrados</div>'}
+      ${OW.map(o=>{const vs=V.filter(v=>!v.archived&&v.ownerId===o.id);const tot=vs.reduce((s,v)=>{const profit=tInc(v)-tExp(v);return s+profit-tInc(v)*(Number(v.commission)||30)/100;},0);return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openOwnerReport('${escJs(o.id)}')"><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700">${esc(o.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${vs.length} vehículo${vs.length!==1?'s':''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--amber)">${fmt(tot)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Total acum.</div></div></div>`;}).join('')||'<div style="font-size:13px;color:var(--text3);padding:10px 0">Sin propietarios registrados</div>'}
     </div>
   </div>`;
 }
@@ -8501,7 +8500,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   ${vehicles.map(v=>{
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
     const comm=Number(v.commission)||30;
-    const vOwner=vP*(1-comm/100);
+    const vOwner=vP-vI*comm/100;
     const mFins=_getVehicleAllFinances(v).filter(e=>e.date.slice(0,7)===now);
     const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mE=mFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -8561,7 +8560,7 @@ function renderOwnerProfile(el){
     const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mE=mFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const recentBk=[...(v.bookings||[])].sort((a,b)=>b.startDate.localeCompare(a.startDate)).slice(0,5);
-    return{v,vI,vE,vP,comm,vOwner:vP*(1-comm/100),mI,mE,recentBk};
+    return{v,vI,vE,vP,comm,vOwner:vP-vI*comm/100,mI,mE,recentBk};
   });
 
   let h=`<div class="anim">
@@ -8731,7 +8730,7 @@ function genOwnerReport(ownerId){
     const tE=fins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const tP=tI-tE;
     const comm=Number(v.commission)||30;
-    const commAmt=tP*(comm/100);
+    const commAmt=tI*(comm/100); // comisión sobre lo facturado en el mes (0 si no factura), aunque haya pérdidas
     return{v,fins,tI,tE,tP,comm,commAmt,toOwner:tP-commAmt};
   });
 
@@ -8787,7 +8786,7 @@ function genOwnerReport(ownerId){
         <div style="background:#8B5CF610;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center">
           <div>
             <div style="font-size:10px;color:var(--purple);font-weight:700">Comisión DEIROS (${d.comm}%)</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtE(d.tP)} × ${d.comm}%</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtE(d.tI)} facturado × ${d.comm}%</div>
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple)">${fmtE(d.commAmt)}</div>
@@ -8822,7 +8821,7 @@ function dlOwnerReport(ownerId,month){
     const fins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month);
     const tI=fins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const tE=fins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const tP=tI-tE;const comm=Number(v.commission)||30;const commAmt=tP*(comm/100);
+    const tP=tI-tE;const comm=Number(v.commission)||30;const commAmt=tI*(comm/100); // sobre lo facturado
     return{v,tI,tE,tP,comm,commAmt,toOwner:tP-commAmt,fins};
   });
   const totOwner=vData.reduce((s,d)=>s+d.toOwner,0);
@@ -9467,7 +9466,7 @@ function _getManagedCommissions(){
   return V.filter(v=>!v.archived&&v.vtype==='managed').map(v=>{
     const comm=(Number(v.commission)||30)/100;
     const vI=tInc(v);const vE=tExp(v);const net=vI-vE;
-    const commAmt=net*comm;
+    const commAmt=vI*comm; // sobre lo facturado
     return{v,comm,vI,vE,net,commAmt,toOwner:net-commAmt};
   });
 }
@@ -9666,7 +9665,7 @@ function renderBiz(el){
   const managed=_getManagedCommissions();
   if(managed.length){
     h+=`<div class="sec" style="margin-top:16px;color:var(--purple)">GESTIÓN (COMISIONES)</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${bizMonth?bizMonth:'Todos los períodos'} · (ingresos − gastos) × comisión%</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${bizMonth?bizMonth:'Todos los períodos'} · ingresos facturados × comisión%</div>
     <input id="bizMgmtSearch" type="text" placeholder="🔍 Buscar vehículo..." oninput="renderBizMgmt()" autocomplete="off"
       style="width:100%;font-size:13px;padding:8px 12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);margin-bottom:10px;box-sizing:border-box"/>
     <div id="bizMgmtList"></div>`;
@@ -9690,7 +9689,7 @@ function renderBizMgmt(){
     const vI=fins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const vE=fins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const net=vI-vE;
-    const commAmt=net*comm;
+    const commAmt=vI*comm; // sobre lo facturado
     const toOwner=net-commAmt;
     const isPos=commAmt>=0;
     h+=`<div style="background:var(--bg2);border:1px solid #8B5CF630;border-radius:12px;padding:14px;margin-bottom:10px">
@@ -9749,7 +9748,7 @@ function exportGlobalExcel(){
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
     const isM=v.vtype==='managed';
     const comm=isM?(Number(v.commission)||30):null;
-    const share=isM?vP*(comm/100):null;
+    const share=isM?vI*(comm/100):null; // comisión sobre lo facturado
     resumen.push([v.name,v.plate,isM?'En gestión':'Propio',vI,vE,vP,tDays(v),isM?comm:'—',isM?share:'—']);
   });
   resumen.push(['']);
@@ -9796,26 +9795,21 @@ function exportGlobalExcel(){
   const months={};
   activeV.forEach(v=>{
     const isM=v.vtype==='managed';const comm=isM?(Number(v.commission)||30)/100:1;
-    (v.finances||[]).forEach(e=>{
+    // Misma fuente que Finanzas (sin cancelados duplicados). Gestionados: comisión = facturado del mes × comisión del vehículo
+    _getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).forEach(e=>{
       const m=e.date.slice(0,7);if(!months[m])months[m]={inc:0,exp:0,bizInc:0,bizExp:0};
       if(isM){
-        // Para gestionados, acumulamos para calcular comisión mensual al final
-        if(e.type==='income')months[m]._mInc=(months[m]._mInc||0)+(Number(e.amount)||0);
-        else months[m]._mExp=(months[m]._mExp||0)+(Number(e.amount)||0);
+        if(e.type==='income')months[m]._mComm=(months[m]._mComm||0)+(Number(e.amount)||0)*comm;
       } else {
         if(e.type==='income')months[m].inc+=Number(e.amount)||0;
         else months[m].exp+=Number(e.amount)||0;
       }
     });
   });
-  // Añadir comisión de gestionados
+  // Añadir comisión de gestionados (sobre lo facturado; nunca negativa)
   Object.keys(months).forEach(m=>{
-    const mNet=(months[m]._mInc||0)-(months[m]._mExp||0);
-    const share=mNet*((Number(V.filter(v=>v.vtype==='managed'&&!v.archived).reduce((s,v)=>{
-      const comm=Number(v.commission)||30;return s+comm;},0)/Math.max(1,V.filter(v=>v.vtype==='managed'&&!v.archived).length))||30)/100);
-    months[m].inc+=Math.max(0,share);
-    months[m].exp+=share<0?Math.abs(share):0;
-    delete months[m]._mInc;delete months[m]._mExp;
+    months[m].inc+=months[m]._mComm||0;
+    delete months[m]._mComm;
   });
   BF.forEach(e=>{
     const m=e.date.slice(0,7);if(!months[m])months[m]={inc:0,exp:0};
@@ -10180,13 +10174,13 @@ function buildMonthlyChart(v){
     const mInc=mF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mExp=mF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mNet=mInc-mExp;
-    const mComm=mNet*(comm/100);
+    const mComm=mInc*(comm/100); // sobre lo facturado en el mes
     const [sy,sm]=sk.split('-');
     const mLabel=(MON_S[parseInt(sm)-1]||'')+' '+sy;
     commRow=`<div style="margin-top:10px;background:#8B5CF610;border:1px solid #8B5CF630;border-radius:10px;padding:12px 14px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:10px">COMISIÓN — ${mLabel.toUpperCase()}</div>
       <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:4px;align-items:center">
-        <div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${mNet>=0?'var(--green)':'var(--red)'}">${fmtF(mNet)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">Beneficio mes</div></div>
+        <div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmtF(mInc)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">Facturado mes</div></div>
         <div style="text-align:center;color:var(--text3);font-size:13px;padding:0 2px">×</div>
         <div style="text-align:center;background:#8B5CF625;border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--purple)">${comm}%</div><div style="font-size:9px;color:var(--purple);margin-top:3px">Comisión</div></div>
         <div style="text-align:center;color:var(--text3);font-size:13px;padding:0 2px">=</div>
@@ -10225,8 +10219,7 @@ function _getBizEntriesWithMgmt(){
       else byMonth[m].exp+=Number(e.amount)||0;
     });
     Object.entries(byMonth).forEach(([m,d])=>{
-      const net=d.inc-d.exp;
-      const commAmt=net*comm;
+      const commAmt=d.inc*comm; // sobre lo facturado en el mes (0 si no factura)
       if(commAmt!==0){
         entries.push({
           id:'biz_mgmt_'+v.id+'_'+m,
@@ -10282,7 +10275,7 @@ function genReport(vId){
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
   const isM=v.vtype==='managed';
   const comm=isM?(Number(v.commission)||30):null;
-  const commAmt=isM?tP*(comm/100):null;
+  const commAmt=isM?tI*(comm/100):null; // comisión sobre lo facturado en el mes (0 si no factura)
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const inc=fins.filter(e=>e.type==='income');
   const exp=fins.filter(e=>e.type==='expense');
@@ -10322,7 +10315,7 @@ function genReport(vId){
       ${isM?`<div style="background:#8B5CF610;border:1px solid #8B5CF640;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--purple);margin-bottom:12px">🤝 LIQUIDACIÓN COMISIÓN (${comm}%)</div>
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #8B5CF620"><span style="font-size:13px;color:var(--text2)">Beneficio neto</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${tP>=0?'var(--green)':'var(--red)'}">${fmtE(tP)}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #8B5CF620"><span style="font-size:13px;color:var(--text2)">Comisión DEIROS (${comm}%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple)">${fmtE(commAmt)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #8B5CF620"><span style="font-size:13px;color:var(--text2)">Comisión DEIROS (${comm}% de ${fmtE(tI)} facturado)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple)">${fmtE(commAmt)}</span></div>
         <div style="display:flex;justify-content:space-between;padding:10px 0 0"><span style="font-size:14px;font-weight:700">Queda para el propietario</span><span style="font-family:var(--mono);font-size:15px;font-weight:800;color:${(tP-commAmt)>=0?'var(--green)':'var(--red)'}">${fmtE(tP-commAmt)}</span></div>
       </div>`:''}
       ${!isM&&v.purchase_price?(()=>{
@@ -10483,7 +10476,7 @@ function dlReport(vId,month){
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
   const isM=v.vtype==='managed';
   const comm=isM?(Number(v.commission)||30):null;
-  const commAmt=isM?tP*(comm/100):null;
+  const commAmt=isM?tI*(comm/100):null; // comisión sobre lo facturado en el mes (0 si no factura)
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const incRows=fins.filter(e=>e.type==='income');
   const expRows=fins.filter(e=>e.type==='expense');
@@ -10519,7 +10512,7 @@ function dlReport(vId,month){
     if(y>240){doc.addPage();y=18;}else y+=6;
     y=_pdfSection(doc,margin,cW,y,'LIQUIDACIÓN COMISIÓN ('+comm+'%)',124,58,237);
     [['Beneficio neto',fmtE(tP),tP>=0?[16,185,129]:[239,68,68]],
-     ['Comisión DEIROS ('+comm+'%)',fmtE(commAmt),[124,58,237]],
+     ['Comisión DEIROS ('+comm+'% de '+fmtE(tI)+' facturado)',fmtE(commAmt),[124,58,237]],
      ['Queda para el propietario',fmtE(tP-commAmt),(tP-commAmt)>=0?[16,185,129]:[239,68,68]]
     ].forEach(([l,val,col])=>{
       doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);doc.text(l,margin+3,y+5);
