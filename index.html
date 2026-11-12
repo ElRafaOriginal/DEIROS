@@ -20,10 +20,14 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
   /* DARK THEME (default) */
-  --bg:#0a0f1a;--bg2:#111827;--bg3:#1a2235;--bg4:#243044;
-  --amber:#F59E0B;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--on-amber:#000;--on-green:#000;--danger-text:#F87171;
-  --text:#F0F4FF;--text2:#94A3B8;--text3:#8A9AB0;
-  --border:#1e2d42;--border2:#2a3d56;
+  /* Paleta DEIROS: #0D0D0D #141414 #1C1C1C · morado #6A0DAD #8B1FD4 · dorado #FFD700 #D4A800 · #FFFFFF #AAAAAA */
+  --bg:#0D0D0D;--bg2:#141414;--bg3:#1C1C1C;--bg4:#262626;
+  /* --amber es el acento de la interfaz: dorado en oscuro (texto negro encima), morado en claro (texto blanco) */
+  --amber:#FFD700;--green:#10B981;--red:#F87171;--blue:#60A5FA;--purple:#AAAAAA;--on-amber:#0D0D0D;--on-green:#000;--danger-text:#F87171;
+  --acc-s:rgba(255,215,0,.08);--acc-m:rgba(255,215,0,.13);--acc-b:rgba(255,215,0,.25);--acc-sh:rgba(255,215,0,.3);
+  --c-own:#FFD700;--c-man:#2DD4BF;
+  --text:#FFFFFF;--text2:#AAAAAA;--text3:#AAAAAA;
+  --border:#262626;--border2:#333333;
   --radius:14px;--rsm:8px;
   --font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
@@ -31,10 +35,17 @@
 /* LIGHT THEME */
 :root.light{
   --bg:#F5F7FA;--bg2:#FFFFFF;--bg3:#EEF1F6;--bg4:#E2E7EF;
-  --amber:#B45309;--green:#047857;--red:#DC2626;--blue:#2563EB;--purple:#7C3AED;--on-amber:#FFFFFF;--on-green:#FFFFFF;--danger-text:#B91C1C;
-  --text:#0F172A;--text2:#334155;--text3:#556275;
+  --amber:#6A0DAD;--green:#047857;--red:#B91C1C;--blue:#1D4ED8;--purple:#6A0DAD;--on-amber:#FFFFFF;--on-green:#FFFFFF;--danger-text:#B91C1C;
+  --acc-s:rgba(106,13,173,.06);--acc-m:rgba(106,13,173,.1);--acc-b:rgba(106,13,173,.25);--acc-sh:rgba(106,13,173,.3);
+  --c-own:#6A0DAD;--c-man:#0F766E;
+  --text:#0D0D0D;--text2:#334155;--text3:#556275;
   --border:#DDE3ED;--border2:#C8D2E0;
 }
+/* Logo: blanco en oscuro, en color en claro */
+.logo-osc,.logo-cla{display:block;height:auto;max-width:100%;}
+.logo-cla{display:none;}
+:root.light .logo-osc{display:none;}
+:root.light .logo-cla{display:block;}
 /* Smooth theme transitions */
 *{transition:background-color 0.2s ease,border-color 0.2s ease,color 0.15s ease;}
 /* But NOT for animations, transforms, or specific interactive elements */
