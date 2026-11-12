@@ -1433,7 +1433,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
 
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
-  const W=210,mg=14,cW=W-2*mg; // 182mm ancho de contenido
+  const W=210,mg=PDFS.MG,cW=W-2*mg; // 178mm ancho de contenido
 
   // Formato moneda
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
@@ -1450,10 +1450,10 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   doc.text=(t,...a)=>_dt(Array.isArray(t)?t.map(x=>_s(x)):typeof t==='string'?_s(t):t,...a);
 
   // Paleta de colores
-  const DARK=[18,10,35],PURPLE=[103,58,183],LPURPLE=[200,185,255],GOLD=[255,215,0];
+  const DARK=[18,10,35],PURPLE=[106,13,173],LPURPLE=[200,185,255],GOLD=[255,215,0];
   const GREEN=[16,185,129],LGREEN=[200,245,235],DGREEN=[10,130,90];
   const RED=[239,68,68],LRED=[255,215,215],DRED=[180,40,40];
-  const AMBER=[245,158,11],LAMBER=[255,240,200],DAMBER=[180,110,0];
+  const AMBER=[180,83,9],LAMBER=[255,240,200],DAMBER=[146,64,14];
   const BLUE=[59,130,246],LBLUE=[215,235,255],DBLUE=[30,90,200];
   const LPURPLE2=[230,222,248],DPURPLE=[80,40,160];
   const BORDER=[218,212,232],BGROW=[248,246,255],GRAY=[100,90,120];
@@ -1528,7 +1528,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     platAgg[p].count++;platAgg[p].inc+=Number(b.amount)||0;
   }));
   const platEntries=Object.entries(platAgg).sort((a,b)=>b[1].count-a[1].count);
-  const platColors=[[59,130,246],[251,122,172],[139,92,246],[16,185,129],[245,158,11]];
+  const platColors=[[59,130,246],[251,122,172],[139,92,246],[16,185,129],[180,83,9]];
 
   // Gastos por categoria
   const expByCat={};
@@ -1536,7 +1536,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const cat=e.category||'Otros';expByCat[cat]=(expByCat[cat]||0)+(Number(e.amount)||0);
   }));
   const expEntries=Object.entries(expByCat).sort((a,b)=>b[1]-a[1]);
-  const expColors=[[239,68,68],[245,158,11],[59,130,246],[139,92,246],[16,185,129],[156,163,175],[248,113,113],[96,165,250]];
+  const expColors=[[239,68,68],[180,83,9],[59,130,246],[139,92,246],[16,185,129],[156,163,175],[248,113,113],[96,165,250]];
 
   // Todos los alquileres del periodo
   const allPBks=filtered.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM).map(b=>({...b,_v:v})));
@@ -1611,7 +1611,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
 
   // Cabecera de tabla (fila coloreada con texto blanco)
   function _tblH(cols,bgCol){
-    doc.setFillColor(...bgCol);doc.rect(mg,y,cW,6,'F');
+    doc.setFillColor(...PDFS.P);doc.rect(mg,y,cW,6,'F'); // cabecera de tabla común
     doc.setFontSize(6);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
     cols.forEach(([txt,x,a])=>doc.text(txt,x,y+4.5,{align:a||'left'}));
     y+=7;
@@ -1642,17 +1642,10 @@ function generateAnalyticsPDF(fromMonth,toMonth){
 
   // Nueva pagina con cabecera compacta
   function _addPage(subtitle){
-    _pdfFooter(doc,W,Math.min(y+6,280));
     doc.addPage();
-    doc.setFillColor(...DARK);doc.rect(0,0,W,18,'F');
-    doc.setFillColor(...PURPLE);doc.rect(0,16,W,2,'F');
-    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-    doc.text('INFORME ANALÍTICAS'+( subtitle?' — '+subtitle:''),mg,12);
-    doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LPURPLE);
-    doc.text(filterLabel+' · '+periodStr,mg,16.5);
-    doc.setFontSize(6.5);doc.setTextColor(...LPURPLE);
-    doc.text(now.toLocaleDateString('es-ES'),W-mg,12,{align:'right'});
-    y=24;
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
+    doc.text('INFORME ANALÍTICAS'+( subtitle?' — '+subtitle:''),mg,PDFS.TOP+1);
+    y=PDFS.TOP+7;
   }
 
   function _safeAddPage(minSpace,subtitle){if(y+minSpace>272){_addPage(subtitle);}}
@@ -1661,23 +1654,11 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   // PAG 1 — RESUMEN EJECUTIVO
   // ══════════════════════════════════════════════════════════════════════════
 
-  // Cabecera premium oscura
-  doc.setFillColor(...DARK);doc.rect(0,0,W,32,'F');
-  doc.setFillColor(...PURPLE);doc.rect(0,29,W,3,'F');
-  doc.setFontSize(20);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-  doc.text('INFORME DE ANALÍTICAS',mg,14);
-  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...LPURPLE);
-  doc.text('DEIROS FLEET MANAGER · '+filterLabel,mg,21);
-  doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(...GOLD);
-  doc.text(periodStr,W-mg,13,{align:'right'});
-  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...LPURPLE);
-  doc.text(now.toLocaleDateString('es-ES'),W-mg,20,{align:'right'});
-
   // Banda info
-  doc.setFillColor(...LPURPLE2);doc.rect(0,32,W,9,'F');
+  doc.setFillColor(...LPURPLE2);doc.roundedRect(mg,PDFS.TOP-4,cW,9,2,2,'F');
   doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...DPURPLE);
-  doc.text('Período: '+periodLabel+'  ·  '+filtered.length+' vehículos analizados  ·  '+totBks+' alquileres  ·  Ocup. global: '+globalOcc+'%',mg+2,37.5);
-  y=45;
+  doc.text('Período: '+periodLabel+'  ·  '+filtered.length+' vehículos analizados  ·  '+totBks+' alquileres  ·  Ocup. global: '+globalOcc+'%',mg+3,PDFS.TOP+1.5);
+  y=PDFS.TOP+10;
 
   // 6 KPI cards
   {const kpis=[
@@ -1739,7 +1720,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       doc.text(val,cx,y+27);
     });
     // Estrella destacando BFO NEGOCIO
-    doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.setTextColor(...AMBER);
+    doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.setTextColor(...DAMBER);
     doc.text('*',mg+8+(cW-8)*2/3-4,y+17);
     y+=32;
   }
@@ -1790,7 +1771,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
         [String(m.pBks),W-mg,'right'],
       ],i%2===1);
     });
-    doc.setFillColor(...PURPLE);doc.rect(mg,y,cW,8,'F');
+    doc.setFillColor(...PDFS.K);doc.rect(mg,y,cW,8,'F');
     doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
     doc.text('TOTAL',mg+3,y+5.5);doc.text(fE(totInc),mg+62,y+5.5,{align:'right'});
     doc.text(fE(totExp),mg+92,y+5.5,{align:'right'});
@@ -1818,7 +1799,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
         [String(m.pBks),W-mg,'right'],
       ],i%2===1);
     });
-    doc.setFillColor(...PURPLE);doc.rect(mg,y,cW,8,'F');
+    doc.setFillColor(...PDFS.K);doc.rect(mg,y,cW,8,'F');
     doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
     doc.text('TOTAL',mg+3,y+5.5);doc.text(fE(totInc),mg+76,y+5.5,{align:'right'});
     doc.text(fE(totExp),mg+108,y+5.5,{align:'right'});
