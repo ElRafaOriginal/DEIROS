@@ -3177,6 +3177,7 @@ function _calcExtrasTotal(dur,isFurg){
 function openContractForm(vId,bookingId){
   const v=V.find(x=>x.id===vId);if(!v)return;
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
+  if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato. Si lo necesitas, descarga el recibo de cancelación.');return;}
   const co=getCompanyData();
   const cl=CL.find(c=>(c.dni&&b.clientDni&&c.dni.toUpperCase()===b.clientDni.toUpperCase())||(c.name&&b.clientName&&c.name.toUpperCase()===b.clientName.toUpperCase()));
   const today=new Date().toLocaleDateString('es-ES');
@@ -3310,7 +3311,7 @@ function openContractForm(vId,bookingId){
     <span id="ctKmTotalBadge" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${Number(calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta))||0} km</span>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(co.fianza||'300')}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(b.fianza!=null&&b.fianza!==''?b.fianza:(co.fianza||'300'))}" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">PENALIZ. COMBUSTIBLE (€)</label><input id="ctPenalComb" value="${esc(co.penalComb||'30')}" inputmode="decimal"/></div>
   </div>
   <div class="r2">
@@ -4076,6 +4077,10 @@ function generateContractPDF(vId,bookingId){
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
   if(!window.jspdf){alert('PDF no disponible.');return;}
   const g=id=>document.getElementById(id)?.value||'';
+  if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato.');return;}
+  if(!g('ctClNombre').trim()||!g('ctClNif').trim()){alert('Faltan el nombre y el NIF/DNI del cliente. Complétalos en el paso 2 antes de generar el contrato.');if(typeof _ctGo==='function')_ctGo(2);return;}
+  const _faltan=[['ctClDir','domicilio'],['ctClTel','teléfono'],['ctClNac','fecha de nacimiento'],['ctClLic','permiso de conducir'],['ctClLicExp','caducidad del permiso']].filter(x=>!g(x[0]).trim()).map(x=>x[1]);
+  if(_faltan.length&&!confirm('Faltan datos del cliente: '+_faltan.join(', ')+'.\n\nSi continúas, el contrato indicará «[dato no informado]». ¿Generarlo igualmente?')){if(typeof _ctGo==='function')_ctGo(2);return;}
   const dur=daysBetween(b.startDate,b.endDate);
   const _isFurgPDF=(v.vehicle_type||'turismo').startsWith('l');
   const _kmCalc=parseInt(g('ctKmInc'))||calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',_isFurgPDF);
@@ -4091,7 +4096,8 @@ function generateContractPDF(vId,bookingId){
   })();
   const _kmFinal=_kmBonus===Infinity?'Ilimitados':(_kmCalc+_kmBonus)+' km';
   const co={nombre:g('ctArNombre'),nif:g('ctArNif'),direccion:g('ctArDir'),telefono:g('ctArTel'),email:g('ctArEmail'),ciudad:g('ctCiudad'),ciudadEntrega:g('ctEntLugar'),zonaAut:g('ctZona'),edadMin:g('ctEdadMin'),kmInc:g('ctKmInc'),kmExtra:g('ctKmExtra'),fianza:g('ctFianza'),penalComb:g('ctPenalComb'),penalLimp:g('ctPenalLimp'),uso:g('ctUso'),formaPago:g('ctPago'),fuelLevel:g('ctFuelLevel')};
-  if(document.getElementById('ctSaveDefaults')?.checked)saveCompanyData(co);
+  // La fianza se guarda como valor por defecto solo si no viene de la propia reserva
+  if(document.getElementById('ctSaveDefaults')?.checked)saveCompanyData(b.fianza!=null&&b.fianza!==''?{...co,fianza:getCompanyData().fianza}:co);
   if(co.fuelLevel){b.deliveredFuelLevel=co.fuelLevel;save();} // nivel de entrega real: lo usa la devolución
   const veh={make:g('ctVMake'),model:g('ctVModel'),plate:g('ctVPlate'),fuel:g('ctVFuel'),km:g('ctVKm')};
   const vehDesc=(veh.make&&veh.model?veh.make+' '+veh.model:veh.model||v.name);
@@ -4281,7 +4287,8 @@ function generateContractPDF(vId,bookingId){
   doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);doc.text('REUNIDOS',mg,y);y+=6;
   para('De una parte, '+co.nombre+', con NIF/CIF '+co.nif+', domicilio en '+co.direccion+', teléfono '+co.telefono+', correo '+co.email+', en adelante el ARRENDADOR.');
   y+=1;
-  para('De otra parte, D./Dña. '+cl.nombre+', con NIF/DNI '+cl.nif+', nacido/a el '+fmtDate(cl.nac)+', con domicilio en '+cl.dir+', teléfono '+cl.tel+', titular del permiso de conducción nº '+cl.lic+' (caducidad: '+fmtDate(cl.licExp)+'), en adelante el ARRENDATARIO.');
+  const _nd=x=>String(x||'').trim()||'[dato no informado]';
+  para('De otra parte, D./Dña. '+_nd(cl.nombre)+', con NIF/DNI '+_nd(cl.nif)+', nacido/a el '+(cl.nac?fmtDate(cl.nac):'[dato no informado]')+', con domicilio en '+_nd(cl.dir)+', teléfono '+_nd(cl.tel)+', titular del permiso de conducción nº '+_nd(cl.lic)+' (caducidad: '+(cl.licExp?fmtDate(cl.licExp):'[dato no informado]')+'), en adelante el ARRENDATARIO.');
   if(hasExtra&&extra.nombre){y+=1;para('Conductor adicional autorizado: D./Dña. '+extra.nombre+', NIF/DNI '+extra.nif+', permiso nº '+extra.lic+' (caducidad: '+fmtDate(extra.licExp)+')');}
   y+=1;para('Ambas partes se reconocen mutuamente la capacidad legal necesaria para la firma del presente contrato.');
   y+=3;doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);doc.text('EXPONEN',mg,y);y+=6;
@@ -7175,8 +7182,10 @@ function _getVehicleAllFinancesDisplay(v){
         autoFromBooking:false
       });
     });
-    // Extras seleccionados al crear el alquiler (b.extras)
-    (b.extras||[]).forEach(function(ex){
+    // Extras seleccionados al crear el alquiler (b.extras). Si el alta ya los registró en
+    // v.finances (_autoExtra con _bookingId), ya están arriba: no se suman otra vez.
+    const _vfExtras=(v.finances||[]).some(function(f){return f._autoExtra&&f._bookingId===b.id&&!f.bookingId;});
+    if(!_vfExtras)(b.extras||[]).forEach(function(ex){
       result.push({
         id:'_bex_'+ex.id+'_'+b.id,
         _bfEntry:false,
@@ -8863,6 +8872,14 @@ function dlOwnerReport(ownerId,month){
   doc.text('TOTAL A PAGAR A '+o.name.toUpperCase(),margin,y+7);
   doc.setFontSize(14);doc.setTextColor(245,158,11);doc.text(fmtE(totOwner),margin+cW,y+7,{align:'right'});
   doc.setDrawColor(245,158,11);doc.setLineWidth(0.5);doc.line(margin,y+10,margin+cW,y+10);
+  // Liquidación ya registrada como pagada: se muestra junto al cálculo actual (no se recalcula ni se modifica)
+  const _liq=(o.liquidaciones||[]).find(l=>l.month===month&&l.paid);
+  if(_liq){
+    const _dif=Math.round((totOwner-(Number(_liq.amount)||0))*100)/100;
+    doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(120,120,140);
+    doc.text('Liquidación registrada como pagada'+(_liq.paidAt?' el '+new Date(_liq.paidAt).toLocaleDateString('es-ES'):'')+': '+fmtE(_liq.amount)+(Math.abs(_dif)>=0.01?'. El cálculo actual difiere en '+fmtE(_dif)+': revisa los movimientos de ese mes posteriores al pago.':'.'),margin,y+16,{maxWidth:cW});
+    y+=10;
+  }
   _pdfFooter(doc,W,Math.min(y+18,282));
   _pdfDownload(doc,filename);
 }
