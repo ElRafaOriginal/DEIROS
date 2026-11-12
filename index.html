@@ -4027,14 +4027,10 @@ function generateContractPDF(vId,bookingId){
   }
   function _just(words,lw,x,cy){
     if(words.length<=1){doc.text(words.join(' '),x,cy);return;}
-    const getW=t=>{
-      const raw=doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor;
-      const padded=String(t).replace(/[ÑñÁÉÍÓÚáéíóúÜü]/g,'M');
-      const w2=doc.getStringUnitWidth(padded)*doc.getFontSize()/doc.internal.scaleFactor;
-      return Math.max(raw,w2);
-    };
+    // Ancho letra a letra: jsPDF descuenta el kerning al medir pero no al pintar (p. ej. «ARRENDATARIO»). Tildes como 'M'.
+    const getW=t=>[...String(t)].reduce((s,c)=>s+doc.getStringUnitWidth(/[ÑñÁÉÍÓÚáéíóúÜü]/.test(c)?'M':c),0)*doc.getFontSize()/doc.internal.scaleFactor;
     const wordWidths=words.map(w=>getW(w));
-    const spaceW=Math.max(getW(' '),0.8);
+    const spaceW=Math.max(getW(' '),0.8)+0.15; // hueco mínimo entre palabras
     const totalW=wordWidths.reduce((s,w)=>s+w,0);
     const gaps=words.length-1;
     const extraPerGap=(lw-totalW-spaceW*gaps)/gaps;
@@ -4061,7 +4057,7 @@ function generateContractPDF(vId,bookingId){
       const lines=[];let cur=[];
       words.forEach(w=>{
         const t=[...cur,w].join(' ');
-        const tw=(doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor);
+        const tw=[...t].reduce((s,c)=>s+doc.getStringUnitWidth(c),0)*doc.getFontSize()/doc.internal.scaleFactor;
         if(tw>aw&&cur.length){lines.push([...cur]);cur=[w];}
         else cur.push(w);
       });
@@ -4241,7 +4237,7 @@ function generateContractPDF(vId,bookingId){
   doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...MID);
   doc.text('Firma del ARRENDATARIO en devolución:',mg,y+4);
   doc.setDrawColor(...PURPLE);doc.setLineWidth(0.3);doc.roundedRect(mg+80,y,cW-80,14,1,1,'S');y+=20;
-  _pdfBrand(doc,'CONTRATO DE ARRENDAMIENTO',[veh.name+' · '+veh.plate,new Date().toLocaleDateString('es-ES')]);
+  _pdfBrand(doc,'CONTRATO DE ARRENDAMIENTO',[(veh.make?(veh.make+' '+(veh.model||'')).trim():(v.name||veh.model||'—'))+' · '+veh.plate,new Date().toLocaleDateString('es-ES')]);
 
   const fname='Contrato_'+veh.plate.replace(/\s/g,'')+'_'+b.startDate+'_'+(cl.nombre||'').replace(/\s/g,'_')+'.pdf';
   _savePDF(doc,fname);
@@ -4361,14 +4357,10 @@ function generateMgmtContractPDF(ownerId,vIdParam){
   }
   function _just(words,lw,x,cy){
     if(words.length<=1){doc.text(words.join(' '),x,cy);return;}
-    const getW=t=>{
-      const raw=doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor;
-      const padded=String(t).replace(/[ÑñÁÉÍÓÚáéíóúÜü]/g,'M');
-      const w2=doc.getStringUnitWidth(padded)*doc.getFontSize()/doc.internal.scaleFactor;
-      return Math.max(raw,w2);
-    };
+    // Ancho letra a letra: jsPDF descuenta el kerning al medir pero no al pintar (p. ej. «ARRENDATARIO»). Tildes como 'M'.
+    const getW=t=>[...String(t)].reduce((s,c)=>s+doc.getStringUnitWidth(/[ÑñÁÉÍÓÚáéíóúÜü]/.test(c)?'M':c),0)*doc.getFontSize()/doc.internal.scaleFactor;
     const wordWidths=words.map(w=>getW(w));
-    const spaceW=Math.max(getW(' '),0.8);
+    const spaceW=Math.max(getW(' '),0.8)+0.15; // hueco mínimo entre palabras
     const totalW=wordWidths.reduce((s,w)=>s+w,0);
     const gaps=words.length-1;
     const extraPerGap=(lw-totalW-spaceW*gaps)/gaps;
@@ -4395,7 +4387,7 @@ function generateMgmtContractPDF(ownerId,vIdParam){
       const lines=[];let cur=[];
       words.forEach(w=>{
         const t=[...cur,w].join(' ');
-        const tw=(doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor);
+        const tw=[...t].reduce((s,c)=>s+doc.getStringUnitWidth(c),0)*doc.getFontSize()/doc.internal.scaleFactor;
         if(tw>aw&&cur.length){lines.push([...cur]);cur=[w];}
         else cur.push(w);
       });
