@@ -7954,7 +7954,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
       [v.bks+'alq','ALQ',BLUE],[v.days+'d','DÍAS',PURPLE],[fE(v.rpd)+'/d','€/DÍA',AMBER],
     ];
     cv.forEach(([val,lbl,clr],ci)=>{
-      const cx=mg+55+ci*24;
+      const cx=mg+55+ci*(cW-55)/6;
       doc.setFontSize(7.5);doc.setFont(undefined,'bold');doc.setTextColor(...clr);doc.text(val,cx,y+7);
       doc.setFontSize(5.5);doc.setFont(undefined,'normal');doc.setTextColor(...MID);doc.text(lbl,cx,y+12.5);
     });
@@ -8638,7 +8638,7 @@ function dlOwnerReport(ownerId,month){
   y+=4;
   doc.setDrawColor(106,13,173);doc.setLineWidth(1);doc.line(margin,y,margin+cW,y);
   doc.setFontSize(10);doc.setFont(undefined,'bold');doc.setTextColor(50,50,60);
-  doc.text('TOTAL A PAGAR A '+o.name.toUpperCase(),margin,y+7);
+  doc.text(_pdfFit(doc,'TOTAL A PAGAR A '+o.name.toUpperCase(),cW-55),margin,y+7);
   doc.setFontSize(14);doc.setTextColor(106,13,173);doc.text(fmtE(totOwner),margin+cW,y+7,{align:'right'});
   doc.setDrawColor(106,13,173);doc.setLineWidth(0.5);doc.line(margin,y+10,margin+cW,y+10);
   // Liquidación ya registrada como pagada: se muestra junto al cálculo actual (no se recalcula ni se modifica)
@@ -10155,7 +10155,7 @@ function _pdfHeader(doc,W,margin,cW,titleLine1,titleLine2,subtitleLine,dateStr){
   // Bloque de título bajo la cabecera común (la cabecera con logo la pinta _pdfBrand)
   let y=PDFS.TOP+2;
   doc.setFontSize(15);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.T);
-  doc.text(titleLine1,margin,y);
+  doc.text(_pdfFit(doc,titleLine1,cW),margin,y);
   if(titleLine2){
     doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
     y+=6;doc.text(titleLine2,margin,y);
