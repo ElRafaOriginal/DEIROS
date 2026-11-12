@@ -11740,8 +11740,6 @@ function generateQuotePDF(id){
   const _liveTotal=Math.max(0,Number(q.baseAmount||0)+_extrasSum-Number(q.discount||0));
   const _liveBase=Number(q.baseAmount||0);
 
-  // Cabecera común: la pinta _pdfBrand al final.
-  //('\u00cdCULOS \u00b7 MADRID',M,31);
   y=PDFS.TOP;
 
   // ── Meta row ──
@@ -11914,9 +11912,6 @@ function generateQuotePDF(id){
   conds.forEach(line=>{
     const ls=doc.splitTextToSize(line,CW);doc.text(ls,M,y);y+=ls.length*4.2;
   });
-
-  // Pie común: lo pinta _pdfBrand.
-  //('\u00b7 Emitido: '+fmtDMY(ymd(new Date(q.createdAt))),W-M,290,{align:'right'});
 
   // ══════════════════════════════════════════════════════════════════════════
   // PÁGINA 2 — Personaliza tu alquiler (packs + bolsas km)
