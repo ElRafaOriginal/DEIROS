@@ -7637,7 +7637,6 @@ function dlMaintReport(vId){
   }
 
   _pdfBrand(doc,'LIBRO DE MANTENIMIENTO',[v.name+' · '+v.plate,dateStr]);
-
   _savePDF(doc,'Libro_Mantenimientos_'+v.name.replace(/ /g,'_')+'.pdf');
 }
 
@@ -8630,24 +8629,24 @@ function dlOwnerReport(ownerId,month){
   let y=_pdfHeader(doc,W,margin,cW,o.name,o.phone||o.email||null,'LIQUIDACIÓN MENSUAL · '+subtitle,new Date().toLocaleDateString('es-ES'));
   y=_pdfKpiRow(doc,W,margin,cW,y,[
     ['INGRESOS BRUTOS',fmtE(totI),16,185,129],
-    ['COMISIÓN DEIROS',fmtE(totComm),124,58,237],
-    ['AL PROPIETARIO',fmtE(totOwner),245,158,11],
+    ['COMISIÓN DEIROS',fmtE(totComm),106,13,173],
+    ['AL PROPIETARIO',fmtE(totOwner),106,13,173],
   ]);
   y+=6;
-  const addPage=()=>{doc.addPage();_pdfHeader(doc,W,margin,cW,o.name,null,'LIQUIDACIÓN · '+mLabel.toUpperCase()+' (cont.)',new Date().toLocaleDateString('es-ES'));return 50;};
+  const addPage=()=>{doc.addPage();return _pdfHeader(doc,W,margin,cW,o.name,null,'LIQUIDACIÓN · '+mLabel.toUpperCase()+' (cont.)',new Date().toLocaleDateString('es-ES'));};
   vData.forEach(d=>{
     if(y>240){y=addPage();}
-    doc.setDrawColor(124,58,237);doc.setLineWidth(0.4);doc.line(margin,y,margin+cW,y);
+    doc.setDrawColor(106,13,173);doc.setLineWidth(0.4);doc.line(margin,y,margin+cW,y);
     doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(40,40,60);
     doc.text(d.v.name,margin,y+5);
     doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(120,120,140);
     const vKmStr=d.v.km?Number(d.v.km).toLocaleString('es-ES')+' km':'—';
     doc.text(d.v.plate+(d.v.model?' · '+d.v.model:'')+' · Km: '+vKmStr,margin,y+10);
-    doc.setFontSize(7.5);doc.setTextColor(124,58,237);
+    doc.setFontSize(7.5);doc.setTextColor(106,13,173);
     doc.text('Comisión '+d.comm+'%',margin+cW-3,y+7,{align:'right'});
     y+=14;
     const bW=(cW-6)/4;
-    [['Ingresos',fmtE(d.tI),16,185,129],['Gastos',fmtE(d.tE),239,68,68],['Beneficio',fmtE(d.tP),d.tP>=0?16:239,d.tP>=0?185:68,d.tP>=0?129:68],['Al propietario',fmtE(d.toOwner),245,158,11]].forEach(([l,val,r,g,b],i)=>{
+    [['Ingresos',fmtE(d.tI),16,185,129],['Gastos',fmtE(d.tE),239,68,68],['Beneficio',fmtE(d.tP),d.tP>=0?16:239,d.tP>=0?185:68,d.tP>=0?129:68],['Al propietario',fmtE(d.toOwner),106,13,173]].forEach(([l,val,r,g,b],i)=>{
       const bx=margin+i*(bW+2);
       doc.setDrawColor(r,g||0,b||0);doc.setLineWidth(0.35);doc.roundedRect(bx,y,bW,11,1,1,'S');
       doc.setFontSize(8.5);doc.setFont(undefined,'bold');doc.setTextColor(r,g||0,b||0);doc.text(val,bx+bW/2,y+5.5,{align:'center'});
@@ -8664,11 +8663,11 @@ function dlOwnerReport(ownerId,month){
   });
   if(y>260){y=addPage();}
   y+=4;
-  doc.setDrawColor(245,158,11);doc.setLineWidth(1);doc.line(margin,y,margin+cW,y);
+  doc.setDrawColor(106,13,173);doc.setLineWidth(1);doc.line(margin,y,margin+cW,y);
   doc.setFontSize(10);doc.setFont(undefined,'bold');doc.setTextColor(50,50,60);
   doc.text('TOTAL A PAGAR A '+o.name.toUpperCase(),margin,y+7);
-  doc.setFontSize(14);doc.setTextColor(245,158,11);doc.text(fmtE(totOwner),margin+cW,y+7,{align:'right'});
-  doc.setDrawColor(245,158,11);doc.setLineWidth(0.5);doc.line(margin,y+10,margin+cW,y+10);
+  doc.setFontSize(14);doc.setTextColor(106,13,173);doc.text(fmtE(totOwner),margin+cW,y+7,{align:'right'});
+  doc.setDrawColor(106,13,173);doc.setLineWidth(0.5);doc.line(margin,y+10,margin+cW,y+10);
   // Liquidación ya registrada como pagada: se muestra junto al cálculo actual (no se recalcula ni se modifica)
   const _liq=(o.liquidaciones||[]).find(l=>l.month===month&&l.paid);
   if(_liq){
@@ -8677,7 +8676,7 @@ function dlOwnerReport(ownerId,month){
     doc.text('Liquidación registrada como pagada'+(_liq.paidAt?' el '+new Date(_liq.paidAt).toLocaleDateString('es-ES'):'')+': '+fmtE(_liq.amount)+(Math.abs(_dif)>=0.01?'. El cálculo actual difiere en '+fmtE(_dif)+' (por movimientos posteriores al pago o por el cambio de la regla de comisión).':'.'),margin,y+16,{maxWidth:cW});
     y+=10;
   }
-  _pdfFooter(doc,W,Math.min(y+18,282));
+  _pdfBrand(doc,'LIQUIDACIÓN MENSUAL',[o.name,mLabel]);
   _pdfDownload(doc,filename);
 }
 
@@ -10180,24 +10179,20 @@ function _pdfSetup(){
 }
 // Draw logo + header bar on page
 function _pdfHeader(doc,W,margin,cW,titleLine1,titleLine2,subtitleLine,dateStr){
-  const y=margin;
-  // Top border accent line (purple, thin)
-  doc.setDrawColor(124,58,237);doc.setLineWidth(0.8);doc.line(margin,y,margin+cW,y);
-  // Logo (right side, square)
-  try{doc.addImage(PDF_LOGO_B64,'PNG',margin+cW-22,y+3,22,22);}catch(e){}
-  // Title block (left side — leave space for logo on right)
-  doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(10,10,10);
-  doc.text(titleLine1,margin,y+11);
+  // Bloque de título bajo la cabecera común (la cabecera con logo la pinta _pdfBrand)
+  let y=PDFS.TOP+2;
+  doc.setFontSize(15);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.T);
+  doc.text(titleLine1,margin,y);
   if(titleLine2){
-    doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);
-    doc.text(titleLine2,margin,y+17);
+    doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
+    y+=6;doc.text(titleLine2,margin,y);
   }
   // Subtitle bar
-  doc.setFillColor(245,245,248);doc.roundedRect(margin,y+22,cW,8,1,1,'F');
-  doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);
-  doc.text(subtitleLine,margin+3,y+27.5);
-  doc.text(dateStr,margin+cW-3,y+27.5,{align:'right'});
-  return y+35; // return new y
+  doc.setFillColor(244,238,250);doc.roundedRect(margin,y+4,cW,8,1,1,'F');
+  doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
+  doc.text(subtitleLine,margin+3,y+9.5);
+  doc.text(dateStr,margin+cW-3,y+9.5,{align:'right'});
+  return y+17; // return new y
 }
 // Draw a KPI row (3 boxes, outline only)
 function _pdfKpiRow(doc,W,margin,cW,y,items){
@@ -10227,10 +10222,7 @@ function _pdfTableRows(doc,margin,cW,y,rows,amtColor,maxY,addPageFn){
     doc.setFontSize(8);doc.setFont(undefined,'italic');doc.setTextColor(160,160,180);
     doc.text('Sin registros',margin+3,y+5);return y+10;
   }
-  doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(140,140,160);
-  doc.text('FECHA',margin+3,y+4);doc.text('CONCEPTO',margin+24,y+4);doc.text('IMPORTE',margin+cW-3,y+4,{align:'right'});
-  doc.setDrawColor(210,210,225);doc.setLineWidth(0.25);doc.line(margin,y+5.5,margin+cW,y+5.5);
-  y+=8;
+  y=_pdfTh(doc,y,[['FECHA',margin+3],['CONCEPTO',margin+24],['IMPORTE',margin+cW-3,'right']])+1;
   rows.forEach(e=>{
     if(y>maxY){y=addPageFn();}
     doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);
@@ -10307,12 +10299,6 @@ function _pdfSign(doc,y,L,R){
   });
   return y+36;
 }
-// Footer
-function _pdfFooter(doc,W,y){
-  doc.setDrawColor(200,200,210);doc.setLineWidth(0.2);doc.line(16,y,W-16,y);
-  doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(170,170,185);
-  doc.text('DEIROS Alquileres · Generado el '+new Date().toLocaleDateString('es-ES'),W/2,y+4,{align:'center'});
-}
 function _pdfDownload(doc,filename){
   try{const blob=doc.output('blob');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);}
   catch(e){const a=document.createElement('a');a.href=doc.output('datauristring');a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),2000);}
@@ -10352,22 +10338,22 @@ function dlReport(vId,month){
     ['BENEFICIO',fmtE(tP),tP>=0?16:239,tP>=0?185:68,tP>=0?129:68],
   ]);
   y+=4;
-  const addPage=()=>{doc.addPage();let ny=16;_pdfHeader(doc,W,margin,cW,v.name,null,'INFORME MENSUAL · '+mLabel.toUpperCase()+' (cont.)',new Date().toLocaleDateString('es-ES'));return 50;};
+  const addPage=()=>{doc.addPage();return _pdfHeader(doc,W,margin,cW,v.name,null,'INFORME MENSUAL · '+mLabel.toUpperCase()+' (cont.)',new Date().toLocaleDateString('es-ES'));};
   // Ingresos
   y=_pdfSection(doc,margin,cW,y,'INGRESOS  ('+incRows.length+')',16,185,129);
   y=_pdfTableRows(doc,margin,cW,y,incRows,[16,185,129],265,addPage);
   y=_pdfTotal(doc,margin,cW,y,'Total ingresos',fmtE(tI),16,185,129);
-  if(y>252){doc.addPage();y=18;}else y+=4;
+  if(y>252){doc.addPage();y=PDFS.TOP;}else y+=4;
   // Gastos
   y=_pdfSection(doc,margin,cW,y,'GASTOS  ('+expRows.length+')',239,68,68);
   y=_pdfTableRows(doc,margin,cW,y,expRows,[239,68,68],265,addPage);
   y=_pdfTotal(doc,margin,cW,y,'Total gastos',fmtE(tE),239,68,68);
   // Comisión (managed only)
   if(isM){
-    if(y>240){doc.addPage();y=18;}else y+=6;
-    y=_pdfSection(doc,margin,cW,y,'LIQUIDACIÓN COMISIÓN ('+comm+'%)',124,58,237);
+    if(y>240){doc.addPage();y=PDFS.TOP;}else y+=6;
+    y=_pdfSection(doc,margin,cW,y,'LIQUIDACIÓN COMISIÓN ('+comm+'%)',106,13,173);
     [['Beneficio neto',fmtE(tP),tP>=0?[16,185,129]:[239,68,68]],
-     ['Comisión DEIROS ('+comm+'% de '+fmtE(tI)+' facturado)',fmtE(commAmt),[124,58,237]],
+     ['Comisión DEIROS ('+comm+'% de '+fmtE(tI)+' facturado)',fmtE(commAmt),[106,13,173]],
      ['Queda para el propietario',fmtE(toOwnerM),toOwnerM>=0?[16,185,129]:[239,68,68]]
     ].forEach(([l,val,col])=>{
       doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);doc.text(l,margin+3,y+5);
@@ -10387,16 +10373,16 @@ function dlReport(vId,month){
     const mthsActive=new Set(allFins.map(e=>e.date.slice(0,7))).size||1;
     const monthlyAvg=allP/mthsActive;
     const mthsToBreak=monthlyAvg>0?Math.ceil(remaining/monthlyAvg):null;
-    const roiClr=roi>=100?[16,185,129]:roi>=50?[245,158,11]:[239,68,68];
-    if(y>235){doc.addPage();y=18;}else y+=6;
-    y=_pdfSection(doc,margin,cW,y,'RETORNO DE LA INVERSIÓN (ROI)',245,158,11);
+    const roiClr=roi>=100?[16,185,129]:roi>=50?[180,83,9]:[239,68,68];
+    if(y>235){doc.addPage();y=PDFS.TOP;}else y+=6;
+    y=_pdfSection(doc,margin,cW,y,'RETORNO DE LA INVERSIÓN (ROI)',180,83,9);
     const roiItems=[
       ['Precio de compra',fmtE(pp),[80,80,100]],
       ['Beneficio acumulado (histórico)',fmtE(allP),allP>=0?[16,185,129]:[239,68,68]],
       ['ROI real acumulado',roi.toFixed(1)+'%',roiClr],
-      ['Pendiente de recuperar',fmtE(Math.max(0,remaining)),remaining>0?[245,158,11]:[16,185,129]],
+      ['Pendiente de recuperar',fmtE(Math.max(0,remaining)),remaining>0?[180,83,9]:[16,185,129]],
       ['Promedio mensual',fmtE(monthlyAvg),[59,130,246]],
-      ['Meses estimados para break-even',allP>=pp?'Ya recuperado':(mthsToBreak?mthsToBreak+' meses':'No estimable'),allP>=pp?[16,185,129]:(mthsToBreak?[245,158,11]:[100,100,110])],
+      ['Meses estimados para break-even',allP>=pp?'Ya recuperado':(mthsToBreak?mthsToBreak+' meses':'No estimable'),allP>=pp?[16,185,129]:(mthsToBreak?[180,83,9]:[100,100,110])],
     ];
     roiItems.forEach(([l,val,col])=>{
       doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);doc.text(l,margin+3,y+5);
@@ -10411,7 +10397,7 @@ function dlReport(vId,month){
     doc.text('0%',margin,y+9.5);doc.text('Break-even 100%',margin+cW,y+9.5,{align:'right'});
     y+=14;
   }
-  _pdfFooter(doc,W,Math.min(y+8,280));
+  _pdfBrand(doc,'INFORME DE VEHÍCULO',[v.name+' · '+v.plate,mLabel]);
   _pdfDownload(doc,filename);
 }
 
