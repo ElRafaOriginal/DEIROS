@@ -266,10 +266,10 @@ select option{background:var(--bg);}
 .plat-opt{border-radius:10px;border:2px solid var(--border2);padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.2s;}
 .plat-opt.sel{border-color:var(--amber);background:var(--acc-s);}
 .plat-amovens{background:#FB7AAC20;color:#F9A8D4;border:1px solid #FB7AAC40;}
-.plat-getaround{background:#8B5CF620;color:#C4B5FD;border:1px solid #8B5CF640;}
-.plat-sinapp{background:#8B5CF620;color:#C4B5FD;border:1px solid #8B5CF640;}
+.plat-getaround{background:rgba(139,31,212,.25);color:#FFFFFF;border:1px solid rgba(139,31,212,.5);}
+.plat-sinapp{background:#10B98120;color:var(--green);border:1px solid #10B98140;}
 :root.light .plat-amovens{color:#BE185D;}
-:root.light .plat-getaround,:root.light .plat-sinapp{color:#6D28D9;}
+:root.light .plat-getaround{background:rgba(106,13,173,.08);color:#6A0DAD;border-color:rgba(106,13,173,.3);}
 .pb{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:0.3px;white-space:nowrap;}
 /* BOOKING */
 .bcard{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
@@ -583,7 +583,7 @@ select option{background:var(--bg);}
 <script>
 window.onerror=function(msg,src,line,col,err){
   var ls=document.getElementById('loadingScreen');
-  if(ls)ls.innerHTML='<div style="text-align:center;padding:24px;max-width:380px;font-family:monospace"><div style="font-size:36px;margin-bottom:12px">🔴</div><div style="font-size:13px;font-weight:bold;color:#EF4444;margin-bottom:10px">ERROR JS</div><div style="font-size:11px;color:#F0F4FF;word-break:break-all;background:#1a1a2e;padding:12px;border-radius:8px;text-align:left"><b>Msg:</b> '+String(msg==null?'':msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<br><b>Line:</b> '+String(line==null?'':line).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br>'+(err?'<b>Stack:</b><br>'+String(err.stack||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button onclick="location.reload()" style="margin-top:12px;background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer">🔄 Recargar</button></div>';
+  if(ls)ls.innerHTML='<div style="text-align:center;padding:24px;max-width:380px;font-family:monospace"><div style="font-size:36px;margin-bottom:12px">🔴</div><div style="font-size:13px;font-weight:bold;color:#EF4444;margin-bottom:10px">ERROR JS</div><div style="font-size:11px;color:#F0F4FF;word-break:break-all;background:#1a1a2e;padding:12px;border-radius:8px;text-align:left"><b>Msg:</b> '+String(msg==null?'':msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<br><b>Line:</b> '+String(line==null?'':line).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br>'+(err?'<b>Stack:</b><br>'+String(err.stack||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button onclick="location.reload()" style="margin-top:12px;background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer">🔄 Recargar</button></div>';
   return false;
 };
 window.addEventListener('unhandledrejection',function(e){window.onerror('Promise rejection: '+(e.reason&&e.reason.message||e.reason),'',0,0,e.reason);});
@@ -1112,7 +1112,7 @@ function renderAnalytics(el){
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);min-width:16px">#${i+1}</span>
             <span style="font-size:14px;font-weight:700">${esc(m.v.name)}</span>
-            <span style="font-family:var(--mono);font-size:10px;color:${safeColor(m.v.color)};background:${safeColor(m.v.color)}22;padding:2px 7px;border-radius:20px">${esc(m.v.plate)}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:${plateColor(m.v.color)};background:${safeColor(m.v.color)}22;padding:2px 7px;border-radius:20px">${esc(m.v.plate)}</span>
           </div>
           <span style="font-family:var(--mono);font-size:15px;font-weight:800;color:var(--green)">${fmt(m.rpdInc)}/día</span>
         </div>
@@ -4572,7 +4572,7 @@ function _showLoadError(){
     +'<div style="font-size:16px;font-weight:800;color:var(--amber);margin-bottom:10px">DEIROS</div>'
     +'<div style="font-size:15px;font-weight:800;margin-bottom:8px">No se han podido cargar los datos</div>'
     +'<div style="font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:16px">No se entra en la aplicación, para no guardar un estado vacío encima de los datos reales.</div>'
-    +'<button onclick="location.reload()" style="background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer">Reintentar</button>'
+    +'<button onclick="location.reload()" style="background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer">Reintentar</button>'
     +'</div>';
 }
 
@@ -4605,7 +4605,7 @@ function _showCloudConflict(){
   d.innerHTML='<div style="background:var(--bg2,#1a1a2e);color:var(--text,#F0F4FF);border:1px solid var(--border,#334);border-radius:14px;padding:22px;max-width:400px;width:100%">'
     +'<div style="font-size:17px;font-weight:800;margin-bottom:10px">Hay cambios hechos desde otro dispositivo</div>'
     +'<div style="font-size:13px;line-height:1.55;margin-bottom:18px">Hay cambios hechos desde otro dispositivo. Recarga para no perderlos. Los cambios de esta pantalla no se han subido.</div>'
-    +'<button id="cfReload" style="width:100%;background:#8B5CF6;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px">Recargar</button>'
+    +'<button id="cfReload" style="width:100%;background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px">Recargar</button>'
     +'<button id="cfDownload" style="width:100%;background:transparent;color:inherit;border:1px solid var(--border2,#64748b);border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">Descargar copia de mis cambios locales</button>'
     +'</div>';
   document.body.appendChild(d);
@@ -4824,6 +4824,8 @@ function safeColor(c){
   if(/^var\(--[a-zA-Z0-9_-]+\)$/.test(s))return s;
   return '#6B7280';
 }
+// Texto de matrícula: los colores guardados (propio / gestión) se pintan con un tono legible en cada modo
+function plateColor(c){const s=safeColor(c).toUpperCase();return s===COLOR_OWN?'var(--c-own)':s===COLOR_MAN?'var(--c-man)':safeColor(c);}
 function safeDate(s){
   const t=String(s==null?'':s).trim();
   const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
@@ -5482,18 +5484,18 @@ function vcardH(v){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
       <div>
         <div style="font-size:22px;font-weight:800">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
         ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
         <div style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;background:var(--bg4);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text3)">${vtypeLabel(v.vehicle_type||'turismo')}</div>
       </div>
-      <span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;${isM?'background:#8B5CF620;color:#8B5CF6;border:1px solid #8B5CF640':'background:var(--acc-s);color:var(--amber);border:1px solid var(--acc-b)'}">${isM?'EN GESTIÓN':'PROPIO'}</span>
+      <span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;${isM?'background:#8B5CF620;color:var(--purple);border:1px solid #8B5CF640':'background:var(--acc-s);color:var(--amber);border:1px solid var(--acc-b)'}">${isM?'EN GESTIÓN':'PROPIO'}</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
       <div style="background:#0a0f1a80;border-radius:8px;padding:10px 8px"><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">INGRESOS</div></div>
       <div style="background:#0a0f1a80;border-radius:8px;padding:10px 8px"><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--red)">${fmt(vE)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">GASTOS</div></div>
       <div style="background:#0a0f1a80;border-radius:8px;padding:10px 8px"><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--amber)">${vD}d</div><div style="font-size:9px;color:var(--text3);margin-top:2px">DÍAS</div></div>
     </div>
-    ${isM?`<div style="margin-top:10px;background:#8B5CF610;border:1px solid #8B5CF630;border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;color:#8B5CF6;font-weight:700">COMISIÓN DEIROS (${comm}%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${share>=0?'var(--green)':'var(--red)'}">${fmtF(share)}</span></div>`:''}
+    ${isM?`<div style="margin-top:10px;background:#8B5CF610;border:1px solid #8B5CF630;border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;color:var(--purple);font-weight:700">COMISIÓN DEIROS (${comm}%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${share>=0?'var(--green)':'var(--red)'}">${fmtF(share)}</span></div>`:''}
     <div class="pb-bg" style="display:flex;height:5px;border-radius:2px;overflow:hidden;margin-top:12px">
       <div style="width:${Number(iPct)}%;background:var(--green);border-radius:2px 0 0 2px;transition:width 0.4s"></div>
       <div style="width:${Number(ePct)}%;background:var(--red);border-radius:0 2px 2px 0;transition:width 0.4s"></div>
@@ -5561,7 +5563,7 @@ function renderListBody(){
         const isM=v.vtype==='managed';
         h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${safeColor(v.color)}0d;border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
           <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
           ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
           <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
             <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
@@ -5579,7 +5581,7 @@ function renderListBody(){
           const isM=v.vtype==='managed';
           h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${safeColor(v.color)}0d;border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
             <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
             ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
             <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
               <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
@@ -6619,7 +6621,7 @@ function openNewRentalPicker(){
       <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
       </div>
       <div>${statusTxt}</div>
       <div style="color:var(--text3);font-size:18px">›</div>
@@ -8291,7 +8293,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
           <div style="font-size:15px;font-weight:800">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
           ${v.km?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📍 ${Number(v.km).toLocaleString('es-ES')} km</div>`:''}
         </div>
         <span style="font-size:10px;font-weight:700;padding:3px 8px;background:#8B5CF620;color:var(--purple);border-radius:20px">Com. ${comm}%</span>
@@ -8383,7 +8385,7 @@ function renderOwnerProfile(el){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;cursor:pointer" onclick="openV('${escJs(d.v.id)}')">
       <div>
         <div style="font-size:18px;font-weight:800">${esc(d.v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${safeColor(d.v.color)};margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${plateColor(d.v.color)};margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
         ${d.v.km?`<div style="font-size:11px;color:var(--text3);margin-top:2px">📍 ${Number(d.v.km).toLocaleString('es-ES')} km</div>`:''}
       </div>
       <span style="font-size:11px;font-weight:700;padding:4px 10px;background:#8B5CF620;color:var(--purple);border-radius:20px">Com. ${d.comm}%</span>
@@ -8797,7 +8799,7 @@ function renderAgendaMobile(res,activeV){
     const D1=['D','L','M','X','J','V','S'];
     h+=`<table style="width:100%;border-collapse:collapse;table-layout:fixed"><thead><tr><th style="width:34%;text-align:left;font-size:10px;color:var(--text3);padding:2px 4px">VEHÍCULO</th>${Array.from({length:7},(_,i)=>{const k=addDays(st0,i);const isT=k===hoy;return `<th style="text-align:center;font-size:10px;padding:2px 0;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}">${D1[new Date(k+'T12:00:00').getDay()]}<br>${Number(k.slice(8))}</th>`;}).join('')}</tr></thead><tbody>`;
     activeV.forEach(v=>{
-      h+=`<tr><td style="padding:4px;border-bottom:1px solid var(--border);vertical-align:middle"><div style="font-size:12px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:10px;color:${safeColor(v.color)}">${esc(v.plate)}</div></td>`;
+      h+=`<tr><td style="padding:4px;border-bottom:1px solid var(--border);vertical-align:middle"><div style="font-size:12px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:10px;color:${plateColor(v.color)}">${esc(v.plate)}</div></td>`;
       for(let i=0;i<7;i++){
         const k=addDays(st0,i),st=dayStatus(v,k),c=COL[st];
         let bid='';if(st==='rented'){const b=bookingForDay(v,k);if(b)bid=b.id;}
@@ -8831,7 +8833,7 @@ function renderAgendaMobile(res,activeV){
       }else if(st==='maintenance'){color='#3B82F6';title='Mantenimiento';}
       else{color='#EF4444';title='Bloqueado';}
       cards+=`<div class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')" style="padding:10px 12px;margin-bottom:6px;background:var(--bg2);border:1px solid var(--border);border-left:5px solid ${color};border-radius:10px;min-height:44px;cursor:pointer">
-        <div style="font-size:14px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)} <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:${safeColor(v.color)}">${esc(v.plate)}</span></div>
+        <div style="font-size:14px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)} <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:${plateColor(v.color)}">${esc(v.plate)}</span></div>
         <div style="font-size:12px;color:var(--text2);margin-top:2px;word-break:break-word"><strong style="color:${color}">${title}</strong>${sub?' · '+sub:''}</div>
       </div>`;
     });
@@ -8871,7 +8873,7 @@ function renderAgendaBody(){
     ${activeV.map(v=>`<tr onclick="openV('${escJs(v.id)}')" style="cursor:pointer">
       <td style="padding:3px 6px;position:sticky;left:0;background:var(--bg2);z-index:1;border-bottom:1px solid var(--border)">
         <div style="font-size:11px;font-weight:700;word-break:break-word;max-width:140px">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:9px;color:${safeColor(v.color)}">${esc(v.plate)}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:${plateColor(v.color)}">${esc(v.plate)}</div>
       </td>
       ${days.map(d=>{
         const key=agY+'-'+String(agM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
@@ -8958,7 +8960,7 @@ function renderRentals(el){
   const upcoming=all.filter(b=>b.startDate>hoy&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
-  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-purple" style="background:${safeColor(p.col)}20;color:${safeColor(p.col)};border-color:${safeColor(p.col)}50">${esc(p.label)}</span>`:'';};
+  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip plat-${esc(b.platform)}">${esc(p.label)}</span>`:'';};
 
   const statusChip=b=>{
     const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
@@ -8976,7 +8978,7 @@ function renderRentals(el){
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
             <span style="font-weight:800;font-size:14px">${esc(v.name)}</span>
-            <span style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)}">${esc(v.plate)}</span>
+            <span style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}</span>
             ${platBadge(b)}
           </div>
           <div style="font-size:12px;color:var(--text2);font-weight:600">${esc(b.clientName||'Sin cliente')}</div>
@@ -9166,7 +9168,7 @@ function _renderWizardStep(){
         <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
         <div style="flex:1;min-width:0">
           <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${safeColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
         </div>
         <div>${statusTxt}</div>
         <div style="color:var(--text3);font-size:18px">›</div>
@@ -10078,9 +10080,9 @@ function genReport(vId){
     <div style="padding:16px">
       <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid ${safeColor(v.color)}44">
         <div style="font-size:20px;font-weight:800">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${safeColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
         ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:4px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
-        <div style="margin-top:8px"><span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;${isM?'background:#8B5CF620;color:#8B5CF6;border:1px solid #8B5CF640':'background:var(--acc-s);color:var(--amber);border:1px solid var(--acc-b)'}">${isM?'EN GESTIÓN':'PROPIO'}</span></div>
+        <div style="margin-top:8px"><span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;${isM?'background:#8B5CF620;color:var(--purple);border:1px solid #8B5CF640':'background:var(--acc-s);color:var(--amber);border:1px solid var(--acc-b)'}">${isM?'EN GESTIÓN':'PROPIO'}</span></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
         <div style="background:var(--bg3);border-radius:10px;padding:12px 8px;text-align:center;border-top:2px solid var(--green)"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmtE(tI)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">INGRESOS</div></div>
