@@ -1438,28 +1438,12 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   // Formato moneda
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
 
-  // Normalizar texto para jsPDF: helvetica solo soporta ASCII + Latin-1 básico.
-  // Esta función convierte tildes/acentos a su equivalente sin tilde y elimina emojis
-  // y símbolos Unicode que renderizan como caracteres corruptos (cid:0).
+  // Normalizar texto para jsPDF: Helvetica cubre Latin-1 (tildes, ñ) y €.
+  // Solo se eliminan emojis y símbolos fuera de Latin-1 que se corrompen (cid:0).
   const _s=s=>{
     if(s===null||s===undefined)return '';
-    const m={
-      'á':'a','à':'a','â':'a','ä':'a','ã':'a',
-      'é':'e','è':'e','ê':'e','ë':'e',
-      'í':'i','ì':'i','î':'i','ï':'i',
-      'ó':'o','ò':'o','ô':'o','ö':'o','õ':'o',
-      'ú':'u','ù':'u','û':'u','ü':'u',
-      'ñ':'n','ç':'c',
-      'Á':'A','À':'A','Â':'A','Ä':'A','Ã':'A',
-      'É':'E','È':'E','Ê':'E','Ë':'E',
-      'Í':'I','Ì':'I','Î':'I','Ï':'I',
-      'Ó':'O','Ò':'O','Ô':'O','Ö':'O','Õ':'O',
-      'Ú':'U','Ù':'U','Û':'U','Ü':'U',
-      'Ñ':'N','Ç':'C',
-      '·':' -','×':'x','–':'-','—':'-','Ø':'O',
-    };
-    // Mantener € (U+20AC), reemplazar chars mapeados, eliminar el resto no-ASCII
-    return String(s).replace(/[^\x20-\x7E€]/g,c=>m[c]??'');
+    const m={'×':'x','–':'-','—':'-','Ø':'O'};
+    return String(s).replace(/[^\x20-\x7E -ÿ€]/g,c=>m[c]??'');
   };
   // Interceptor: aplica _s() automáticamente a todo doc.text()
   const _dt=doc.text.bind(doc);
@@ -1737,13 +1721,13 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...DAMBER);
     doc.text('ACTIVIDAD vs BENEFICIO DEL NEGOCIO',mg+8,y+6);
     doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('Los vehículos en gestion generan ingresos brutos. El beneficio real del negocio incluye solo la comision pactada.',mg+8,y+11);
+    doc.text('Los vehículos en gestión generan facturación. El beneficio real del negocio incluye solo la comisión sobre lo facturado.',mg+8,y+11);
     // 3 columnas
     const colW=(cW-8)/3;
     const cols=[
       ['PROPIOS ('+_ownMs.length+' veh.)','Beneficio 100%',fE(_ownProfit),_ownProfit>=0?GREEN:RED],
-      ['GESTION ('+_mgdMs.length+' veh.)','Comision de '+fE(_mgdProfit)+' bruto',fE(_mgdShare),[103,58,183]],
-      ['BFO. REAL DEL NEGOCIO','propios + comision gestion',fE(bizTotProfit),bizTotProfit>=0?GREEN:RED],
+      ['GESTIÓN ('+_mgdMs.length+' veh.)','Comisión sobre la facturación',fE(_mgdShare),[103,58,183]],
+      ['BFO. REAL DEL NEGOCIO','propios + comisión gestión',fE(bizTotProfit),bizTotProfit>=0?GREEN:RED],
     ];
     cols.forEach(([lbl,sub,val,col],ci)=>{
       const cx=mg+8+ci*colW;
@@ -3221,8 +3205,8 @@ function openContractForm(vId,bookingId){
   <div id="ctSumV" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;font-size:13px;line-height:1.7"></div>
   <div id="ctFldV" style="display:none">
   <div class="r2">
-    <div class="fg"><label class="lbl">MARCA</label><input id="ctVMake" value="${esc(v.make||(v.model&&v.model.includes(' ')?v.model.split(' ')[0]:''))}" placeholder="Ej: Renault" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">MODELO</label><input id="ctVModel" value="${esc(v.make?(v.model||v.name):(v.model&&v.model.includes(' ')?v.model.split(' ').slice(1).join(' '):v.model||v.name))}" placeholder="Ej: Clio" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">MARCA</label><input id="ctVMake" value="${esc(v.make||'')}" placeholder="Ej: Renault" autocomplete="off"/></div>
+    <div class="fg"><label class="lbl">MODELO</label><input id="ctVModel" value="${esc(v.make?(v.model||v.name):(v.model||v.name||''))}" placeholder="Ej: Clio" autocomplete="off"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">MATRÍCULA</label><input id="ctVPlate" value="${esc(v.plate)}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
@@ -3591,9 +3575,7 @@ function generateReceiptPDF(bookingId){
 
   const fmtM=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const fmtDate=d=>{if(!d)return '—';const[yr,mo,dd]=d.split('-');return dd+'/'+mo+'/'+yr;};
-  const _vMake=v.make||(v.model&&v.model.includes(' ')?v.model.split(' ')[0]:'');
-  const _vModel=v.make?v.model:(v.model&&v.model.includes(' ')?v.model.split(' ').slice(1).join(' '):v.model||'');
-  const _vDesc=(_vMake+' '+_vModel).trim()||v.name||'—';
+  const _vDesc=v.make?((v.make+' '+(v.model||'')).trim()||v.name||'—'):(v.name||v.model||'—');
 
   // ── Cálculos ──────────────────────────────────────────────────────────────
   const _isCanc=!!b.cancelled;
@@ -3605,7 +3587,7 @@ function generateReceiptPDF(bookingId){
   const totTotal=totAlq+fianza;
   const abono=Number(b.abonoReserva||0);
   const dur=daysBetween(b.startDate,b.endDate);
-  const receiptNum='REC-'+new Date().getFullYear()+'-'+b.id.slice(-6).toUpperCase();
+  const receiptNum='REC-'+new Date().getFullYear()+'-'+((b.id||'').replace(/[^A-Za-z0-9]/g,'').slice(-6).toUpperCase()||'000000');
   const alqPagado=Math.min(abono,totAlq);
   const alqPendiente=Math.max(0,totAlq-alqPagado);
   const fianzaPagada=fianza>0?(_fzCerrada?fianza:Math.max(0,Math.min(abono-alqPagado,fianza))):0;
@@ -3769,15 +3751,20 @@ function generateReceiptPDF(bookingId){
   // Cobros de devolución (exceso de km / combustible faltante)
   const _pdfReturnCharges=(b.finance||[]).filter(f=>f._returnCharge&&f.type==='income').map(f=>({label:f.concept,amount:f.amount}));
   const _pdfExtras=_isCanc?[]:_pdfExtrasBase.concat(_pdfReturnCharges); // cancelado: sin extras
+  const _pdfExts=_isCanc?[]:(b.finance||[]).filter(f=>f.type==='income'&&f.concept&&f.concept.startsWith('Ampliaci'));
+  const _extDays=_pdfExts.reduce((s,ex)=>{const m=/(\d{4}-\d{2}-\d{2})\s*[→\-]\s*(\d{4}-\d{2}-\d{2})/.exec(ex.concept||'');return s+(m?daysBetween(m[1],m[2]):0);},0);
+  const durBase=Math.max(1,dur-_extDays);
 
   const _hasExtras=_pdfExtras.length>0;
+  const _hasExt=_pdfExts.length>0;
+  const _hasLines=_hasExtras||_hasExt;
 
   // ── Fila base alquiler ───────────────────────────────────────────────────
   doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...DARK);
-  doc.text(_isCanc?'Penalización por cancelación'+(b.cancellation&&b.cancellation.by!=='client'&&totAlq!==0?' (a favor del cliente)':''):'Base alquiler ('+dur+' día'+(dur!==1?'s':'')+')',c1,y);
+  doc.text(_isCanc?'Penalización por cancelación'+(b.cancellation&&b.cancellation.by!=='client'&&totAlq!==0?' (a favor del cliente)':''):'Base alquiler ('+durBase+' día'+(durBase!==1?'s':'')+')',c1,y);
   doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
   doc.text(fmtM(_isCanc?totAlq:b.amount),c2,y);
-  if(!_hasExtras){
+  if(!_hasLines){
     // Sin extras: mostrar estado de pago directamente en esta fila
     doc.setTextColor(...(alqPendiente===0?[22,163,74]:DARK));
     doc.text(fmtM(alqPagado)+(alqPendiente===0?' (ok)':''),c3,y);
@@ -3788,6 +3775,21 @@ function generateReceiptPDF(bookingId){
   }
   doc.setDrawColor(...LINEC);doc.setLineWidth(0.15);doc.line(mg,y+2,mg+cW,y+2);
   y+=8.5;
+
+  // ── Filas ampliación ────────────────────────────────────────────────────
+  if(_hasExt){
+    _pdfExts.forEach(ex=>{
+      const m=/(\d{4}-\d{2}-\d{2})\s*[→\-]\s*(\d{4}-\d{2}-\d{2})/.exec(ex.concept||'');
+      const d=m?daysBetween(m[1],m[2]):0;
+      doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...DARK);
+      doc.text('Ampliación'+(d?' ('+d+' día'+(d!==1?'s':'')+')':''),c1,y);
+      doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
+      doc.text(fmtM(Number(ex.amount||0)),c2,y);
+      doc.setTextColor(...GRAY);doc.text('—',c3,y);doc.text('—',c4,y,{align:'right'});
+      doc.setDrawColor(...LINEC);doc.setLineWidth(0.1);doc.line(mg,y+2,mg+cW,y+2);
+      y+=8;
+    });
+  }
 
   // ── Filas extras ─────────────────────────────────────────────────────────
   if(_hasExtras){
@@ -3800,7 +3802,9 @@ function generateReceiptPDF(bookingId){
       doc.setDrawColor(...LINEC);doc.setLineWidth(0.1);doc.line(mg,y+2,mg+cW,y+2);
       y+=8;
     });
-    // Subtotal alquiler con estado de pago
+  }
+  if(_hasLines){
+    // Subtotal alquiler con estado de pago (tras base + ampliación + extras)
     doc.setFillColor(248,246,255);doc.rect(mg,y,cW,9,'F');
     doc.setFontSize(8);doc.setFont('helvetica','bold');
     doc.setTextColor(...GRAY);doc.text('Subtotal alquiler',c1,y+6);
@@ -3934,10 +3938,8 @@ function generateExtensionPDF(){
   const fmtDate=s=>{if(!s)return'—';const[yr,mo,dd]=s.split('-');return dd+'/'+mo+'/'+yr;};
   const arNombre=co.nombre||'DEIROS Fleet';
   const arNif=co.nif||'';
-  const _vMake=_bv.make||(_bv.model&&_bv.model.includes(' ')?_bv.model.split(' ')[0]:'');
-  const _vModel=_bv.make?_bv.model:(_bv.model&&_bv.model.includes(' ')?_bv.model.split(' ').slice(1).join(' '):_bv.model||'');
-  const _vDesc=(_vMake+' '+_vModel).trim()||_bv.name||'—';
-  const annexNum='ANEX-'+new Date().getFullYear()+'-'+d.bookingId.slice(-6).toUpperCase();
+  const _vDesc=_bv.make?((_bv.make+' '+(_bv.model||'')).trim()||_bv.name||'—'):(_bv.name||_bv.model||'—');
+  const annexNum='ANEX-'+new Date().getFullYear()+'-'+((d.bookingId||'').replace(/[^A-Za-z0-9]/g,'').slice(-6).toUpperCase()||'000000');
   const durOrig=daysBetween(_bb.startDate,d.origEnd);
   const durNew=daysBetween(_bb.startDate,d.newEnd);
   const durExt=daysBetween(d.origEnd,d.newEnd);
@@ -4160,14 +4162,19 @@ function generateContractPDF(vId,bookingId){
   }
   function _just(words,lw,x,cy){
     if(words.length<=1){doc.text(words.join(' '),x,cy);return;}
-    const getW=t=>doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor;
+    const getW=t=>{
+      const raw=doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor;
+      const padded=String(t).replace(/[ÑñÁÉÍÓÚáéíóúÜü]/g,'M');
+      const w2=doc.getStringUnitWidth(padded)*doc.getFontSize()/doc.internal.scaleFactor;
+      return Math.max(raw,w2);
+    };
     const wordWidths=words.map(w=>getW(w));
-    const spaceW=getW(' ');
+    const spaceW=Math.max(getW(' '),0.8);
     const totalW=wordWidths.reduce((s,w)=>s+w,0);
     const gaps=words.length-1;
     const extraPerGap=(lw-totalW-spaceW*gaps)/gaps;
-    // Safety: never let words overlap or gap < 0.2mm
-    if(gaps<1||extraPerGap<-spaceW*0.5){doc.text(words.join(' '),x,cy);return;}
+    // Nunca encoger el espacio: si no cabe justificado, se pinta con espacios normales
+    if(gaps<1||extraPerGap<0){doc.text(words.join(' '),x,cy);return;}
     let cx=x;
     words.forEach((w,i)=>{
       doc.text(w,cx,cy);
@@ -4300,8 +4307,8 @@ function generateContractPDF(vId,bookingId){
 
   clauseHeader('Primera','Objeto del arrendamiento');
   para('1.1. El ARRENDADOR cede en arrendamiento al ARRENDATARIO el siguiente vehículo:');
-  const _vMake=veh.make||(veh.model&&veh.model.split(' ').length>1?veh.model.split(' ')[0]:'—');
-  const _vModel=veh.make?veh.model:((veh.model&&veh.model.split(' ').length>1?veh.model.split(' ').slice(1).join(' '):veh.model)||'—');
+  const _vMake=veh.make||'—';
+  const _vModel=veh.make?(veh.model||v.name||'—'):(veh.model||v.name||'—');
   dataRow([['MARCA',_vMake],['MODELO',_vModel],['MATRÍCULA',veh.plate]]);
   dataRow([['COMBUSTIBLE',veh.fuel||'—'],['KM EN ENTREGA',veh.km?Number(veh.km).toLocaleString('es-ES')+' km':'A registrar'],['NIVEL COMBUSTIBLE ENTREGA',co.fuelLevel]]);
   para('1.2. El ARRENDATARIO reconoce recibirlo en perfecto estado. Queda prohibido variar cualquier característica técnica o aspecto del vehículo.');
@@ -4534,14 +4541,19 @@ function generateMgmtContractPDF(ownerId,vIdParam){
   }
   function _just(words,lw,x,cy){
     if(words.length<=1){doc.text(words.join(' '),x,cy);return;}
-    const getW=t=>doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor;
+    const getW=t=>{
+      const raw=doc.getStringUnitWidth(t)*doc.getFontSize()/doc.internal.scaleFactor;
+      const padded=String(t).replace(/[ÑñÁÉÍÓÚáéíóúÜü]/g,'M');
+      const w2=doc.getStringUnitWidth(padded)*doc.getFontSize()/doc.internal.scaleFactor;
+      return Math.max(raw,w2);
+    };
     const wordWidths=words.map(w=>getW(w));
-    const spaceW=getW(' ');
+    const spaceW=Math.max(getW(' '),0.8);
     const totalW=wordWidths.reduce((s,w)=>s+w,0);
     const gaps=words.length-1;
     const extraPerGap=(lw-totalW-spaceW*gaps)/gaps;
-    // Safety: never let words overlap or gap < 0.2mm
-    if(gaps<1||extraPerGap<-spaceW*0.5){doc.text(words.join(' '),x,cy);return;}
+    // Nunca encoger el espacio: si no cabe justificado, se pinta con espacios normales
+    if(gaps<1||extraPerGap<0){doc.text(words.join(' '),x,cy);return;}
     let cx=x;
     words.forEach((w,i)=>{
       doc.text(w,cx,cy);
@@ -4937,6 +4949,7 @@ function fmt(n){return _fmtEUR.format(n||0);}
 function fmtF(n){return _fmtEURs.format(n||0);}
 function fmtDMY(s){const t=String(s==null?'':s);const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(t);return m?m[3]+'/'+m[2]+'/'+m[1]:t;}
 function fmtMY(s){const t=String(s==null?'':s);const m=/^(\d{4})-(\d{2})$/.exec(t);return m?m[2]+'/'+m[1]:t;}
+function fmtDMY(s){const t=String(s==null?'':s).slice(0,10);const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(t);return m?m[3]+'/'+m[2]+'/'+m[1]:(t||'—');}
 function dStr(s){const t=safeDate(s);if(!t)return '';const p=t.split('-');return p[2]+'/'+p[1];}
 function daysBetween(s,e){return Math.max(1,Math.round((new Date(e)-new Date(s))/864e5));}
 
@@ -7691,7 +7704,7 @@ function dlMaintReport(vId){
     ['MANTENIMIENTOS',String(maints.length),'registros'],
     ['COSTE TOTAL',fmtF(totalCost),'acumulado'],
     ['KM ACTUAL',curKm?curKm.toLocaleString('es-ES')+' km':'—','odómetro'],
-    ['PRÓXIMO',nextKm?nextKm.toLocaleString('es-ES')+' km':(nextDate||'—'),'siguiente'],
+    ['PRÓXIMO',nextKm?nextKm.toLocaleString('es-ES')+' km':(nextDate?fmtDMY(nextDate):'—'),'siguiente'],
   ];
   const cW4=(cW-12)/4;
   cards.forEach(([lbl,val,sub],i)=>{
@@ -7722,7 +7735,7 @@ function dlMaintReport(vId){
       doc.setFillColor(255,251,235);doc.roundedRect(mg,y,cW,10,2,2,'F');
       doc.setDrawColor(245,158,11);doc.roundedRect(mg,y,cW,10,2,2,'S');
       doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(146,64,14);
-      doc.text('⚡  Próximo mantenimiento en '+daysToNext+' días ('+nextDate+')',mg+4,y+7);
+      doc.text('⚡  Próximo mantenimiento en '+daysToNext+' días ('+fmtDMY(nextDate)+')',mg+4,y+7);
       y+=14;
     }
   }
@@ -7763,7 +7776,7 @@ function dlMaintReport(vId){
 
       // Date
       doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(60,70,90);
-      doc.text(e.date,mg+15,y+6);
+      doc.text(fmtDMY(e.date),mg+15,y+6);
 
       // Km at service
       if(m.km){
@@ -7790,7 +7803,7 @@ function dlMaintReport(vId){
         const nextY=y+entryH-5;
         doc.setFillColor(235,240,250);doc.roundedRect(mg+14,nextY-3,cW-14,5.5,1,1,'F');
         doc.setFontSize(6.5);doc.setFont(undefined,'bold');doc.setTextColor(59,130,246);
-        doc.text('PRÓXIMO: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' · ':'')+(m.nextDate||''),mg+16,nextY+0.5);
+        doc.text('PRÓXIMO: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' · ':'')+(m.nextDate?fmtDMY(m.nextDate):''),mg+16,nextY+0.5);
       }
 
       y+=entryH+3;
@@ -7889,7 +7902,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   const G=(r,g,b)=>[r,g,b];
   const GREEN=G(16,185,129),RED=G(239,68,68),AMBER=G(245,158,11),BLUE=G(59,130,246),PURPLE=G(139,92,246);
   const DARK=G(17,24,39),MEDDARK=G(30,37,55),LIGHT=G(248,250,252),MID=G(120,130,150),BORDER=G(220,225,235);
-  const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);
+  const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
 
   // Period subtitle
   function periodSubtitle(){
@@ -9773,7 +9786,9 @@ function exportGlobalExcel(){
     resumen.push([v.name,v.plate,isM?'En gestión':'Propio',vI,vE,vP,tDays(v),isM?comm:'—',isM?share:'—']);
   });
   resumen.push(['']);
-  resumen.push(['NEGOCIO GENERAL','','','BF.filter(e=>e.type===\'income\').reduce((s,e)=>s+(Number(e.amount)||0),0)']);
+  const bizI=BF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const bizE=BF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  resumen.push(['NEGOCIO GENERAL','','',bizI,bizE,bizI-bizE]);
   const ws0=XLSX.utils.aoa_to_sheet(resumen);
   ws0['!cols']=[{wch:45},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:16},{wch:14},{wch:14}];
   XLSX.utils.book_append_sheet(wb,ws0,'Resumen Global');
@@ -9782,8 +9797,8 @@ function exportGlobalExcel(){
   const allBk=[['Vehículo','Matrícula','Plataforma','Fecha inicio','Hora ini','Fecha fin','Hora fin','Días','Importe €','Cliente','Teléfono','DNI','Notas','Estado']];
   activeV.forEach(v=>{
     [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{
-      const dur=Math.max(1,Math.ceil((new Date(b.endDate)-new Date(b.startDate))/864e5)+1);
-      allBk.push([v.name,v.plate,PLATS[b.platform]?.label||b.platform,b.startDate,b.startTime,b.endDate,b.endTime,dur,b.cancelled?_bookingRealTotal(b):(Number(b.amount)||0),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);
+      const dur=daysBetween(b.startDate,b.endDate);
+      allBk.push([v.name,v.plate,PLATS[b.platform]?.label||b.platform,fmtDMY(b.startDate),b.startTime,fmtDMY(b.endDate),b.endTime,dur,_bookingRealTotal(b),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);
     });
   });
   const ws1=XLSX.utils.aoa_to_sheet(allBk);
@@ -9796,7 +9811,7 @@ function exportGlobalExcel(){
     const isM=v.vtype==='managed';
     // Misma fuente que la pestaña Finanzas: sin el prorrateo de cancelados ni la penalización duplicada
     _getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
-      allFin.push([v.name,v.plate,isM?'En gestión':'Propio',e.date,e.type==='income'?'Ingreso':'Gasto',e.category,Number(e.amount)||0,e.description||'']);
+      allFin.push([v.name,v.plate,isM?'En gestión':'Propio',fmtDMY(e.date),e.type==='income'?'Ingreso':'Gasto',e.category,Number(e.amount)||0,e.description||'']);
     });
   });
   const ws2=XLSX.utils.aoa_to_sheet(allFin);
@@ -9806,7 +9821,7 @@ function exportGlobalExcel(){
   // ── Hoja 4: Negocio general
   const bizRows=[['Fecha','Tipo','Categoría','Importe €','Descripción']];
   BF.sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
-    bizRows.push([e.date,e.type==='income'?'Ingreso':'Gasto',e.category,Number(e.amount)||0,e.description||'']);
+    bizRows.push([fmtDMY(e.date),e.type==='income'?'Ingreso':'Gasto',e.category,Number(e.amount)||0,e.description||'']);
   });
   const ws3=XLSX.utils.aoa_to_sheet(bizRows);
   ws3['!cols']=[{wch:12},{wch:10},{wch:22},{wch:12},{wch:40}];
@@ -9843,7 +9858,7 @@ function exportGlobalExcel(){
   const plRows=[['Mes','Ingresos €','Gastos €','Beneficio €']];
   Object.keys(months).sort().forEach(m=>{
     const d=months[m];
-    plRows.push([m,d.inc||0,d.exp||0,(d.inc||0)-(d.exp||0)]);
+    plRows.push([fmtMY(m),d.inc||0,d.exp||0,(d.inc||0)-(d.exp||0)]);
   });
   const ws4=XLSX.utils.aoa_to_sheet(plRows);
   ws4['!cols']=[{wch:10},{wch:14},{wch:14},{wch:14}];
@@ -10457,14 +10472,17 @@ function _pdfTableRows(doc,margin,cW,y,rows,amtColor,maxY,addPageFn){
   rows.forEach(e=>{
     if(y>maxY){y=addPageFn();}
     doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);
-    doc.text(e.date,margin+3,y+4);
-    const desc=(e.category+(e.description?' · '+e.description:'')).slice(0,50);
-    doc.text(desc,margin+24,y+4);
+    doc.text(fmtDMY(e.date),margin+3,y+4);
+    const desc=(e.category+(e.description?' · '+e.description:''));
+    const descW=cW-24-28;
+    const descLines=doc.splitTextToSize(desc,descW).slice(0,2);
+    doc.text(descLines,margin+24,y+4);
     doc.setFont(undefined,'bold');doc.setTextColor(...amtColor);
     doc.text(e.amount!==undefined?new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(e.amount||0):(e.val||''),margin+cW-3,y+4,{align:'right'});
-    doc.setDrawColor(235,235,242);doc.setLineWidth(0.15);doc.line(margin,y+5.5,margin+cW,y+5.5);
+    const rowH=Math.max(7,3+descLines.length*4);
+    doc.setDrawColor(235,235,242);doc.setLineWidth(0.15);doc.line(margin,y+rowH-1.5,margin+cW,y+rowH-1.5);
     doc.setFont(undefined,'normal');
-    y+=7;
+    y+=rowH;
   });
   return y+2;
 }
@@ -10565,7 +10583,7 @@ function dlReport(vId,month){
       ['ROI real acumulado',roi.toFixed(1)+'%',roiClr],
       ['Pendiente de recuperar',fmtE(Math.max(0,remaining)),remaining>0?[245,158,11]:[16,185,129]],
       ['Promedio mensual',fmtE(monthlyAvg),[59,130,246]],
-      ['Meses estimados para break-even',mthsToBreak?mthsToBreak+' meses':'Ya recuperado',mthsToBreak?[245,158,11]:[16,185,129]],
+      ['Meses estimados para break-even',allP>=pp?'Ya recuperado':(mthsToBreak?mthsToBreak+' meses':'No estimable'),allP>=pp?[16,185,129]:(mthsToBreak?[245,158,11]:[100,100,110])],
     ];
     roiItems.forEach(([l,val,col])=>{
       doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);doc.text(l,margin+3,y+5);
@@ -10592,12 +10610,12 @@ function exportExcel(vId){
   const wb=XLSX.utils.book_new();
   const _xlsFins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).sort((a,b)=>a.date.localeCompare(b.date));
   const finRows=[['Fecha','Tipo','Categoría','Importe €','Descripción']];
-  _xlsFins.forEach(e=>{finRows.push([e.date,e.type==='income'?'Ingreso':'Gasto',e.category||'',Number(e.amount)||0,e.description||'']);});
+  _xlsFins.forEach(e=>{finRows.push([fmtDMY(e.date),e.type==='income'?'Ingreso':'Gasto',e.category||'',Number(e.amount)||0,e.description||'']);});
   const ws1=XLSX.utils.aoa_to_sheet(finRows);ws1['!cols']=[{wch:12},{wch:10},{wch:18},{wch:12},{wch:40}];
   XLSX.utils.book_append_sheet(wb,ws1,'Finanzas');
-  const bkRows=[['Inicio','Hora ini','Fin','Hora fin','Plataforma','Importe €','Cliente','Teléfono','DNI','Notas','Estado']];
-  [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{bkRows.push([b.startDate,b.startTime,b.endDate,b.endTime,PLATS[b.platform]?.label||b.platform,b.cancelled?_bookingRealTotal(b):(Number(b.amount)||0),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);});
-  const ws2=XLSX.utils.aoa_to_sheet(bkRows);ws2['!cols']=[{wch:12},{wch:8},{wch:12},{wch:8},{wch:12},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30},{wch:11}];
+  const bkRows=[['Inicio','Hora ini','Fin','Hora fin','Días','Plataforma','Importe €','Cliente','Teléfono','DNI','Notas','Estado']];
+  [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{bkRows.push([fmtDMY(b.startDate),b.startTime,fmtDMY(b.endDate),b.endTime,daysBetween(b.startDate,b.endDate),PLATS[b.platform]?.label||b.platform,_bookingRealTotal(b),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);});
+  const ws2=XLSX.utils.aoa_to_sheet(bkRows);ws2['!cols']=[{wch:12},{wch:8},{wch:12},{wch:8},{wch:6},{wch:12},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30},{wch:11}];
   XLSX.utils.book_append_sheet(wb,ws2,'Alquileres');
   const tI=_xlsFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=_xlsFins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -11934,6 +11952,8 @@ function generateQuotePDF(id){
   const kmIncMes=calcKmInc(30,isFurg);
   const kmPreRate='0,15€/km';
   const kmExcRate='0,19€/km';
+  const co=getCompanyData();
+  const _coPie=[co.nombre||'DEIROS',co.ciudad,co.direccion,co.nif&&('NIF '+co.nif),co.telefono,co.email].filter(Boolean).join(' · ');
 
   // Recalculate total live from stored data (in case extras were changed)
   const _extrasSum=(q.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
@@ -11969,8 +11989,8 @@ function generateQuotePDF(id){
   doc.setFillColor(242,240,250);
   doc.setDrawColor(200,190,225);
   doc.roundedRect(M,y,CW,20,2,2,'FD');
-  const cols=[['FECHA EMISI\u00d3N',ymd(new Date(q.createdAt)),M+3],
-              ['V\u00c1LIDO HASTA',(()=>{const d=new Date(q.createdAt);d.setDate(d.getDate()+15);return ymd(d);})(),M+52],
+  const cols=[['FECHA EMISI\u00d3N',fmtDMY(ymd(new Date(q.createdAt))),M+3],
+              ['V\u00c1LIDO HASTA',(()=>{const d=new Date(q.createdAt);d.setDate(d.getDate()+15);return fmtDMY(ymd(d));})(),M+52],
               ['DUR.',q.dur+' d\u00edas',M+107],
               ['REF.',q.num,M+135]];
   cols.forEach(([lbl,val,x])=>{
@@ -12019,8 +12039,8 @@ function generateQuotePDF(id){
   doc.setTextColor(30,130,80);doc.text('INICIO DEL ALQUILER',M+3,y+7);
   doc.setTextColor(180,60,30);doc.text('FIN DEL ALQUILER',M+CW/2+5,y+7);
   doc.setFontSize(11);doc.setFont('helvetica','bold');
-  doc.setTextColor(15,60,30);doc.text(q.startDate+(q.startTime?' \u00b7 '+q.startTime:''),M+3,y+16);
-  doc.setTextColor(100,30,15);doc.text(q.endDate+(q.endTime?' \u00b7 '+q.endTime:''),M+CW/2+5,y+16);
+  doc.setTextColor(15,60,30);doc.text(fmtDMY(q.startDate)+(q.startTime?' \u00b7 '+q.startTime:''),M+3,y+16);
+  doc.setTextColor(100,30,15);doc.text(fmtDMY(q.endDate)+(q.endTime?' \u00b7 '+q.endTime:''),M+CW/2+5,y+16);
   doc.setFontSize(8);doc.setFont('helvetica','normal');
   doc.setTextColor(50,100,70);doc.text(q.dur+' d\u00edas · '+kmTotalConExtras,M+3,y+22);
   y+=32;
@@ -12145,9 +12165,9 @@ function generateQuotePDF(id){
   doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(255,215,0);
   doc.text('DEIROS',M,290);
   doc.setFont('helvetica','normal');doc.setTextColor(160,150,200);
-  doc.text('Alquiler de Veh\u00edculos \u00b7 Madrid \u00b7 +34 613 44 78 01 \u00b7 info@deiros.es \u00b7 deiros.es',M+22,290);
+  doc.text(_coPie,M+22,290);
   doc.setTextColor(130,120,170);
-  doc.text(q.num+' \u00b7 Emitido: '+ymd(new Date(q.createdAt)),W-M,290,{align:'right'});
+  doc.text(q.num+' \u00b7 Emitido: '+fmtDMY(ymd(new Date(q.createdAt))),W-M,290,{align:'right'});
 
   // ══════════════════════════════════════════════════════════════════════════
   // PÁGINA 2 — Personaliza tu alquiler (packs + bolsas km)
@@ -12286,7 +12306,7 @@ function generateQuotePDF(id){
     doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
     doc.text('Solicita cualquiera de estas opciones al confirmar tu reserva',W/2,u+7.5,{align:'center'});
     doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(200,180,255);
-    doc.text('+34 613 44 78 01  ·  info@deiros.es  ·  deiros.es',W/2,u+14,{align:'center'});
+    doc.text([co.telefono,co.email].filter(Boolean).join('  ·  ')||_coPie,W/2,u+14,{align:'center'});
   }
 
   // ── Footer p2 ─────────────────────────────────────────────────────────────
@@ -12295,7 +12315,7 @@ function generateQuotePDF(id){
   doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(255,215,0);
   doc.text('DEIROS',M,290);
   doc.setFont('helvetica','normal');doc.setTextColor(160,150,200);
-  doc.text('Alquiler de Vehículos · Madrid · +34 613 44 78 01 · info@deiros.es · deiros.es',M+22,290);
+  doc.text(_coPie,M+22,290);
   doc.setTextColor(130,120,170);
   doc.text('Personaliza tu alquiler · '+q.num,W-M,290,{align:'right'});
 
