@@ -3593,18 +3593,22 @@ function generateReceiptPDF(bookingId){
   const _vDesc=(_vMake+' '+_vModel).trim()||v.name||'—';
 
   // ── Cálculos ──────────────────────────────────────────────────────────────
-  const totAlq=_bookingRealTotal(b);
-  const fianza=Number(b.fianza||0);
+  const _isCanc=!!b.cancelled;
+  const totAlq=_bookingRealTotal(b); // cancelado: solo la penalización
+  const fianza=_isCanc?0:Number(b.fianza||0); // cancelado: no se pide fianza
+  const _fzSt=_isCanc?'':_fianzaStatus(b); // '', pending, returned, retained, partial
+  const _fzCerrada=_fzSt==='returned'||_fzSt==='retained'||_fzSt==='partial'; // ya depositada y resuelta
+  const _fzRet=_fzSt==='retained'?fianza:_fzSt==='partial'?Math.min(fianza,Number(b.fianzaRetainedAmount)||0):0;
   const totTotal=totAlq+fianza;
   const abono=Number(b.abonoReserva||0);
-  const pendiente=Math.max(0,totTotal-abono);
-  const paidFull=totTotal>0&&abono>=totTotal;
   const dur=daysBetween(b.startDate,b.endDate);
   const receiptNum='REC-'+new Date().getFullYear()+'-'+b.id.slice(-6).toUpperCase();
   const alqPagado=Math.min(abono,totAlq);
   const alqPendiente=Math.max(0,totAlq-alqPagado);
-  const fianzaPagada=fianza>0?Math.max(0,Math.min(abono-alqPagado,fianza)):0;
+  const fianzaPagada=fianza>0?(_fzCerrada?fianza:Math.max(0,Math.min(abono-alqPagado,fianza))):0;
   const fianzaPendiente=Math.max(0,fianza-fianzaPagada);
+  const pendiente=alqPendiente+fianzaPendiente;
+  const paidFull=totTotal>0&&pendiente===0;
   const conceptoPendiente=alqPendiente>0&&fianzaPendiente>0?'alquiler y fianza':alqPendiente>0?'alquiler':fianzaPendiente>0?'fianza reembolsable':'';
 
   // ── HELPERS ───────────────────────────────────────────────────────────────
@@ -3646,19 +3650,20 @@ function generateReceiptPDF(bookingId){
   }
   // Derecha: título + número
   doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-  doc.text('RECIBO DE RESERVA',W-mg,10,{align:'right'});
+  doc.text(_isCanc?'RECIBO DE CANCELACIÓN':'RECIBO DE RESERVA',W-mg,10,{align:'right'});
   doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(200,185,255);
   doc.text(receiptNum,W-mg,16,{align:'right'});
   doc.setFontSize(7);doc.setTextColor(180,165,240);
   doc.text(new Date().toLocaleDateString('es-ES'),W-mg,21,{align:'right'});
 
   // ── Banda de estado ───────────────────────────────────────────────────────
-  const stBg=paidFull?[220,252,231]:[255,251,235];
-  const stTx=paidFull?[21,128,61]:[146,64,14];
+  const stBg=_isCanc?[254,226,226]:paidFull?[220,252,231]:[255,251,235];
+  const stTx=_isCanc?[153,27,27]:paidFull?[21,128,61]:[146,64,14];
   doc.setFillColor(...stBg);doc.rect(0,26,W,9,'F');
   doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...stTx);
-  const stMsg=paidFull?'IMPORTE LIQUIDADO COMPLETAMENTE'
-    :'PENDIENTE DE LIQUIDACION  —  '+fmtM(pendiente)+' por abonar'+(conceptoPendiente?' ('+conceptoPendiente+')':'');
+  const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la penalización: '+fmtM(totAlq):'sin penalización')
+    :paidFull?'IMPORTE LIQUIDADO COMPLETAMENTE'
+    :'PENDIENTE DE LIQUIDACIÓN  —  '+fmtM(pendiente)+' por abonar'+(conceptoPendiente?' ('+conceptoPendiente+')':'');
   doc.text(stMsg,W/2,31.5,{align:'center'});
 
   // Fina línea divisoria
@@ -3760,15 +3765,15 @@ function generateReceiptPDF(bookingId){
     : (b.finance||[]).filter(f=>f._autoExtra&&f.type==='income').map(f=>({label:f.concept,amount:f.amount}));
   // Cobros de devolución (exceso de km / combustible faltante)
   const _pdfReturnCharges=(b.finance||[]).filter(f=>f._returnCharge&&f.type==='income').map(f=>({label:f.concept,amount:f.amount}));
-  const _pdfExtras=_pdfExtrasBase.concat(_pdfReturnCharges);
+  const _pdfExtras=_isCanc?[]:_pdfExtrasBase.concat(_pdfReturnCharges); // cancelado: sin extras
 
   const _hasExtras=_pdfExtras.length>0;
 
   // ── Fila base alquiler ───────────────────────────────────────────────────
   doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...DARK);
-  doc.text('Base alquiler ('+dur+' día'+(dur!==1?'s':'')+')',c1,y);
+  doc.text(_isCanc?'Penalización por cancelación'+(b.cancellation&&b.cancellation.by!=='client'&&totAlq!==0?' (a favor del cliente)':''):'Base alquiler ('+dur+' día'+(dur!==1?'s':'')+')',c1,y);
   doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-  doc.text(fmtM(b.amount),c2,y);
+  doc.text(fmtM(_isCanc?totAlq:b.amount),c2,y);
   if(!_hasExtras){
     // Sin extras: mostrar estado de pago directamente en esta fila
     doc.setTextColor(...(alqPendiente===0?[22,163,74]:DARK));
@@ -3808,7 +3813,7 @@ function generateReceiptPDF(bookingId){
   // Fila fianza
   if(fianza>0){
     doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...DARK);
-    doc.text('Fianza reembolsable',c1,y);
+    doc.text(_fzSt==='returned'?'Fianza (depositada y devuelta)':_fzSt==='retained'?'Fianza (retenida íntegra)':_fzSt==='partial'?'Fianza (retención parcial)':'Fianza reembolsable',c1,y);
     doc.setFont('helvetica','bold');doc.setTextColor(59,130,246);doc.text(fmtM(fianza),c2,y);
     doc.setTextColor(...(fianzaPendiente===0?[22,163,74]:[59,130,246]));
     doc.text(fmtM(fianzaPagada)+(fianzaPendiente===0?' (ok)':''),c3,y);
@@ -3816,6 +3821,15 @@ function generateReceiptPDF(bookingId){
     doc.text(fianzaPendiente>0?fmtM(fianzaPendiente):'—',c4,y,{align:'right'});
     doc.setDrawColor(...LINEC);doc.setLineWidth(0.15);doc.line(mg,y+2,mg+cW,y+2);
     y+=8.5;
+    if(_fzCerrada){
+      // Estado real de la fianza: devuelta / retenida (importe y motivo). Lo retenido no es ingreso del alquiler.
+      const _fzTxt=_fzSt==='returned'?'Devuelta al cliente: '+fmtM(fianza)+(b.fianzaReturnedAt?' el '+fmtDate(String(b.fianzaReturnedAt).slice(0,10)):'')+'. No hay importe pendiente.'
+        :'Retenido: '+fmtM(_fzRet)+(fianza-_fzRet>0?' · Devuelto: '+fmtM(fianza-_fzRet):'')+(b.fianzaRetainedReason?' · Motivo: '+b.fianzaRetainedReason:'');
+      doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
+      const _fzL=doc.splitTextToSize(_fzTxt,cW-8);
+      doc.text(_fzL,c1,y-3);
+      y+=4*_fzL.length;
+    }
   }
 
   // Fila totales (fondo lavanda)
@@ -3823,7 +3837,7 @@ function generateReceiptPDF(bookingId){
   doc.setFontSize(8);doc.setFont('helvetica','bold');
   doc.setTextColor(...GRAY);doc.text('TOTAL',c1,y+6.5);
   doc.setTextColor(...PURPLE);doc.text(fmtM(totTotal),c2,y+6.5);
-  doc.setTextColor(22,163,74);doc.text(fmtM(abono),c3,y+6.5);
+  doc.setTextColor(22,163,74);doc.text(fmtM(alqPagado+fianzaPagada),c3,y+6.5);
   doc.setTextColor(...(pendiente>0?[180,100,10]:[22,163,74]));
   doc.setFontSize(10);doc.text(pendiente>0?fmtM(pendiente):'—',c4,y+7,{align:'right'});
   y+=14;
@@ -3847,7 +3861,7 @@ function generateReceiptPDF(bookingId){
     y+=15;
     // Marca de agua tipo sello
     doc.setFontSize(36);doc.setFont('helvetica','bold');doc.setTextColor(220,215,240);
-    doc.text('PAGADO',W/2,y+10,{align:'center'});
+    doc.text(_isCanc?'CANCELADO':'PAGADO',W/2,y+10,{align:'center'});
     doc.setTextColor(...DARK);
     y+=14;
   }
@@ -3877,7 +3891,7 @@ function generateReceiptPDF(bookingId){
   }
 
   // ── Nota fianza ───────────────────────────────────────────────────────────
-  if(fianza>0&&y+8<275){
+  if(fianza>0&&!_fzCerrada&&y+8<275){
     y+=4;
     doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LGRAY);
     doc.text('* La fianza de '+fmtM(fianza)+' es reembolsable al finalizar el alquiler, previa comprobacion del estado del vehiculo.',mg,y,{maxWidth:cW});
@@ -7083,10 +7097,12 @@ function _getVehicleAllFinances(v){
   (v.finances||[]).forEach(function(f){
     if(f._manualBookingEntry||f._bfId||f._syncedFromBookingFinance)return;
     if(f.bookingId&&!f.autoFromBooking&&!f._extension&&!f._cancellation)return;
-    // Si el entry pertenece a un alquiler cancelado, omitir EXCEPTO la penalización
-    if(f.bookingId&&!f._cancellation){
-      const bk=(v.bookings||[]).find(b=>b.id===f.bookingId);
-      if(bk&&bk.cancelled)return;
+    // Alquiler cancelado: se omite todo lo suyo en v.finances (prorrateo, extras con _bookingId
+    // y la copia de la penalización). La penalización se toma una sola vez, de b.finance (abajo).
+    const _fbid=f.bookingId||f._bookingId;
+    if(_fbid){
+      const bk=(v.bookings||[]).find(b=>b.id===_fbid);
+      if(bk&&bk.cancelled&&(!f._cancellation||(bk.finance||[]).some(x=>x._cancellation)))return;
     }
     result.push(f);
   });
@@ -7879,15 +7895,15 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     const m=b.startDate.slice(0,7);
     if(fromMonth&&m<fromMonth)return;
     if(toMonth&&m>toMonth)return;
-    periodBks.push({...b,vname:v.name,vcolor:v.color||'#8B5CF6',vid:v.id});
+    periodBks.push({...b,amount:_bookingRealTotal(b),vname:v.name,vcolor:v.color||'#8B5CF6',vid:v.id});
     if(b.clientDni)periodClients.add(b.clientDni);
     else if(b.clientName)periodClients.add(b.clientName);
   }));
   const totalI=allE.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const totalEx=allE.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const totalP=totalI-totalEx;
-  const totalBk=periodBks.length;
-  const totalDays=periodBks.reduce((s,b)=>s+daysBetween(b.startDate,b.endDate),0);
+  const totalBk=periodBks.filter(b=>!b.cancelled).length;
+  const totalDays=periodBks.filter(b=>!b.cancelled).reduce((s,b)=>s+daysBetween(b.startDate,b.endDate),0);
   const totalClients=periodClients.size;
   const margin_pct=totalI>0?Math.round(totalP/totalI*100):0;
   const avgPerBk=totalBk>0?totalI/totalBk:0;
@@ -8121,7 +8137,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   const vStats={};
   periodBks.forEach(b=>{
     if(!vStats[b.vid])vStats[b.vid]={bks:0,amt:0,days:0,name:b.vname,color:b.vcolor};
-    vStats[b.vid].bks++;vStats[b.vid].amt+=Number(b.amount)||0;vStats[b.vid].days+=daysBetween(b.startDate,b.endDate);
+    vStats[b.vid].amt+=Number(b.amount)||0;if(!b.cancelled){vStats[b.vid].bks++;vStats[b.vid].days+=daysBetween(b.startDate,b.endDate);}
   });
   const vExps={};
   V.filter(v=>!v.archived).forEach(v=>(v.finances||[]).filter(e=>e.type==='expense').forEach(e=>{
@@ -9726,22 +9742,23 @@ function exportGlobalExcel(){
   XLSX.utils.book_append_sheet(wb,ws0,'Resumen Global');
 
   // ── Hoja 2: Todos los alquileres
-  const allBk=[['Vehículo','Matrícula','Plataforma','Fecha inicio','Hora ini','Fecha fin','Hora fin','Días','Importe €','Cliente','Teléfono','DNI','Notas']];
+  const allBk=[['Vehículo','Matrícula','Plataforma','Fecha inicio','Hora ini','Fecha fin','Hora fin','Días','Importe €','Cliente','Teléfono','DNI','Notas','Estado']];
   activeV.forEach(v=>{
-    (v.bookings||[]).sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{
+    [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{
       const dur=Math.max(1,Math.ceil((new Date(b.endDate)-new Date(b.startDate))/864e5)+1);
-      allBk.push([v.name,v.plate,PLATS[b.platform]?.label||b.platform,b.startDate,b.startTime,b.endDate,b.endTime,dur,Number(b.amount)||0,b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'']);
+      allBk.push([v.name,v.plate,PLATS[b.platform]?.label||b.platform,b.startDate,b.startTime,b.endDate,b.endTime,dur,b.cancelled?_bookingRealTotal(b):(Number(b.amount)||0),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);
     });
   });
   const ws1=XLSX.utils.aoa_to_sheet(allBk);
-  ws1['!cols']=[{wch:16},{wch:10},{wch:12},{wch:12},{wch:8},{wch:12},{wch:8},{wch:6},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30}];
+  ws1['!cols']=[{wch:16},{wch:10},{wch:12},{wch:12},{wch:8},{wch:12},{wch:8},{wch:6},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30},{wch:11}];
   XLSX.utils.book_append_sheet(wb,ws1,'Todos los alquileres');
 
   // ── Hoja 3: Todas las finanzas de vehículos
   const allFin=[['Vehículo','Matrícula','Tipo vehículo','Fecha','Tipo mov.','Categoría','Importe €','Descripción']];
   activeV.forEach(v=>{
     const isM=v.vtype==='managed';
-    (v.finances||[]).sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
+    // Misma fuente que la pestaña Finanzas: sin el prorrateo de cancelados ni la penalización duplicada
+    _getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
       allFin.push([v.name,v.plate,isM?'En gestión':'Propio',e.date,e.type==='income'?'Ingreso':'Gasto',e.category,Number(e.amount)||0,e.description||'']);
     });
   });
@@ -10544,9 +10561,9 @@ function exportExcel(vId){
   _xlsFins.forEach(e=>{finRows.push([e.date,e.type==='income'?'Ingreso':'Gasto',e.category||'',Number(e.amount)||0,e.description||'']);});
   const ws1=XLSX.utils.aoa_to_sheet(finRows);ws1['!cols']=[{wch:12},{wch:10},{wch:18},{wch:12},{wch:40}];
   XLSX.utils.book_append_sheet(wb,ws1,'Finanzas');
-  const bkRows=[['Inicio','Hora ini','Fin','Hora fin','Plataforma','Importe €','Cliente','Teléfono','DNI','Notas']];
-  (v.bookings||[]).sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{bkRows.push([b.startDate,b.startTime,b.endDate,b.endTime,PLATS[b.platform]?.label||b.platform,Number(b.amount)||0,b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'']);});
-  const ws2=XLSX.utils.aoa_to_sheet(bkRows);ws2['!cols']=[{wch:12},{wch:8},{wch:12},{wch:8},{wch:12},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30}];
+  const bkRows=[['Inicio','Hora ini','Fin','Hora fin','Plataforma','Importe €','Cliente','Teléfono','DNI','Notas','Estado']];
+  [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{bkRows.push([b.startDate,b.startTime,b.endDate,b.endTime,PLATS[b.platform]?.label||b.platform,b.cancelled?_bookingRealTotal(b):(Number(b.amount)||0),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);});
+  const ws2=XLSX.utils.aoa_to_sheet(bkRows);ws2['!cols']=[{wch:12},{wch:8},{wch:12},{wch:8},{wch:12},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30},{wch:11}];
   XLSX.utils.book_append_sheet(wb,ws2,'Alquileres');
   const tI=_xlsFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=_xlsFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
