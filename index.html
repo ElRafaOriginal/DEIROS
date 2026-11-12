@@ -3620,12 +3620,12 @@ function generateReceiptPDF(bookingId){
   doc.text('ARRENDADOR',mg+4,y);
   y+=5;
   doc.setFontSize(9.5);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-  doc.text(arNombre,mg+4,y);y+=5;
+  doc.text(_pdfFit(doc,arNombre,colW-4),mg+4,y);y+=5;
   doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
   if(arNif){doc.text('NIF/CIF: '+arNif,mg+4,y);y+=4.5;}
-  if(arDir){doc.text(arDir,mg+4,y,{maxWidth:colW-4});y+=4.5;}
+  if(arDir){doc.text(_pdfFit(doc,arDir,colW-4),mg+4,y);y+=4.5;}
   if(arTel){doc.text('Tel.: '+arTel,mg+4,y);y+=4.5;}
-  if(arEmail){doc.text(arEmail,mg+4,y);y+=4.5;}
+  if(arEmail){doc.text(_pdfFit(doc,arEmail,colW-4),mg+4,y);y+=4.5;}
   const yAfterAr=y;
 
   // Columna derecha — Arrendatario (partiendo del mismo punto que arrendador)
@@ -3636,7 +3636,7 @@ function generateReceiptPDF(bookingId){
   doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
   doc.text('ARRENDATARIO',colR,yR);yR+=5;
   doc.setFontSize(9.5);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-  doc.text(b.clientName||'—',colR,yR);yR+=5;
+  doc.text(_pdfFit(doc,b.clientName||'—',colW-4),colR,yR);yR+=5;
   doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
   if(b.clientDni){doc.text('DNI/NIE: '+b.clientDni,colR,yR);yR+=4.5;}
   if(b.clientPhone){doc.text('Tel.: '+b.clientPhone,colR,yR);yR+=4.5;}
@@ -10251,6 +10251,12 @@ function _pdfBrand(doc,title,sub){
     doc.text('Página '+p+' de '+n,W-m,H-7.5,{align:'right'});
   }
   doc.setPage(n);
+}
+// Recorta un texto a un ancho (mm) con «…» para que nunca se salga del margen
+function _pdfFit(doc,t,w){
+  const s=String(t==null?'':t);if(doc.getTextWidth(s)<=w)return s;
+  let r=s;while(r.length>1&&doc.getTextWidth(r+'…')>w)r=r.slice(0,-1);
+  return r.replace(/\s+$/,'')+'…';
 }
 // Cabecera de tabla: fondo #6A0DAD y texto blanco. cols: [[texto,x,align]]
 function _pdfTh(doc,y,cols,h){
