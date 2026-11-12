@@ -4032,36 +4032,17 @@ function generateContractPDF(vId,bookingId){
   closeSheet();
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
-  const W=210,mg=20,cW=W-mg*2;
+  const W=210,mg=16,cW=W-mg*2;
   const fmtDate=d=>d?d.split('-').reverse().join('/'):'—';
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const DOCNAME='CONTRATO DE ARRENDAMIENTO DE VEHÍCULO';
 
   const DARK=[10,15,30],MID=[80,90,110],LGRAY=[148,155,170],BORDER=[210,215,225];
-  const PURPLE=[109,40,217],PURPLEA=[237,233,254];
+  const PURPLE=[106,13,173],PURPLEA=[237,233,254];
   let y=0,_pn=0;
   function _hdr(docTitle,companyName){
-    _pn++;
-    // Main bar
-    doc.setFillColor(...PURPLE);doc.rect(0,0,W,12,'F');
-    // Thin accent stripe below bar
-    doc.setFillColor(180,160,240);doc.rect(0,12,W,1.2,'F');
-    try{doc.addImage(PDF_LOGO_B64,'PNG',mg,1,16,10);}catch(e){}
-    // Company name
-    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-    doc.text(companyName.toUpperCase(),W-mg,5.5,{align:'right'});
-    // Doc title in header (subtle)
-    doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.setTextColor(210,200,255);
-    doc.text(docTitle,W-mg,9.5,{align:'right'});
-    if(_pn>1){
-      doc.setFillColor(248,247,253);doc.rect(0,13.2,W,9,'F');
-      doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(0,22.2,W,22.2);
-      doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LGRAY);
-      doc.text(docTitle+' · '+companyName,mg,18.5);
-      doc.text('Pág. '+_pn,W-mg,18.5,{align:'right'});
-      return 25;
-    }
-    return 16;
+    _pn++; // cabecera y pie comunes: los pinta _pdfBrand al final
+    return PDFS.TOP;
   }
   function _just(words,lw,x,cy){
     if(words.length<=1){doc.text(words.join(' '),x,cy);return;}
@@ -4156,34 +4137,8 @@ function generateContractPDF(vId,bookingId){
     y+=6;
   }
   function sigBlock(lTitle,lName,lSub,rTitle,rName,rSub){
-    if(y+54>272)addPage();y+=6;
-    const fw=(cW-16)/2;
-    [[mg,lTitle,lName,lSub],[mg+fw+16,rTitle,rName,rSub]].forEach(([x,tit,name,sub])=>{
-      doc.setDrawColor(210,200,240);doc.setLineWidth(0.25);doc.roundedRect(x,y,fw,44,2,2,'S');
-      doc.setFillColor(...PURPLEA);doc.roundedRect(x,y,fw,8,2,2,'F');
-      doc.setFillColor(...PURPLEA);doc.rect(x,y+5,fw,3,'F');
-      doc.setDrawColor(200,190,235);doc.setLineWidth(0.2);doc.line(x,y+8,x+fw,y+8);
-      doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
-      doc.text(tit,x+fw/2,y+5.5,{align:'center'});
-      doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LGRAY);
-      doc.text('Fdo.:',x+4,y+26);
-      doc.setDrawColor(170,165,190);doc.setLineWidth(0.35);doc.line(x+14,y+26.5,x+fw-4,y+26.5);
-      doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-      if(name)doc.text(name,x+fw/2,y+34,{align:'center'});
-      doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LGRAY);
-      if(sub)doc.text(sub,x+fw/2,y+38.5,{align:'center'});
-    });y+=50;
-  }
-  function docFooter(){
-    const fy=281;
-    doc.setFillColor(...PURPLE);doc.rect(0,fy,W,16,'F');
-    doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-    doc.text('DEIROS Fleet',mg,fy+7);
-    doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(210,200,255);
-    doc.text('Generado el '+new Date().toLocaleDateString('es-ES'),W/2,fy+7,{align:'center'});
-    doc.text('Pág. '+_pn,W-mg,fy+7,{align:'right'});
-    doc.setFontSize(5.5);doc.setTextColor(180,160,220);
-    doc.text('Gestión inteligente de flotas · deiros.es',W/2,fy+12,{align:'center'});
+    if(y+38>PDFS.BOT)addPage();y+=6;
+    y=_pdfSign(doc,y,[lTitle,lName,lSub],[rTitle,rName,rSub]);
   }
   function addPage(){doc.addPage();y=_hdr(DOCNAME,co.nombre);}
   y=_hdr(DOCNAME,co.nombre);y+=6;
@@ -4305,7 +4260,7 @@ function generateContractPDF(vId,bookingId){
   doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...MID);
   doc.text('Firma del ARRENDATARIO en devolución:',mg,y+4);
   doc.setDrawColor(...PURPLE);doc.setLineWidth(0.3);doc.roundedRect(mg+80,y,cW-80,14,1,1,'S');y+=20;
-  docFooter();
+  _pdfBrand(doc,'CONTRATO DE ARRENDAMIENTO',[veh.name+' · '+veh.plate,new Date().toLocaleDateString('es-ES')]);
 
   const fname='Contrato_'+veh.plate.replace(/\s/g,'')+'_'+b.startDate+'_'+(cl.nombre||'').replace(/\s/g,'_')+'.pdf';
   _savePDF(doc,fname);
@@ -4411,36 +4366,17 @@ function generateMgmtContractPDF(ownerId,vIdParam){
   closeSheet();
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
-  const W=210,mg=20,cW=W-mg*2;
+  const W=210,mg=16,cW=W-mg*2;
   const fmtDate=d=>d?d.split('-').reverse().join('/'):'—';
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const DOCNAME='CONTRATO DE GESTIÓN DE ALQUILER DE VEHÍCULO';
 
   const DARK=[10,15,30],MID=[80,90,110],LGRAY=[148,155,170],BORDER=[210,215,225];
-  const PURPLE=[109,40,217],PURPLEA=[237,233,254];
+  const PURPLE=[106,13,173],PURPLEA=[237,233,254];
   let y=0,_pn=0;
   function _hdr(docTitle,companyName){
-    _pn++;
-    // Main bar
-    doc.setFillColor(...PURPLE);doc.rect(0,0,W,12,'F');
-    // Thin accent stripe below bar
-    doc.setFillColor(180,160,240);doc.rect(0,12,W,1.2,'F');
-    try{doc.addImage(PDF_LOGO_B64,'PNG',mg,1,16,10);}catch(e){}
-    // Company name
-    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-    doc.text(companyName.toUpperCase(),W-mg,5.5,{align:'right'});
-    // Doc title in header (subtle)
-    doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.setTextColor(210,200,255);
-    doc.text(docTitle,W-mg,9.5,{align:'right'});
-    if(_pn>1){
-      doc.setFillColor(248,247,253);doc.rect(0,13.2,W,9,'F');
-      doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(0,22.2,W,22.2);
-      doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LGRAY);
-      doc.text(docTitle+' · '+companyName,mg,18.5);
-      doc.text('Pág. '+_pn,W-mg,18.5,{align:'right'});
-      return 25;
-    }
-    return 16;
+    _pn++; // cabecera y pie comunes: los pinta _pdfBrand al final
+    return PDFS.TOP;
   }
   function _just(words,lw,x,cy){
     if(words.length<=1){doc.text(words.join(' '),x,cy);return;}
@@ -4535,34 +4471,8 @@ function generateMgmtContractPDF(ownerId,vIdParam){
     y+=6;
   }
   function sigBlock(lTitle,lName,lSub,rTitle,rName,rSub){
-    if(y+54>272)addPage();y+=6;
-    const fw=(cW-16)/2;
-    [[mg,lTitle,lName,lSub],[mg+fw+16,rTitle,rName,rSub]].forEach(([x,tit,name,sub])=>{
-      doc.setDrawColor(210,200,240);doc.setLineWidth(0.25);doc.roundedRect(x,y,fw,44,2,2,'S');
-      doc.setFillColor(...PURPLEA);doc.roundedRect(x,y,fw,8,2,2,'F');
-      doc.setFillColor(...PURPLEA);doc.rect(x,y+5,fw,3,'F');
-      doc.setDrawColor(200,190,235);doc.setLineWidth(0.2);doc.line(x,y+8,x+fw,y+8);
-      doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
-      doc.text(tit,x+fw/2,y+5.5,{align:'center'});
-      doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LGRAY);
-      doc.text('Fdo.:',x+4,y+26);
-      doc.setDrawColor(170,165,190);doc.setLineWidth(0.35);doc.line(x+14,y+26.5,x+fw-4,y+26.5);
-      doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-      if(name)doc.text(name,x+fw/2,y+34,{align:'center'});
-      doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...LGRAY);
-      if(sub)doc.text(sub,x+fw/2,y+38.5,{align:'center'});
-    });y+=50;
-  }
-  function docFooter(){
-    const fy=281;
-    doc.setFillColor(...PURPLE);doc.rect(0,fy,W,16,'F');
-    doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-    doc.text('DEIROS Fleet',mg,fy+7);
-    doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(210,200,255);
-    doc.text('Generado el '+new Date().toLocaleDateString('es-ES'),W/2,fy+7,{align:'center'});
-    doc.text('Pág. '+_pn,W-mg,fy+7,{align:'right'});
-    doc.setFontSize(5.5);doc.setTextColor(180,160,220);
-    doc.text('Gestión inteligente de flotas · deiros.es',W/2,fy+12,{align:'center'});
+    if(y+38>PDFS.BOT)addPage();y+=6;
+    y=_pdfSign(doc,y,[lTitle,lName,lSub],[rTitle,rName,rSub]);
   }
   function addPage(){doc.addPage();y=_hdr(DOCNAME,gestor.nombre);}
   y=_hdr(DOCNAME,gestor.nombre);y+=6;
@@ -4629,7 +4539,7 @@ function generateMgmtContractPDF(ownerId,vIdParam){
   if(y+50>272)addPage();else y+=4;
   para('Y en prueba de conformidad con todo lo expuesto, las partes firman el presente contrato por duplicado en el lugar y fecha indicados.');
   sigBlock('EL PROPIETARIO',owner.name,owner.dni||'','EL GESTOR',gestor.nombre,gestor.nif);
-  docFooter();
+  _pdfBrand(doc,'CONTRATO DE GESTIÓN',[owner.name+(veh?' · '+veh.plate:''),new Date().toLocaleDateString('es-ES')]);
 
   const fname='ContratoGestion_'+owner.name.replace(/\s/g,'_')+(veh?'_'+veh.plate.replace(/\s/g,''):'')+'.pdf';
   _savePDF(doc,fname);
@@ -7574,7 +7484,7 @@ function dlMaintReport(vId){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
-  const mg=14,cW=W-mg*2;
+  const mg=16,cW=W-mg*2;
   const now=new Date();const dateStr=now.toLocaleDateString('es-ES');
   const totalCost=maints.reduce((s,e)=>s+(Number(e.amount)||0),0);
   const lastMaint=maints.length?maints[maints.length-1]:null;
@@ -7582,25 +7492,13 @@ function dlMaintReport(vId){
   const nextDate=lastMaint&&lastMaint.maint&&lastMaint.maint.nextDate?lastMaint.maint.nextDate:null;
   const curKm=Number(v.km)||0;
 
-  // ── COVER / HEADER ─────────────────────────────────────────────
-  // Light top bar
-  doc.setFillColor(250,251,253);doc.rect(0,0,W,58,'F');
-  doc.setFillColor(59,130,246);doc.rect(0,0,5,58,'F'); // blue left bar
-  doc.setDrawColor(59,130,246);doc.setLineWidth(0.5);doc.line(0,58,W,58);doc.setLineWidth(0.2);
-  // Logo
-  try{doc.addImage(PDF_LOGO_B64,'PNG',W-mg-22,6,22,22);}catch(e){}
-  // Vehicle name + plate
-  doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(130,140,160);
-  doc.text('DEIROS FLEET  ·  LIBRO DE MANTENIMIENTOS',mg+7,12);
-  doc.setFontSize(22);doc.setFont(undefined,'bold');doc.setTextColor(17,24,39);
-  doc.text(v.name,mg+7,26);
-  doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(80,95,120);
-  doc.text(v.plate+(v.model?' · '+v.model:'')+(v.year?' · '+v.year:''),mg+7,34);
-  doc.setFontSize(7.5);doc.setTextColor(130,140,160);
-  doc.text('Generado el '+dateStr,mg+7,42);
-  doc.text('Km actuales: '+(curKm?curKm.toLocaleString('es-ES')+' km':'—'),mg+7,49);
-
-  let y=66;
+  // ── Título (la cabecera y el pie comunes los pinta _pdfBrand) ──
+  let y=PDFS.TOP+4;
+  doc.setFontSize(16);doc.setFont(undefined,'bold');doc.setTextColor(17,24,39);
+  doc.text(v.name,mg,y+2);
+  doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(80,95,120);
+  doc.text(v.plate+(v.model?' · '+v.model:'')+(v.year?' · '+v.year:'')+'  ·  Km actuales: '+(curKm?curKm.toLocaleString('es-ES')+' km':'—'),mg,y+8);
+  y+=16;
 
   // ── SUMMARY KPI CARDS ──────────────────────────────────────────
   const cards=[
@@ -7612,7 +7510,7 @@ function dlMaintReport(vId){
   const cW4=(cW-12)/4;
   cards.forEach(([lbl,val,sub],i)=>{
     const cx=mg+i*(cW4+4);
-    const clr=i===0?[59,130,246]:i===1?[239,68,68]:i===2?[16,185,129]:[245,158,11];
+    const clr=i===0?[59,130,246]:i===1?[239,68,68]:i===2?[16,185,129]:[180,83,9];
     doc.setFillColor(248,249,252);doc.roundedRect(cx,y,cW4,20,2.5,2.5,'F');
     doc.setDrawColor(220,225,235);doc.roundedRect(cx,y,cW4,20,2.5,2.5,'S');
     doc.setFillColor(...clr);doc.roundedRect(cx,y,4,20,2,2,'F');doc.rect(cx+2,y,2,20,'F');
@@ -7630,7 +7528,7 @@ function dlMaintReport(vId){
     doc.setFillColor(254,242,242);doc.roundedRect(mg,y,cW,10,2,2,'F');
     doc.setDrawColor(239,68,68);doc.roundedRect(mg,y,cW,10,2,2,'S');
     doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(185,28,28);
-    doc.text('⚠  MANTENIMIENTO VENCIDO — '+(curKm-nextKm).toLocaleString('es-ES')+' km desde el último previsto',mg+4,y+7);
+    doc.text('MANTENIMIENTO VENCIDO — '+(curKm-nextKm).toLocaleString('es-ES')+' km desde el último previsto',mg+4,y+7);
     y+=14;
   } else if(nextDate){
     const daysToNext=Math.ceil((new Date(nextDate)-now)/864e5);
@@ -7638,7 +7536,7 @@ function dlMaintReport(vId){
       doc.setFillColor(255,251,235);doc.roundedRect(mg,y,cW,10,2,2,'F');
       doc.setDrawColor(245,158,11);doc.roundedRect(mg,y,cW,10,2,2,'S');
       doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(146,64,14);
-      doc.text('⚡  Próximo mantenimiento en '+daysToNext+' días ('+fmtDMY(nextDate)+')',mg+4,y+7);
+      doc.text('Próximo mantenimiento en '+daysToNext+' días ('+fmtDMY(nextDate)+')',mg+4,y+7);
       y+=14;
     }
   }
@@ -7660,12 +7558,7 @@ function dlMaintReport(vId){
       const entryH=Math.max(24,12+workLines.length*4.5+8);
       if(y+entryH>270){
         doc.addPage();
-        // continuation header
-        doc.setFillColor(248,249,252);doc.rect(0,0,W,9,'F');
-        doc.setFontSize(6.5);doc.setFont(undefined,'bold');doc.setTextColor(100,110,130);
-        doc.text('DEIROS FLEET  ·  '+v.name+'  ·  LIBRO DE MANTENIMIENTOS',mg,6.5);
-        doc.text('Pág '+doc.internal.getCurrentPageInfo().pageNumber,W-mg,6.5,{align:'right'});
-        y=16;
+        y=PDFS.TOP;
       }
 
       // Entry card
@@ -7698,7 +7591,7 @@ function dlMaintReport(vId){
       // Shop
       if(m.shop){
         doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(100,110,130);
-        doc.text('🔧 '+m.shop,mg+15,y+12+workLines.length*4.5+2);
+        doc.text('Taller: '+m.shop,mg+15,y+12+workLines.length*4.5+2);
       }
 
       // Next service row
@@ -7714,7 +7607,7 @@ function dlMaintReport(vId){
 
     // km timeline mini-chart
     if(maints.filter(e=>e.maint&&e.maint.km).length>1){
-      if(y>240){doc.addPage();y=16;}
+      if(y>240){doc.addPage();y=PDFS.TOP;}
       y+=4;
       doc.setFontSize(7.5);doc.setFont(undefined,'bold');doc.setTextColor(59,130,246);
       doc.text('EVOLUCIÓN DE KM ENTRE MANTENIMIENTOS',mg,y);
@@ -7743,15 +7636,7 @@ function dlMaintReport(vId){
     }
   }
 
-  // Footer
-  const totalPages=doc.internal.getNumberOfPages();
-  for(let p=1;p<=totalPages;p++){
-    doc.setPage(p);
-    doc.setFillColor(240,242,248);doc.rect(0,H-8,W,8,'F');
-    doc.setFontSize(6.5);doc.setFont(undefined,'normal');doc.setTextColor(120,130,150);
-    doc.text('DEIROS FLEET  ·  Libro de mantenimientos  ·  '+v.name+'  ·  '+v.plate,mg,H-2.5);
-    doc.text('Pág '+p+' / '+totalPages,W-mg,H-2.5,{align:'right'});
-  }
+  _pdfBrand(doc,'LIBRO DE MANTENIMIENTO',[v.name+' · '+v.plate,dateStr]);
 
   _savePDF(doc,'Libro_Mantenimientos_'+v.name.replace(/ /g,'_')+'.pdf');
 }
@@ -7797,13 +7682,13 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
-  const mg=14,cW=W-mg*2;
+  const mg=16,cW=W-mg*2;
   const now=new Date();
   const dateStr=now.toLocaleDateString('es-ES');
   const activeV=V.filter(v=>!v.archived);
 
   const G=(r,g,b)=>[r,g,b];
-  const GREEN=G(16,185,129),RED=G(239,68,68),AMBER=G(245,158,11),BLUE=G(59,130,246),PURPLE=G(139,92,246);
+  const GREEN=G(16,185,129),RED=G(239,68,68),AMBER=G(180,83,9),BLUE=G(59,130,246),PURPLE=G(106,13,173);
   const DARK=G(17,24,39),MEDDARK=G(30,37,55),LIGHT=G(248,250,252),MID=G(120,130,150),BORDER=G(220,225,235);
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
 
@@ -7867,18 +7752,13 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   // Page helpers
   function newPage(){
     doc.addPage();
-    doc.setFillColor(245,246,250);doc.rect(0,0,W,9,'F');
-    doc.setDrawColor(220,225,235);doc.line(0,9,W,9);
-    doc.setFontSize(6.5);doc.setFont(undefined,'bold');doc.setTextColor(100,110,130);
-    doc.text('DEIROS FLEET  ·  '+periodSub.toUpperCase(),mg,6.5);
-    doc.setFont(undefined,'normal');doc.text('Pág '+doc.internal.getCurrentPageInfo().pageNumber,W-mg,6.5,{align:'right'});
-    return 16;
+    return PDFS.TOP;
   }
   function secTitle(txt,y){
     if(y>255){y=newPage();}
-    doc.setFontSize(8.5);doc.setFont(undefined,'bold');doc.setTextColor(...AMBER);
+    doc.setFontSize(8.5);doc.setFont(undefined,'bold');doc.setTextColor(...PURPLE);
     doc.text(txt,mg,y);
-    doc.setDrawColor(...AMBER);doc.setLineWidth(0.4);doc.line(mg,y+1.5,mg+cW,y+1.5);doc.setLineWidth(0.2);
+    doc.setDrawColor(...PURPLE);doc.setLineWidth(0.4);doc.line(mg,y+1.5,mg+cW,y+1.5);doc.setLineWidth(0.2);
     return y+8;
   }
   function kpiCard(x,y,w,h,title,value,sub,clr){
@@ -7930,26 +7810,13 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   // ══════════════════════════════════════════════════
   // PAGE 1 — COVER + KPIs + CHART
   // ══════════════════════════════════════════════════
-  // Big dark header
-  doc.setFillColor(250,251,253);doc.rect(0,0,W,65,'F');
-  doc.setFillColor(...AMBER);doc.rect(0,0,5,65,'F');
-  doc.setDrawColor(...AMBER);doc.setLineWidth(0.5);doc.line(0,65,W,65);doc.setLineWidth(0.2);
-  // Logo top-right
-  try{doc.addImage(PDF_LOGO_B64,'PNG',W-mg-22,6,22,22);}catch(e){}
-  doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(150,160,175);
-  doc.text('DEIROS FLEET  ·  INFORME DE NEGOCIO',mg+7,13);
-  // Period name HUGE
-  const periodLines=doc.splitTextToSize(periodLabel,cW-10);
-  doc.setFontSize(periodLines.length>1?20:26);doc.setFont(undefined,'bold');doc.setTextColor(...DARK);
-  doc.text(periodLines,mg+7,26+(periodLines.length>1?0:4));
-  // Sub
-  doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(80,95,120);
-  doc.text(periodSub,mg+7,42);
-  doc.setFontSize(7);doc.setTextColor(150,160,175);
-  doc.text('Generado el '+dateStr+'  ·  '+activeV.length+' vehículo'+(activeV.length!==1?'s activos':' activo'),mg+7,52);
-  doc.text('Confidencial',W-mg,52,{align:'right'});
-
-  let y=72;
+  let y=PDFS.TOP+4;
+  const periodLines=doc.splitTextToSize(periodLabel,cW);
+  doc.setFontSize(16);doc.setFont(undefined,'bold');doc.setTextColor(...DARK);
+  doc.text(periodLines,mg,y+2);y+=(periodLines.length-1)*7;
+  doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(80,95,120);
+  doc.text(periodSub+'  ·  '+activeV.length+' vehículo'+(activeV.length!==1?'s activos':' activo')+'  ·  Confidencial',mg,y+8);
+  y+=16;
 
   // ── KPI cards (2 rows × 3) ────────────────────────────────────────────
   const cardH=24,cardGap=4,cardW=(cW-cardGap*2)/3;
@@ -8131,9 +7998,9 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     y=secTitle('Top alquileres del período',y);
     const tw=[32,16,16,20,34,20,16];
     const headers2=['VEHÍCULO','INICIO','FIN','PLATAFORMA','CLIENTE','IMPORTE','DÍAS'];
-    doc.setFillColor(245,246,250);doc.rect(mg,y-3,cW,6,'F');
-    let hx=mg;
-    headers2.forEach((h,i)=>{doc.setFontSize(6);doc.setFont(undefined,'bold');doc.setTextColor(...MID);doc.text(h,hx+1,y);hx+=tw[i];});
+    let hx=mg;const _th=[];
+    headers2.forEach((h,i)=>{_th.push(i===5?[h,hx+tw[i]-2,'right']:[h,hx+1]);hx+=tw[i];});
+    _pdfTh(doc,y-4,_th,6);
     y+=5;
     topBks.forEach((b,i)=>{
       if(y>272)y=newPage();
@@ -8184,15 +8051,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     y+=9;
   });
 
-  // ── Footer all pages ──────────────────────────────────────────────────
-  const totalPages=doc.internal.getNumberOfPages();
-  for(let p=1;p<=totalPages;p++){
-    doc.setPage(p);
-    doc.setFillColor(240,242,248);doc.rect(0,H-8,W,8,'F');
-    doc.setFontSize(6.5);doc.setFont(undefined,'normal');doc.setTextColor(...MID);
-    doc.text('DEIROS FLEET  ·  Informe confidencial  ·  '+dateStr,mg,H-2.5);
-    doc.text('Pág '+p+' / '+totalPages,W-mg,H-2.5,{align:'right'});
-  }
+  _pdfBrand(doc,'INFORME DE NEGOCIO',[periodSub,dateStr]);
 
   _savePDF(doc,'Informe_DEIROS_'+periodLabel.replace(/ /g,'_')+'_'+ymd(now)+'.pdf');
   }catch(e){alert('Error al generar el informe de negocio:\n'+e.message+'\n'+(e.stack||'').slice(0,300));}
