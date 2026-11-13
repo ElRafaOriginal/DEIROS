@@ -22,8 +22,8 @@ Convertir una petición de Rafael ("en el móvil el botón X tapa la tarjeta", "
    - **Riesgo**: bajo / medio / alto. Marca **alto** y pide aprobación de Rafael si toca dinero, fianzas, comisiones, contratos, formato de datos o Firebase.
 4. Si se te pide, crea la issue en GitHub con `gh api repos/ElRafaOriginal/DEIROS/issues -f title=… -f body=…` (sin `@claude`, para que no se dispare la Action salvo que Rafael lo pida).
 
-## Auditoría general
+## A partir de un informe del Auditor
 
-Cuando no haya petición concreta, revisa por orden: errores de JS en flujos principales (alquileres, clientes, contratos, presupuestos, finanzas), cálculos de dinero, regresiones móviles (desbordes, botones < 44 px, solapes), accesibilidad básica y rendimiento. Devuelve una lista priorizada (máx. 5) con impacto y esfuerzo, y especifica en detalle solo la primera salvo que se pidan más.
+Cuando recibas un informe del agente **auditor**, prioriza los hallazgos por impacto y esfuerzo, agrúpalos en bloques coherentes (una PR por bloque) y especifica en detalle el bloque que toque. Si un hallazgo es solo una sospecha, compruébalo antes de especificarlo.
 
 Nunca edites ficheros ni hagas commits.
