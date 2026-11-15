@@ -2552,6 +2552,85 @@ function _confirmExtend(){
   alert('✅ Alquiler ampliado hasta '+newEnd+'.'+(extraPrice>0?'\n+'+fE(extraPrice)+' adicionales (nuevo total: '+fE(newTotalRaw)+')':''));
 }
 
+// ── Combustible en la devolución: precios medios por municipio (robot diario, rama datos-carburantes) ──
+const FUEL_URL='https://raw.githubusercontent.com/ElRafaOriginal/DEIROS/datos-carburantes/precios.json';
+const FUEL_PROD_LBL={e5:'Gasolina 95 E5',ga:'Gasóleo A',glp:'GLP'};
+let _fuelMem=null;
+// Carburante del coche → producto del Ministerio. Eléctrico: sin cargo. Gasolina, Híbrido o sin dato: Gasolina 95 E5.
+function _fuelProd(fuel){const f=String(fuel||'').toLowerCase();if(f.startsWith('eléc')||f.startsWith('elec'))return 'elec';if(f.startsWith('dié')||f.startsWith('die'))return 'ga';if(f==='glp')return 'glp';return 'e5';}
+// Recargo por litro (datos de empresa, por defecto 2 €/L). El antiguo penalComb (30 € fijos) ya no se usa.
+function _fuelRecargo(){const r=parseFloat(String(getCompanyData().recargoCombL??'').replace(',','.'));return Number.isFinite(r)&&r>=0?r:2;}
+function _fuelOk(d){return !!(d&&d.v===1&&Array.isArray(d.m)&&Array.isArray(d.e));}
+// Datos de precios: memoria → caché local (12 h) → red; sin red, la última caché guardada
+async function _fuelData(){
+  if(_fuelMem)return _fuelMem;
+  let cached=null;
+  try{cached=JSON.parse(localStorage.getItem('deiros_fuelPrices')||'null');}catch(e){}
+  if(cached&&_fuelOk(cached.d)&&Date.now()-Number(cached.at||0)<12*36e5){_fuelMem=cached.d;return _fuelMem;}
+  try{
+    const r=await fetch(FUEL_URL,{cache:'no-cache'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(!_fuelOk(d))throw new Error('formato');
+    _fuelMem=d;
+    try{localStorage.setItem('deiros_fuelPrices',JSON.stringify({at:Date.now(),d}));}catch(e){}
+    return d;
+  }catch(e){
+    if(cached&&_fuelOk(cached.d)){_fuelMem=cached.d;return _fuelMem;}
+    return null;
+  }
+}
+// m[i] = [municipio, provincia, e5, nºE5, gasóleo A, nºGA, GLP, nºGLP] · e[j] = [lat, lon, índice de municipio]
+function _fuelMuniPrice(d,mi,prod){const m=d&&d.m&&d.m[mi];const k={e5:2,ga:4,glp:6}[prod];if(!m||k==null||m[k]==null||!(m[k+1]>0))return null;return{price:m[k],n:m[k+1],muni:m[0],prov:m[1]};}
+function _fuelNearest(d,lat,lon){let best=-1,bd=Infinity;const c=Math.cos(lat*Math.PI/180);(d.e||[]).forEach(s=>{if(!Array.isArray(s)||typeof s[0]!=='number'||typeof s[1]!=='number'||!Number.isInteger(s[2]))return;const dy=s[0]-lat,dx=(s[1]-lon)*c,dd=dx*dx+dy*dy;if(dd<bd){bd=dd;best=s[2];}});return best;}
+function _fuelMuniLabel(m){return m[0]+' ('+m[1]+')';}
+function _retShowPrice(d,mi){
+  const prod=window._retFuelProd,info=document.getElementById('retPriceInfo'),inp=document.getElementById('retFuelPrice');
+  const p=_fuelMuniPrice(d,mi,prod);
+  if(!p){if(info)info.textContent='Sin precio de '+(FUEL_PROD_LBL[prod]||'este carburante')+' en '+((d.m[mi]||[])[0]||'ese municipio')+': escríbelo a mano.';return;}
+  if(inp)inp.value=p.price;
+  if(info)info.textContent='Media de '+p.n+' gasolinera'+(p.n!==1?'s':'')+' en '+p.muni+' · '+FUEL_PROD_LBL[prod]+' · datos del '+String(d.fecha||'').split(' ')[0];
+  _retFuelAmtSync();
+}
+function _retPriceHere(){
+  const info=document.getElementById('retPriceInfo');
+  if(!navigator.geolocation){if(info)info.textContent='Este dispositivo no da la ubicación: busca el municipio.';return;}
+  if(info)info.textContent='Buscando la ubicación…';
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    try{
+    const d=await _fuelData();
+    if(!d){if(info)info.textContent='No hay datos de precios (¿sin conexión?): escribe el precio.';return;}
+    const mi=_fuelNearest(d,pos.coords.latitude,pos.coords.longitude);
+    if(mi<0||!Array.isArray(d.m[mi])||typeof d.m[mi][0]!=='string'){if(info)info.textContent='No se encontró ninguna gasolinera cerca: busca el municipio.';return;}
+    const mu=document.getElementById('retMuni');if(mu)mu.value=_fuelMuniLabel(d.m[mi]);
+    _retShowPrice(d,mi);
+    }catch(e){if(info)info.textContent='No hay datos de precios (¿sin conexión?): escribe el precio.';}
+  },function(err){if(info)info.textContent='Sin ubicación ('+(err&&err.code===1?'permiso denegado':'no disponible')+'): busca el municipio.';},{enableHighAccuracy:false,timeout:15000,maximumAge:600000});
+}
+async function _retPriceMuni(val){
+  const s=String(val||'').trim().toLowerCase();if(!s)return;
+  const d=await _fuelData();const info=document.getElementById('retPriceInfo');
+  if(!d){if(info)info.textContent='No hay datos de precios (¿sin conexión?): escribe el precio.';return;}
+  try{
+  const ok=m=>Array.isArray(m)&&typeof m[0]==='string'&&m[0]!==''; // descarta filas mal formadas
+  let mi=d.m.findIndex(m=>ok(m)&&_fuelMuniLabel(m).toLowerCase()===s);
+  if(mi<0)mi=d.m.findIndex(m=>ok(m)&&m[0].toLowerCase()===s);
+  if(mi<0){if(info)info.textContent='Municipio no encontrado: elige uno de la lista o escribe el precio.';return;}
+  _retShowPrice(d,mi);
+  }catch(e){if(info)info.textContent='No hay datos de precios (¿sin conexión?): escribe el precio.';}
+}
+async function _retLoadMunis(){
+  const d=await _fuelData();const dl=document.getElementById('retMuniList');if(!d||!dl)return;
+  dl.innerHTML=d.m.filter(m=>Array.isArray(m)&&typeof m[0]==='string'&&m[0]!=='').map(m=>'<option value="'+esc(_fuelMuniLabel(m))+'"></option>').join('');
+}
+// Km sueltos prepagados (extra exKmPrepago): de la etiqueta «Km sueltos (N km × 0,15€)» o, si no, del importe / 0,15
+function _kmPrepagoOf(b){
+  const ex=((b&&b.extras)||[]).find(e=>e&&e.id==='exKmPrepago');
+  const lbl=ex?ex.label:(((b&&b.finance)||[]).find(f=>f&&f._autoExtra&&/^Km sueltos/.test(f.concept||''))||{}).concept;
+  const m=/\((\d+)\s*km/.exec(lbl||'');
+  if(m)return parseInt(m[1])||0;
+  return ex?Math.round((Number(ex.amount)||0)/0.15):0;
+}
 function openReturnModal(bookingId){
   let _bv=null,_bb=null;
   V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){_bv=v;_bb=b;}});});
@@ -2566,15 +2645,18 @@ function openReturnModal(bookingId){
   const extKm=(Number(_bb.kmContracted)||0)
     +(exArr.some(e=>e.id==='exBolsa1000')?1000:0)
     +(exArr.some(e=>e.id==='exBolsa500')?500:0)
-    +(exArr.some(e=>e.id==='exBolsa200')?200:0);
+    +(exArr.some(e=>e.id==='exBolsa200')?200:0)
+    +_kmPrepagoOf(_bb); // km sueltos prepagados
   const _kmBase=calcKmInc(dur,isFurg);
   const kmLimit=isIlim?9999999:(_kmBase+extKm);
-  const delivFuel=_bb.deliveredFuelLevel||''; // sin dato: no se asume 100%
+  const delivFuel=_bb.deliveredFuelLevel||''; // sin dato: se propone Lleno en el selector
   const fuelOpts=['Lleno (100%)','3/4','1/2','1/4','Reserva'];
+  const fuelProd=_fuelProd(_bv.fuel),tankL=Number(_bv.tankL)>0?Number(_bv.tankL):0,recargo=_fuelRecargo();
   window._retKmStart=kmStart;
   window._retKmLimit=kmLimit;
   window._retKmRate=kmRate;
   window._retDelivFuel=delivFuel;
+  window._retFuelProd=fuelProd;window._retTankL=tankL;window._retRecargo=recargo;
   openSheet('<div class="stitle">\ud83d\udd11 Registrar devoluci\u00f3n</div>'
     +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
     +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' \u00b7 '+esc(_bv.plate)+'</div>'
@@ -2583,9 +2665,9 @@ function openReturnModal(bookingId){
     +'</div>'
     +'<div class="fg"><label class="lbl">KM ACTUALES EN DEVOLUCIÓN *</label>'
     +'<input id="retKm" type="number" inputmode="numeric" placeholder="Ej: 141200" oninput="_calcReturnSummary()"/></div>'
-    +(delivFuel?'':'<div class="fg"><label class="lbl">NIVEL EN ENTREGA (sin dato guardado)</label>'
-    +'<select id="retDeliv" onchange="_calcReturnSummary()"><option value="">— Seleccionar —</option>'
-    +fuelOpts.map(f=>'<option>'+f+'</option>').join('')+'</select></div>')
+    +(delivFuel?'':'<div class="fg"><label class="lbl">NIVEL EN ENTREGA (sin dato guardado: se propone Lleno)</label>'
+    +'<select id="retDeliv" onchange="_calcReturnSummary()">'
+    +fuelOpts.map(f=>'<option'+(f==='Lleno (100%)'?' selected':'')+'>'+f+'</option>').join('')+'</select></div>')
     +'<div class="fg"><label class="lbl">NIVEL COMBUSTIBLE EN DEVOLUCIÓN *</label>'
     +'<select id="retFuel" onchange="_calcReturnSummary()">'
     +'<option value="">— Seleccionar —</option>'
@@ -2594,25 +2676,38 @@ function openReturnModal(bookingId){
     +'<div id="retSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px;display:none"></div>'
     +'<div class="r2"><div class="fg"><label class="lbl">KM EXTRA</label><input id="retKmExtra" type="number" min="0" inputmode="numeric" value="0" oninput="_retKmAmtSync()"/></div>'
     +'<div class="fg"><label class="lbl">IMPORTE KM (€)</label><input id="retKmAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div></div>'
-    +'<div class="r2"><div class="fg"><label class="lbl">COMBUSTIBLE FALTANTE (%)</label><input id="retFuelPct" type="number" min="0" max="100" step="1" inputmode="numeric" value="0" oninput="_retFuelAmtSync()"/></div>'
-    +'<div class="fg"><label class="lbl">IMPORTE COMBUSTIBLE (€)</label><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div></div>'
+    +(fuelProd==='elec'
+      ?'<div style="font-size:12px;color:var(--text3);margin-bottom:12px">⚡ Vehículo eléctrico: sin cargo de combustible.</div>'
+        +'<input id="retFuelL" type="hidden" value="0"/><input id="retFuelPrice" type="hidden" value=""/><input id="retFuelAmt" type="hidden" value="0"/>'
+      :'<div class="r2"><div class="fg"><label class="lbl">LITROS QUE FALTAN</label><input id="retFuelL" type="number" min="0" step="0.1" inputmode="decimal" value="0" oninput="_retFuelAmtSync()"/></div>'
+        +'<div class="fg"><label class="lbl">PRECIO MEDIO (€/L)</label><input id="retFuelPrice" type="number" min="0" step="0.001" inputmode="decimal" placeholder="Escríbelo" oninput="_retFuelAmtSync()"/></div></div>'
+        +'<div style="display:flex;gap:8px;margin-bottom:6px"><button type="button" class="btn-sec" onclick="_retPriceHere()" style="flex:1;width:auto">📍 Precio de aquí</button>'
+        +'<input id="retMuni" list="retMuniList" placeholder="o busca el municipio" autocomplete="off" onchange="_retPriceMuni(this.value)" style="flex:1.4;min-width:0;min-height:44px"/><datalist id="retMuniList"></datalist></div>'
+        +'<div id="retPriceInfo" style="font-size:10px;color:var(--text3);margin-bottom:10px">'+(tankL?esc(FUEL_PROD_LBL[fuelProd])+' · depósito de '+tankL+' L':'Sin capacidad del depósito en la ficha del coche: escribe los litros a mano.')+'</div>'
+        +'<div class="fg"><label class="lbl">IMPORTE COMBUSTIBLE (€) · litros × (precio + '+esc(String(recargo).replace('.',','))+' €/L)</label><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div>')
     +'<div style="font-size:10px;color:var(--text3);margin:-6px 0 12px">Importes sugeridos y editables. Con 0 no se crea cobro.</div>'
     +'<button class="btn-pri" onclick="_confirmReturn()">\u2705 Confirmar devoluci\u00f3n</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+  if(fuelProd!=='elec')_retLoadMunis();
 }
 
-function _fuelFrac(s){if(!s)return 1;s=s.toLowerCase();if(s.includes('100')||s.includes('lleno'))return 1;if(s.includes('3/4'))return 0.75;if(s.includes('1/2'))return 0.5;if(s.includes('1/4'))return 0.25;return 0.05;}
+// Fracción del depósito por nivel. Reserva = 10 %.
+function _fuelFrac(s){if(!s)return 1;s=s.toLowerCase();if(s.includes('100')||s.includes('lleno'))return 1;if(s.includes('3/4'))return 0.75;if(s.includes('1/2'))return 0.5;if(s.includes('1/4'))return 0.25;return 0.1;}
 function _retKmAmtSync(){
   const ex=parseInt(document.getElementById('retKmExtra')?.value)||0;
-  const i=document.getElementById('retKmAmt');if(i)i.value=Math.round(Math.max(0,ex)*(window._retKmRate||0.29)*100)/100;
+  const i=document.getElementById('retKmAmt');if(i)i.value=Math.round(Math.max(0,ex)*(window._retKmRate||0.19)*100)/100;
 }
+// Importe = litros × (precio medio + recargo/L). Sin precio, no se pisa un importe escrito a mano.
 function _retFuelAmtSync(){
-  const p=parseFloat(document.getElementById('retFuelPct')?.value)||0;
-  const i=document.getElementById('retFuelAmt');if(i)i.value=p>0?Number(getCompanyData().penalComb||30):0;
+  const L=parseFloat(document.getElementById('retFuelL')?.value)||0;
+  const p=parseFloat(document.getElementById('retFuelPrice')?.value)||0;
+  const i=document.getElementById('retFuelAmt');if(!i)return;
+  if(L>0&&p>0)i.value=Math.round(L*(p+(window._retRecargo??2))*100)/100;
+  else if(L<=0)i.value=0;
 }
 function _calcReturnSummary(){
-  const kmStart=window._retKmStart||0,kmLimit=window._retKmLimit||9999999,kmRate=window._retKmRate||0.29;
+  const kmStart=window._retKmStart||0,kmLimit=window._retKmLimit||9999999,kmRate=window._retKmRate||0.19;
   const delivFuel=window._retDelivFuel||document.getElementById('retDeliv')?.value||'';
   const setV=(id,v)=>{const i=document.getElementById(id);if(i)i.value=v;};
   const el=document.getElementById('retSummary');if(!el)return;
@@ -2624,14 +2719,17 @@ function _calcReturnSummary(){
   const kmExcess=kmStart>0?Math.max(0,kmUsed-kmLimit):0;
   const kmCharge=Math.round(kmExcess*kmRate*100)/100;
   const fuelDiff=delivFuel?Math.round((_fuelFrac(delivFuel)-_fuelFrac(retFuel))*100):0;
-  const fuelCharge=fuelDiff>0?Number(getCompanyData().penalComb||30):0;
-  setV('retKmExtra',kmExcess);setV('retKmAmt',kmCharge);setV('retFuelPct',Math.max(0,fuelDiff));setV('retFuelAmt',fuelCharge);
+  const isElec=window._retFuelProd==='elec',tankL=window._retTankL||0;
+  const fuelL=(!isElec&&tankL>0&&fuelDiff>0)?Math.round(tankL*fuelDiff/100*10)/10:0;
+  setV('retKmExtra',kmExcess);setV('retKmAmt',kmCharge);
+  if(!isElec&&(tankL>0||fuelDiff<=0))setV('retFuelL',fuelL); // sin depósito en la ficha: los litros se escriben a mano
+  _retFuelAmtSync();
   let html='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">RESUMEN DEVOLUCIÓN</div>';
   if(kmStart>0){html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>Km recorridos</span><span style="font-family:var(--mono);font-weight:700">'+kmUsed.toLocaleString('es-ES')+' km</span></div>';}
   if(kmExcess>0){html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--red)">\u26a0\ufe0f Exceso km: '+kmExcess.toLocaleString('es-ES')+' km \u00d7 '+kmRate+'\u20ac</span><span style="font-family:var(--mono);font-weight:700;color:var(--red)">'+fmtE(kmCharge)+'</span></div>';}
   else if(kmStart>0)html+='<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--green)">\u2705 Sin exceso de km</div>';
   if(!delivFuel)html+='<div style="padding:5px 0;font-size:12px;color:var(--text3)">Combustible: indica el nivel en entrega para calcular la diferencia</div>';
-  else html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>Combustible: '+esc(delivFuel)+' \u2192 '+esc(retFuel)+'</span><span style="color:'+(fuelDiff>0?'var(--red)':'var(--green)')+';font-weight:700">'+(fuelDiff>0?'\u26a0\ufe0f Faltan '+fuelDiff+'%':'\u2705 OK')+'</span></div>';
+  else html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>Combustible: '+esc(delivFuel)+' \u2192 '+esc(retFuel)+'</span><span style="color:'+(fuelDiff>0?'var(--red)':'var(--green)')+';font-weight:700">'+(isElec?'El\u00e9ctrico: sin cargo':fuelDiff>0?'\u26a0\ufe0f Faltan '+fuelDiff+'%'+(fuelL>0?' \u00b7 '+fuelL.toLocaleString('es-ES')+' L':''):'\u2705 OK')+'</span></div>';
   el.innerHTML=html;el.style.display='block';
 }
 function _confirmReturn(){
@@ -2650,9 +2748,10 @@ function _confirmReturn(){
     const kmAmt=Math.max(0,parseFloat(document.getElementById('retKmAmt')?.value)||0);
     const kmEx=Math.max(0,parseInt(document.getElementById('retKmExtra')?.value)||0);
     const fuAmt=Math.max(0,parseFloat(document.getElementById('retFuelAmt')?.value)||0);
-    const fuPct=Math.min(100,Math.max(0,parseInt(document.getElementById('retFuelPct')?.value)||0));
+    const fuL=Math.max(0,parseFloat(document.getElementById('retFuelL')?.value)||0);
+    const fuP=Math.max(0,parseFloat(document.getElementById('retFuelPrice')?.value)||0);
     if(kmAmt>0)b.finance.push({id:uid(),type:'income',concept:'Exceso de km',amount:kmAmt,date:todayStr(),notes:kmEx+' km extra en devolución',_returnCharge:true});
-    if(fuAmt>0)b.finance.push({id:uid(),type:'income',concept:'Combustible faltante',amount:fuAmt,date:todayStr(),notes:(fuPct>0?'Faltan '+fuPct+'% ('+(b.deliveredFuelLevel||'?')+' → '+retFuel+')':'Combustible en devolución: '+retFuel),_returnCharge:true});
+    if(fuAmt>0)b.finance.push({id:uid(),type:'income',concept:'Combustible faltante',amount:fuAmt,date:todayStr(),notes:(fuL>0?'Faltan '+fuL+' L ('+(b.deliveredFuelLevel||'?')+' → '+retFuel+')'+(fuP>0?' · '+fuP+' €/L + '+(window._retRecargo??2)+' €/L de recargo':''):'Combustible en devolución: '+retFuel),_returnCharge:true});
     if(kmEnd>Number(v.km||0))v.km=String(kmEnd);
     save();closeSheet();renderDetail(document.getElementById('PC'));
   }});});
@@ -3111,6 +3210,8 @@ function getCompanyData(){
   try{return JSON.parse(localStorage.getItem('deiros_company')||'{}');}catch(e){return{};}
 }
 function saveCompanyData(d){localStorage.setItem('deiros_company',JSON.stringify(d));}
+// Fianza por defecto: 200 €. «300» era el valor por defecto antiguo del formulario: se trata como no elegido.
+function _fianzaDefault(){const f=String(getCompanyData().fianza||'').trim();return(f===''||f==='300')?'200':f;}
 
 
 function _lockExtra(id,dur,isFurg){
@@ -3275,7 +3376,7 @@ function openContractForm(vId,bookingId){
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">ZONA AUTORIZADA</label><input id="ctZona" value="${esc(co.zonaAut||'Territorio nacional')}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input id="ctEdadMin" value="${esc(co.edadMin||'21')}" inputmode="numeric"/></div>
+    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input id="ctEdadMin" value="${esc(String(Math.max(25,parseInt(co.edadMin)||25)))}" inputmode="numeric"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">PRECIO BASE ALQUILER (€)</label><input id="ctPrecioBase" value="${esc(b.amount||'')}" inputmode="decimal"/></div>
@@ -3292,15 +3393,15 @@ function openContractForm(vId,bookingId){
         <span style="font-size:11px;color:var(--text3);white-space:nowrap">km base</span>
       </div>
     </div>
-    <div class="fg"><label class="lbl">PRECIO KM ADICIONAL (€)</label><input id="ctKmExtra" value="${esc(co.kmExtra||(isFurgoneta?'0.20':'0.15'))}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">PRECIO KM EXCEDIDO (€)</label><input id="ctKmExtra" value="${esc(['','0.15','0,15','0.2','0,2','0.20','0,20'].includes(String(co.kmExtra||'').trim())?'0.19':co.kmExtra)}" inputmode="decimal"/></div>
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:10px">
     <span style="font-size:12px;color:var(--text3);font-weight:600">KM TOTALES CONTRATADOS</span>
     <span id="ctKmTotalBadge" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${Number(calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta))||0} km</span>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(b.fianza!=null&&b.fianza!==''?b.fianza:(co.fianza||'300'))}" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">PENALIZ. COMBUSTIBLE (€)</label><input id="ctPenalComb" value="${esc(co.penalComb||'30')}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(Number(b.fianza)>0?b.fianza:((b.platform||'sinapp')==='sinapp'?_fianzaDefault():'0'))}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">RECARGO COMBUSTIBLE (€/LITRO)</label><input id="ctRecargoL" value="${esc(co.recargoCombL||'2')}" inputmode="decimal"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">PENALIZ. LIMPIEZA (€)</label><input id="ctPenalLimp" value="${esc(co.penalLimp||'60')}" inputmode="decimal"/></div>
@@ -3405,7 +3506,7 @@ function openContractForm(vId,bookingId){
       <input type="checkbox" id="ex_exKmPrepago" style="display:none"/>
       <span style="font-size:20px">🔢</span>
       <span style="flex:1;font-size:13px;font-weight:600">Km sueltos <span style="font-size:10px;color:var(--text3);font-weight:400">(0,15€/km)</span></span>
-      <input id="exKmPrepagoN" type="number" min="0" step="50" placeholder="km" onclick="event.stopPropagation()" oninput="_calcExtrasTotal(${dur},isFurgoneta)"
+      <input id="exKmPrepagoN" type="number" min="0" step="50" placeholder="km" onclick="event.stopPropagation()" oninput="_calcExtrasTotal(${dur},${isFurgoneta});_ctKmUpdate()"
         style="width:70px;font-size:13px;padding:4px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);text-align:right"/>
     </div>
   </div>
@@ -3450,6 +3551,7 @@ function openContractForm(vId,bookingId){
       if(!ex||!ex.id)return;
       const cb=document.getElementById('ex_'+ex.id);
       if(cb&&!cb.checked){
+        if(ex.id==='exKmPrepago'){const _n=document.getElementById('exKmPrepagoN');if(_n)_n.value=String(_kmPrepagoOf(b)||'');}
         if(_kmIds.includes(ex.id))_kmToggleStyled(ex.id,dur);
         else _toggleExtra(ex.id,dur,isFurgoneta);
       }
@@ -4003,13 +4105,20 @@ function generateContractPDF(vId,bookingId){
     if(chk('exBolsa1000'))bonus+=1000;
     if(chk('exBolsa500'))bonus+=500;
     if(chk('exBolsa200'))bonus+=200;
+    if(chk('exKmPrepago'))bonus+=parseInt(document.getElementById('exKmPrepagoN')?.value)||0;
     return bonus;
   })();
   const _kmFinal=_kmBonus===Infinity?'Ilimitados':(_kmCalc+_kmBonus)+' km';
-  const co={nombre:g('ctArNombre'),nif:g('ctArNif'),direccion:g('ctArDir'),telefono:g('ctArTel'),email:g('ctArEmail'),ciudad:g('ctCiudad'),ciudadEntrega:g('ctEntLugar'),zonaAut:g('ctZona'),edadMin:g('ctEdadMin'),kmInc:g('ctKmInc'),kmExtra:g('ctKmExtra'),fianza:g('ctFianza'),penalComb:g('ctPenalComb'),penalLimp:g('ctPenalLimp'),uso:g('ctUso'),formaPago:g('ctPago'),fuelLevel:g('ctFuelLevel')};
+  const co={nombre:g('ctArNombre'),nif:g('ctArNif'),direccion:g('ctArDir'),telefono:g('ctArTel'),email:g('ctArEmail'),ciudad:g('ctCiudad'),ciudadEntrega:g('ctEntLugar'),zonaAut:g('ctZona'),edadMin:g('ctEdadMin'),kmInc:g('ctKmInc'),kmExtra:g('ctKmExtra'),fianza:g('ctFianza'),recargoCombL:g('ctRecargoL'),penalLimp:g('ctPenalLimp'),uso:g('ctUso'),formaPago:g('ctPago'),fuelLevel:g('ctFuelLevel')};
   // La fianza se guarda como valor por defecto solo si no viene de la propia reserva
   if(document.getElementById('ctSaveDefaults')?.checked)saveCompanyData(b.fianza!=null&&b.fianza!==''?{...co,fianza:getCompanyData().fianza}:co);
   if(co.fuelLevel){b.deliveredFuelLevel=co.fuelLevel;save();} // nivel de entrega real: lo usa la devolución
+  // Fianza del contrato: queda registrada en el alquiler (control de fianzas, recibo)
+  {const _fz=parseFloat(String(co.fianza||'').replace(',','.'));b.fianza=Number.isFinite(_fz)&&_fz>0?Math.round(_fz*100)/100:0;if(Number(b.fianzaRetainedAmount)>b.fianza)b.fianzaRetainedAmount=Math.min(Number(b.fianzaRetainedAmount),b.fianza);save();}
+  // Mismo precio del km excedido en la Tercera y en la Sexta; recargo de combustible por litro (4.4)
+  const _kmXR=(String(co.kmExtra||'').trim()||'0.19').replace('.',',');
+  const _recN=parseFloat(String(co.recargoCombL||'').replace(',','.'));
+  const _recXR=(Number.isFinite(_recN)&&_recN>=0?_recN:2).toFixed(2).replace('.',',');
   const veh={make:g('ctVMake'),model:g('ctVModel'),plate:g('ctVPlate'),fuel:g('ctVFuel'),km:g('ctVKm')};
   const vehDesc=(veh.make&&veh.model?veh.make+' '+veh.model:veh.model||v.name);
   const cl={nombre:g('ctClNombre'),nif:g('ctClNif'),dir:g('ctClDir'),tel:g('ctClTel'),nac:g('ctClNac'),lic:g('ctClLic'),licExp:g('ctClLicExp'),nacionalidad:g('ctClNacionalidad')};
@@ -4185,7 +4294,7 @@ function generateContractPDF(vId,bookingId){
   })();
   const _precioBaseLabel='PRECIO BASE'+(_rentDur?' ('+_rentDur+')'  :'');
   dataRow([[_precioBaseLabel,fmtE(Number(g('ctPrecioBase'))||b.amount)],['FORMA DE PAGO',co.formaPago],['FIANZA / DEPÓSITO',fmtE(Number(co.fianza)||0)]]);
-  dataRow([['KM INCLUIDOS',_kmFinal],['PRECIO KM ADICIONAL',co.kmExtra+'€/km'],['ZONA AUTORIZADA',co.zonaAut]]);
+  dataRow([['KM INCLUIDOS',_kmFinal],['PRECIO KM EXCEDIDO',_kmXR+' €/km'],['ZONA AUTORIZADA',co.zonaAut]]);
   if(extrasItems.length){
     para('3.2. Servicios adicionales contratados:',{bold:true});
     extrasItems.forEach(e=>para('• '+e.label+': '+fmtE(e.amt),{indent:5,size:8}));
@@ -4197,7 +4306,7 @@ function generateContractPDF(vId,bookingId){
   para('4.1. Solo podrán conducir el vehículo: el ARRENDATARIO'+(hasExtra&&extra.nombre?' y el conductor adicional D./Dña. '+extra.nombre:'')+'. Todos mayores de '+co.edadMin+' años con permiso válido en vigor.');
   para('4.2. Uso autorizado: '+co.uso+'. Zona autorizada: '+co.zonaAut+'.');
   para('4.3. Queda PROHIBIDO: transporte remunerado de pasajeros, remolcar vehículos, participar en competiciones, conducir bajo efectos de alcohol o drogas, transportar mercancías peligrosas, superar la carga máxima, subarrendar el vehículo, manipular el cuentakilómetros, o circular fuera de la zona autorizada.');
-  para('4.4. Combustible: el vehículo se entrega con nivel "'+co.fuelLevel+'" y debe devolverse igual. De lo contrario se aplicará el coste del combustible faltante más '+co.penalComb+'€ de penalización.');
+  para('4.4. Combustible: el vehículo se entrega con nivel "'+co.fuelLevel+'" y debe devolverse con el mismo nivel. Si se devuelve con menos combustible, el ARRENDATARIO abonará los litros que falten, calculados según la capacidad del depósito, al precio medio de ese carburante en el municipio donde se devuelva el vehículo, según los datos oficiales de precios de carburantes publicados por el Gobierno de España, más un recargo de '+_recXR+' € por litro.');
   para('4.5. El ARRENDATARIO deberá detener el vehículo ante cualquier avería e informar al ARRENDADOR ('+co.telefono+').');
 
   clauseHeader('Quinta','Mantenimiento y reparaciones');
@@ -4207,7 +4316,7 @@ function generateContractPDF(vId,bookingId){
   para('El ARRENDATARIO se compromete a devolver el vehículo en las mismas condiciones de limpieza y estado en que lo recibió. Con independencia de los extras contratados, serán de aplicación las siguientes penalizaciones:');
   const _hasIlim=extrasItems.some(e=>e.label&&e.label.toLowerCase().includes('ilimitados'));
   const _kmBase=_hasIlim?'km ilimitados contratados':_kmCalc+' km incluidos para '+dur+' día'+(dur!==1?'s':'')+' (progresión logarítmica: 200 km día 1)';
-  const _kmExtraRate='0,19';
+  const _kmExtraRate=_kmXR;
   para('• Devolución con suciedad extraordinaria (interior o exterior): 49,00 €\n• Exceso de kilómetros sobre la base contratada ('+_kmBase+'): '+_kmExtraRate+' €/km\n• Devolución fuera del horario acordado sin suplemento previo contratado: 37,99 €',{indent:5,size:8.5});
 
   clauseHeader('Séptima','Accidentes y robos');
@@ -4950,7 +5059,7 @@ function _normalizeState(){
     _normEnum(v,'vtype',['own','managed'],'own');
     _normEnum(v,'vehicle_type',vtypes,'turismo');
     _normEnum(v,'fuel',fuels,'');
-    ['year','km','purchase_price','purchase_year','commission','maint_km'].forEach(k=>_normNum(v,k));
+    ['year','km','purchase_price','purchase_year','commission','maint_km','tankL'].forEach(k=>_normNum(v,k));
     ['itv_date','insurance_date','maint_date','archivedDate'].forEach(k=>_normDate(v,k));
     ['active','archived'].forEach(k=>_normBool(v,k));
     _normList(v,'bookings');_normList(v,'finances');
@@ -6697,6 +6806,8 @@ function openNewRental(){
     <div class="r2 fg"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div>
     <div class="lbl">IMPORTE (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
     <div style="position:relative;margin-bottom:14px"><input type="number" id="rAmt" placeholder="0.00" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
+    <div class="lbl">FIANZA / DEPÓSITO (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">vacío: ${esc(_fianzaDefault())} € si es sin app, 0 en plataformas</span></div>
+    <div style="position:relative;margin-bottom:14px"><input type="number" id="rFianza" step="0.01" inputmode="decimal" placeholder="${esc(_fianzaDefault())}" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--blue);font-weight:700;font-family:var(--mono)">€</span></div>
     <div class="sec" style="margin-bottom:6px">CLIENTE (opcional)</div>
     <input id="rCN" type="hidden"/>
     <input id="rCP" type="hidden"/>
@@ -6872,7 +6983,10 @@ function submitRental(){
   // Store array of financeIds in booking
   const fIds=fEntries.map(e=>e.id);
   const _priceDaySR=parseFloat(document.getElementById('rPriceDay')?.value)||null;
-  v.bookings.push({id:bId,startDate:sd,startTime:st,endDate:ed,endTime:et,platform:_plat,amount:amt,notes,clientName,clientPhone,clientDni,kmStart,kmEnd,financeIds:fIds,financeId:fIds[0]||null,paid:false,extras:_extArrSR,finance:[],priceDay:_priceDaySR});
+  // Fianza: la escrita (también 0). Vacía: la de por defecto si es sin app; 0 en plataformas (gestionan ellas el depósito)
+  const _fzRawSR=(document.getElementById('rFianza')?.value||'').trim();
+  const _fzSR=_fzRawSR!==''?Math.max(0,Math.round((parseFloat(_fzRawSR.replace(',','.'))||0)*100)/100):(_plat==='sinapp'?(parseFloat(_fianzaDefault())||0):0);
+  v.bookings.push({id:bId,startDate:sd,startTime:st,endDate:ed,endTime:et,platform:_plat,amount:amt,notes,clientName,clientPhone,clientDni,kmStart,kmEnd,financeIds:fIds,financeId:fIds[0]||null,paid:false,extras:_extArrSR,finance:[],priceDay:_priceDaySR,fianza:_fzSR});
   // Guardar entradas de finanza por cada extra
   const _bkSR=v.bookings.find(b=>b.id===bId);
   _extArrSR.forEach(function(ex){
@@ -7409,6 +7523,7 @@ function openEditV(id){
       </div>
       <div class="fg"><label class="lbl">KM ACTUALES</label><input id="evKm" type="number" value="${esc(v.km||'')}" inputmode="numeric"/></div>
     </div>
+    <div class="fg"><label class="lbl">DEPÓSITO (LITROS) <span style="font-size:9px;font-weight:400;color:var(--text3)">para calcular el combustible que falta</span></label><input id="evTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50" value="${esc(Number(v.tankL)>0?v.tankL:'')}"/></div>
     <div class="r2">
       <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="evPrice" type="number" value="${esc(v.purchase_price||'')}" inputmode="decimal"/></div>
       <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="evBuyYear" type="number" value="${esc(v.purchase_year||'')}"/></div>
@@ -7468,6 +7583,7 @@ function submitEditV(){
   v.year=(document.getElementById('evY')?.value||'').trim();
   v.fuel=(document.getElementById('evFuel')?.value||'').trim();
   v.km=(document.getElementById('evKm')?.value||'').trim();
+  {const _tk=parseFloat(document.getElementById('evTank')?.value);v.tankL=_tk>0?_tk:null;}
   v.purchase_price=(document.getElementById('evPrice')?.value||'').trim();
   v.purchase_year=(document.getElementById('evBuyYear')?.value||'').trim();
   v.chassis=(document.getElementById('evChassis')?.value||'').trim();
@@ -9795,6 +9911,7 @@ function openAddV(){
       <div class="fg"><label class="lbl">COMBUSTIBLE</label><select id="vFuel"><option value="">—</option><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option><option>GLP</option></select></div>
       <div class="fg"><label class="lbl">KM ACTUALES</label><input id="vKm" type="number" placeholder="45000" inputmode="numeric"/></div>
     </div>
+    <div class="fg"><label class="lbl">DEPÓSITO (LITROS) <span style="font-size:9px;font-weight:400;color:var(--text3)">para calcular el combustible que falta</span></label><input id="vTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50"/></div>
     <div class="r2">
       <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="vPrice" type="number" placeholder="8500" inputmode="decimal"/></div>
       <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="vBuyYear" type="number" placeholder="2021"/></div>
@@ -9890,6 +10007,7 @@ function submitV(){
     year:(document.getElementById('vY')?.value||'').trim(),
     fuel:(document.getElementById('vFuel')?.value||'').trim(),
     km:(document.getElementById('vKm')?.value||'').trim(),
+    tankL:(parseFloat(document.getElementById('vTank')?.value)>0?parseFloat(document.getElementById('vTank').value):null),
     maint_km:'',// set after first maintenance
     purchase_price:(document.getElementById('vPrice')?.value||'').trim(),
     purchase_year:(document.getElementById('vBuyYear')?.value||'').trim(),
@@ -10546,7 +10664,7 @@ function _checkBooking(b,label){
 }
 function _checkVehicle(v,label){
   if(!_isPlainObject(v))return '«'+label+'» tiene que ser un objeto.';
-  let err=_expectStr(v,'id',label+' · id')||_expectStr(v,'name',label+' · nombre')||_expectStr(v,'plate',label+' · matrícula')||_expectStr(v,'model',label+' · modelo')||_expectStr(v,'notes',label+' · notas')||_expectStr(v,'make',label+' · marca')||_expectStr(v,'fuel',label+' · combustible');
+  let err=_expectStr(v,'id',label+' · id')||_expectStr(v,'name',label+' · nombre')||_expectStr(v,'plate',label+' · matrícula')||_expectStr(v,'model',label+' · modelo')||_expectStr(v,'notes',label+' · notas')||_expectStr(v,'make',label+' · marca')||_expectStr(v,'fuel',label+' · combustible')||_expectNum(v,'tankL',label+' · depósito (litros)');
   if(err)return err;
   if('bookings' in v&&v.bookings!=null){
     if(!Array.isArray(v.bookings))return '«'+label+' · bookings» tiene que ser una lista.';
@@ -11010,6 +11128,7 @@ function _ctKmUpdate(){
   if(document.getElementById('ex_exBolsa1000')?.checked)bonus+=1000;
   if(document.getElementById('ex_exBolsa500')?.checked)bonus+=500;
   if(document.getElementById('ex_exBolsa200')?.checked)bonus+=200;
+  if(document.getElementById('ex_exKmPrepago')?.checked)bonus+=parseInt(document.getElementById('exKmPrepagoN')?.value)||0;
   var total=isIlim?'Ilimitados':(base+bonus)+' km';
   var badge=document.getElementById('ctKmTotalBadge');
   if(badge)badge.textContent=total;
@@ -11388,7 +11507,7 @@ function _openQuoteForm(q){
     <div id="qwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
     <div class="fg"><label class="lbl">FIANZA (€)<span style="font-size:9px;color:var(--text3)">reembolsable, no suma al total</span></label>
       <input type="number" id="qFianza" step="0.01" inputmode="decimal" placeholder="200"
-        value="${esc(q&&q.fianza?q.fianza:'')}"/></div>
+        value="${esc(q?String(Number(q.fianza)||0):_fianzaDefault())}"/></div>
     <div class="fg"><label class="lbl">OBSERVACIONES (aparecerán en el PDF)</label>
       <input id="qNotes" value="${esc(q?q.notes||'':'')}" placeholder="Condiciones especiales, descuentos..." autocomplete="off"/></div>
     <div id="qTotalBox" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">
@@ -11648,7 +11767,7 @@ function _saveQuote(){
     dailyRate:calc.dailyRate||null,
     basePriceBreakdown:calc.basePriceBreakdown||null,
     kmIncTotal:calc.kmIncTotal||null,
-    fianza:parseFloat(document.getElementById('qFianza')?.value)||0,
+    fianza:(()=>{const s=(document.getElementById('qFianza')?.value||'').trim();if(s==='')return parseFloat(_fianzaDefault())||0;const n=parseFloat(s.replace(',','.'));return Number.isFinite(n)&&n>0?Math.round(n*100)/100:0;})(),
     totalAmount:calc.total||0,
     notes:(document.getElementById('qNotes')?.value||'').trim(),
   };
@@ -11705,7 +11824,7 @@ function convertQuoteToBooking(id){
     clientName:q.clientName||'',
     clientPhone:q.clientPhone||'',
     clientDni:q.clientDni||'',
-    fianza:Number(q.fianza)||0,
+    fianza:(q.fianza==null||q.fianza==='')?(parseFloat(_fianzaDefault())||0):(Number(q.fianza)||0),
     extras:(q.extras||[]).map(ex=>({id:ex.id,label:(ex.id==='exKmPrepago'&&ex.km)?'Km sueltos ('+ex.km+' km × 0,15€)':ex.label,amount:Number(ex.amount)||0})),
     notes:'Generado desde presupuesto '+q.num+(Number(q.discount)>0?' · Descuento '+fmtF(Number(q.discount)):'')+(q.notes?' · '+q.notes:''),
     platform:'direct',collected:false,delivered:false,returned:false,
@@ -11896,7 +12015,8 @@ function generateQuotePDF(id){
   y+=22;
 
   // ── Fianza ──
-  const fianzaAmt=q.fianza||200;
+  const fianzaAmt=(q.fianza==null||q.fianza==='')?(parseFloat(_fianzaDefault())||0):(Number(q.fianza)||0);
+  if(fianzaAmt>0){
   doc.setFillColor(255,248,220);doc.setDrawColor(200,160,0);
   doc.roundedRect(M,y,CW,20,2,2,'FD');
   doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(120,85,0);
@@ -11906,6 +12026,7 @@ function generateQuotePDF(id){
   doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(130,100,20);
   doc.text('Se abona al inicio del alquiler y se devuelve en su totalidad al finalizar, previa revisi\u00f3n del veh\u00edculo.',M+4,y+14);
   y+=26;
+  } // fianza 0: el presupuesto no muestra el bloque de fianza
 
   // ── Km table ──
   doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(40,30,70);

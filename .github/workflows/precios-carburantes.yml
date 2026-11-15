@@ -1,0 +1,134 @@
+# Robot de precios de carburantes (autorizado por Rafael el 15/11/2026).
+# Descarga cada día los precios oficiales del Ministerio (datos abiertos), calcula la media por municipio
+# y la publica como precios.json en la rama «datos-carburantes» (un único commit, con force-push).
+# No toca main ni redespliega GitHub Pages. La app lo lee de:
+#   https://raw.githubusercontent.com/ElRafaOriginal/DEIROS/datos-carburantes/precios.json
+name: Precios de carburantes
+
+on:
+  schedule:
+    - cron: '30 5 * * *'   # 05:30 UTC = 06:30 en Madrid en invierno (07:30 en verano). GitHub puede retrasarlo unos minutos.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: precios-carburantes
+  cancel-in-progress: false
+
+jobs:
+  precios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Descargar precios y generar precios.json
+        run: |
+          mkdir -p out
+          python3 - <<'PY'
+          # Si algo falla, el script sale con error: el job falla y la rama datos-carburantes conserva los datos anteriores.
+          import datetime, json, math, sys, time, urllib.request
+          URL = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/'
+          PROD = [('e5', 'Precio Gasolina 95 E5'), ('ga', 'Precio Gasoleo A'), ('glp', 'Precio Gases licuados del petróleo')]
+          MIN_ESTACIONES = 5000
+          MAX_BYTES = 600 * 1024
+
+          def num(s):
+              s = str(s or '').strip().replace(',', '.')
+              try:
+                  x = float(s)
+              except ValueError:
+                  return None
+              return x if math.isfinite(x) else None
+
+          def download():
+              last = None
+              for i in range(3):
+                  try:
+                      req = urllib.request.Request(URL, headers={'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 (DEIROS precios carburantes)'})
+                      with urllib.request.urlopen(req, timeout=120) as r:
+                          return json.loads(r.read().decode('utf-8-sig'))
+                  except Exception as e:
+                      last = e
+                      print('Intento %d fallido: %s' % (i + 1, e), file=sys.stderr)
+                      time.sleep(20 * (i + 1))
+              sys.exit('ERROR: no se pudo descargar %s: %s' % (URL, last))
+
+          def build(raw):
+              if not isinstance(raw, dict) or raw.get('ResultadoConsulta') != 'OK':
+                  sys.exit('ERROR: respuesta inesperada (ResultadoConsulta=%r)' % (raw.get('ResultadoConsulta') if isinstance(raw, dict) else None))
+              lst = raw.get('ListaEESSPrecio') or []
+              if len(lst) < MIN_ESTACIONES:
+                  sys.exit('ERROR: solo %d gasolineras (mínimo %d)' % (len(lst), MIN_ESTACIONES))
+              munis, order, est = {}, [], []
+              for s in lst:
+                  name = str(s.get('Municipio') or '').strip()
+                  prov = str(s.get('Provincia') or '').strip()
+                  if not name:
+                      continue
+                  key = str(s.get('IDMunicipio') or '').strip() or (name + '|' + prov)
+                  if key not in munis:
+                      munis[key] = {'i': len(order), 'n': name, 'p': prov, 's': {k: [0.0, 0] for k, _ in PROD}}
+                      order.append(key)
+                  m = munis[key]
+                  for k, campo in PROD:
+                      v = num(s.get(campo))
+                      if v is not None and 0.3 < v < 5:
+                          m['s'][k][0] += v
+                          m['s'][k][1] += 1
+                  lat, lon = num(s.get('Latitud')), num(s.get('Longitud (WGS84)'))
+                  if lat is not None and lon is not None and -90 <= lat <= 90 and -180 <= lon <= 180:
+                      est.append([round(lat, 3), round(lon, 3), m['i']])
+              if len(est) < MIN_ESTACIONES:
+                  sys.exit('ERROR: solo %d gasolineras con coordenadas' % len(est))
+              filas = []
+              for key in order:
+                  m = munis[key]
+                  fila = [m['n'], m['p']]
+                  for k, _ in PROD:
+                      total, n = m['s'][k]
+                      fila += [round(total / n, 3), n] if n else [None, 0]
+                  filas.append(fila)
+              return {
+                  'v': 1,
+                  'fecha': str(raw.get('Fecha') or ''),
+                  'generado': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                  'productos': [k for k, _ in PROD],
+                  'm': filas,
+                  'e': est,
+              }
+
+          def main():
+              # Uso local para pruebas: python3 script.py entrada.json salida.json
+              src = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != '-' else None
+              out = sys.argv[2] if len(sys.argv) > 2 else 'out/precios.json'
+              if src:
+                  with open(src, encoding='utf-8-sig') as f:
+                      raw = json.load(f)
+              else:
+                  raw = download()
+              data = build(raw)
+              txt = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+              size = len(txt.encode('utf-8'))
+              if size > MAX_BYTES:
+                  sys.exit('ERROR: precios.json ocupa %d bytes (máximo %d)' % (size, MAX_BYTES))
+              with open(out, 'w', encoding='utf-8') as f:
+                  f.write(txt)
+              print('OK: %d municipios, %d gasolineras, %d bytes, datos del %s' % (len(data['m']), len(data['e']), size, data['fecha']))
+
+          main()
+          PY
+
+      - name: Publicar en la rama datos-carburantes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd out
+          git init -q
+          git checkout -q -b datos-carburantes
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add precios.json
+          git commit -q -m "Precios de carburantes $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" datos-carburantes
+          echo "Publicado precios.json ($(wc -c < precios.json) bytes) en la rama datos-carburantes"
