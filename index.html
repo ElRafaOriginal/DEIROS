@@ -1907,7 +1907,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   pKpis.forEach(([lbl,val,col],i)=>{
     const px=mg+i*(pw+4);
     doc.setDrawColor(...col);doc.setLineWidth(0.8);doc.line(px,y,px+pw,y);doc.setLineWidth(0.2);
-    doc.setDrawColor(...BORDER);doc.line(px,y+20,px+pw,y+20);
+    doc.setDrawColor(...BORDER);doc.line(px,y+23,px+pw,y+23);
     doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(...col);
     doc.text(val,px+pw/2,y+13,{align:'center'});
     doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
@@ -2011,7 +2011,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       doc.text(fE(amt),mg+60,y+4.5,{align:'right'});
       doc.setTextColor(...ec);doc.setFont('helvetica','bold');
       doc.text(pct+'%',mg+78,y+4.5);
-      _hbar(mg+96,y+1.5,barW,4,pct,ec,[240,225,225]);
+      _hbar(mg+96,y+1.5,Math.min(barW,cW-96),4,pct,ec,[240,225,225]);
       doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+7,mg+cW,y+7);
       y+=7;
     });
@@ -2189,9 +2189,9 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       doc.setFont('helvetica','normal');doc.setTextColor(20,15,40);
       doc.text(c.name.substring(0,34),mg+13,y+4.5);
       if(isRec){
-        doc.setDrawColor(...PURPLE);doc.setLineWidth(0.3);doc.roundedRect(mg+100,y+1.5,20,4,1,1,'S');doc.setLineWidth(0.2);
+        doc.setDrawColor(...PURPLE);doc.setLineWidth(0.3);doc.roundedRect(mg+109,y+1.5,20,4,1,1,'S');doc.setLineWidth(0.2);
         doc.setFontSize(5.5);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
-        doc.text('RECURRENTE',mg+110,y+4.2,{align:'center'});
+        doc.text('RECURRENTE',mg+119,y+4.2,{align:'center'});
       }
       doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
       doc.text(String(c.count),mg+106,y+4.5,{align:'right'});
