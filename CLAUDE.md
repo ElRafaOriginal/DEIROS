@@ -23,7 +23,7 @@ Rafael la usa sobre todo **en el móvil y en modo oscuro**.
 - Comisión del gestor: siempre sobre lo **facturado en el mes** × % de comisión del vehículo, aunque el coche dé pérdidas; si no factura, comisión 0. Al propietario le queda `beneficio − comisión`.
 - Combustible faltante: **precio medio de mercado en el municipio donde se devuelve el coche + 2 €/litro**. Los litros se calculan con la capacidad del depósito del coche y la diferencia entre el nivel de entrega y el de devolución.
 - Km extra contratados al reservar: 0,15 €/km. Km excedidos a la devolución: **0,19 €/km para todos los vehículos** (también furgonetas).
-- Edad mínima del conductor: 25 años. Fianza por defecto: **200 €** (contrato y presupuesto).
+- Edad mínima del conductor: **mayor de 25 años** (a partir de 26; con 25 cumplidos no se alquila). No es configurable. Fianza por defecto: **200 €** (contrato y presupuesto).
 
 ## Autorizaciones expresas de Rafael (15/11/2026)
 
