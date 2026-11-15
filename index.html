@@ -404,6 +404,7 @@ select option{background:var(--bg);}
 .ico-fill{fill:currentColor;}
 .ico-acc{color:var(--amber);}
 .ni.active .ico,.desk-ni.active .ico,.desk-ni-sm.active .ico,.tab.active .ico,.wiz-stp.active .ico{color:var(--amber);}
+.tab,.pill,.tap44{gap:5px;} .tap44,.btn-pri,.btn-sec,.btn-dang{flex-wrap:wrap;row-gap:2px;} /* separa icono y texto en contenedores flex; en botones estrechos el icono pasa arriba */
 </style>
 </head>
 <body>
@@ -416,49 +417,49 @@ select option{background:var(--bg);}
   </div>
   <div class="desk-nav">
     <div class="desk-ni active" id="dni-dashboard" onclick="nav('dashboard')">
-      <span class="desk-icon">📊</span><span class="desk-lbl">Dashboard</span>
+      <span class="desk-icon"><i data-ico="chart"></i></span><span class="desk-lbl">Dashboard</span>
     </div>
     <div class="desk-ni" id="dni-rentals" onclick="nav('rentals')">
-      <span class="desk-icon">🔑</span><span class="desk-lbl">Alquileres</span>
+      <span class="desk-icon"><i data-ico="key"></i></span><span class="desk-lbl">Alquileres</span>
     </div>
     <div class="desk-ni" id="dni-vehicles" onclick="nav('vehicles')">
-      <span class="desk-icon">🚗</span><span class="desk-lbl">Vehículos</span>
+      <span class="desk-icon"><i data-ico="car"></i></span><span class="desk-lbl">Vehículos</span>
     </div>
     <div class="desk-ni" id="dni-contracts" onclick="nav('contracts')">
-      <span class="desk-icon">📄</span><span class="desk-lbl">Contratos</span>
+      <span class="desk-icon"><i data-ico="doc"></i></span><span class="desk-lbl">Contratos</span>
     </div>
     <div class="desk-ni" id="dni-biz" onclick="nav('biz')">
-      <span class="desk-icon">💼</span><span class="desk-lbl">Negocio</span>
+      <span class="desk-icon"><i data-ico="briefcase"></i></span><span class="desk-lbl">Negocio</span>
     </div>
     <div class="desk-nav-sep"></div>
     <div class="desk-nav-label">OTROS</div>
     <div class="desk-ni-sm" id="dni-clients" onclick="nav('clients')">
-      <span class="desk-icon">👤</span><span class="desk-lbl">Clientes</span>
+      <span class="desk-icon"><i data-ico="user"></i></span><span class="desk-lbl">Clientes</span>
     </div>
     <div class="desk-ni-sm" id="dni-agenda" onclick="nav('agenda')">
-      <span class="desk-icon">📅</span><span class="desk-lbl">Agenda</span>
+      <span class="desk-icon"><i data-ico="calendar"></i></span><span class="desk-lbl">Agenda</span>
     </div>
     <div class="desk-ni-sm" id="dni-owners" onclick="nav('owners')">
-      <span class="desk-icon">👥</span><span class="desk-lbl">Propietarios</span>
+      <span class="desk-icon"><i data-ico="users"></i></span><span class="desk-lbl">Propietarios</span>
     </div>
     <div class="desk-ni-sm" id="dni-analytics" onclick="nav('analytics')">
-      <span class="desk-icon">📈</span><span class="desk-lbl">Analítica</span>
+      <span class="desk-icon"><i data-ico="trend-up"></i></span><span class="desk-lbl">Analítica</span>
     </div>
     <div class="desk-ni-sm" onclick="openPendingDeposits()">
-      <span class="desk-icon">🔒</span><span class="desk-lbl">Fianzas</span>
+      <span class="desk-icon"><i data-ico="lock"></i></span><span class="desk-lbl">Fianzas</span>
     </div>
     <div class="desk-ni-sm" id="dni-archive" onclick="nav('archive')">
-      <span class="desk-icon">📦</span><span class="desk-lbl">Archivo</span>
+      <span class="desk-icon"><i data-ico="box"></i></span><span class="desk-lbl">Archivo</span>
     </div>
     <div class="desk-ni-sm" id="dni-recurring" onclick="nav('recurring')">
-      <span class="desk-icon">🔄</span><span class="desk-lbl">Recurrentes</span>
+      <span class="desk-icon"><i data-ico="repeat"></i></span><span class="desk-lbl">Recurrentes</span>
     </div>
   </div>
   <div class="desk-footer">
     <div class="desk-footer-btn" onclick="toggleTheme()" id="deskThemeBtn">🌙 <span id="deskThemeLbl">Modo claro</span></div>
-    <div class="desk-footer-btn" onclick="openNotifSettings()">🔔 <span>Notificaciones</span></div>
-    <div class="desk-footer-btn" onclick="openBackup()">💾 <span>Copia de seguridad</span></div>
-    <div class="desk-footer-btn" onclick="doLogout()" style="color:var(--red)">🚪 <span>Cerrar sesión</span></div>
+    <div class="desk-footer-btn" onclick="openNotifSettings()"><i data-ico="bell"></i> <span>Notificaciones</span></div>
+    <div class="desk-footer-btn" onclick="openBackup()"><i data-ico="save"></i> <span>Copia de seguridad</span></div>
+    <div class="desk-footer-btn" onclick="doLogout()" style="color:var(--red)"><i data-ico="logout"></i> <span>Cerrar sesión</span></div>
   </div>
 </div>
 
@@ -502,55 +503,55 @@ select option{background:var(--bg);}
   <div style="height:1px;background:var(--border);margin:0 20px 8px"></div>
   <!-- Menu items -->
   <div onclick="closeHamburger();nav('contracts')" class="hmenu-item" id="hni-contracts">
-    <span class="hmenu-icon">📄</span><span class="hmenu-lbl">Contratos</span>
+    <span class="hmenu-icon"><i data-ico="doc"></i></span><span class="hmenu-lbl">Contratos</span>
   </div>
   <div onclick="closeHamburger();openFreeVehiclesSearch()" class="hmenu-item">
-    <span class="hmenu-icon">🔍</span><span class="hmenu-lbl">Coches libres</span>
+    <span class="hmenu-icon"><i data-ico="search"></i></span><span class="hmenu-lbl">Coches libres</span>
   </div>
   <div onclick="closeHamburger();nav('clients')" class="hmenu-item" id="hni-clients">
-    <span class="hmenu-icon">👤</span><span class="hmenu-lbl">Clientes</span>
+    <span class="hmenu-icon"><i data-ico="user"></i></span><span class="hmenu-lbl">Clientes</span>
   </div>
   <div onclick="closeHamburger();nav('agenda')" class="hmenu-item" id="hni-agenda">
-    <span class="hmenu-icon">📅</span><span class="hmenu-lbl">Agenda</span>
+    <span class="hmenu-icon"><i data-ico="calendar"></i></span><span class="hmenu-lbl">Agenda</span>
   </div>
   <div onclick="closeHamburger();nav('owners')" class="hmenu-item" id="hni-owners">
-    <span class="hmenu-icon">👥</span><span class="hmenu-lbl">Propietarios</span>
+    <span class="hmenu-icon"><i data-ico="users"></i></span><span class="hmenu-lbl">Propietarios</span>
   </div>
   <div onclick="closeHamburger();nav('analytics')" class="hmenu-item" id="hni-analytics">
-    <span class="hmenu-icon">📈</span><span class="hmenu-lbl">Analítica</span>
+    <span class="hmenu-icon"><i data-ico="trend-up"></i></span><span class="hmenu-lbl">Analítica</span>
   </div>
   <div onclick="closeHamburger();nav('recurring')" class="hmenu-item" id="hni-recurring">
-    <span class="hmenu-icon">🔄</span><span class="hmenu-lbl">Gastos recurrentes</span>
+    <span class="hmenu-icon"><i data-ico="repeat"></i></span><span class="hmenu-lbl">Gastos recurrentes</span>
   </div>
   <div onclick="closeHamburger();openPendingDeposits()" class="hmenu-item">
-    <span class="hmenu-icon">🔒</span><span class="hmenu-lbl">Fianzas</span>
+    <span class="hmenu-icon"><i data-ico="lock"></i></span><span class="hmenu-lbl">Fianzas</span>
   </div>
   <div onclick="closeHamburger();nav('archive')" class="hmenu-item" id="hni-archive">
-    <span class="hmenu-icon">📦</span><span class="hmenu-lbl">Archivo</span>
+    <span class="hmenu-icon"><i data-ico="box"></i></span><span class="hmenu-lbl">Archivo</span>
   </div>
   <div style="height:1px;background:var(--border);margin:8px 20px"></div>
   <div onclick="closeHamburger();toggleTheme()" class="hmenu-item">
     <span class="hmenu-icon" id="themeBtn">🌙</span><span class="hmenu-lbl" id="themeLbl">Modo claro</span>
   </div>
   <div onclick="closeHamburger();openNotifSettings()" class="hmenu-item">
-    <span class="hmenu-icon">🔔</span><span class="hmenu-lbl">Notificaciones</span>
+    <span class="hmenu-icon"><i data-ico="bell"></i></span><span class="hmenu-lbl">Notificaciones</span>
   </div>
   <div onclick="closeHamburger();openBackup()" class="hmenu-item">
-    <span class="hmenu-icon">💾</span><span class="hmenu-lbl">Copia de seguridad</span>
+    <span class="hmenu-icon"><i data-ico="save"></i></span><span class="hmenu-lbl">Copia de seguridad</span>
   </div>
   <div style="height:1px;background:var(--border);margin:8px 20px"></div>
   <div onclick="closeHamburger();doLogout()" class="hmenu-item" style="color:var(--red)">
-    <span class="hmenu-icon">🚪</span><span class="hmenu-lbl">Cerrar sesión</span>
+    <span class="hmenu-icon"><i data-ico="logout"></i></span><span class="hmenu-lbl">Cerrar sesión</span>
   </div>
 </div>
 <div class="page" id="mainPage"><div class="pi" id="PC"></div></div>
 <nav class="bnav" id="BN">
-  <div class="ni active" onclick="nav('dashboard')" id="ni-dashboard"><div class="ni-icon">📊</div><div class="ni-lbl">RESUMEN</div><div class="ni-dot" id="nd-dashboard"></div></div>
-  <div class="ni" onclick="nav('rentals')" id="ni-rentals"><div class="ni-icon">🔑</div><div class="ni-lbl">ALQUIL.</div><div class="ni-dot" id="nd-rentals"></div></div>
-  <div class="ni" onclick="nav('vehicles')" id="ni-vehicles"><div class="ni-icon">🚗</div><div class="ni-lbl">FLOTA</div><div class="ni-dot" id="nd-vehicles"></div></div>
-  <div class="ni" onclick="nav('biz')" id="ni-biz"><div class="ni-icon">💼</div><div class="ni-lbl">NEGOCIO</div><div class="ni-dot" id="nd-biz"></div></div>
+  <div class="ni active" onclick="nav('dashboard')" id="ni-dashboard"><div class="ni-icon"><i data-ico="chart"></i></div><div class="ni-lbl">RESUMEN</div><div class="ni-dot" id="nd-dashboard"></div></div>
+  <div class="ni" onclick="nav('rentals')" id="ni-rentals"><div class="ni-icon"><i data-ico="key"></i></div><div class="ni-lbl">ALQUIL.</div><div class="ni-dot" id="nd-rentals"></div></div>
+  <div class="ni" onclick="nav('vehicles')" id="ni-vehicles"><div class="ni-icon"><i data-ico="car"></i></div><div class="ni-lbl">FLOTA</div><div class="ni-dot" id="nd-vehicles"></div></div>
+  <div class="ni" onclick="nav('biz')" id="ni-biz"><div class="ni-icon"><i data-ico="briefcase"></i></div><div class="ni-lbl">NEGOCIO</div><div class="ni-dot" id="nd-biz"></div></div>
 </nav>
-<div class="qa" id="QA"><button type="button" class="qa-b qa-new" onclick="openNewRentalPicker()">＋ Nuevo alquiler</button><button type="button" class="qa-b qa-free" onclick="openFreeVehiclesSearch()">🔍 Coches libres</button></div>
+<div class="qa" id="QA"><button type="button" class="qa-b qa-new" onclick="openNewRentalPicker()">＋ Nuevo alquiler</button><button type="button" class="qa-b qa-free" onclick="openFreeVehiclesSearch()"><i data-ico="search"></i> Coches libres</button></div>
 <div class="fab" id="FAB" title="Nuevo" aria-label="Nuevo" onclick="fabClick()" style="display:none">＋</div>
 <div class="ov" id="OV" onclick="closeSheet()"></div>
 <div class="sheet" id="SH"><div class="sh"></div><div id="SC"></div></div>
@@ -589,7 +590,7 @@ select option{background:var(--bg);}
 <script>
 window.onerror=function(msg,src,line,col,err){
   var ls=document.getElementById('loadingScreen');
-  if(ls)ls.innerHTML='<div style="text-align:center;padding:24px;max-width:380px;font-family:monospace"><div style="font-size:36px;margin-bottom:12px">🔴</div><div style="font-size:13px;font-weight:bold;color:#EF4444;margin-bottom:10px">ERROR JS</div><div style="font-size:11px;color:#F0F4FF;word-break:break-all;background:#1a1a2e;padding:12px;border-radius:8px;text-align:left"><b>Msg:</b> '+String(msg==null?'':msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<br><b>Line:</b> '+String(line==null?'':line).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br>'+(err?'<b>Stack:</b><br>'+String(err.stack||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button onclick="location.reload()" style="margin-top:12px;background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer">🔄 Recargar</button></div>';
+  if(ls)ls.innerHTML='<div style="text-align:center;padding:24px;max-width:380px;font-family:monospace"><div style="margin-bottom:12px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.75" aria-hidden="true"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 9.5v5"/><rect x="11.1" y="16.2" width="1.8" height="1.8" fill="#EF4444" stroke="none"/></svg></div><div style="font-size:13px;font-weight:bold;color:#EF4444;margin-bottom:10px">ERROR JS</div><div style="font-size:11px;color:#F0F4FF;word-break:break-all;background:#1a1a2e;padding:12px;border-radius:8px;text-align:left"><b>Msg:</b> '+String(msg==null?'':msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<br><b>Line:</b> '+String(line==null?'':line).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br>'+(err?'<b>Stack:</b><br>'+String(err.stack||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button onclick="location.reload()" style="margin-top:12px;background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer">Recargar</button></div>';
   return false;
 };
 window.addEventListener('unhandledrejection',function(e){window.onerror('Promise rejection: '+(e.reason&&e.reason.message||e.reason),'',0,0,e.reason);});
@@ -606,7 +607,7 @@ const firebaseConfig={
 if(typeof firebase==='undefined'){
   document.addEventListener('DOMContentLoaded',()=>{
     const ls=document.getElementById('loadingScreen');
-    if(ls)ls.innerHTML='<div style="text-align:center;padding:32px;max-width:320px"><div style="font-size:48px;margin-bottom:16px">🚗</div><div style="font-size:20px;font-weight:800;color:var(--amber);margin-bottom:12px">DEIROS FLEET</div><div style="font-size:13px;color:#EF4444;font-weight:700;margin-bottom:12px">⚠️ No se pudo conectar con Firebase</div><div style="font-size:12px;color:#94A3B8;line-height:1.7">Abre el archivo desde <strong style="color:#F0F4FF">GitHub Pages o Netlify</strong>, no directamente desde el disco.</div></div>';
+    if(ls)ls.innerHTML='<div style="text-align:center;padding:32px;max-width:320px"><div style="margin-bottom:16px;color:var(--amber)"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M5 16.5H3V12.6l2.6-1.1L8 7.5h7.4l3.4 4L21 12.6v3.9h-2"/><path d="M9 16.5h6M5.6 11.5h13.2M12 7.5v4"/><circle cx="7" cy="16.5" r="2"/><circle cx="17" cy="16.5" r="2"/></svg></div><div style="font-size:20px;font-weight:800;color:var(--amber);margin-bottom:12px">DEIROS FLEET</div><div style="font-size:13px;color:#EF4444;font-weight:700;margin-bottom:12px">No se pudo conectar con Firebase</div><div style="font-size:12px;color:#94A3B8;line-height:1.7">Abre el archivo desde <strong style="color:#F0F4FF">GitHub Pages o Netlify</strong>, no directamente desde el disco.</div></div>';
   });
   throw new Error('Firebase no disponible en este entorno');
 }
@@ -729,6 +730,8 @@ paw:'<path d="M12 12.8c-2.7 0-5 2.6-5 4.8 0 1.7 1.2 2.6 2.8 2.6h4.4c1.6 0 2.8-.9
 infinity:'<path d="M12 12c-1.8-2.4-3.2-4-5.2-4a4 4 0 0 0 0 8c2 0 3.4-1.6 5.2-4s3.2-4 5.2-4a4 4 0 0 1 0 8c-2 0-3.4-1.6-5.2-4z"/>'
 };
 function ico(n,s,c){const p=ICONS[n];if(!p)return '';s=s||'1.2em';return '<svg class="ico'+(c?' '+c:'')+'" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+p+'</svg>';}
+// Iconos del HTML estático: <i data-ico="nombre"></i> → <svg> (el HTML está antes de este script)
+document.querySelectorAll('[data-ico]').forEach(e=>{e.outerHTML=ico(e.dataset.ico);});
 const VTYPES=[
   {id:'turismo',   label:'Turismo',  icon:'car', desc:''},
   {id:'l1h1',      label:'L1H1',     icon:'van', desc:'Reparto urbano, paquetería ligera'},
@@ -795,7 +798,7 @@ function renderClientsBody(){
   const q=_searchClients.toLowerCase();
   const filtered=CL.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.dni||'').toLowerCase().includes(q)||(c.phone||'').includes(q));
   filtered.sort((a,b)=>(b.bookingIds||[]).length-(a.bookingIds||[]).length);
-  if(!filtered.length){res.innerHTML=`<div class="empty"><div class="ei">👤</div><div class="et">${CL.length?'Sin resultados':'Sin clientes aún'}</div><div class="es">Los clientes se crean automáticamente al añadir alquileres con DNI o nombre</div></div>`;return;}
+  if(!filtered.length){res.innerHTML=`<div class="empty"><div class="ei">${ico('user')}</div><div class="et">${CL.length?'Sin resultados':'Sin clientes aún'}</div><div class="es">Los clientes se crean automáticamente al añadir alquileres con DNI o nombre</div></div>`;return;}
   const open=(cl)=>`_clientDetail='${escJs(cl.id)}';renderClientDetail(document.getElementById('PC'))`;
   let h='';
   if(_clientsMode==='grid'){
@@ -804,12 +807,12 @@ function renderClientsBody(){
       const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
       h+=`<div onclick="${open(cl)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer">
         <div style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cl.name||'Sin nombre')}</div>
-        ${cl.dni?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">🪪 ${esc(cl.dni)}</div>`:''}
+        ${cl.dni?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${ico('id-card')} ${esc(cl.dni)}</div>`:''}
         <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
           <div style="text-align:center;background:var(--bg3);border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(total)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">TOTAL</div></div>
           <div style="text-align:center;background:var(--bg3);border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue)">${bks.length}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ALQ.</div></div>
         </div>
-        <div style="font-size:11px;color:var(--amber);margin-top:8px">${'⭐'.repeat(cl.rating||0)+'☆'.repeat(5-(cl.rating||0))}</div>
+        <div style="font-size:11px;color:var(--amber);margin-top:8px">${ico('star',null,'ico-fill').repeat(cl.rating||0)+ico('star').repeat(5-(cl.rating||0))}</div>
       </div>`;
     });
     h+=`</div>`;
@@ -818,7 +821,7 @@ function renderClientsBody(){
     filtered.forEach((cl,i)=>{
       const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
       h+=`<div onclick="${open(cl)}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<filtered.length-1?'1px solid var(--border)':'none'}" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👤</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${ico('user')}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cl.name||'Sin nombre')}</div>
           <div style="font-size:10px;color:var(--text3);margin-top:1px">${esc(cl.dni||cl.phone||'Sin datos')}</div>
@@ -835,13 +838,13 @@ function renderClientsBody(){
     // extended
     filtered.forEach(cl=>{
       const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
-      const stars='⭐'.repeat(cl.rating||0)+'☆'.repeat(5-(cl.rating||0));
+      const stars=ico('star',null,'ico-fill').repeat(cl.rating||0)+ico('star').repeat(5-(cl.rating||0));
       h+=`<div onclick="${open(cl)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;cursor:pointer">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
             <div style="font-size:16px;font-weight:800">${esc(cl.name||'Sin nombre')}</div>
-            ${cl.dni?`<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">🪪 ${esc(cl.dni)}</div>`:''}
-            ${cl.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 ${esc(cl.phone)}</div>`:''}
+            ${cl.dni?`<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${ico('id-card')} ${esc(cl.dni)}</div>`:''}
+            ${cl.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${ico('phone')} ${esc(cl.phone)}</div>`:''}
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmt(total)}</div>
@@ -866,7 +869,7 @@ function renderClients(el){
           style="padding-left:14px;font-size:14px"/>
       </div>
       <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-        <div class="tap44" id="ctog-extended" onclick="_clientsMode='extended';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">☰</div>
+        <div class="tap44" id="ctog-extended" onclick="_clientsMode='extended';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">${ico('menu')}</div>
         <div class="tap44" id="ctog-compact" onclick="_clientsMode='compact';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
         <div class="tap44" id="ctog-grid" onclick="_clientsMode='grid';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
       </div>
@@ -4680,7 +4683,7 @@ function _showLoadError(){
   if(!ls)return;
   ls.style.display='flex';
   ls.innerHTML='<div style="text-align:center;padding:24px;max-width:360px">'
-    +'<div style="font-size:40px;margin-bottom:12px">⚠️</div>'
+    +('<div style="font-size:40px;margin-bottom:12px">'+ico('alert')+'</div>')
     +'<div style="font-size:16px;font-weight:800;color:var(--amber);margin-bottom:10px">DEIROS</div>'
     +'<div style="font-size:15px;font-weight:800;margin-bottom:8px">No se han podido cargar los datos</div>'
     +'<div style="font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:16px">No se entra en la aplicación, para no guardar un estado vacío encima de los datos reales.</div>'
@@ -5274,14 +5277,14 @@ function render(){
     const dA=document.getElementById('deskActions');
     if(dA){
       if(CV==='vehicles'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openAddV()">＋ Nuevo vehículo</button>';
-      else if(CV==='rentals')dA.innerHTML='<button class="desk-btn-ghost" onclick="openContractWizard()">📄 Contrato PDF</button><button class="desk-btn" onclick="openNewRentalPicker()">＋ Nuevo alquiler</button>';
-      else if(CV==='contracts')dA.innerHTML='<button class="desk-btn-ghost" onclick="openAddBiz()">＋ Movimiento</button><button class="desk-btn" onclick="openContractWizard()">📄 Nuevo contrato</button>';
-      else if(CV==='biz'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openBizReportPicker()">📄 Informe</button><button class="desk-btn" onclick="openAddBiz()">＋ Añadir movimiento</button>';
+      else if(CV==='rentals')dA.innerHTML=('<button class="desk-btn-ghost" onclick="openContractWizard()">'+ico('doc')+' Contrato PDF</button><button class="desk-btn" onclick="openNewRentalPicker()">＋ Nuevo alquiler</button>');
+      else if(CV==='contracts')dA.innerHTML=('<button class="desk-btn-ghost" onclick="openAddBiz()">＋ Movimiento</button><button class="desk-btn" onclick="openContractWizard()">'+ico('doc')+' Nuevo contrato</button>');
+      else if(CV==='biz'&&!AV)dA.innerHTML=('<button class="desk-btn" onclick="openBizReportPicker()">'+ico('doc')+' Informe</button><button class="desk-btn" onclick="openAddBiz()">＋ Añadir movimiento</button>');
       else if(CV==='owners'&&!AV)dA.innerHTML='<button class="desk-btn" onclick="openAddOwner()">＋ Nuevo propietario</button>';
       else if(AV&&AT==='calendar')dA.innerHTML='<button class="desk-btn" onclick="openNewRental()">＋ Nuevo alquiler</button>';
       else if(AV&&AT==='finances')dA.innerHTML='<button class="desk-btn" onclick="openAddEntry()">＋ Movimiento</button>';
-      else if(CV==='quotes'&&!AV)dA.innerHTML='<button class="desk-btn-ghost" onclick="openFreeVehiclesSearch()">🔍 Coches libres</button><button class="desk-btn" onclick="openNewQuote()">＋ Nuevo presupuesto</button>';
-      else if(CV==='analytics')dA.innerHTML='<button class="desk-btn" onclick="generateAnalyticsPDF()">📄 Informe PDF</button>';
+      else if(CV==='quotes'&&!AV)dA.innerHTML=('<button class="desk-btn-ghost" onclick="openFreeVehiclesSearch()">'+ico('search')+' Coches libres</button><button class="desk-btn" onclick="openNewQuote()">＋ Nuevo presupuesto</button>');
+      else if(CV==='analytics')dA.innerHTML=('<button class="desk-btn" onclick="generateAnalyticsPDF()">'+ico('doc')+' Informe PDF</button>');
       else dA.innerHTML='';
     }
     let dBadge=document.getElementById('deskAlertBadge');
@@ -5338,7 +5341,7 @@ function renderDash(el){
   let h='<div class="anim">';
 
   // ── KPI ROW: Current month first ─────────────────────────────────────
-  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">📅 ${MON_LABEL.toUpperCase()} ${now.getFullYear()}</div>
+  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">${ico('calendar')} ${MON_LABEL.toUpperCase()} ${now.getFullYear()}</div>
   <div class="grid2" style="margin-bottom:4px">
     <div class="sbox" style="border-color:#10B98133;border-left:4px solid var(--green)">
       <div class="sv" style="color:var(--green)">${fmt(mI)}</div>
@@ -5361,9 +5364,9 @@ function renderDash(el){
     </div>
   </div>
   ${(()=>{let n=0;activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&_fianzaStatus(b)==='pending')n++;}));
-    return `<div class="tap44" onclick="openPendingDeposits()" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid ${n?'var(--acc-b)':'var(--border2)'};border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer"><span style="font-size:12px;font-weight:700;color:${n?'var(--amber)':'var(--text2)'}">🔒 Fianzas pendientes (${n})</span><span style="color:var(--text3)">›</span></div>`;})()}
+    return `<div class="tap44" onclick="openPendingDeposits()" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid ${n?'var(--acc-b)':'var(--border2)'};border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer"><span style="font-size:12px;font-weight:700;color:${n?'var(--amber)':'var(--text2)'}">${ico('lock')} Fianzas pendientes (${n})</span><span style="color:var(--text3)">›</span></div>`;})()}
   <details style="margin-bottom:${isDesk?'24px':'12px'}">
-    <summary style="font-size:11px;color:var(--text3);cursor:pointer;padding:6px 0;list-style:none">▸ Año ${now.getFullYear()} (acumulado)</summary>
+    <summary style="font-size:11px;color:var(--text3);cursor:pointer;padding:6px 0;list-style:none">${ico('chevron')} Año ${now.getFullYear()} (acumulado)</summary>
     ${(()=>{
       const yr=now.getFullYear();
       const yrStr=String(yr);
@@ -5400,7 +5403,7 @@ function renderDash(el){
   activeRentals.sort((a,b)=>a.endDate.localeCompare(b.endDate));
 
   if(!activeV.length){
-    h+=`<div class="empty"><div class="ei">🚗</div><div class="et">Sin vehículos</div><div class="es">Ve a Flota y añade tu primer coche</div></div>`;
+    h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div><div class="es">Ve a Flota y añade tu primer coche</div></div>`;
     h+='</div>';el.innerHTML=h;return;
   }
 
@@ -5438,11 +5441,11 @@ function renderDash(el){
     h+=`<div style="display:flex;flex-direction:column;height:calc(100vh - 250px)">`;
     if(activeRentals.length){
       h+=`<div style="background:var(--bg2);border:1px solid var(--acc-b);border-radius:14px;padding:20px;margin-bottom:16px">
-        <div class="sec" style="color:var(--amber);margin-bottom:14px">🔑 EN ALQUILER AHORA (${activeRentals.length})</div>
+        <div class="sec" style="color:var(--amber);margin-bottom:14px">${ico('key')} EN ALQUILER AHORA (${activeRentals.length})</div>
         ${activeRentals.map(b=>`<div onclick="openV('${escJs(b.vid)}')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">
           <div>
             <div style="font-size:13px;font-weight:600">${esc(b.vname)}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName):''}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?(ico('user')+' ')+esc(b.clientName):''}</div>
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
@@ -5453,7 +5456,7 @@ function renderDash(el){
     }
     if(alerts.length){
       h+=`<div style="background:var(--bg2);border:1px solid #EF444430;border-radius:14px;padding:20px;margin-bottom:16px">
-        <div class="sec" style="color:var(--red);margin-bottom:14px">🔔 ALERTAS (${alerts.length})</div>
+        <div class="sec" style="color:var(--red);margin-bottom:14px">${ico('bell')} ALERTAS (${alerts.length})</div>
         ${alerts.slice(0,8).map(a=>`<div onclick="openV('${escJs(a.vid)}')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">
           <div>
             <div style="font-size:13px;font-weight:600">${esc(a.vname)}</div>
@@ -5474,7 +5477,7 @@ function renderDash(el){
     activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate>nowStr&&!b.cancelled&&!b.cancellation)upcoming2.push({...b,vname:v.name,vcolor:v.color||'#F59E0B',vid:v.id});}));
     upcoming2.sort((a,b)=>a.startDate.localeCompare(b.startDate));
     if(upcoming2.length){
-      h+=`<div class="sec" style="margin-top:4px">📋 PRÓXIMOS ALQUILERES</div>
+      h+=`<div class="sec" style="margin-top:4px">${ico('clipboard')} PRÓXIMOS ALQUILERES</div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
         ${upcoming2.slice(0,8).map((b,i)=>{
           const p=PLATS[b.platform];
@@ -5498,7 +5501,7 @@ function renderDash(el){
     // ── MOBILE: single column ─────────────────────────────────────────────
     if(alerts.length){
       h+=`<div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #EF444440">
-        <div class="sec" style="color:var(--red);margin-bottom:10px">🔔 ALERTAS (${alerts.length})</div>
+        <div class="sec" style="color:var(--red);margin-bottom:10px">${ico('bell')} ALERTAS (${alerts.length})</div>
         ${alerts.slice(0,5).map(a=>`<div onclick="openV('${escJs(a.vid)}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer">
           <div><div style="font-size:13px;font-weight:600">${esc(a.vname)}</div><div style="font-size:11px;color:var(--text3)">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
           <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</div>
@@ -5508,12 +5511,12 @@ function renderDash(el){
     // ── ALQUILERES EN CURSO ─────────────────────────────────────────────
     if(activeRentals.length){
       h+=`<div style="margin-bottom:16px">
-        <div class="sec" style="margin-bottom:8px">🔑 EN ALQUILER AHORA (${activeRentals.length})</div>
+        <div class="sec" style="margin-bottom:8px">${ico('key')} EN ALQUILER AHORA (${activeRentals.length})</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           ${activeRentals.map(b=>`<div onclick="openV('${escJs(b.vid)}')" style="background:var(--bg2);border:1px solid var(--acc-b);border-left:4px solid var(--amber);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?'👤 '+esc(b.clientName)+' · ':''}hasta ${esc(fmtDMY(b.endDate))}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?(ico('user')+' ')+esc(b.clientName)+' · ':''}hasta ${esc(fmtDMY(b.endDate))}</div>
             </div>
             <div style="text-align:right">
               <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
@@ -5558,7 +5561,7 @@ function renderDash(el){
     activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate>nowStr&&!b.cancelled&&!b.cancellation)upcoming2.push({...b,vname:v.name,vcolor:v.color||'#F59E0B',vid:v.id});}));
     upcoming2.sort((a,b)=>a.startDate.localeCompare(b.startDate));
     if(upcoming2.length){
-      h+=`<div class="sec" style="margin-top:4px">📋 PRÓXIMOS ALQUILERES</div>
+      h+=`<div class="sec" style="margin-top:4px">${ico('clipboard')} PRÓXIMOS ALQUILERES</div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
         ${upcoming2.slice(0,8).map((b,i)=>{
           const p=PLATS[b.platform];
@@ -5662,13 +5665,13 @@ function renderListBody(){
     if(d){d.style.background=m===mode?'var(--bg)':'transparent';d.style.color=m===mode?'var(--amber)':'var(--text3)';}
   });
   let h='';
-  if(!activeV.length){h+=`<div class="empty"><div class="ei">🚗</div><div class="et">Sin vehículos</div><div class="es">Pulsa + para añadir</div></div>`;}
-  else if(!filtered.length){h+=`<div class="empty"><div class="ei">🔍</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;}
+  if(!activeV.length){h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div><div class="es">Pulsa + para añadir</div></div>`;}
+  else if(!filtered.length){h+=`<div class="empty"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;}
   else{
     if(mode==='grid'){
       // Grid: 2 cols compact cards with section headers
       if(own.length){
-        h+=`<div class="sec" style="color:var(--amber);margin-bottom:8px">🚗 FLOTA PROPIA (${own.length})</div>`;
+        h+=`<div class="sec" style="color:var(--amber);margin-bottom:8px">${ico('car')} FLOTA PROPIA (${own.length})</div>`;
         h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">`;
         own.forEach(v=>{
         const vI=tInc(v),vE=tExp(v),vP=vI-vE;
@@ -5686,7 +5689,7 @@ function renderListBody(){
         h+=`</div>`;
       }
       if(managed.length){
-        h+=`<div class="sec" style="color:var(--purple);margin-bottom:8px">🤝 EN GESTIÓN (${managed.length})</div>`;
+        h+=`<div class="sec" style="color:var(--purple);margin-bottom:8px">${ico('handshake')} EN GESTIÓN (${managed.length})</div>`;
         h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
         managed.forEach(v=>{
           const vI=tInc(v),vE=tExp(v),vP=vI-vE;
@@ -5709,10 +5712,10 @@ function renderListBody(){
       const getVStatus=v=>{
         const bks=v.bookings||[];
         const inProgress=bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
-        if(inProgress)return{chip:`<span class="chip chip-amber">🔑 ${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
+        if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')} ${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
         const nextB=bks.filter(b=>b.startDate>hoy).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">📅 En ${dUntil}d</span>`,sort:2};}
-        return{chip:`<span class="chip chip-green">✓ Disponible</span>`,sort:3};
+        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')} En ${dUntil}d</span>`,sort:2};}
+        return{chip:`<span class="chip chip-green">${ico('check')} Disponible</span>`,sort:3};
       };
       const drawCompactSection=(list,label,clr)=>{
         if(!list.length)return;
@@ -5748,8 +5751,8 @@ function renderListBody(){
         });
         h+=`</tbody></table></div>`;
       };
-      drawCompactSection(own,'🚗 FLOTA PROPIA ('+own.length+')','var(--amber)');
-      drawCompactSection(managed,'🤝 EN GESTIÓN ('+managed.length+')','var(--purple)');
+      drawCompactSection(own,(ico('car')+' FLOTA PROPIA (')+own.length+')','var(--amber)');
+      drawCompactSection(managed,(ico('handshake')+' EN GESTIÓN (')+managed.length+')','var(--purple)');
     } else {
       // Extended (default)
       if(own.length){h+=`<div class="sec" style="color:var(--amber)">FLOTA PROPIA (${own.length})</div>`;own.forEach(v=>{h+=vcardH(v);});}
@@ -5769,21 +5772,21 @@ function renderList(el){
         style="padding-left:14px;font-size:14px"/>
     </div>
     <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-      <div class="tap44" id="vtog-extended" onclick="_vListMode='extended';renderListBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">☰</div>
+      <div class="tap44" id="vtog-extended" onclick="_vListMode='extended';renderListBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">${ico('menu')}</div>
       <div class="tap44" id="vtog-compact" onclick="_vListMode='compact';renderListBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
       <div class="tap44" id="vtog-grid" onclick="_vListMode='grid';renderListBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
     </div>
   </div>
   <div style="margin-bottom:12px">
     <button class="tap44" onclick="_flotaFiltersOpen=!_flotaFiltersOpen;document.getElementById('flotaFilterPanel').style.display=_flotaFiltersOpen?'block':'none';this.style.color=_flotaFiltersOpen?'var(--amber)':'var(--text2)'" style="background:var(--bg3);border:1.5px solid ${(_filterVtype||_filterOwnership)?'var(--amber)':'var(--border2)'};border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;color:${(_filterVtype||_filterOwnership)?'var(--amber)':'var(--text2)'}">
-      🔽 Filtros${(_filterVtype||_filterOwnership)?' ●':''}
+      ${ico('filter')} Filtros${(_filterVtype||_filterOwnership)?' ●':''}
     </button>
     <div id="flotaFilterPanel" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">PROPIEDAD</div>
       <div class="pills" style="margin-bottom:12px">
         <div class="pill" id="vtp-own-all" onclick="setFlotaOwnership('')" style="border-color:${!_filterOwnership?'var(--amber)':'var(--border2)'};background:${!_filterOwnership?'var(--acc-m)':'transparent'};color:${!_filterOwnership?'var(--amber)':'var(--text3)'}">Todos</div>
-        <div class="pill" id="vtp-own-own" onclick="setFlotaOwnership('own')" style="border-color:${_filterOwnership==='own'?'var(--amber)':'var(--border2)'};background:${_filterOwnership==='own'?'var(--acc-m)':'transparent'};color:${_filterOwnership==='own'?'var(--amber)':'var(--text3)'}">🚗 Propio</div>
-        <div class="pill" id="vtp-own-managed" onclick="setFlotaOwnership('managed')" style="border-color:${_filterOwnership==='managed'?'var(--amber)':'var(--border2)'};background:${_filterOwnership==='managed'?'var(--acc-m)':'transparent'};color:${_filterOwnership==='managed'?'var(--amber)':'var(--text3)'}">🤝 Gestión</div>
+        <div class="pill" id="vtp-own-own" onclick="setFlotaOwnership('own')" style="border-color:${_filterOwnership==='own'?'var(--amber)':'var(--border2)'};background:${_filterOwnership==='own'?'var(--acc-m)':'transparent'};color:${_filterOwnership==='own'?'var(--amber)':'var(--text3)'}">${ico('car')} Propio</div>
+        <div class="pill" id="vtp-own-managed" onclick="setFlotaOwnership('managed')" style="border-color:${_filterOwnership==='managed'?'var(--amber)':'var(--border2)'};background:${_filterOwnership==='managed'?'var(--acc-m)':'transparent'};color:${_filterOwnership==='managed'?'var(--amber)':'var(--text3)'}">${ico('handshake')} Gestión</div>
       </div>
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TIPO DE VEHÍCULO</div>
       <div class="pills">
@@ -5800,11 +5803,11 @@ function renderList(el){
 // ═══════════════════════════════════════════════════════════ DETAIL
 function renderDetail(el){
   const v=gV();if(!v){nav('vehicles');return;}
-  let h=`<div class="anim"><div class="back" onclick="goBack()"><span style="font-size:18px">←</span>Volver</div>
+  let h=`<div class="anim"><div class="back" onclick="goBack()"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div>
   <div class="tabs">
-    <div class="tab ${AT==='calendar'?'active':''}" onclick="switchTab('calendar')">📅 Alquileres</div>
-    <div class="tab ${AT==='finances'?'active':''}" onclick="switchTab('finances')">💶 Finanzas</div>
-    <div class="tab ${AT==='info'?'active':''}" onclick="switchTab('info')">ℹ️ Info</div>
+    <div class="tab ${AT==='calendar'?'active':''}" onclick="switchTab('calendar')">${ico('calendar')} Alquileres</div>
+    <div class="tab ${AT==='finances'?'active':''}" onclick="switchTab('finances')">${ico('euro')} Finanzas</div>
+    <div class="tab ${AT==='info'?'active':''}" onclick="switchTab('info')">${ico('info')} Info</div>
   </div>`;
   if(AT==='calendar')h+=renderCal(v);
   else if(AT==='finances')h+=renderFin(v);
@@ -5886,7 +5889,7 @@ function renderCal(v){
 
   let listHtml='';
   if(!allBk.length){
-    listHtml='<div class="empty" style="padding:30px 0"><div class="ei">🚗</div><div class="et">Sin alquileres este mes</div></div>';
+    listHtml=('<div class="empty" style="padding:30px 0"><div class="ei">'+ico('car')+'</div><div class="et">Sin alquileres este mes</div></div>');
   } else {
     allBk.forEach(b=>{
       const dur=daysBetween(b.startDate,b.endDate);
@@ -5898,17 +5901,17 @@ function renderCal(v){
       const _tomorrowS=addDays(_todayS,1);
       let col,lbl;
       if(b.cancelled){
-        col='var(--red)';lbl='🚫 Cancelado';
+        col='var(--red)';lbl=(ico('ban')+' Cancelado');
       } else if(!b.delivered){
-        col='var(--blue)';lbl='📅 Programado';
+        col='var(--blue)';lbl=(ico('calendar')+' Programado');
       } else if(b.returned){
-        if(!b.cobrado){col='var(--amber)';lbl='⏳ Pendiente de cobro';}
-        else{col='var(--text3)';lbl='✅ Finalizado';}
+        if(!b.cobrado){col='var(--amber)';lbl=(ico('hourglass')+' Pendiente de cobro');}
+        else{col='var(--text3)';lbl=(ico('check-circle')+' Finalizado');}
       } else {
         // Entregado pero no devuelto = en curso
-        if(b.endDate===_todayS){col='var(--red)';lbl='⚠️ Termina hoy';}
-        else if(b.endDate===_tomorrowS){col='var(--amber)';lbl='🕐 Termina mañana';}
-        else{col='var(--green)';lbl='🚗 En curso';}
+        if(b.endDate===_todayS){col='var(--red)';lbl=(ico('alert')+' Termina hoy');}
+        else if(b.endDate===_tomorrowS){col='var(--amber)';lbl=(ico('clock')+' Termina mañana');}
+        else{col='var(--green)';lbl=(ico('car')+' En curso');}
       }
       const total=_bookingClientTotal(b);
       const kmInfo=b.kmStart&&b.kmEnd?Math.abs((b.kmEnd||0)-(b.kmStart||0)).toLocaleString('es-ES')+' km':'';
@@ -5963,14 +5966,14 @@ function renderCal(v){
           // Action buttons
           '<div class="g8" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+
             '<button class="tap44" onclick="event.stopPropagation();toggleDelivery(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.delivered?'#10B98160':'var(--border2)')+';background:'+(b.delivered?'#10B98115':'var(--bg3)')+';color:'+(b.delivered?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
-              (b.delivered?'🚗 Entregado':'🚗 Entregar')+'</button>'+
+              (b.delivered?(ico('car')+' Entregado'):(ico('car')+' Entregar'))+'</button>'+
             '<button class="tap44" onclick="event.stopPropagation();toggleReturn(\''+escJs(bId)+'\')" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.returned?'#10B98160':'var(--border2)')+';background:'+(b.returned?'#10B98115':'var(--bg3)')+';color:'+(b.returned?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
-              (b.returned?'✅ Devuelto':'🔑 Devolver')+'</button>'+
+              (b.returned?(ico('check-circle')+' Devuelto'):(ico('key')+' Devolver'))+'</button>'+
             '<button class="tap44" onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))" style="padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.cobrado?'#10B98160':'var(--border2)')+';background:'+(b.cobrado?'#10B98115':'var(--bg3)')+';color:'+(b.cobrado?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
-              (b.cobrado?'💰 Cobrado':'💰 Cobrar')+'</button>'+
+              (b.cobrado?(ico('coins')+' Cobrado'):(ico('coins')+' Cobrar'))+'</button>'+
           '</div>'+
           // Km row
-          (kmInfo?'<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px;display:flex;align-items:center;gap:5px"><span style="font-size:10px">📍</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">'+kmInfo+' recorridos</span></div>':'')+
+          (kmInfo?('<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px;display:flex;align-items:center;gap:5px"><span style="font-size:10px">'+ico('odometer')+'</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">')+kmInfo+' recorridos</span></div>':'')+
           // Fianza + Abono / Pendiente row
           (()=>{
             const _ab=Number(b.abonoReserva||0);
@@ -5980,14 +5983,14 @@ function renderCal(v){
             const _pd=Math.max(0,_tt-_ab);
             let row='<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px">';
             if(_fi>0)row+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-              +'<span style="font-size:10px;color:var(--blue);font-weight:700">🔒 Fianza: '+fmtF(_fi)+'</span>'
+              +('<span style="font-size:10px;color:var(--blue);font-weight:700">'+ico('lock')+' Fianza: ')+fmtF(_fi)+'</span>'
               +'<span style="font-size:10px;color:var(--text3)">Total c/fianza: '+fmtF(_tt)+'</span>'
               +'</div>';
             if(_ab>0)row+='<div style="display:flex;justify-content:space-between;align-items:center">'
-              +'<span style="font-size:10px;color:var(--green);font-weight:700">💳 Recibido: '+fmtF(_ab)+'</span>'
+              +('<span style="font-size:10px;color:var(--green);font-weight:700">'+ico('card')+' Recibido: ')+fmtF(_ab)+'</span>'
               +(_pd>0
                 ?'<span style="font-size:10px;color:var(--amber);font-weight:800">Pendiente: '+fmtF(_pd)+'</span>'
-                :'<span style="font-size:10px;color:var(--green);font-weight:700">✓ Liquidado</span>')
+                :('<span style="font-size:10px;color:var(--green);font-weight:700">'+ico('check')+' Liquidado</span>'))
               +'</div>';
             return row+'</div>';
           })()+
@@ -5998,7 +6001,7 @@ function renderCal(v){
 
   // ── Final layout ──────────────────────────────────────────────────────
   const calPanel=`
-  <button class="btn-pri" onclick="openNewRental()" style="margin-bottom:12px;width:100%">🚗 + Nuevo alquiler</button>
+  <button class="btn-pri" onclick="openNewRental()" style="margin-bottom:12px;width:100%">${ico('car')} + Nuevo alquiler</button>
   ${isD
     ? `<div style="display:grid;grid-template-columns:33% 1fr;gap:16px;align-items:start">
         <div style="position:sticky;top:16px">${miniCal}</div>
@@ -8255,9 +8258,9 @@ function renderOwnersBody(){
   const filtered=OW.filter(o=>!q||o.name.toLowerCase().includes(q)||(o.dni||'').toLowerCase().includes(q)||(o.phone||'').includes(q));
   let h='';
   if(!OW.length){
-    h=`<div class="empty"><div class="ei">👥</div><div class="et">Sin propietarios</div><div class="es">Pulsa + para añadir un propietario</div></div>`;
+    h=`<div class="empty"><div class="ei">${ico('users')}</div><div class="et">Sin propietarios</div><div class="es">Pulsa + para añadir un propietario</div></div>`;
   } else if(!filtered.length){
-    h=`<div class="empty"><div class="ei">🔍</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;
+    h=`<div class="empty"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;
   } else if(mode==='grid'){
     // GRID: 2-col compact cards
     h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">`;
@@ -8269,7 +8272,7 @@ function renderOwnersBody(){
       const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0);
       h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A630;border-radius:12px;padding:16px;cursor:pointer" onclick="openOwnerProfile('${escJs(owner.id)}')">
         <div style="font-size:15px;font-weight:800;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(owner.name)}</div>
-        ${owner.dni?`<div style="font-size:10px;color:var(--text3);margin-bottom:8px">🪪 ${esc(owner.dni)}</div>`:''}
+        ${owner.dni?`<div style="font-size:10px;color:var(--text3);margin-bottom:8px">${ico('id-card')} ${esc(owner.dni)}</div>`:''}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
           <div style="background:var(--bg3);border-radius:7px;padding:7px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(totalI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">INGRESOS</div></div>
           <div style="background:var(--bg3);border-radius:7px;padding:7px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${fmt(toOwner)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">AL PROP.</div></div>
@@ -8301,8 +8304,8 @@ function renderOwnersBody(){
           <div style="font-size:10px;color:var(--text3);margin-top:1px">al prop.</div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
-          <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">📄</div>
-          <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">✏️</div>
+          <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">${ico('doc')}</div>
+          <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">${ico('edit')}</div>
         </div>
       </div>`;
     });
@@ -8320,14 +8323,14 @@ function renderOwnersBody(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
             <div style="font-size:18px;font-weight:800">${esc(owner.name)}</div>
-            ${owner.dni?`<div style="font-size:11px;color:var(--text3);margin-top:2px">🪪 ${esc(owner.dni)}</div>`:''}
-            ${owner.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 ${esc(owner.phone)}</div>`:''}
-            ${owner.email?`<div style="font-size:11px;color:var(--text3)">✉️ ${esc(owner.email)}</div>`:''}
+            ${owner.dni?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${ico('id-card')} ${esc(owner.dni)}</div>`:''}
+            ${owner.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${ico('phone')} ${esc(owner.phone)}</div>`:''}
+            ${owner.email?`<div style="font-size:11px;color:var(--text3)">${ico('mail')} ${esc(owner.email)}</div>`:''}
           </div>
           <div style="display:flex;gap:6px">
-            <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">📄</div>
-            <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">✏️</div>
-            <div class="tap44" onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🗑</div>
+            <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">${ico('doc')}</div>
+            <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">${ico('edit')}</div>
+            <div class="tap44" onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">${ico('trash')}</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
@@ -8364,7 +8367,7 @@ function renderOwners(el){
         style="font-size:14px"/>
     </div>
     <div id="ownerToggleRow" style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-      <div class="tap44" id="otog-extended" onclick="_vOwnersMode='extended';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">☰</div>
+      <div class="tap44" id="otog-extended" onclick="_vOwnersMode='extended';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">${ico('menu')}</div>
       <div class="tap44" id="otog-compact" onclick="_vOwnersMode='compact';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
       <div class="tap44" id="otog-grid" onclick="_vOwnersMode='grid';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
     </div>
@@ -8827,13 +8830,13 @@ function buildDashRightPanel(activeV){
     </div>
   </div>`;};
   const upcomingPanel=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;${isD?'flex:1;min-height:0;':'margin-bottom:16px'}">
-    <div class="sec" style="margin:16px 20px 0;padding-bottom:12px;border-bottom:1px solid var(--border)">📅 PRÓXIMOS ALQUILERES</div>
+    <div class="sec" style="margin:16px 20px 0;padding-bottom:12px;border-bottom:1px solid var(--border)">${ico('calendar')} PRÓXIMOS ALQUILERES</div>
     <div style="overflow-y:auto;flex:1;padding:0 20px 16px">
       ${upcoming.length?upcoming.map(bkRow).join(''):'<div style="padding:20px 0;text-align:center;color:var(--text3);font-size:13px">Sin alquileres próximos</div>'}
     </div>
   </div>`;
   const recentPanel=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;${isD?'flex:1;min-height:0;':''}">
-    <div class="sec" style="margin:16px 20px 0;padding-bottom:12px;border-bottom:1px solid var(--border)">🕐 ÚLTIMOS ALQUILERES</div>
+    <div class="sec" style="margin:16px 20px 0;padding-bottom:12px;border-bottom:1px solid var(--border)">${ico('clock')} ÚLTIMOS ALQUILERES</div>
     <div style="overflow-y:auto;flex:1;padding:0 20px 16px">
       ${recent.length?recent.map(bkRow).join(''):'<div style="padding:20px 0;text-align:center;color:var(--text3);font-size:13px">Sin alquileres</div>'}
     </div>
@@ -9041,19 +9044,19 @@ function renderAgendaBody(){
 }
 function renderAgenda(el){
   const allActiveV=V.filter(v=>!v.archived);
-  if(!allActiveV.length){el.innerHTML=`<div class="anim"><div class="empty"><div class="ei">📅</div><div class="et">Sin vehículos activos</div></div></div>`;return;}
+  if(!allActiveV.length){el.innerHTML=`<div class="anim"><div class="empty"><div class="ei">${ico('calendar')}</div><div class="et">Sin vehículos activos</div></div></div>`;return;}
   if(!document.getElementById('agenda-body')){
     el.innerHTML=`<div class="anim">
     <div style="margin-bottom:10px">
       <button class="tap44" onclick="_agFiltersOpen=!_agFiltersOpen;document.getElementById('agFilterPanel').style.display=_agFiltersOpen?'block':'none'" style="background:var(--bg3);border:1.5px solid ${(_agFilterVtype||_agFilterOwnership)?'var(--amber)':'var(--border2)'};border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;color:${(_agFilterVtype||_agFilterOwnership)?'var(--amber)':'var(--text2)'}">
-        🔽 Filtros${(_agFilterVtype||_agFilterOwnership)?' ●':''}
+        ${ico('filter')} Filtros${(_agFilterVtype||_agFilterOwnership)?' ●':''}
       </button>
       <div id="agFilterPanel" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">PROPIEDAD</div>
         <div class="pills" style="margin-bottom:12px">
           <div class="pill" id="agtp-own-all" onclick="setAgendaOwnership('')" style="border-color:${!_agFilterOwnership?'var(--amber)':'var(--border2)'};background:${!_agFilterOwnership?'var(--acc-m)':'transparent'};color:${!_agFilterOwnership?'var(--amber)':'var(--text3)'}">Todos</div>
-          <div class="pill" id="agtp-own-own" onclick="setAgendaOwnership('own')" style="border-color:${_agFilterOwnership==='own'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='own'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='own'?'var(--amber)':'var(--text3)'}">🚗 Propio</div>
-          <div class="pill" id="agtp-own-managed" onclick="setAgendaOwnership('managed')" style="border-color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='managed'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--text3)'}">🤝 Gestión</div>
+          <div class="pill" id="agtp-own-own" onclick="setAgendaOwnership('own')" style="border-color:${_agFilterOwnership==='own'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='own'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='own'?'var(--amber)':'var(--text3)'}">${ico('car')} Propio</div>
+          <div class="pill" id="agtp-own-managed" onclick="setAgendaOwnership('managed')" style="border-color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='managed'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--text3)'}">${ico('handshake')} Gestión</div>
         </div>
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TIPO DE VEHÍCULO</div>
         <div class="pills">
@@ -9102,9 +9105,9 @@ function renderRentals(el){
 
   const statusChip=b=>{
     const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
-    if(dEnd<=1)return `<span class="chip chip-red">⚠️ Termina hoy</span>`;
+    if(dEnd<=1)return `<span class="chip chip-red">${ico('alert')} Termina hoy</span>`;
     if(dEnd<=2)return `<span class="chip chip-amber">Termina en ${dEnd}d</span>`;
-    return `<span class="chip chip-green">✓ En curso · ${dEnd}d</span>`;
+    return `<span class="chip chip-green">${ico('check')} En curso · ${dEnd}d</span>`;
   };
 
   const bookingCard=(b,isActive)=>{
@@ -9127,7 +9130,7 @@ function renderRentals(el){
           <div style="margin-top:5px">${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
         </div>
       </div>
-      ${b.startTime||b.endTime?`<div style="font-size:11px;color:var(--text3)">🕐 ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}</div>`:''}
+      ${b.startTime||b.endTime?`<div style="font-size:11px;color:var(--text3)">${ico('clock')} ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}</div>`:''}
     </div>`;
   };
 
@@ -9135,24 +9138,24 @@ function renderRentals(el){
 
   // ── En curso
   h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--green)">🟢 EN CURSO (${active.length})</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--green)">${ico('key')} EN CURSO (${active.length})</div>
   </div>`;
   if(active.length){
     h+=active.map(b=>bookingCard(b,true)).join('');
   } else {
     h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px">
-      <div style="font-size:28px;margin-bottom:6px">🏖️</div>
+      <div style="font-size:28px;margin-bottom:6px">${ico('sun')}</div>
       <div style="font-size:13px;font-weight:700;color:var(--text2)">Ningún vehículo en alquiler ahora</div>
     </div>`;
   }
 
   // ── Próximos (30 días)
-  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--amber);margin:16px 0 10px">📅 PRÓXIMOS 30 DÍAS (${upcoming.length})</div>`;
+  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--amber);margin:16px 0 10px">${ico('calendar')} PRÓXIMOS 30 DÍAS (${upcoming.length})</div>`;
   if(upcoming.length){
     h+=upcoming.map(b=>bookingCard(b,false)).join('');
   } else {
     h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px">
-      <div style="font-size:28px;margin-bottom:6px">📋</div>
+      <div style="font-size:28px;margin-bottom:6px">${ico('clipboard')}</div>
       <div style="font-size:13px;font-weight:700;color:var(--text2)">Sin alquileres próximos</div>
       <div style="font-size:12px;color:var(--text3);margin-top:4px">Pulsa + para generar un contrato</div>
     </div>`;
@@ -9160,7 +9163,7 @@ function renderRentals(el){
 
   // ── Recientes
   if(recent.length){
-    h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text3);margin:16px 0 10px">⏱ RECIENTES</div>`;
+    h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text3);margin:16px 0 10px">${ico('clock')} RECIENTES</div>`;
     h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px">`;
     recent.forEach((b,i)=>{
       const v=b._v;const dur=daysBetween(b.startDate,b.endDate);
@@ -9791,12 +9794,12 @@ function renderArchiveBody(){
   const q=_searchArchive.toLowerCase().trim();
   const filtered=archived.filter(v=>!q||v.name.toLowerCase().includes(q)||v.plate.toLowerCase().includes(q)||(v.model||'').toLowerCase().includes(q));
   let h='';
-  if(!archived.length){res.innerHTML='<div class="empty"><div class="ei">📦</div><div class="et">Archivo vacío</div><div class="es">Los vehículos vendidos aparecerán aquí</div></div>';return;}
+  if(!archived.length){res.innerHTML=('<div class="empty"><div class="ei">'+ico('box')+'</div><div class="et">Archivo vacío</div><div class="es">Los vehículos vendidos aparecerán aquí</div></div>');return;}
   h+=`<div class="es" style="margin-bottom:14px">Los vehículos archivados conservan todos sus datos pero no aparecen en la flota activa.</div>`;
-  if(!filtered.length){h+=`<div class="empty" style="padding:30px 0"><div class="ei">🔍</div><div class="et">Sin resultados</div></div>`;}
+  if(!filtered.length){h+=`<div class="empty" style="padding:30px 0"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div></div>`;}
   else filtered.forEach(v=>{
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
-    const reason=v.archiveReason==='sold'?'🏷️ Vendido':v.archiveReason==='end'?'🤝 Fin de gestión':'📦 Archivado';
+    const reason=v.archiveReason==='sold'?(ico('tag')+' Vendido'):v.archiveReason==='end'?(ico('handshake')+' Fin de gestión'):(ico('box')+' Archivado');
     h+=`<div class="arc-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div><div style="font-size:18px;font-weight:800;color:var(--text2)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
@@ -9808,9 +9811,9 @@ function renderArchiveBody(){
         <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">BENEFICIO</div></div>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn-sec" onclick="openV('${escJs(v.id)}')" style="flex:1;font-size:12px">👁 Ver datos</button>
-        <button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="flex:1;font-size:12px">↩️ Reactivar</button>
-        <button class="btn-dang tap44" onclick="deleteV('${escJs(v.id)}')" style="width:44px;padding:0">🗑</button>
+        <button class="btn-sec" onclick="openV('${escJs(v.id)}')" style="flex:1;font-size:12px">${ico('eye')} Ver datos</button>
+        <button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="flex:1;font-size:12px">${ico('undo')} Reactivar</button>
+        <button class="btn-dang tap44" onclick="deleteV('${escJs(v.id)}')" style="width:44px;padding:0">${ico('trash')}</button>
       </div>
     </div>`;
   });
