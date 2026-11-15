@@ -772,7 +772,10 @@ let _clientsMode='extended'; // 'extended'|'compact'|'grid'
 let _clientDetail=null;
 
 function _clientsMergeBookings(){
+  // Ficha única: los alquileres ya enlazados a una ficha (bookingIds) no se vuelven a repartir por nombre
+  const _enl=new Set();CL.forEach(c=>(c.bookingIds||[]).forEach(id=>_enl.add(id)));
   V.forEach(v=>(v.bookings||[]).forEach(b=>{
+    if(b.id&&_enl.has(b.id))return;
     if(b.clientDni||b.clientName){
       const key=(b.clientDni||b.clientName||'').trim().toUpperCase();
       let cl=CL.find(c=>(c.dni&&c.dni.toUpperCase()===key)||(c.name&&c.name.toUpperCase()===(b.clientName||'').toUpperCase()&&!b.clientDni));
@@ -787,6 +790,135 @@ function _clientsGetBks(cl){
   V.forEach(v=>(v.bookings||[]).forEach(b=>{if(ids.has(b.id))bks.push({...b,vname:v.name,vcolor:v.color});}));
   return bks.sort((a,b)=>b.startDate.localeCompare(a.startDate));
 }
+// ── Ficha única de cliente ──────────────────────────────────────────────────
+// Una persona = una ficha en CL. Busca sin mezclar homónimos, crea o completa la ficha al guardar
+// (pregunta UNA vez si cambia algún dato guardado) y enlaza el alquiler por bookingIds. No añade campos.
+function _clKey(s){return String(s==null?'':s).replace(/[\s.\-]/g,'').toUpperCase();}
+function _clTel(s){let t=String(s==null?'':s).replace(/\D/g,'').replace(/^00/,'');if(t.length===11&&t.startsWith('34'))t=t.slice(2);return t;}
+function _clName(s){return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toUpperCase();}
+function _clSame(k,a,b){return k==='phone'?_clTel(a)===_clTel(b):(k==='name'||k==='address'||k==='nationality')?_clName(a)===_clName(b):_clKey(a)===_clKey(b);}
+// Orden: ficha elegida (d.id) → ficha que ya tiene este alquiler (si no es claramente otra persona) → DNI → teléfono →
+// nombre (solo si hay UNA ficha con ese nombre y no tiene otro DNI ni otro teléfono). Sin coincidencia: null.
+function _clFind(d,bId){
+  d=d||{};
+  if(d.id){const c=CL.find(x=>x.id===d.id);if(c)return c;}
+  const k=_clKey(d.dni),t=_clTel(d.phone),n=_clName(d.name);
+  const otroDni=x=>!!(k&&_clKey(x.dni)&&_clKey(x.dni)!==k);
+  if(bId){
+    const c=CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(bId));
+    if(c&&!otroDni(c)&&!(n&&_clName(c.name)&&_clName(c.name)!==n&&!(k&&_clKey(c.dni)===k)&&!(t&&_clTel(c.phone)===t)))return c;
+  }
+  if(k){const c=CL.find(x=>_clKey(x.dni)===k);if(c)return c;}
+  if(t.length>=6){const c=CL.find(x=>_clTel(x.phone)===t&&!otroDni(x));if(c)return c;}
+  if(n){
+    const cs=CL.filter(x=>_clName(x.name)===n);
+    if(cs.length===1&&!(k&&_clKey(cs[0].dni))&&!(t&&_clTel(cs[0].phone)&&_clTel(cs[0].phone)!==t))return cs[0];
+  }
+  return null;
+}
+const _CL_F=[['name','Nombre'],['dni','DNI/NIE'],['phone','Teléfono'],['email','Email'],['address','Domicilio'],['birthdate','Nacimiento'],['nationality','Nacionalidad'],['license','Nº permiso'],['licenseExp','Caducidad permiso']];
+// Crea la ficha si no existe (con nombre o DNI) o la completa: huecos sin preguntar; datos distintos, UNA pregunta con la lista
+// de cambios (si dice que no, la ficha no se toca). Nunca borra con vacío. opt.bId: enlaza ese alquiler solo a esta ficha.
+function _clUpsert(d,opt){
+  d=d||{};opt=opt||{};
+  const nv=k=>{const s=String(d[k]==null?'':d[k]).trim();return (k==='dni'||k==='license')?s.toUpperCase():s;};
+  if(!d.id&&!nv('name')&&!nv('dni')&&!nv('phone'))return null; // sin cliente escrito: nada que buscar ni enlazar
+  let cl=_clFind({id:d.id,name:nv('name'),dni:nv('dni'),phone:nv('phone')},opt.bId);
+  if(!cl){
+    if(!nv('name')&&!nv('dni'))return null;
+    cl={id:uid(),name:'',dni:'',phone:'',email:'',notes:'',rating:0,bookingIds:[]};CL.push(cl);
+  }
+  const dif=[];
+  _CL_F.forEach(([k,lbl])=>{
+    const n=nv(k);if(!n)return;
+    const o=String(cl[k]==null?'':cl[k]).trim();
+    if(!o)cl[k]=n;else if(!_clSame(k,o,n))dif.push([k,lbl,o,n]);
+  });
+  if(dif.length){
+    const f=(k,s)=>(k==='birthdate'||k==='licenseExp')?String(s).slice(0,10).split('-').reverse().join('/'):s;
+    if(confirm('Actualizar la ficha de '+(cl.name||'este cliente')+':\n\n'+dif.map(x=>x[1]+': '+f(x[0],x[2])+' → '+f(x[0],x[3])).join('\n')+'\n\nAceptar: guardar estos cambios en la ficha.\nCancelar: la ficha no cambia (el alquiler y el documento usan lo escrito).'))
+      dif.forEach(x=>{cl[x[0]]=x[3];});
+  }
+  if(opt.bId){
+    CL.forEach(c=>{if(c!==cl&&Array.isArray(c.bookingIds)&&c.bookingIds.includes(opt.bId))c.bookingIds=c.bookingIds.filter(x=>x!==opt.bId);});
+    if(!Array.isArray(cl.bookingIds))cl.bookingIds=[];
+    if(!cl.bookingIds.includes(opt.bId))cl.bookingIds.push(opt.bId);
+  }
+  return cl;
+}
+// Avisos (no bloquean): mayor de 25 = 26 cumplidos el día de inicio; carnet en vigor hasta la devolución
+function _clAge(nac,dia){const a=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(nac||'')),b=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(dia||''));if(!a||!b)return null;let e=+b[1]-+a[1];if(b[2]+b[3]<a[2]+a[3])e--;return e;}
+function _clWarn(d,sd,ed){
+  const w=[];const e=_clAge(d.birthdate,sd);
+  if(e!=null&&e<26)w.push('Menor de 26 en la fecha de inicio: no se puede alquilar');
+  const c=String(d.licenseExp||'').slice(0,10);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(c)&&ed&&c<String(ed).slice(0,10))w.push('El carnet caduca antes de la devolución');
+  return w;
+}
+const _CL_NEED=[['dni','DNI/NIE'],['phone','teléfono'],['address','domicilio'],['birthdate','nacimiento'],['license','carnet'],['licenseExp','caducidad del carnet']];
+function _clStatusHtml(d,sd,ed,warnOnly){
+  const row=(c,i,t)=>'<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;line-height:1.4;margin-top:4px;color:'+c+'">'+ico(i)+'<span>'+esc(t)+'</span></div>';
+  let h='';
+  if(!warnOnly){const miss=_CL_NEED.filter(x=>!String(d[x[0]]||'').trim()).map(x=>x[1]);h+=miss.length?row('var(--amber)','id-card','Faltan: '+miss.join(', ')):row('var(--green)','id-card','Ficha completa');}
+  _clWarn(d,sd,ed).forEach(t=>{h+=row('var(--red)','alert',(warnOnly||'')+t);});
+  return h;
+}
+// Formularios con buscador de clientes: campo de cada dato (f), copias ocultas (mirror) y línea de estado (st)
+const _CL_FORMS={
+  rClientPicker:{f:{name:'rClientPicker',phone:'rCPvis',dni:'rCDNIvis',email:'rClEmail',address:'rClAddr',birthdate:'rClBirth',nationality:'rClNat',license:'rClLic',licenseExp:'rClLicExp'},mirror:{name:'rCN',phone:'rCP',dni:'rCDNI'},st:'rClStatus'},
+  ctClPick:{f:{name:'ctClNombre',dni:'ctClNif',phone:'ctClTel',address:'ctClDir',birthdate:'ctClNac',nationality:'ctClNacionalidad',license:'ctClLic',licenseExp:'ctClLicExp'},st:'ctClStatus',clear:true},
+  ctEx2Pick:{f:{name:'ctEx2Nombre',dni:'ctEx2Nif',license:'ctEx2Lic',licenseExp:'ctEx2LicExp',birthdate:'ctEx2Birth'},st:'ctEx2Status',clear:true,warnOnly:'Conductor adicional: '},
+  qClient:{f:{name:'qClient'}}
+};
+function _clFormVals(form){const m=_CL_FORMS[form]||{f:{}};const o={};Object.keys(m.f).forEach(k=>{o[k]=(document.getElementById(m.f[k])?.value||'').trim();});return o;}
+function _clStatusUpd(form){
+  const m=_CL_FORMS[form];const el=m&&m.st&&document.getElementById(m.st);if(!el)return;
+  const d=_clFormVals(form);
+  const sd=(el.dataset&&el.dataset.sd)||document.getElementById('rSD')?.value||'',ed=(el.dataset&&el.dataset.ed)||document.getElementById('rED')?.value||'';
+  el.innerHTML=(d.name||d.dni||d.phone)?_clStatusHtml(d,sd,ed,m.warnOnly):'';
+}
+// Rellena el formulario con la ficha elegida; nuevo=true: solo el nombre escrito (y vacía lo que venía de otra ficha)
+function _clFill(form,cl,nuevo){
+  const m=_CL_FORMS[form];if(!m)return;
+  const inp=document.getElementById(form);
+  const vaciar=!!(m.clear||(inp&&inp.dataset&&inp.dataset.filled==='1'));
+  Object.keys(m.f).forEach(k=>{
+    if(nuevo&&k!=='name'&&!vaciar)return;
+    const v=(k==='birthdate'||k==='licenseExp')?safeDate(cl[k]||''):String(cl[k]||'');
+    [m.f[k],(m.mirror||{})[k]].forEach(id=>{const e=id&&document.getElementById(id);if(e)e.value=v;});
+  });
+  if(inp&&inp.dataset)inp.dataset.filled=nuevo?'':'1';
+  if(form==='ctClPick'){
+    const c=document.getElementById('ctClCard');if(c)c.innerHTML=_ctClCardHtml(nuevo?null:cl);
+    const bx=document.getElementById('ctClPickBox');if(bx)bx.style.display='none';
+  }
+  _clStatusUpd(form);
+}
+function _clMoreToggle(pre){const e=document.getElementById(pre+'More');if(e)e.style.display=e.style.display==='none'?'':'none';}
+// Bloque plegable «Más datos (para el contrato)»: se guarda en la ficha, nunca en el alquiler
+function _clMoreHtml(cl,pre,sinEmail){
+  pre=pre||'rCl';const v=k=>esc(cl&&cl[k]?cl[k]:'');
+  return '<button type="button" class="btn-sec tap44" style="width:100%;min-height:44px;margin-bottom:10px" onclick="_clMoreToggle(\''+pre+'\')">'+ico('id-card')+' Más datos (para el contrato)</button>'
+    +'<div id="'+pre+'More" style="display:none">'
+    +'<div class="fg"><label class="lbl">DOMICILIO</label><input id="'+pre+'Addr" value="'+v('address')+'" autocomplete="off"/></div>'
+    +'<div class="r2"><div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="'+pre+'Birth" type="date" value="'+esc(safeDate(cl&&cl.birthdate||''))+'"/></div>'
+    +'<div class="fg"><label class="lbl">NACIONALIDAD</label><input id="'+pre+'Nat" value="'+v('nationality')+'" autocomplete="off"/></div></div>'
+    +(sinEmail?'':'<div class="fg"><label class="lbl">EMAIL</label><input id="'+pre+'Email" type="email" inputmode="email" value="'+v('email')+'"/></div>')
+    +'<div class="r2"><div class="fg"><label class="lbl">Nº PERMISO</label><input id="'+pre+'Lic" value="'+v('license')+'" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>'
+    +'<div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="'+pre+'LicExp" type="date" value="'+esc(safeDate(cl&&cl.licenseExp||''))+'"/></div></div>'
+    +'</div>';
+}
+function _ctClCardHtml(cl){
+  if(!cl)return ico('user')+' Sin ficha: se creará al generar el contrato';
+  const n=(cl.bookingIds||[]).length;
+  return ico('user')+' Ficha: <b>'+esc(cl.name||'Sin nombre')+'</b>'+(n?' · '+n+' alquiler'+(n!==1?'es':''):'');
+}
+function _ctClPickToggle(){
+  const bx=document.getElementById('ctClPickBox');if(!bx)return;
+  const open=bx.style.display==='none';bx.style.display=open?'':'none';
+  if(open){const i=document.getElementById('ctClPick');if(i){i.value='';i.focus();_clPickerFilter('ctClPick');}}
+}
+// ── fin ficha única de cliente ──
 function renderClientsBody(){
   const res=document.getElementById('clients-results');if(!res)return;
   // Update toggle highlights
@@ -953,6 +1085,7 @@ function openAddClient(){
       <div class="fg"><label class="lbl">TELÉFONO</label><input id="clPhone" type="tel" placeholder="600 000 000" inputmode="tel"/></div>
     </div>
     <div class="fg"><label class="lbl">EMAIL</label><input id="clEmail" type="email" placeholder="email@ejemplo.com" inputmode="email"/></div>
+    ${_clMoreHtml(null,'ncl',true)}
     <div class="fg"><label class="lbl">NOTAS</label><input id="clNotes" placeholder="Observaciones..." autocomplete="off"/></div>
     <button class="btn-pri" onclick="submitAddClient()">Crear cliente</button>
     <div style="height:10px"></div>
@@ -962,7 +1095,8 @@ function openAddClient(){
 function submitAddClient(){
   const name=(document.getElementById('clN')?.value||'').trim();
   if(!name){alert('El nombre es obligatorio');return;}
-  CL.push({id:uid(),name,dni:(document.getElementById('clDni')?.value||'').trim(),phone:(document.getElementById('clPhone')?.value||'').trim(),email:(document.getElementById('clEmail')?.value||'').trim(),notes:(document.getElementById('clNotes')?.value||'').trim(),rating:0,bookingIds:[]});
+  const _g=id=>(document.getElementById(id)?.value||'').trim();
+  CL.push({id:uid(),name,dni:_g('clDni').toUpperCase(),phone:_g('clPhone'),email:_g('clEmail'),notes:_g('clNotes'),rating:0,bookingIds:[],address:_g('nclAddr'),birthdate:_g('nclBirth'),nationality:_g('nclNat'),license:_g('nclLic').toUpperCase(),licenseExp:_g('nclLicExp')});
   save();closeSheet();renderClientsBody();
 }
 
@@ -2392,12 +2526,12 @@ function renderLiquidaciones(ownerId,el){
 
 // ═══════════════════════════════════════════════════════ CLIENT PICKER
 // Lightweight inline autocomplete for client selection in booking forms
-function _clPickerHtml(inputId, currentName){
+function _clPickerHtml(inputId, currentName, clId){
   return `<div style="position:relative">
-    <input id="${esc(inputId)}" type="text" value="${esc(currentName||'')}"
+    <input id="${esc(inputId)}" type="text" value="${esc(currentName||'')}" data-cl-id="${esc(clId||'')}"
       placeholder="Buscar o escribir nombre del cliente..."
       autocomplete="off"
-      oninput="_clPickerFilter('${inputId}')"
+      oninput="this.dataset.clId='';_clPickerFilter('${inputId}')"
       onfocus="_clPickerFilter('${inputId}')"
       onblur="setTimeout(()=>_clPickerClose('${inputId}'),200)"
       style="width:100%"/>
@@ -2436,18 +2570,13 @@ function _clPickerSelect(inputId, clId){
   const cl=CL.find(c=>c.id===clId);if(!cl)return;
   const inp=document.getElementById(inputId);
   if(inp){inp.value=cl.name||'';inp.dataset.clId=cl.id;}
-  // Fill hidden fields
-  const nEl=document.getElementById('rCN');const pEl=document.getElementById('rCP');const dEl=document.getElementById('rCDNI');
-  if(nEl)nEl.value=cl.name||'';
-  if(pEl)pEl.value=cl.phone||'';
-  if(dEl)dEl.value=cl.dni||'';
+  _clFill(inputId,cl); // teléfono, DNI y «Más datos» visibles (y copias ocultas)
   _clPickerClose(inputId);
 }
 function _clPickerNew(inputId){
   const inp=document.getElementById(inputId);if(!inp)return;
   inp.dataset.clId='';
-  const nEl=document.getElementById('rCN');
-  if(nEl)nEl.value=inp.value.trim();
+  _clFill(inputId,{name:inp.value.trim()},true);
   _clPickerClose(inputId);
 }
 function _clPickerClose(inputId){
@@ -3373,7 +3502,7 @@ function openContractForm(vId,bookingId){
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
   if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato. Si lo necesitas, descarga el recibo de cancelación.');return;}
   const co=getCompanyData();
-  const cl=CL.find(c=>(c.dni&&b.clientDni&&c.dni.toUpperCase()===b.clientDni.toUpperCase())||(c.name&&b.clientName&&c.name.toUpperCase()===b.clientName.toUpperCase()));
+  const cl=_clFind({name:b.clientName,dni:b.clientDni,phone:b.clientPhone},b.id);
   const today=new Date().toLocaleDateString('es-ES');
   const dur=daysBetween(b.startDate,b.endDate);
   const fuelLevels=['Lleno (100%)','3/4','1/2','1/4','Reserva'];
@@ -3434,6 +3563,13 @@ function openContractForm(vId,bookingId){
 
   <div data-ct="2" style="display:none">
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">${ico('user')} ARRENDATARIO</div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <div id="ctClCard" style="flex:1;min-width:0;font-size:12px;color:var(--text2);line-height:1.4">${_ctClCardHtml(cl)}</div>
+    <button type="button" class="btn-sec tap44" style="width:auto;min-height:44px;padding:0 14px;flex-shrink:0" onclick="_ctClPickToggle()">${ico('search')} ${cl?'Cambiar cliente':'Buscar cliente'}</button>
+  </div>
+  <div id="ctClPickBox" class="fg" style="display:none">${_clPickerHtml('ctClPick','')}</div>
+  <div id="ctClStatus" data-sd="${esc(b.startDate||'')}" data-ed="${esc(b.endDate||'')}" style="margin-bottom:10px"></div>
+  <div oninput="_clStatusUpd('ctClPick')" onchange="_clStatusUpd('ctClPick')">
   <div class="r2">
     <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="ctClNombre" value="${esc(b.clientName||cl?.name||'')}" autocomplete="off"/></div>
     <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctClNif" value="${esc(b.clientDni||cl?.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
@@ -3451,6 +3587,7 @@ function openContractForm(vId,bookingId){
     <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctClLicExp" value="${esc(safeDate(cl?.licenseExp||''))}" type="date"/></div>
   </div>
 
+  </div>
   <!-- Conductor adicional -->
   <div style="background:var(--bg3);border-radius:10px;padding:12px;margin:10px 0">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -3459,7 +3596,10 @@ function openContractForm(vId,bookingId){
         <span style="font-size:13px;font-weight:700">${ico('user')} Añadir conductor adicional</span>
       </label>
     </div>
-    <div id="ctExtraBlock" style="display:none">
+    <div id="ctExtraBlock" style="display:none" oninput="_clStatusUpd('ctEx2Pick')" onchange="_clStatusUpd('ctEx2Pick')">
+      <div class="fg"><label class="lbl">BUSCAR EN CLIENTES</label>${_clPickerHtml('ctEx2Pick','')}</div>
+      <input id="ctEx2Birth" type="hidden" value=""/>
+      <div id="ctEx2Status" data-sd="${esc(b.startDate||'')}" data-ed="${esc(b.endDate||'')}" style="margin-bottom:8px"></div>
       <div class="r2">
         <div class="fg"><label class="lbl">NOMBRE CONDUCTOR EXTRA</label><input id="ctEx2Nombre" value="" autocomplete="off"/></div>
         <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctEx2Nif" value="" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
@@ -3648,7 +3788,7 @@ function openContractForm(vId,bookingId){
   <div style="height:8px"></div>
   <button class="btn-sec tap44" onclick="closeSheet()" style="width:100%;min-height:44px">Cancelar</button>
   </div>`);
-  _ctSumUpd('Ar');_ctSumUpd('V');
+  _ctSumUpd('Ar');_ctSumUpd('V');_clStatusUpd('ctClPick');
   // Pre-check extras from the booking (b.extras array)
   if(b.extras&&b.extras.length){
     const _kmIds=['exBolsa200','exBolsa500','exBolsa1000','exKmIlimitados'];
@@ -4132,8 +4272,13 @@ function generateContractPDF(vId,bookingId){
   const extrasData=_calcExtrasTotal(dur);
   const extrasItems=Object.values(extrasData.items);
   const precioFinal=Number(b.amount)+extrasData.total;
-  const clRec=CL.find(c=>(c.dni&&cl.nif&&c.dni.toUpperCase()===cl.nif.toUpperCase())||(c.name&&cl.nombre&&c.name.toUpperCase()===cl.nombre.toUpperCase()));
-  if(clRec){if(cl.lic)clRec.license=cl.lic;if(cl.licExp)clRec.licenseExp=cl.licExp;if(cl.nac)clRec.birthdate=cl.nac;if(cl.dir)clRec.address=cl.dir;if(cl.nacionalidad)clRec.nationality=cl.nacionalidad;save();}
+  // Ficha única: crea o completa la ficha con todo lo escrito (pregunta una vez si cambia algún dato) y le enlaza este alquiler
+  _clUpsert({id:document.getElementById('ctClPick')?.dataset?.clId||'',name:cl.nombre,dni:cl.nif,phone:cl.tel,address:cl.dir,birthdate:cl.nac,nationality:cl.nacionalidad,license:cl.lic,licenseExp:cl.licExp},{bId:b.id});
+  // El alquiler muestra el cliente del contrato (nunca se borra con vacío)
+  if(cl.nombre.trim())b.clientName=cl.nombre.trim();if(cl.nif.trim())b.clientDni=cl.nif.trim().toUpperCase();if(cl.tel.trim())b.clientPhone=cl.tel.trim();
+  // Conductor adicional: ficha propia, SIN enlazarle este alquiler
+  if(hasExtra&&(extra.nombre.trim()||extra.nif.trim()))_clUpsert({id:document.getElementById('ctEx2Pick')?.dataset?.clId||'',name:extra.nombre,dni:extra.nif,license:extra.lic,licenseExp:extra.licExp});
+  save();
   // Save extras as income entries in booking finance
   if(Object.keys(extrasData.items).length>0){
     if(!b.finance)b.finance=[];
@@ -6428,6 +6573,7 @@ function editBooking(id){
   const activeV=V.filter(x=>!x.archived);
   const dur=daysBetween(b.startDate,b.endDate);
   const isFurgEdit=(v.vehicle_type||'turismo').startsWith('l');
+  const _clE=_clFind({name:b.clientName,dni:b.clientDni,phone:b.clientPhone},b.id);
   closeSheet();
   openSheet(`<div class="stitle">${ico('edit')} Editar alquiler</div><div class="ssub">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
     <div class="fg"><label class="lbl">VEHÍCULO</label>
@@ -6462,6 +6608,7 @@ function editBooking(id){
     <input id="rCN" type="hidden" value="${esc(b.clientName||'')}"/>
     <input id="rCP" type="hidden" value="${esc(b.clientPhone||'')}"/>
     <input id="rCDNI" type="hidden" value="${esc(b.clientDni||'')}"/>
+    <div oninput="_clStatusUpd('rClientPicker')" onchange="_clStatusUpd('rClientPicker')">
     <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||'')}</div>
     ${b.clientName?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
@@ -6470,8 +6617,11 @@ function editBooking(id){
       <button type="button" class="btn-dang" onclick="unlinkBookingClient('${escJs(b.id)}')" style="width:auto;white-space:nowrap;flex-shrink:0">${ico('unlink')} Desvincular</button>
     </div>`:'<div style="margin-bottom:8px"></div>'}
     <div class="r2 fg">
-      <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
-      <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()" value="${esc(b.clientDni||'')}"/></div>
+      <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||_clE?.phone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
+      <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()" value="${esc(b.clientDni||_clE?.dni||'')}"/></div>
+    </div>
+    <div id="rClStatus" style="margin:-4px 0 10px"></div>
+    ${_clMoreHtml(_clE)}
     </div>
     <div class="fg"><label class="lbl">NOTAS</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off" value="${esc(b.notes||'')}"/></div>
     <div style="height:1px;background:var(--border);margin:12px 0"></div>
@@ -6508,6 +6658,7 @@ function editBooking(id){
     <button class="btn-pri" onclick="submitEditBooking('${escJs(id)}')">${ico('save')} Guardar cambios</button>
     <div style="height:10px"></div>
     <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+  _clStatusUpd('rClientPicker');
   // Pre-check extras already on the booking
   if(b.extras&&b.extras.length){
     const _kmIds=['exBolsa200','exBolsa500','exBolsa1000','exKmIlimitados'];
@@ -6640,15 +6791,11 @@ function submitEditBooking(id){
   // Update booking fields
   b.startDate=sd;b.startTime=st;b.endDate=ed;b.endTime=et;
   b.platform=_plat;b.amount=amt;
-  const _picker=document.getElementById('rClientPicker');
-  if(_picker&&_picker.dataset.clId){
-    const _pickerCl=CL.find(cc=>cc.id===_picker.dataset.clId);
-    if(_pickerCl){b.clientName=_pickerCl.name||'';b.clientPhone=_pickerCl.phone||'';b.clientDni=_pickerCl.dni||'';}
-  } else {
-    b.clientName=(document.getElementById('rCN')?.value||(_picker?.value)||'').trim();
-    b.clientPhone=(document.getElementById('rCP')?.value||document.getElementById('rCPvis')?.value||'').trim();
-    b.clientDni=(document.getElementById('rCDNI')?.value||document.getElementById('rCDNIvis')?.value||'').trim();
-  }
+  // Cliente: lo escrito va al alquiler; la ficha se crea/completa y el alquiler queda solo en ella (sin cliente: se desenlaza)
+  const _clD=_clFormVals('rClientPicker');_clD.dni=(_clD.dni||'').toUpperCase();
+  b.clientName=_clD.name||'';b.clientPhone=_clD.phone||'';b.clientDni=_clD.dni;
+  if(!_clUpsert(Object.assign({},_clD,{id:document.getElementById('rClientPicker')?.dataset?.clId||''}),{bId:id}))
+    CL.forEach(c=>{if(Array.isArray(c.bookingIds))c.bookingIds=c.bookingIds.filter(x=>x!==id);});
   b.notes=(document.getElementById('rNotes')?.value||'').trim();
   b.fianza=parseFloat(document.getElementById('rFianza')?.value||'0')||0;
   b.kmStart=kmStart;b.kmEnd=kmEnd;
@@ -6806,10 +6953,14 @@ function openNewRental(){
     <input id="rCN" type="hidden"/>
     <input id="rCP" type="hidden"/>
     <input id="rCDNI" type="hidden"/>
+    <div oninput="_clStatusUpd('rClientPicker')" onchange="_clStatusUpd('rClientPicker')">
     <div class="fg">${_clPickerHtml('rClientPicker','')}</div>
     <div class="r2 fg">
       <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" oninput="document.getElementById('rCP').value=this.value"/></div>
       <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()"/></div>
+    </div>
+    <div id="rClStatus" style="margin:-4px 0 10px"></div>
+    ${_clMoreHtml(null)}
     </div>
     <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_rwGo(2)">Siguiente ›</button></div>
     </div>
@@ -6887,6 +7038,7 @@ function _rwGo(n){
   const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
 function _recalcRentalExtras(){
+  _clStatusUpd('rClientPicker'); // avisos de edad/carnet dependen de las fechas
   const sd=document.getElementById('rSD')?.value;
   const ed=document.getElementById('rED')?.value;
   if(!sd||!ed)return;
@@ -6944,16 +7096,9 @@ function submitRental(){
   const sd=document.getElementById('rSD').value,st=document.getElementById('rST').value;
   const ed=document.getElementById('rED').value,et=document.getElementById('rET').value;
   const amt=parseFloat(document.getElementById('rAmt').value);
-  const _picker=document.getElementById('rClientPicker');
-  let clientName='',clientPhone='',clientDni='';
-  if(_picker&&_picker.dataset.clId){
-    const _pickerCl=CL.find(cc=>cc.id===_picker.dataset.clId);
-    if(_pickerCl){clientName=_pickerCl.name||'';clientPhone=_pickerCl.phone||'';clientDni=_pickerCl.dni||'';}
-  } else {
-    clientName=(_picker?.value||document.getElementById('rCN')?.value||'').trim();
-    clientPhone=(document.getElementById('rCPvis')?.value||document.getElementById('rCP')?.value||'').trim();
-    clientDni=(document.getElementById('rCDNIvis')?.value||document.getElementById('rCDNI')?.value||'').trim();
-  }
+  // Cliente: lo escrito en el formulario (al elegir una ficha se rellena con sus datos y se puede corregir)
+  const _clD=_clFormVals('rClientPicker');
+  const clientName=_clD.name||'',clientPhone=_clD.phone||'',clientDni=(_clD.dni||'').toUpperCase();
   const notes=(document.getElementById('rNotes')?.value||'').trim();
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
@@ -6988,16 +7133,8 @@ function submitRental(){
     v.finances.push({id:uid(),type:'income',date:sd.slice(0,7)+'-01',category:ex.label,amount:ex.amount,description:ex.label+' · '+(clientName||'')+' · '+(v.plate||''),_bookingId:bId,_autoExtra:true});
   });
   if(kmEnd&&kmEnd>0){v.km=String(kmEnd);}
-  // Auto-link client
-  if(clientDni||clientName){
-    const key=(clientDni||clientName).trim().toUpperCase();
-    let cl=CL.find(c=>c.dni&&c.dni.toUpperCase()===key||(c.name&&c.name.toUpperCase()===(clientName||'').toUpperCase()&&!clientDni));
-    if(!cl){cl={id:uid(),name:clientName||'',dni:clientDni||'',phone:clientPhone||'',email:'',notes:'',rating:0,bookingIds:[]};CL.push(cl);}
-    else{if(clientName&&!cl.name)cl.name=clientName;if(clientPhone&&!cl.phone)cl.phone=clientPhone;}
-    if(!cl.bookingIds)cl.bookingIds=[];
-    if(!cl.bookingIds.includes(bId))cl.bookingIds.push(bId);
-    if(!cl.dni&&clientDni)cl.dni=clientDni;
-  }
+  // Ficha única: crea o completa la ficha (pregunta una vez si cambia algún dato) y le enlaza este alquiler
+  _clUpsert(Object.assign({},_clD,{id:document.getElementById('rClientPicker')?.dataset?.clId||'',dni:clientDni}),{bId});
   save();closeSheet();renderDetail(document.getElementById('PC'));
 }
 
@@ -10768,7 +10905,7 @@ function _validateBackup(data){
   if(Array.isArray(data.quotes)){
     for(let i=0;i<data.quotes.length;i++){
       const q=data.quotes[i];
-      err=_expectStr(q,'id','quotes nº '+(i+1)+' · id')||_expectStr(q,'clientName','quotes nº '+(i+1)+' · cliente')||_expectStr(q,'notes','quotes nº '+(i+1)+' · notas')||_expectStr(q,'num','quotes nº '+(i+1)+' · número');
+      err=_expectStr(q,'id','quotes nº '+(i+1)+' · id')||_expectStr(q,'clientName','quotes nº '+(i+1)+' · cliente')||_expectStr(q,'notes','quotes nº '+(i+1)+' · notas')||_expectStr(q,'num','quotes nº '+(i+1)+' · número')||_expectStr(q,'clientId','quotes nº '+(i+1)+' · ficha del cliente');
       if(err)return err;
       if('extras' in q&&q.extras!=null&&!Array.isArray(q.extras))return '«quotes nº '+(i+1)+' · extras» tiene que ser una lista.';
     }
@@ -11480,7 +11617,7 @@ function _openQuoteForm(q){
     </div>
     <div data-qw="2" style="display:none">
     <div class="fg"><label class="lbl">NOMBRE DEL CLIENTE (opcional)</label>
-      <input id="qClient" value="${esc(q?q.clientName||'':'')}" placeholder="Nombre del cliente" autocomplete="off"/></div>
+      ${_clPickerHtml('qClient',q?q.clientName||'':'',q&&q.clientId||'')}</div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">${ico('star')} SUPLEMENTOS</div>
     <div id="qExtrasSection">${extrasHtml}</div>
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">${ico('road')} BOLSAS DE KILÓMETROS</div>
@@ -11808,6 +11945,7 @@ function _saveQuote(){
     startTime:document.getElementById('qStartT')?.value||'',
     endTime:document.getElementById('qEndT')?.value||'',
     clientName:(document.getElementById('qClient')?.value||'').trim(),
+    clientId:(()=>{const e=document.getElementById('qClient');const i=(e&&e.dataset&&e.dataset.clId)||'';return i&&CL.some(c=>c.id===i)?i:'';})(),
     dur:calc.dur||daysBetween(start,end),
     dailyRate:calc.dailyRate||30,
     baseAmount:calc.baseAmt||0,
@@ -11867,14 +12005,15 @@ function convertQuoteToBooking(id){
   if(!confirm('¿Convertir este presupuesto en un alquiler?\nSe creará el alquiler con los datos del presupuesto.'))return;
   if(!v.bookings)v.bookings=[];
   const bId=uid();
+  const _qCl=q.clientId?(CL.find(c=>c.id===q.clientId)||null):null; // presupuestos antiguos (sin clientId): por nombre
   const b={
     id:bId,
     startDate:q.startDate,endDate:q.endDate,
     startTime:q.startTime||'09:00',endTime:q.endTime||'09:00',
     amount:Math.max(0,Math.round((Number(q.baseAmount||0)-Number(q.discount||0))*100)/100),
-    clientName:q.clientName||'',
-    clientPhone:q.clientPhone||'',
-    clientDni:q.clientDni||'',
+    clientName:(_qCl&&_qCl.name)||q.clientName||'',
+    clientPhone:(_qCl&&_qCl.phone)||'',
+    clientDni:(_qCl&&_qCl.dni)||'',
     fianza:(q.fianza==null||q.fianza==='')?(parseFloat(_fianzaDefault())||0):(Number(q.fianza)||0),
     extras:(q.extras||[]).map(ex=>({id:ex.id,label:(ex.id==='exKmPrepago'&&ex.km)?'Km sueltos ('+ex.km+' km × 0,15€)':ex.label,amount:Number(ex.amount)||0})),
     notes:'Generado desde presupuesto '+q.num+(Number(q.discount)>0?' · Descuento '+fmtF(Number(q.discount)):'')+(q.notes?' · '+q.notes:''),
@@ -11894,15 +12033,8 @@ function convertQuoteToBooking(id){
     v.finances.push({id:uid(),type:'income',date:q.startDate.slice(0,7)+'-01',category:ex.label,amount:ex.amount,description:ex.label+' · '+(b.clientName||'')+' · '+(v.plate||''),_bookingId:bId,_autoExtra:true});
   });
   v.bookings.push(b);
-  // Auto-link client (mismo patrón que el alta de alquiler)
-  if(q.clientName||q.clientDni){
-    const clientName=q.clientName||'',clientDni=q.clientDni||'',clientPhone=q.clientPhone||'';
-    const key=(clientDni||clientName).trim().toUpperCase();
-    let cl=CL.find(c=>c.dni&&c.dni.toUpperCase()===key||(c.name&&c.name.toUpperCase()===clientName.toUpperCase()&&!clientDni));
-    if(!cl){cl={id:uid(),name:clientName,dni:clientDni,phone:clientPhone,email:'',notes:'',rating:0,bookingIds:[]};CL.push(cl);}
-    if(!cl.bookingIds)cl.bookingIds=[];
-    if(!cl.bookingIds.includes(bId))cl.bookingIds.push(bId);
-  }
+  // Ficha única: con ficha elegida se enlaza a ella; sin ella, por nombre solo si no hay homónimos (si no, ficha nueva)
+  _clUpsert({id:_qCl?_qCl.id:'',name:b.clientName,phone:b.clientPhone,dni:b.clientDni},{bId});
   q.status='convertido';
   q.bookingId=bId;
   save();
