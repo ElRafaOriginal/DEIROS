@@ -21,7 +21,14 @@ Rafael la usa sobre todo **en el móvil y en modo oscuro**.
 
 - Precios con IVA incluido.
 - Comisión del gestor: siempre sobre lo **facturado en el mes** × % de comisión del vehículo, aunque el coche dé pérdidas; si no factura, comisión 0. Al propietario le queda `beneficio − comisión`.
-- Combustible faltante: precio de mercado + 1 €/litro. Km extra contratados al reservar: 0,15 €/km; km excedidos a la devolución: 0,19 €/km. Edad mínima del conductor: 25 años.
+- Combustible faltante: **precio medio de mercado en el municipio donde se devuelve el coche + 2 €/litro**. Los litros se calculan con la capacidad del depósito del coche y la diferencia entre el nivel de entrega y el de devolución.
+- Km extra contratados al reservar: 0,15 €/km. Km excedidos a la devolución: **0,19 €/km para todos los vehículos** (también furgonetas).
+- Edad mínima del conductor: 25 años. Fianza por defecto: **200 €** (contrato y presupuesto).
+
+## Autorizaciones expresas de Rafael (15/11/2026)
+
+- Campo nuevo en cada vehículo: **capacidad del depósito en litros** (en `V`, con su normalización y su sitio en la copia de seguridad v4 sin romper copias antiguas).
+- Un workflow **nuevo** en `.github/workflows/` que descarga cada día los precios oficiales de carburantes del Ministerio (datos abiertos) y publica las medias por municipio para la app. El workflow existente `claude.yml` sigue sin tocarse.
 
 ## Marca
 
