@@ -49,6 +49,16 @@ Las PR y las issues se escriben en español; la descripción de la PR termina en
 
 También sigue funcionando el flujo antiguo: una issue o comentario de Rafael con `@claude` lanza la GitHub Action (`.github/workflows/claude.yml`).
 
+## Ahorro de recursos (decidido por Rafael, 15/11/2026)
+
+- **Modelo según la tarea:** auditor y producto usan Opus (razonar, diseñar, especificar); desarrollador y qa usan Sonnet (aplicar especificaciones exactas y comprobar). Las dudas que QA marque como «DUDA PARA OPUS» las revisa el coordinador.
+- **Capturas mínimas:** 2–3 pantallas o páginas clave por PR, en un solo modo (oscuro por defecto); ambos modos solo si el cambio depende del tema.
+- **Repasos cortos:** tras un arreglo pequeño, QA revisa solo ese commit, no la PR entera.
+- **Sin paralelismo innecesario:** un agente a la vez salvo que Rafael tenga prisa o las tareas sean independientes y cortas.
+- **Lotes:** agrupar cambios pequeños relacionados en una sola especificación y una sola PR.
+- **Reutilizar:** continuar el mismo agente (con su contexto) en vez de lanzar uno nuevo para seguir la misma tarea; reutilizar pruebas y scripts ya hechos.
+- **Arreglos triviales** (una o dos líneas que QA ya ha especificado exactamente): los aplica el coordinador directamente, con check_index y las pruebas, sin un ciclo completo.
+
 ## Convivencia con Grok Bot
 
 Rafael también trabaja en este repo con su equipo de Grok Bot (Deiros Fleet, Auditor, Producto, Desarrollador, QA). No compartís conversaciones: **GitHub es el único sitio común**, así que todo lo importante debe quedar escrito en issues y PR.
