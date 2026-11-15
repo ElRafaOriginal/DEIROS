@@ -32,12 +32,12 @@ Tipografías: Syne y JetBrains Mono. Botones táctiles de al menos 44 px de alto
 
 Mismo equipo que Rafael tenía en Grok Bot. El coordinador es **Deiros Fleet** (comando `/fleet`, en `.claude/commands/fleet.md`), que reparte el trabajo entre cuatro agentes (en `.claude/agents/`):
 
-1. **auditor** — revisa la app entera o un área y entrega un informe priorizado de hallazgos (A1, A2…) agrupados en bloques.
-2. **producto** — convierte una petición o el informe del auditor en una especificación exacta: causa raíz, funciones, líneas y cambios.
+1. **auditor** — fallos: revisa la app o investiga un fallo, encuentra la causa raíz y especifica la corrección exacta.
+2. **producto** — mejoras: estudia la ergonomía, la apariencia y las funcionalidades, propone mejoras priorizadas y especifica las que Rafael aprueba.
 3. **desarrollador** — aplica la especificación en una rama `claude/…` con el diff mínimo y abre la PR.
 4. **qa** — revisa el diff contra la especificación y estas reglas, ejecuta la comprobación y aprueba o devuelve cambios.
 
-Flujo: (auditor) → producto → Rafael aprueba si el riesgo es alto (dinero, contratos, datos) → desarrollador → qa → PR lista para que Rafael la fusione.
+Flujo: auditor (fallos) o producto (mejoras) → Rafael elige/aprueba (siempre en las mejoras y si el riesgo es alto) → desarrollador → qa → PR lista para que Rafael la fusione.
 Las PR y las issues se escriben en español; la descripción de la PR termina en `Closes #N` cuando haya issue.
 
 También sigue funcionando el flujo antiguo: una issue o comentario de Rafael con `@claude` lanza la GitHub Action (`.github/workflows/claude.yml`).
