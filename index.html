@@ -11819,7 +11819,7 @@ function openQuoteStatusMenu(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const statuses=[['pendiente','hourglass','Pendiente','var(--amber)'],['aceptado','check-circle','Aceptado','var(--green)'],['rechazado','ban','Rechazado','var(--red)'],['convertido','car','Convertido','var(--blue)']];
   openSheet('<div class="stitle">🏷️ Cambiar estado</div>'
-    +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')" style="width:100%;background:${safeColor(q.status===s?col:'var(--bg3)')};border:1.5px solid ${safeColor(q.status===s?col:'var(--border2)')};color:${safeColor(q.status===s?col:'var(--text2)')};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${ico(icon)} ${esc(lbl)}</button>`).join('')
+    +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')" style="width:100%;background:${safeColor(q.status===s?col:'var(--bg3)')};border:1.5px solid ${safeColor(q.status===s?col:'var(--border2)')};color:${q.status===s?'#fff':'var(--text2)'};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${ico(icon)} ${esc(lbl)}</button>`).join('')
     +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
