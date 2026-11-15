@@ -15,6 +15,7 @@ Petición de Rafael: $ARGUMENTS
 
 ## Flujo
 
+0. **Mirar qué hay en marcha.** Sigue la sección «Convivencia con Grok Bot» de `CLAUDE.md`: actualiza `main` y revisa las PR e issues abiertas. Si ya hay trabajo abierto sobre lo mismo, díselo a Rafael antes de seguir, y pásale a cada agente las PR e issues relacionadas para que no las pise.
 1. **Estudiar.** Lanza al auditor o a producto según lo anterior.
 2. **Decidir.** Si producto devuelve propuestas, enséñaselas a Rafael en corto (qué, por qué, esfuerzo) y espera a que elija. Si el riesgo es **alto** (dinero, fianzas, comisiones, contratos, formato de datos, Firebase) o el cambio es grande, espera también su «sí». Si es un fallo de riesgo bajo o medio, sigue.
 3. **Especificar.** Pide al mismo agente (auditor o producto) la especificación exacta del bloque elegido.

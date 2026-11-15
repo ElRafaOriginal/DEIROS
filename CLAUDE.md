@@ -41,3 +41,15 @@ Flujo: auditor (fallos) o producto (mejoras) → Rafael elige/aprueba (siempre e
 Las PR y las issues se escriben en español; la descripción de la PR termina en `Closes #N` cuando haya issue.
 
 También sigue funcionando el flujo antiguo: una issue o comentario de Rafael con `@claude` lanza la GitHub Action (`.github/workflows/claude.yml`).
+
+## Convivencia con Grok Bot
+
+Rafael también trabaja en este repo con su equipo de Grok Bot (Deiros Fleet, Auditor, Producto, Desarrollador, QA). No compartís conversaciones: **GitHub es el único sitio común**, así que todo lo importante debe quedar escrito en issues y PR.
+
+Antes de empezar cualquier trabajo:
+
+1. Actualiza `main` (`git fetch --depth=50 origin main`) y parte siempre de la última versión.
+2. Revisa las PR y las issues abiertas: `gh api 'repos/ElRafaOriginal/DEIROS/pulls?state=open'` y `gh api 'repos/ElRafaOriginal/DEIROS/issues?state=open'`. Lee su título, descripción y comentarios recientes.
+3. Si una PR abierta (de Grok, de Claude o de Rafael) ya toca la misma función o zona de `index.html`, **no trabajes en paralelo sobre ella**: díselo a Rafael y propón esperar a que se fusione, o continuar sobre esa misma rama si él lo autoriza.
+4. Si una issue abierta ya describe lo que se va a hacer, trabaja sobre ella (enlázala y termina la PR con `Closes #N`) en vez de duplicarla.
+5. Respeta las decisiones que Rafael haya dejado escritas en issues y PR, vengan de quien vengan, salvo que contradigan estas reglas; en ese caso pregúntale.
