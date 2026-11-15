@@ -3400,7 +3400,7 @@ function openContractForm(vId,bookingId){
     <span id="ctKmTotalBadge" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${Number(calcKmIncExacto(b.startDate,b.startTime||'',b.endDate,b.endTime||'',isFurgoneta))||0} km</span>
   </div>
   <div class="r2">
-    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(b.fianza!=null&&b.fianza!==''&&Number.isFinite(Number(b.fianza))?b.fianza:_fianzaDefault())}" inputmode="decimal"/></div>
+    <div class="fg"><label class="lbl">FIANZA / DEPÓSITO (€)</label><input id="ctFianza" value="${esc(Number(b.fianza)>0?b.fianza:((b.platform||'sinapp')==='sinapp'?_fianzaDefault():'0'))}" inputmode="decimal"/></div>
     <div class="fg"><label class="lbl">RECARGO COMBUSTIBLE (€/LITRO)</label><input id="ctRecargoL" value="${esc(co.recargoCombL||'2')}" inputmode="decimal"/></div>
   </div>
   <div class="r2">
