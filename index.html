@@ -3376,7 +3376,7 @@ function openContractForm(vId,bookingId){
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">ZONA AUTORIZADA</label><input id="ctZona" value="${esc(co.zonaAut||'Territorio nacional')}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input id="ctEdadMin" value="${esc(String(Math.max(25,parseInt(co.edadMin)||25)))}" inputmode="numeric"/></div>
+    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input value="Mayor de 25 años" readonly tabindex="-1"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">PRECIO BASE ALQUILER (€)</label><input id="ctPrecioBase" value="${esc(b.amount||'')}" inputmode="decimal"/></div>
@@ -4004,7 +4004,7 @@ function generateContractPDF(vId,bookingId){
     return bonus;
   })();
   const _kmFinal=_kmBonus===Infinity?'Ilimitados':(_kmCalc+_kmBonus)+' km';
-  const co={nombre:g('ctArNombre'),nif:g('ctArNif'),direccion:g('ctArDir'),telefono:g('ctArTel'),email:g('ctArEmail'),ciudad:g('ctCiudad'),ciudadEntrega:g('ctEntLugar'),zonaAut:g('ctZona'),edadMin:g('ctEdadMin'),kmInc:g('ctKmInc'),kmExtra:g('ctKmExtra'),fianza:g('ctFianza'),recargoCombL:g('ctRecargoL'),penalLimp:g('ctPenalLimp'),uso:g('ctUso'),formaPago:g('ctPago'),fuelLevel:g('ctFuelLevel')};
+  const co={nombre:g('ctArNombre'),nif:g('ctArNif'),direccion:g('ctArDir'),telefono:g('ctArTel'),email:g('ctArEmail'),ciudad:g('ctCiudad'),ciudadEntrega:g('ctEntLugar'),zonaAut:g('ctZona'),edadMin:'25',kmInc:g('ctKmInc'),kmExtra:g('ctKmExtra'),fianza:g('ctFianza'),recargoCombL:g('ctRecargoL'),penalLimp:g('ctPenalLimp'),uso:g('ctUso'),formaPago:g('ctPago'),fuelLevel:g('ctFuelLevel')};
   // La fianza se guarda como valor por defecto solo si no viene de la propia reserva
   if(document.getElementById('ctSaveDefaults')?.checked)saveCompanyData(b.fianza!=null&&b.fianza!==''?{...co,fianza:getCompanyData().fianza}:co);
   if(co.fuelLevel){b.deliveredFuelLevel=co.fuelLevel;save();} // nivel de entrega real: lo usa la devolución
@@ -4193,7 +4193,7 @@ function generateContractPDF(vId,bookingId){
   para('El impago del precio o la fianza facultará al ARRENDADOR para resolver el contrato de forma inmediata.');
 
   clauseHeader('Cuarta','Utilización del vehículo');
-  para('4.1. Solo podrán conducir el vehículo: el ARRENDATARIO'+(hasExtra&&extra.nombre?' y el conductor adicional D./Dña. '+extra.nombre:'')+'. Todos mayores de '+co.edadMin+' años con permiso válido en vigor.');
+  para('4.1. Solo podrán conducir el vehículo: el ARRENDATARIO'+(hasExtra&&extra.nombre?' y el conductor adicional D./Dña. '+extra.nombre:'')+'. Todos mayores de 25 años con permiso válido en vigor.');
   para('4.2. Uso autorizado: '+co.uso+'. Zona autorizada: '+co.zonaAut+'.');
   para('4.3. Queda PROHIBIDO: transporte remunerado de pasajeros, remolcar vehículos, participar en competiciones, conducir bajo efectos de alcohol o drogas, transportar mercancías peligrosas, superar la carga máxima, subarrendar el vehículo, manipular el cuentakilómetros, o circular fuera de la zona autorizada.');
   para('4.4. Combustible: el vehículo se entrega con nivel "'+co.fuelLevel+'" y debe devolverse con el mismo nivel. Si se devuelve con menos combustible, el ARRENDATARIO abonará los litros que falten, calculados según la capacidad del depósito, al precio medio de ese carburante en el municipio donde se devuelva el vehículo, según los datos oficiales de precios de carburantes publicados por el Gobierno de España, más un recargo de '+_recXR+' € por litro.');
@@ -11988,7 +11988,7 @@ function generateQuotePDF(id){
     '\u2022 Km incluidos para '+q.dur+' d\u00eda'+(q.dur!==1?'s':'')+': '+kmTotalConExtras+' (progresi\u00f3n logar\u00edtmica: 200km d\u00eda 1, ~3.000km/30d). Km prepago (anticipo): '+kmPreRate+'  \u2022  Exceso al devolver: '+kmExcRate,
     '\u2022 Combustible: pol\u00edtica full-to-full. Entrega y devoluci\u00f3n al mismo nivel.',
     '\u2022 Cancelaci\u00f3n gratuita hasta 24 h antes del inicio. Se\u00f1al del 30% no reembolsable si se cancela en menos de 24 h.',
-    '\u2022 Edad m\u00ednima: 25 a\u00f1os. Carnet de conducir en vigor + DNI o pasaporte obligatorio.',
+    '\u2022 Conductor mayor de 25 a\u00f1os. Carnet de conducir en vigor + DNI o pasaporte obligatorio.',
     '\u2022 Las multas de tr\u00e1fico generadas durante el alquiler son responsabilidad del conductor.',
     '\u2022 Este presupuesto tiene validez de 15 d\u00edas desde la fecha de emisi\u00f3n.',
   ];
