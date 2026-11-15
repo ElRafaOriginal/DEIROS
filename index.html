@@ -2386,13 +2386,20 @@ function _syncBookingToVFinances(v, b){
   v.finances=(v.finances||[]).filter(f=>
     f.bookingId!==bId && !(_bb_extIds(b).includes(f.id))
   );
+  // Ampliaciones registradas en b.finance
+  const exts=(b.finance||[]).filter(f=>f.type==='income'&&f.concept&&f.concept.startsWith('Ampliaci'));
+  // El importe base se reparte hasta el fin original (anterior a la primera ampliación), como en el alta
+  let baseEnd=b.endDate;
+  exts.forEach(function(ext){
+    const m=ext.concept.match(/\((\d{4}-\d{2}-\d{2})\s*\S+\s*(\d{4}-\d{2}-\d{2})\)/);
+    if(m&&safeDate(m[1])&&m[1]>=b.startDate&&m[1]<baseEnd)baseEnd=m[1];
+  });
   // Regenerate original pro-rata
-  const baseEntries=proRataEntries(b.startDate,b.endDate,b.amount,b.platform,b.notes,bId);
+  const baseEntries=proRataEntries(b.startDate,baseEnd,b.amount,b.platform,b.notes,bId);
   baseEntries.forEach(e=>v.finances.push(e));
   b.financeIds=baseEntries.map(e=>e.id);
   b.financeId=b.financeIds[0]||null;
   // Re-add extension entries from b.finance
-  const exts=(b.finance||[]).filter(f=>f.type==='income'&&f.concept&&f.concept.startsWith('Ampliaci'));
   exts.forEach(function(ext){
     // Parse origEnd and newEnd from concept "Ampliación alquiler (YYYY-MM-DD → YYYY-MM-DD)"
     const m=ext.concept.match(/\((\d{4}-\d{2}-\d{2})\s*\S+\s*(\d{4}-\d{2}-\d{2})\)/);
@@ -2444,7 +2451,7 @@ function openExtendBooking(bookingId){
     }
   }
 
-  const _curTotal=_bookingRealTotal(_bb);
+  const _curTotal=_bookingClientTotal(_bb);
   const _fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
 
   openSheet('<div class="stitle">📅 Ampliar alquiler</div>'
@@ -2501,7 +2508,7 @@ function _confirmExtend(){
   V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){_bv=v;_bb=b;}});});
   if(!_bv||!_bb)return;
 
-  const curTotal=_bookingRealTotal(_bb);
+  const curTotal=_bookingClientTotal(_bb);
   const extraPrice=newTotalRaw>0?Math.round((newTotalRaw-curTotal)*100)/100:0;
   if(newTotalRaw>0&&extraPrice<=0){
     alert('El nuevo total ('+new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(newTotalRaw)+') debe ser mayor que el total actual ('+new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(curTotal)+').');
@@ -2695,9 +2702,12 @@ function delBookingFinance(bookingId,fid){
   let _v2=null;V.forEach(v=>{if((v.bookings||[]).some(b=>b.id===bookingId))_v2=v;});const v=_v2;
   if(!v)return;
   const b=(v.bookings||[]).find(b=>b.id===bookingId);if(!b||!b.finance)return;
+  const _delF=b.finance.find(f=>f.id===fid);
   b.finance=b.finance.filter(f=>f.id!==fid);
   // Also clean legacy synced entries if any
   if(v.finances)v.finances=v.finances.filter(f=>f._bfId!==fid);
+  // Ampliación borrada: rehacer el prorrateo (base + ampliaciones que quedan) para quitar su entrada _extension de v.finances
+  if(_delF&&_delF.type==='income'&&String(_delF.concept||'').startsWith('Ampliaci')&&!b.cancelled)_syncBookingToVFinances(v,b);
   save();renderDetail(document.getElementById('PC'));
 }
 
@@ -3571,7 +3581,7 @@ function generateReceiptPDF(bookingId){
 
   // ── Cálculos ──────────────────────────────────────────────────────────────
   const _isCanc=!!b.cancelled;
-  const totAlq=_bookingRealTotal(b); // cancelado: solo la penalización
+  const totAlq=_bookingClientTotal(b); // total del cliente (sin gastos internos). Cancelado: solo la penalización
   const fianza=_isCanc?0:Number(b.fianza||0); // cancelado: no se pide fianza
   const _fzSt=_isCanc?'':_fianzaStatus(b); // '', pending, returned, retained, partial
   const _fzCerrada=_fzSt==='returned'||_fzSt==='retained'||_fzSt==='partial'; // ya depositada y resuelta
@@ -3710,7 +3720,9 @@ function generateReceiptPDF(bookingId){
     : (b.finance||[]).filter(f=>f._autoExtra&&f.type==='income').map(f=>({label:f.concept,amount:f.amount}));
   // Cobros de devolución (exceso de km / combustible faltante)
   const _pdfReturnCharges=(b.finance||[]).filter(f=>f._returnCharge&&f.type==='income').map(f=>({label:f.concept,amount:f.amount}));
-  const _pdfExtras=_isCanc?[]:_pdfExtrasBase.concat(_pdfReturnCharges); // cancelado: sin extras
+  // Ingresos adicionales manuales: suman en el total, así que van como línea
+  const _pdfOtherInc=(b.finance||[]).filter(f=>f.type==='income'&&!f._autoExtra&&!f._returnCharge&&!f._cancellation&&!String(f.concept||'').startsWith('Ampliaci')).map(f=>({label:f.concept,amount:f.amount}));
+  const _pdfExtras=_isCanc?[]:_pdfExtrasBase.concat(_pdfReturnCharges,_pdfOtherInc); // cancelado: sin extras
   const _pdfExts=_isCanc?[]:(b.finance||[]).filter(f=>f.type==='income'&&f.concept&&f.concept.startsWith('Ampliaci'));
   const _extDays=_pdfExts.reduce((s,ex)=>{const m=/(\d{4}-\d{2}-\d{2})\s*[→\-]\s*(\d{4}-\d{2}-\d{2})/.exec(ex.concept||'');return s+(m?daysBetween(m[1],m[2]):0);},0);
   const durBase=Math.max(1,dur-_extDays);
@@ -5798,7 +5810,7 @@ function renderCal(v){
         else if(b.endDate===_tomorrowS){col='var(--amber)';lbl='🕐 Termina mañana';}
         else{col='var(--green)';lbl='🚗 En curso';}
       }
-      const total=_bookingRealTotal(b);
+      const total=_bookingClientTotal(b);
       const kmInfo=b.kmStart&&b.kmEnd?Math.abs((b.kmEnd||0)-(b.kmStart||0)).toLocaleString('es-ES')+' km':'';
       const multiMonth=b.startDate.slice(0,7)!==b.endDate.slice(0,7);
       const bId=b.id, bSd=b.startDate;
@@ -5864,7 +5876,7 @@ function renderCal(v){
             const _ab=Number(b.abonoReserva||0);
             const _fi=Number(b.fianza||0);
             if(!_ab&&!_fi)return '';
-            const _tt=_bookingRealTotal(b)+_fi;
+            const _tt=_bookingClientTotal(b)+_fi;
             const _pd=Math.max(0,_tt-_ab);
             let row='<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px">';
             if(_fi>0)row+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
@@ -5998,7 +6010,7 @@ function showBooking(k,_overrideId){
         +'<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3)">💼 INGRESOS Y GASTOS</div>'
         +'<span onclick="repairBookingFinances(\''+escJs(b.id)+'\')" title="Sincronizar finanzas del vehículo" style="cursor:pointer;font-size:14px;color:var(--text3);line-height:1">🔄</span></div>'
         +(()=>{
-          return '<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+fmt2(_bookingRealTotal(b))+' total</div>';
+          return '<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+fmt2(_bookingClientTotal(b))+' total</div>';
         })()
         +'</div>'
         +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:6px 8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">'
@@ -6029,7 +6041,7 @@ function showBooking(k,_overrideId){
       const _abono=Number(b.abonoReserva||0);
       const _cobSinImp=!!(b.cobrado||b.paid)&&!_abono;
       const _fianza=Number(b.fianza||0);
-      const _totAlq=_bookingRealTotal(b);
+      const _totAlq=_bookingClientTotal(b);
       const _totTotal=_totAlq+_fianza;
       const _pend=Math.max(0,_totTotal-_abono);
       const _hasFianza=_fianza>0;
@@ -6378,6 +6390,13 @@ function editBooking(id){
       <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
         ${[['exBolsa200','📦','Bolsa +200 km','24,99€'],['exBolsa500','📦','Bolsa +500 km','39,99€'],['exBolsa1000','📦','Bolsa +1.000 km','59,99€'],['exKmIlimitados','♾️','Km ilimitados','79,99€']].map(([eid,icon,label,price])=>'<div class="_exrow _kmrow" data-exid="'+eid+'" data-dur="'+dur+'" id="row_ex_'+eid+'" style="display:flex;align-items:center;gap:10px;padding:8px 6px;cursor:pointer;border-radius:8px"><div id="chk_ex_'+eid+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">&nbsp;</div><input type="checkbox" id="ex_'+eid+'" style="display:none"/><span style="font-size:18px">'+icon+'</span><span style="flex:1;font-size:13px;font-weight:600">'+label+'</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</span></div>').join('')}
       </div>
+      <div class="_exrow" data-exid="exKmPrepago" data-dur="${dur}" id="row_ex_exKmPrepago" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer">
+        <div id="chk_ex_exKmPrepago" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">&nbsp;</div>
+        <input type="checkbox" id="ex_exKmPrepago" style="display:none"/>
+        <span style="font-size:20px">🔢</span>
+        <span style="flex:1;font-size:13px;font-weight:600">Km sueltos <span style="font-size:10px;color:var(--text3);font-weight:400">(0,15€/km)</span></span>
+        <input id="exKmPrepagoN" type="number" min="0" step="50" placeholder="km" onclick="event.stopPropagation()" oninput="_calcExtrasTotal(${dur},${isFurgEdit})" style="width:70px;font-size:13px;padding:4px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);text-align:right"/>
+      </div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:2px solid var(--border);margin-bottom:12px">
       <span style="font-size:13px;font-weight:700">Total extras:</span>
@@ -6393,6 +6412,7 @@ function editBooking(id){
       if(!ex||!ex.id)return;
       const cb=document.getElementById('ex_'+ex.id);
       if(cb&&!cb.checked){
+        if(ex.id==='exKmPrepago'){const _n=document.getElementById('exKmPrepagoN');const _m=/\((\d+)\s*km/.exec(ex.label||'');if(_n)_n.value=_m?_m[1]:String(Math.round((Number(ex.amount)||0)/0.15));}
         if(_kmIds.includes(ex.id))_kmToggleStyled(ex.id,dur);
         else _toggleExtra(ex.id,dur,false);
       }
@@ -6533,7 +6553,7 @@ function submitEditBooking(id){
 
   // Read selected extras from the form
   const _editDur=daysBetween(sd,ed);
-  const _extDataEdit=_calcExtrasTotal(_editDur,false);
+  const _extDataEdit=_calcExtrasTotal(_editDur,(targetV.vehicle_type||'').startsWith('l'));
   const _extArrEdit=Object.entries(_extDataEdit.items).map(([eid,ex])=>({id:eid,label:ex.label,amount:ex.amt}));
   b.extras=_extArrEdit;
 
@@ -6555,12 +6575,9 @@ function submitEditBooking(id){
     _invalidateRsCache();
   }
 
-  // Recreate pro-rata finance entries in target vehicle
-  const fEntries=proRataEntries(sd,ed,amt,_plat,b.notes,id);
+  // Recreate pro-rata finance entries in target vehicle (base + ampliaciones de b.finance)
   if(!targetV.finances)targetV.finances=[];
-  fEntries.forEach(e=>targetV.finances.push(e));
-  b.financeIds=fEntries.map(e=>e.id);
-  b.financeId=b.financeIds[0]||null;
+  _syncBookingToVFinances(targetV,b);
 
   // Add extras finance entries
   _extArrEdit.forEach(function(ex){
@@ -6586,7 +6603,7 @@ function deleteBooking(id){
   if(b){
     // Remove all linked finance entries (single financeId or array financeIds)
     const ids=b.financeIds||( b.financeId?[b.financeId]:[] );
-    v.finances=(v.finances||[]).filter(f=>!ids.includes(f.id)&&f.bookingId!==id);
+    v.finances=(v.finances||[]).filter(f=>!ids.includes(f.id)&&f.bookingId!==id&&f._bookingId!==id);
   }
   v.bookings=(v.bookings||[]).filter(b=>b.id!==id);
   save();renderDetail(document.getElementById('PC'));
@@ -6925,6 +6942,17 @@ function _bookingRealTotal(b){
   const extrasFromFin=(b.finance||[]).filter(f=>f._autoExtra&&f.type==='income').reduce((s,f)=>s+Number(f.amount||0),0);
   const extrasSum=extrasFromArr>0?extrasFromArr:extrasFromFin;
   return base+extraInc+extrasSum-extraExp;
+}
+
+// Total facturado al cliente (bruto): base + extras + ampliaciones + cobros de devolución + ingresos adicionales.
+// No resta los gastos internos del alquiler (eso es _bookingRealTotal, el resultado). Cancelado: igual que _bookingRealTotal.
+function _bookingClientTotal(b){
+  if(b.cancelled)return _bookingRealTotal(b);
+  const fin=b.finance||[];
+  const inc=fin.filter(f=>!f._autoExtra&&!f._cancellation&&f.type==='income').reduce((s,f)=>s+Number(f.amount||0),0);
+  const fromArr=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+  const fromFin=fin.filter(f=>f._autoExtra&&f.type==='income').reduce((s,f)=>s+Number(f.amount||0),0);
+  return Number(b.amount||0)+inc+(fromArr>0?fromArr:fromFin);
 }
 
 function _getVehicleAllFinances(v){
@@ -9545,7 +9573,7 @@ function exportGlobalExcel(){
   activeV.forEach(v=>{
     [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{
       const dur=daysBetween(b.startDate,b.endDate);
-      allBk.push([v.name,v.plate,PLATS[b.platform]?.label||b.platform,fmtDMY(b.startDate),b.startTime,fmtDMY(b.endDate),b.endTime,dur,_bookingRealTotal(b),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);
+      allBk.push([v.name,v.plate,PLATS[b.platform]?.label||b.platform,fmtDMY(b.startDate),b.startTime,fmtDMY(b.endDate),b.endTime,dur,_bookingClientTotal(b),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);
     });
   });
   const ws1=XLSX.utils.aoa_to_sheet(allBk);
@@ -10405,7 +10433,7 @@ function exportExcel(vId){
   const ws1=XLSX.utils.aoa_to_sheet(finRows);ws1['!cols']=[{wch:12},{wch:10},{wch:18},{wch:12},{wch:40}];
   XLSX.utils.book_append_sheet(wb,ws1,'Finanzas');
   const bkRows=[['Inicio','Hora ini','Fin','Hora fin','Días','Plataforma','Importe €','Cliente','Teléfono','DNI','Notas','Estado']];
-  [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{bkRows.push([fmtDMY(b.startDate),b.startTime,fmtDMY(b.endDate),b.endTime,daysBetween(b.startDate,b.endDate),PLATS[b.platform]?.label||b.platform,_bookingRealTotal(b),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);});
+  [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{bkRows.push([fmtDMY(b.startDate),b.startTime,fmtDMY(b.endDate),b.endTime,daysBetween(b.startDate,b.endDate),PLATS[b.platform]?.label||b.platform,_bookingClientTotal(b),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);});
   const ws2=XLSX.utils.aoa_to_sheet(bkRows);ws2['!cols']=[{wch:12},{wch:8},{wch:12},{wch:8},{wch:6},{wch:12},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30},{wch:11}];
   XLSX.utils.book_append_sheet(wb,ws2,'Alquileres');
   const tI=_xlsFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -11673,9 +11701,13 @@ function convertQuoteToBooking(id){
     id:bId,
     startDate:q.startDate,endDate:q.endDate,
     startTime:q.startTime||'09:00',endTime:q.endTime||'09:00',
-    amount:q.baseAmount,
+    amount:Math.max(0,Math.round((Number(q.baseAmount||0)-Number(q.discount||0))*100)/100),
     clientName:q.clientName||'',
-    notes:'Generado desde presupuesto '+q.num+(q.notes?' · '+q.notes:''),
+    clientPhone:q.clientPhone||'',
+    clientDni:q.clientDni||'',
+    fianza:Number(q.fianza)||0,
+    extras:(q.extras||[]).map(ex=>({id:ex.id,label:(ex.id==='exKmPrepago'&&ex.km)?'Km sueltos ('+ex.km+' km × 0,15€)':ex.label,amount:Number(ex.amount)||0})),
+    notes:'Generado desde presupuesto '+q.num+(Number(q.discount)>0?' · Descuento '+fmtF(Number(q.discount)):'')+(q.notes?' · '+q.notes:''),
     platform:'direct',collected:false,delivered:false,returned:false,
     kmStart:Number(v.km)||0,
     finance:[],financeIds:[],financeId:null,
@@ -11685,9 +11717,11 @@ function convertQuoteToBooking(id){
   fEntries.forEach(e=>(v.finances=v.finances||[]).push(e));
   b.financeIds=fEntries.map(e=>e.id);
   b.financeId=b.financeIds[0]||null;
-  // Add extras as b.finance entries
-  (q.extras||[]).forEach(ex=>{
-    b.finance.push({id:uid(),type:'income',concept:ex.label,amount:ex.amount,date:q.startDate,_autoExtra:true});
+  // Extras: igual que el alta (b.extras + b.finance + v.finances con _bookingId)
+  if(!v.finances)v.finances=[];
+  b.extras.forEach(ex=>{
+    b.finance.push({id:uid(),type:'income',concept:ex.label,amount:ex.amount,date:q.startDate,notes:'Extra contratado',_autoExtra:true});
+    v.finances.push({id:uid(),type:'income',date:q.startDate.slice(0,7)+'-01',category:ex.label,amount:ex.amount,description:ex.label+' · '+(b.clientName||'')+' · '+(v.plate||''),_bookingId:bId,_autoExtra:true});
   });
   v.bookings.push(b);
   // Auto-link client (mismo patrón que el alta de alquiler)
