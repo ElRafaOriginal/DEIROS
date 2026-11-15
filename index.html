@@ -209,6 +209,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* INPUTS */
 input,select{font-family:var(--font);font-size:15px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--rsm);color:var(--text);padding:12px 14px;width:100%;outline:none;-webkit-appearance:none;appearance:none;color-scheme:dark;}.light input,.light select{color-scheme:light;}
 input:focus,select:focus{border-color:var(--amber);}
+input[type=checkbox]{width:24px;height:24px;min-width:24px;padding:0!important;margin:0;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--amber);flex-shrink:0;cursor:pointer;}
 select option{background:var(--bg);}
 .lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px;display:block;}
 .fg{margin-bottom:14px;}
@@ -1304,7 +1305,7 @@ function renderAnalytics(el){
   const metrics=activeV.map(v=>{
     const inc=tInc(v),exp=tExp(v),profit=inc-exp;
     const days=tDays(v);
-    const bks=(v.bookings||[]);
+    const bks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation);
     const rpdInc=Math.round(inc/(days||1));
     const rpdProfit=Math.round(profit/(days||1));
     const pp=Number(v.purchase_price)||0;
@@ -1322,7 +1323,7 @@ function renderAnalytics(el){
     const platInc={amovens:0,getaround:0,sinapp:0};
     bks.forEach(b=>{if(platBk[b.platform]!==undefined){platBk[b.platform]++;platInc[b.platform]+=(Number(b.amount)||0);}});
     const bestPlat=Object.entries(platInc).sort((a,b)=>b[1]-a[1])[0];
-    const _comm=(Number(v.commission)||30)/100;
+    const _comm=((v.commission==null||v.commission===''?30:Number(v.commission)))/100;
     const bizShare=v.vtype==='managed'?_settleTotals(v,_getVehicleAllFinances(v)).mgr:profit; // comisión − déficit asumido
     return{v,inc,exp,profit,days,bks:bks.length,rpdInc,rpdProfit,pp,roi,paidOff,daysToPayOff,occ,bestPlat,bizShare};
   }).sort((a,b)=>b.rpdInc-a.rpdInc);
@@ -1418,7 +1419,7 @@ function renderAnalytics(el){
         ${_ownMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">${ico('key')} PROPIOS (${_ownMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${_ownProfit>=0?'var(--green)':'var(--red)'}">${fmt(_ownProfit)}</div><div style="font-size:9px;color:var(--text3)">beneficio 100%</div></div>`:''}
         ${_mgdMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">${ico('handshake')} GESTIÓN (${_mgdMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--purple)">${fmt(_mgdShare)}</div><div style="font-size:9px;color:var(--text3)">comisión sobre lo facturado</div></div>`:''}
       </div>
-      ${_mgdMs.map(m=>{const _c=Number(m.v.commission)||30;return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-top:6px"><span style="font-size:11px;color:var(--text2)">${ico('handshake')} ${esc(m.v.name)} · comisión ${_c}%</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--purple)">${fmt(m.bizShare)} <span style="font-size:9px;font-weight:400;color:var(--text3)">de ${fmt(m.inc)} facturado</span></span></div>`;}).join('')}
+      ${_mgdMs.map(m=>{const _c=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-top:6px"><span style="font-size:11px;color:var(--text2)">${ico('handshake')} ${esc(m.v.name)} · comisión ${_c}%</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--purple)">${fmt(m.bizShare)} <span style="font-size:9px;font-weight:400;color:var(--text3)">de ${fmt(m.inc)} facturado</span></span></div>`;}).join('')}
     </div>`;
   })()}
 
@@ -1463,10 +1464,10 @@ function renderAnalytics(el){
   const _nowStr=todayStr();
   const _curM2=_nowStr.slice(0,7);
   // Todos los alquileres de todos los vehículos activos (filtrados)
-  const _allBks=activeV.flatMap(v=>(v.bookings||[]).map(b=>({...b,_v:v})));
+  const _allBks=activeV.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).map(b=>({...b,_v:v})));
   // Tiempo muerto: días entre fin de un alquiler y comienzo del siguiente
   const _deadTimes=activeV.map(v=>{
-    const vBks=[...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate));
+    const vBks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).sort((a,b)=>a.startDate.localeCompare(b.startDate));
     let totalGap=0,gaps=0;
     for(let i=1;i<vBks.length;i++){
       const gap=Math.round((new Date(vBks[i].startDate)-new Date(vBks[i-1].endDate))/864e5);
@@ -1504,7 +1505,7 @@ function renderAnalytics(el){
   // Turismo vs Furgoneta
   const _turismos=activeV.filter(v=>!(v.vehicle_type||'turismo').startsWith('l'));
   const _furgos=activeV.filter(v=>(v.vehicle_type||'turismo').startsWith('l'));
-  const _typeStats=(vs)=>({cnt:vs.length,inc:vs.reduce((s,v)=>s+tInc(v),0),exp:vs.reduce((s,v)=>s+tExp(v),0),bks:vs.reduce((s,v)=>s+(v.bookings||[]).length,0),days:vs.reduce((s,v)=>s+tDays(v),0)});
+  const _typeStats=(vs)=>({cnt:vs.length,inc:vs.reduce((s,v)=>s+tInc(v),0),exp:vs.reduce((s,v)=>s+tExp(v),0),bks:vs.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0),days:vs.reduce((s,v)=>s+tDays(v),0)});
   const _tStat=_typeStats(_turismos),_fStat=_typeStats(_furgos);
   const _fmtA=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
 
@@ -1745,7 +1746,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const pp=Number(v.purchase_price)||0;
     const roi=pp>0?Math.round(allProfit/pp*100):null;
     const paidOff=pp>0&&allProfit>=pp;
-    const _pcomm=(Number(v.commission)||30)/100;
+    const _pcomm=((v.commission==null||v.commission===''?30:Number(v.commission)))/100;
     const bizShare=v.vtype==='managed'?_settleTotals(v,pFins).mgr:(pInc-pExp); // comisión − déficit asumido
     return{v,pInc,pExp,pProfit:pInc-pExp,pBks:pBks.length,pDays,occ,rpdInc,avgP,avgDur,pp,roi,paidOff,allProfit,bizShare};
   }).sort((a,b)=>b.rpdInc-a.rpdInc);
@@ -2011,7 +2012,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       _safeAddPage(8,'RESUMEN');
       const prof=m.pProfit;
       const isGest=m.v.vtype==='managed';
-      const comm=Number(m.v.commission)||30;
+      const comm=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));
       _tblR([
         [((m.v.name+' '+m.v.plate)+(isGest?' (G '+comm+'%)':'')).substring(0,24),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
         [fE(m.pInc),mg+62,'right',GREEN],
@@ -2707,7 +2708,7 @@ function openExtendBooking(bookingId){
     +'</div>'
     +('<button class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
     +'<div style="height:8px"></div>'
-    +('<button onclick="generateExtensionPDF()" class="btn-pri" style="margin-bottom:8px">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
+    +('<button onclick="generateExtensionPDF(window._extBookingId)" class="btn-pri" style="margin-bottom:8px">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
     +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
 }
 
@@ -3112,7 +3113,7 @@ function openPendingDeposits(filter){
   rows.sort((x,y)=>String(x.b.endDate||'').localeCompare(String(y.b.endDate||'')));
   const LBL={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'};
   const COL={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:'#F97316'};
-  const pill=(k,t)=>'<button onclick="openPendingDeposits(\''+k+'\')" style="flex:1;background:'+(filter===k?'var(--amber)':'var(--bg3)')+';color:'+(filter===k?'var(--on-amber)':'var(--text2)')+';border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">'+t+'</button>';
+  const pill=(k,t)=>'<button onclick="openPendingDeposits(\''+k+'\')" style="flex:1;background:'+(filter===k?'var(--amber)':'var(--bg3)')+';color:'+(filter===k?'var(--on-amber)':'var(--text2)')+';border:1px solid var(--border2);border-radius:8px;padding:8px;min-height:44px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">'+t+'</button>';
   let h=('<div style="padding:16px"><div style="font-size:16px;font-weight:800;margin-bottom:10px">'+ico('lock')+' Fianzas</div>')
     +'<div style="display:flex;gap:6px;margin-bottom:12px">'+pill('pending','Pendientes')+pill('retained','Retenidas')+pill('all','Todas')+'</div>';
   if(!rows.length)h+='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Sin fianzas en esta lista</div>';
@@ -3591,7 +3592,7 @@ function openContractForm(vId,bookingId){
   <!-- Conductor adicional -->
   <div style="background:var(--bg3);border-radius:10px;padding:12px;margin:10px 0">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;min-height:44px">
         <input type="checkbox" id="ctHasExtra" onchange="document.getElementById('ctExtraBlock').style.display=this.checked?'block':'none'"/>
         <span style="font-size:13px;font-weight:700">${ico('user')} Añadir conductor adicional</span>
       </label>
@@ -4115,14 +4116,21 @@ function generateReceiptPDF(bookingId){
 }
 
 // ── Anexo de Ampliación PDF ───────────────────────────────────────────────
-function generateExtensionPDF(){
+function generateExtensionPDF(bookingId){
   try{
-  // Usa los datos de la última ampliación (window._extLastData) o pide el bookingId
-  const d=window._extLastData;
-  if(!d){alert('Confirma primero la ampliación para generar el anexo.');return;}
+  // Anexo de la última «Ampliación» registrada en b.finance del alquiler indicado (o del de la última ampliación confirmada)
+  const _last=window._extLastData;
+  const _bid=bookingId||(_last&&_last.bookingId);
   let _bv=null,_bb=null;
-  V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===d.bookingId){_bv=v;_bb=b;}});});
+  V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===_bid){_bv=v;_bb=b;}});});
   if(!_bv||!_bb){alert('Alquiler no encontrado.');return;}
+  const _amp=(_bb.finance||[]).filter(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci')).pop();
+  const _am=_amp&&String(_amp.concept).match(/(\d{4}-\d{2}-\d{2})\D+(\d{4}-\d{2}-\d{2})/);
+  if(!_am){alert('Confirma primero la ampliación para generar el anexo.');return;}
+  const _an=re=>{const x=String(_amp.notes||'').match(re);return x?Number(x[1]):NaN;};
+  const _ext=Number(_amp.amount)||0,_cur0=_an(/Total anterior:\s*([\d.]+)/),_new0=_an(/Nuevo total:\s*([\d.]+)/);
+  const _cur=Number.isFinite(_cur0)?_cur0:Math.max(0,_bookingClientTotal(_bb)-_ext);
+  const d={bookingId:_bb.id,origEnd:_am[1],newEnd:_am[2],newTime:(_last&&_last.bookingId===_bb.id&&_last.newEnd===_am[2])?_last.newTime:(_bb.endDate===_am[2]?(_bb.endTime||''):''),curTotal:_cur,extraPrice:_ext,newTotal:Number.isFinite(_new0)&&_new0>0?_new0:_cur+_ext};
   const co=getCompanyData();
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
@@ -5290,21 +5298,21 @@ function _ownerSettle(v,fins){
   const tI=sum(fins.filter(e=>e.type==='income'));
   const paid=sum(fins.filter(e=>_isOwnerPaid(v,e)));
   const tE=sum(fins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)));
-  const comm=Number(v.commission)||30,commAmt=tI*comm/100,raw=tI-commAmt-tE;
+  const comm=(v.commission==null||v.commission===''?30:Number(v.commission)),commAmt=tI*comm/100,raw=tI-commAmt-tE;
   const deficit=(v.ownerId&&raw<0)?-raw:0;
   return{tI,tE,paid,tP:tI-tE,comm,commAmt,toOwner:raw+deficit,deficit,mgr:commAmt-deficit};
 }
 // Suma mes a mes de _ownerSettle (para acumulados y periodos de varios meses)
 function _settleTotals(v,fins){
   const by={};fins.forEach(e=>{if(typeof e.date!=='string')return;const m=e.date.slice(0,7);(by[m]=by[m]||[]).push(e);});
-  const t={tI:0,tE:0,paid:0,tP:0,commAmt:0,toOwner:0,deficit:0,mgr:0,comm:Number(v.commission)||30};
+  const t={tI:0,tE:0,paid:0,tP:0,commAmt:0,toOwner:0,deficit:0,mgr:0,comm:(v.commission==null||v.commission===''?30:Number(v.commission))};
   Object.values(by).forEach(f=>{const x=_ownerSettle(v,f);['tI','tE','paid','tP','commAmt','toOwner','deficit','mgr'].forEach(k=>{t[k]+=x[k];});});
   return t;
 }
 function tDays(v){return new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking)).size;}
 function bizContrib(v){
   if(v.vtype!=='managed')return{inc:tInc(v),exp:tExp(v)};
-  const comm=(Number(v.commission)||30)/100;
+  const comm=((v.commission==null||v.commission===''?30:Number(v.commission)))/100;
   const share=_settleTotals(v,_getVehicleAllFinances(v)).mgr; // comisión − déficit asumido (cláusula 5.5)
   return{inc:share,exp:0};
 }
@@ -5737,7 +5745,7 @@ function vcardH(v){
   const iPct=total>0?Math.max(0,Math.min(100,vI/total*100)):50;
   const ePct=total>0?Math.max(0,Math.min(100,vE/total*100)):50;
   const isM=v.vtype==='managed';
-  const comm=isM?(Number(v.commission)||30):null;
+  const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
   const share=isM?_settleTotals(v,_getVehicleAllFinances(v)).mgr:null;
   return `<div class="vcard" style="background:${safeColor(v.color)}0d;border-color:${safeColor(v.color)}44" onclick="openV('${escJs(v.id)}')">
     <div style="position:absolute;top:0;right:0;width:60px;height:60px;background:${safeColor(v.color)}10;border-radius:0 14px 0 60px"></div>
@@ -6271,8 +6279,8 @@ function showBooking(k,_overrideId){
           return _extTotal>0?'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:4px 8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">'
           +'<span>Extras contrato</span><span style="font-family:var(--mono);font-weight:700;color:var(--amber)">+'+fmt2(_extTotal)+'</span></div>':'';
         })()
-      if(fI.length){h+='<div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px">INGRESOS ADICIONALES</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="editBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+('\')" style="cursor:pointer;color:var(--blue);font-size:14px;margin-right:4px">'+ico('edit')+'</span><span onclick="delBookingFinance(\'')+escJs(b.id)+'\',\''+escJs(f.id)+'\')" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
-      if(fE.length){h+='<div style="font-size:10px;font-weight:700;color:var(--red);margin:6px 0 4px">GASTOS</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="editBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+('\')" style="cursor:pointer;color:var(--blue);font-size:14px;margin-right:4px">'+ico('edit')+'</span><span onclick="delBookingFinance(\'')+escJs(b.id)+'\',\''+escJs(f.id)+'\')" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
+      if(fI.length){h+='<div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px">INGRESOS ADICIONALES</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
+      if(fE.length){h+='<div style="font-size:10px;font-weight:700;color:var(--red);margin:6px 0 4px">GASTOS</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
       h+='<div style="border-top:2px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">'
         +'<span style="font-size:11px;font-weight:700;color:var(--text3)">RESULTADO DEL ALQUILER</span>'
         +(()=>{
@@ -6380,6 +6388,7 @@ function showBooking(k,_overrideId){
       <button class="btn-pri" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
       <button class="btn-pri" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>
       <button class="btn-pri" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>
+      ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-pri" onclick="generateExtensionPDF('${escJs(b.id)}')" style="grid-column:1/-1">${ico('clipboard')} Anexo de ampliación</button>`:''}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
       <button class="btn-sec${b.delivered?' on-green':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
@@ -7244,6 +7253,9 @@ function _getVehicleAllFinances(v){
         bookingId:b.id,
       });
     });
+    // Alquileres antiguos: extras de b.extras sin su copia _autoExtra en v.finances (mismo criterio que _getVehicleAllFinancesDisplay)
+    const _vfEx=(v.finances||[]).some(function(f){return f._autoExtra&&f._bookingId===b.id&&!f.bookingId;});
+    if(!_vfEx)(b.extras||[]).forEach(function(ex){result.push({id:'_bex_'+ex.id+'_'+b.id,_fromBFinance:true,type:'income',date:b.startDate,category:ex.label||'Extra',amount:Number(ex.amount)||0,bookingId:b.id});});
   });
   return result;
 }
@@ -7449,7 +7461,7 @@ function submitEntry(){
 // ═══════════════════════════════════════════════════════════ INFO TAB
 function renderInfo(v){
   const isM=v.vtype==='managed';
-  const comm=Number(v.commission)||30;
+  const comm=(v.commission==null||v.commission===''?30:Number(v.commission));
   const fields=[['Tipo',isM?'En gestión':'Propio'],['Tipo vehículo',vtypeLabel(v.vehicle_type||'turismo')],['Nombre',v.name],['Matrícula',v.plate],['Modelo',v.model||'—'],['Año',v.year||'—'],['Combustible',v.fuel||'—'],['Km actuales',v.km?Number(v.km).toLocaleString('es-ES')+' km':'—'],['Km últ. mant.',v.maint_km?Number(v.maint_km).toLocaleString('es-ES')+' km'+(v.km?' ('+Number(Number(v.km)-Number(v.maint_km)).toLocaleString('es-ES')+' km desde entonces)':''):'—'],['Nº bastidor',v.chassis||'—'],['Precio compra',v.purchase_price?fmtF(Number(v.purchase_price)):'—'],['Año compra',v.purchase_year||'—'],['Notas',v.notes||'—']];
   let h=`<div>
   ${v.photo?`<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1.5px solid ${safeColor(v.color)}44;position:relative">
@@ -8405,7 +8417,7 @@ function renderOwnersBody(){
       const vehicles=V.filter(v=>!v.archived&&v.ownerId===owner.id);
       const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
       const totalP=totalI-vehicles.reduce((s,v)=>s+tExp(v),0);
-      const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+(Number(v.commission)||30),0)/vehicles.length):0;
+      const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
       const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0);
       h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A630;border-radius:12px;padding:16px;cursor:pointer" onclick="openOwnerProfile('${escJs(owner.id)}')">
         <div style="font-size:15px;font-weight:800;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(owner.name)}</div>
@@ -8428,7 +8440,7 @@ function renderOwnersBody(){
       const vehicles=V.filter(v=>!v.archived&&v.ownerId===owner.id);
       const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
       const totalP=totalI-vehicles.reduce((s,v)=>s+tExp(v),0);
-      const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+(Number(v.commission)||30),0)/vehicles.length):0;
+      const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
       const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0);
       h+=`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:${i<filtered.length-1?'1px solid var(--border)':'none'}">
         <div style="width:6px;height:36px;border-radius:3px;background:#14B8A6;flex-shrink:0"></div>
@@ -8454,7 +8466,7 @@ function renderOwnersBody(){
       const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
       const totalE=vehicles.reduce((s,v)=>s+tExp(v),0);
       const totalP=totalI-totalE;
-      const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+(Number(v.commission)||30),0)/vehicles.length):0;
+      const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
       const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0);
       h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A644;border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer" onclick="openOwnerProfile('${escJs(owner.id)}')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
@@ -8536,7 +8548,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
   const totalE=vehicles.reduce((s,v)=>s+tExp(v),0);
   const totalP=totalI-totalE;
-  const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+(Number(v.commission)||30),0)/vehicles.length):0;
+  const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
   const toOwner=totalP*(1-avgComm/100);
   const totalDays=vehicles.reduce((s,v)=>s+tDays(v),0);
   const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).length,0);
@@ -8561,7 +8573,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   <div class="sec" style="margin-bottom:12px">VEHÍCULOS EN GESTIÓN</div>
   ${vehicles.map(v=>{
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
-    const comm=Number(v.commission)||30;
+    const comm=(v.commission==null||v.commission===''?30:Number(v.commission));
     const vOwner=vP-vI*comm/100;
     const mFins=_getVehicleAllFinances(v).filter(e=>e.date.slice(0,7)===now);
     const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -8607,7 +8619,7 @@ function renderOwnerProfile(el){
   const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
   const totalE=vehicles.reduce((s,v)=>s+tExp(v),0);
   const totalP=totalI-totalE;
-  const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+(Number(v.commission)||30),0)/vehicles.length):0;
+  const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
   const toOwner=totalP*(1-avgComm/100);
   const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).length,0);
   const now=new Date().toISOString().slice(0,7);
@@ -8618,7 +8630,7 @@ function renderOwnerProfile(el){
     const fins=_getVehicleAllFinances(v);
     const mFins=fins.filter(e=>e.date.slice(0,7)===now);
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
-    const comm=Number(v.commission)||30;
+    const comm=(v.commission==null||v.commission===''?30:Number(v.commission));
     const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mE=mFins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const recentBk=[...(v.bookings||[])].sort((a,b)=>b.startDate.localeCompare(a.startDate)).slice(0,5);
@@ -8805,14 +8817,14 @@ function genOwnerReport(ownerId){
     <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
       <div class="tap44" onclick="document.getElementById('ownerRepOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">${ico('arrow-left')}</div>
       <div>
-        <div style="font-size:16px;font-weight:800;color:#14B8A6">LIQUIDACIÓN PROPIETARIO</div>
+        <div style="font-size:16px;font-weight:800;color:var(--amber)">LIQUIDACIÓN PROPIETARIO</div>
         <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(o.name.toUpperCase())} · ${mLabel.toUpperCase()}</div>
       </div>
       <button class="btn-pri" onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')" style="margin-left:auto;width:auto;flex-shrink:0">${ico('download')} PDF</button>
     </div>
     <div style="padding:16px">
       <!-- Owner info -->
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid #14B8A644">
+      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid #8B1FD444">
         <div style="font-size:20px;font-weight:800">${esc(o.name)}</div>
         ${o.dni?`<div style="font-size:12px;color:var(--text3);margin-top:4px">${ico('id-card')} ${esc(o.dni)}</div>`:''}
         ${o.phone?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${ico('phone')} ${esc(o.phone)}</div>`:''}
@@ -8827,11 +8839,11 @@ function genOwnerReport(ownerId){
       </div>
       <!-- Per vehicle breakdown -->
       ${vData.map(d=>`
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #14B8A620">
+      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #8B1FD420">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
             <div style="font-size:15px;font-weight:800">${esc(d.v.name)}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:#14B8A6;margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
           </div>
           <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#8B5CF620;color:var(--purple);border:1px solid #8B5CF640">Comisión ${d.comm}%</span>
         </div>
@@ -8859,8 +8871,8 @@ function genOwnerReport(ownerId){
         </div>`:''}
       </div>`).join('')}
       <!-- Total to pay -->
-      <div style="background:#14B8A615;border:2px solid #14B8A6;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">
-        <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#14B8A6;margin-bottom:8px">TOTAL A PAGAR A ${esc(o.name.toUpperCase())}</div>
+      <div style="background:#8B1FD415;border:2px solid #8B1FD4;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--amber);margin-bottom:8px">TOTAL A PAGAR A ${esc(o.name.toUpperCase())}</div>
         <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--amber)">${fmtE(totOwner)}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px">${mLabel} · ${vehicles.length} vehículo${vehicles.length!==1?'s':''}</div>
       </div>
@@ -9525,7 +9537,7 @@ function _getBizEntries(){
 // Returns static commission summary per managed vehicle (live, always current)
 function _getManagedCommissions(){
   return V.filter(v=>!v.archived&&v.vtype==='managed').map(v=>{
-    const comm=(Number(v.commission)||30)/100;
+    const comm=((v.commission==null||v.commission===''?30:Number(v.commission)))/100;
     const t=_settleTotals(v,_getVehicleAllFinances(v));
     return{v,comm,vI:t.tI,vE:t.tE,net:t.tP,commAmt:t.mgr,toOwner:t.toOwner}; // commAmt = comisión − déficit asumido
   });
@@ -9787,8 +9799,8 @@ function exportGlobalExcel(){
 
   // ── Hoja 1: Resumen global
   const now=new Date();
-  const totalI=activeV.reduce((s,v)=>s+tInc(v),0)+BF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
-  const totalE=activeV.reduce((s,v)=>s+tExp(v),0)+BF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const totalI=activeV.reduce((s,v)=>s+bizContrib(v).inc,0)+BF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const totalE=activeV.reduce((s,v)=>s+bizContrib(v).exp,0)+BF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const resumen=[
     ['RESUMEN GLOBAL — DEIROS FLEET',''],
     ['Exportado',now.toLocaleDateString('es-ES')],
@@ -9796,7 +9808,7 @@ function exportGlobalExcel(){
     ['VEHÍCULOS ACTIVOS',activeV.length],
     [''],
     ['CONCEPTO','IMPORTE (€)'],
-    ['Ingresos totales (todos los vehículos + negocio)',totalI],
+    ['Ingresos totales (propios + comisión de gestión + negocio)',totalI],
     ['Gastos totales',totalE],
     ['Beneficio neto',totalI-totalE],
     [''],
@@ -9806,7 +9818,7 @@ function exportGlobalExcel(){
   activeV.forEach(v=>{
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
     const isM=v.vtype==='managed';
-    const comm=isM?(Number(v.commission)||30):null;
+    const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
     const share=isM?_settleTotals(v,_getVehicleAllFinances(v)).mgr:null; // comisión − déficit asumido
     resumen.push([v.name,v.plate,isM?'En gestión':'Propio',vI,vE,vP,tDays(v),isM?comm:'—',isM?share:'—']);
   });
@@ -9855,7 +9867,7 @@ function exportGlobalExcel(){
   // ── Hoja 5: P&L mensual consolidado
   const months={};
   activeV.forEach(v=>{
-    const isM=v.vtype==='managed';const comm=isM?(Number(v.commission)||30)/100:1;
+    const isM=v.vtype==='managed';const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission)))/100:1;
     // Misma fuente que Finanzas (sin cancelados duplicados). Gestionados: comisión = facturado del mes × comisión del vehículo
     const _vF=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry);
     if(isM){
@@ -10231,7 +10243,7 @@ function buildMonthlyChart(v){
   const fins=_plFins(v,_getVehicleAllFinances(v));
   const selKey=finMonth||null;
   const isM=v.vtype==='managed';
-  const comm=isM?(Number(v.commission)||30):null;
+  const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
   let commRow='';
   if(isM){
     const now=new Date();
@@ -10276,7 +10288,7 @@ function _getBizEntriesWithMgmt(){
   // Uses _getVehicleAllFinancesDisplay (same source as Dashboard) for consistency
   const entries=_getBizEntries();
   V.filter(v=>!v.archived&&v.vtype==='managed').forEach(v=>{
-    const comm=(Number(v.commission)||30)/100;
+    const comm=((v.commission==null||v.commission===''?30:Number(v.commission)))/100;
     const byMonth={};
     _getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).forEach(e=>{
       const m=e.date.slice(0,7);
@@ -10338,7 +10350,7 @@ function genReport(vId){
   const [yr,mo]=month.split('-');
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
   const isM=v.vtype==='managed';
-  const comm=isM?(Number(v.commission)||30):null;
+  const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
   const commAmt=isM?tI*(comm/100):null; // comisión sobre lo facturado en el mes (0 si no factura)
   const toOwnerM=isM?_ownerSettle(v,fins).toOwner:null; // mínimo 0 si tiene propietario
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
@@ -10641,7 +10653,7 @@ function dlReport(vId,month){
   const [yr,mo]=month.split('-');
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
   const isM=v.vtype==='managed';
-  const comm=isM?(Number(v.commission)||30):null;
+  const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
   const commAmt=isM?tI*(comm/100):null; // comisión sobre lo facturado en el mes (0 si no factura)
   const toOwnerM=isM?_ownerSettle(v,fins).toOwner:null; // mínimo 0 si tiene propietario
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
