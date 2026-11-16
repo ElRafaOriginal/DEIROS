@@ -12099,6 +12099,9 @@ function convertQuoteToBooking(id){
     kmStart:Number(v.km)||0,
     finance:[],financeIds:[],financeId:null,
   };
+  const _chgQ=_clDniChange(_qCl?_qCl.id:'',b.clientDni,{bId,startDate:b.startDate});
+  if(!_chgQ.ok)return;
+  if(_chgQ.other){b.clientName=_chgQ.other.name||'';b.clientPhone=_chgQ.other.phone||'';b.clientDni=(_chgQ.other.dni||'').toUpperCase();}
   // ProRata entries for vehicle finances
   const fEntries=proRataEntries(b.startDate,b.endDate,b.amount,b.platform,b.notes,bId);
   fEntries.forEach(e=>(v.finances=v.finances||[]).push(e));
@@ -12112,7 +12115,7 @@ function convertQuoteToBooking(id){
   });
   v.bookings.push(b);
   // Ficha única: con ficha elegida se enlaza a ella; sin ella, por nombre solo si no hay homónimos (si no, ficha nueva)
-  _clUpsert({id:_qCl?_qCl.id:'',name:b.clientName,phone:b.clientPhone,dni:b.clientDni},{bId});
+  if(!_chgQ.other)_clUpsert({id:_qCl?_qCl.id:'',name:b.clientName,phone:b.clientPhone,dni:b.clientDni},{bId});
   q.status='convertido';
   q.bookingId=bId;
   save();
