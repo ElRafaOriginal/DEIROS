@@ -2017,7 +2017,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const isGest=m.v.vtype==='managed';
       const comm=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));
       _tblR([
-        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-2-(mg+3),true),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
+        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-4-(mg+3),true),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
         [fE(m.pInc),mg+62,'right',GREEN],
         [fE(m.pExp),mg+92,'right',RED],
         [fE(prof),mg+128,'right',prof>=0?GREEN:RED,false],
@@ -5119,7 +5119,7 @@ function _vehLblW(doc,name,plate,sep,suffix,maxW,bold){
 // Color de TEXTO de plataforma (claro: tonos oscuros; oscuro: marca aclarada donde la marca no llega a 4,5:1)
 function _uiPlatTxt(plat,dot){
   if(!_uiLight())return ({getaround:'#A78BFA'})[plat]||(dot==='#6B7280'?'#9CA3AF':dot);
-  return ({amovens:'#9D174D',getaround:'#6A0DAD',sinapp:'#065F46'})[plat]||dot;
+  return ({amovens:'#9D174D',getaround:'#6A0DAD',sinapp:'#065F46'})[plat]||(dot==='#6B7280'?'#4B5563':dot);
 }
 function safeColor(c){
   const s=String(c==null?'':c).trim();
