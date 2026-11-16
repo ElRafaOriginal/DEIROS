@@ -1959,8 +1959,8 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const colW=(cW-8)/3;
     const cols=[
       ['PROPIOS ('+_ownMs.length+' veh.)','Beneficio 100%',fE(_ownProfit),_ownProfit>=0?GREEN:RED],
-      ['GESTIÓN ('+_mgdMs.length+' veh.)','Comisión sobre la facturación',fE(_mgdShare),[103,58,183]],
-      ['BFO. REAL DEL NEGOCIO','propios + (comisión − déficit asumido)',fE(bizTotProfit),bizTotProfit>=0?GREEN:RED],
+      ['GESTIÓN ('+_mgdMs.length+' veh.)','Comisión menos déficit asumido',fE(_mgdShare),[103,58,183]],
+      ['BFO. REAL DEL NEGOCIO','propios + (comisión menos déficit asumido)',fE(bizTotProfit),bizTotProfit>=0?GREEN:RED],
     ];
     cols.forEach(([lbl,sub,val,col],ci)=>{
       const cx=mg+8+ci*colW;
@@ -2015,7 +2015,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const isGest=m.v.vtype==='managed';
       const comm=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));
       _tblR([
-        [_vehLbl(m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',24),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
+        [_vehLbl(m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',28),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
         [fE(m.pInc),mg+62,'right',GREEN],
         [fE(m.pExp),mg+92,'right',RED],
         [fE(prof),mg+128,'right',prof>=0?GREEN:RED,false],
@@ -2032,7 +2032,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     doc.setTextColor(...DARK);doc.text(String(totBks),W-mg,y+5.5,{align:'right'});
     y+=8;
     doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('(G) Vehículo en gestión: Part.Negocio = Ingresos facturados × comisión del gestor',mg,y+4);
+    doc.text('(G) Vehículo en gestión: Part.Negocio = comisión del gestor sobre lo facturado menos el déficit asumido',mg,y+4);
     y+=8;
   } else {
     _tblH([
@@ -6094,19 +6094,19 @@ function renderCal(v){
       listHtml+=
         '<div style="border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:1px solid '+safeColor(platDot)+'44">'+
         // Header
-        '<div style="background:linear-gradient(135deg,'+safeColor(platDot)+'cc,'+safeColor(platDot)+'55);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
+        '<div style="background:linear-gradient(135deg,'+safeColor(platDot)+'cc,'+safeColor(platDot)+'55);'+(_uiLight()?'':'box-shadow:inset 0 0 0 100vmax rgba(0,0,0,.6);')+'padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
           '<div style="display:flex;align-items:center;gap:8px">'+
             '<span style="font-size:20px;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+(p.icon||ico('car'))+'</span>'+
             '<div>'+
               '<div style="font-size:13px;font-weight:800;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+esc(b.clientName||'Sin nombre')+'</div>'+
-              '<div style="font-size:10px;color:'+(_uiLight()?'rgba(13,13,13,.75)':'rgba(255,255,255,0.8)')+'">'+esc(b.clientPhone||p.label)+
+              '<div style="font-size:10px;color:'+(_uiLight()?'rgba(13,13,13,.75)':'rgba(255,255,255,0.92)')+'">'+esc(b.clientPhone||p.label)+
                 (multiMonth?'<span style="margin-left:6px;background:rgba(255,255,255,0.2);padding:1px 5px;border-radius:4px">+2 meses</span>':'')+
               '</div>'+
             '</div>'+
           '</div>'+
           '<div style="text-align:right">'+
             '<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+fmtF(total)+'</div>'+
-            (total>Number(b.amount||0)?'<div style="font-size:9px;color:'+(_uiLight()?'rgba(13,13,13,.75)':'rgba(255,255,255,0.7)')+'">'+fmtF(b.amount)+' base</div>':'')+
+            (total>Number(b.amount||0)?'<div style="font-size:9px;color:'+(_uiLight()?'rgba(13,13,13,.75)':'rgba(255,255,255,0.92)')+'">'+fmtF(b.amount)+' base</div>':'')+
           '</div>'+
         '</div>'+
         // Date/time row
@@ -11230,6 +11230,12 @@ function toggleTheme(){
   const isLight=document.documentElement.classList.toggle('light');
   localStorage.setItem('wg_theme',isLight?'light':'dark');
   updateThemeButtons(isLight);
+  // Repintar la vista actual para aplicar los colores calculados con _uiLight()
+  const pc=document.getElementById('PC');
+  if(pc){
+    if(!AV&&CV==='agenda'&&typeof renderAgenda==='function')renderAgenda(pc);
+    else render();
+  }
 }
 function updateThemeButtons(isLight){
   const btn=document.getElementById('themeBtn');
@@ -12149,7 +12155,7 @@ function generateQuotePDF(id){
   // ── Vehicle ──
   _pdfLbl(doc,y,++_n,'Vehículo');
   doc.setFontSize(13);doc.setFont('syne','bold');doc.setTextColor(...INK);
-  doc.text(_pdfFit(doc,v?(v.name+(v.plate?' · '+v.plate:'')).substring(0,35):'—',R-L-56),L,y+0.5);
+  doc.text(_pdfFit(doc,v?_vehLbl(v.name,v.plate,' · ','',35):'—',R-L-56),L,y+0.5);
   if(v){
     const specs=[(v.fuel||''),'Año '+(v.year||''),'Transmisión: '+(v.gearbox||'Manual'),isFurg?'Furgoneta':'Turismo'].filter(Boolean).join('  ·  ');
     doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...MID);
