@@ -1116,6 +1116,7 @@ function submitAddClient(){
   const name=(document.getElementById('clN')?.value||'').trim();
   if(!name){alert('El nombre es obligatorio');return;}
   const _g=id=>(document.getElementById(id)?.value||'').trim();
+  {const _o=_clOtherByDni(_g('clDni'),'');if(_o){alert('Ese DNI ya es de la ficha «'+(_o.name||'sin nombre')+'». Corrige el DNI.');return;}}
   CL.push({id:uid(),name,dni:_g('clDni').toUpperCase(),phone:_g('clPhone'),email:_g('clEmail'),notes:_g('clNotes'),rating:0,bookingIds:[],address:_g('nclAddr'),birthdate:_g('nclBirth'),nationality:_g('nclNat'),license:_g('nclLic').toUpperCase(),licenseExp:_g('nclLicExp')});
   save();closeSheet();renderClientsBody();
 }
@@ -1150,7 +1151,7 @@ function openEditClient(id){
 
 function submitEditClient(id){
   const cl=CL.find(c=>c.id===id);if(!cl)return;
-  {const _dn=(document.getElementById('eclDni')?.value||'').trim();const _ch=_clDniChange(id,_dn,{});if(!_ch.ok||_ch.other)return;}
+  {const _dn=(document.getElementById('eclDni')?.value||'').trim();const _o=_clOtherByDni(_dn,id);if(_o){alert('Ese DNI ya es de la ficha «'+(_o.name||'sin nombre')+'». Corrige el DNI.');return;}}
   cl.name=(document.getElementById('eclN')?.value||cl.name).trim();
   cl.dni=(document.getElementById('eclDni')?.value||'').trim();
   cl.nationality=(document.getElementById('eclNationality')?.value||'').trim();
@@ -12102,6 +12103,7 @@ function convertQuoteToBooking(id){
   const _chgQ=_clDniChange(_qCl?_qCl.id:'',b.clientDni,{bId,startDate:b.startDate});
   if(!_chgQ.ok)return;
   if(_chgQ.other){b.clientName=_chgQ.other.name||'';b.clientPhone=_chgQ.other.phone||'';b.clientDni=(_chgQ.other.dni||'').toUpperCase();}
+  {const _fq=_chgQ.other||_clFind({id:_qCl?_qCl.id:'',name:b.clientName,dni:b.clientDni,phone:b.clientPhone},null);const _eq=_fq?_clAge(_fq.birthdate,b.startDate):null;if(_eq!=null&&_eq<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return;}}
   // ProRata entries for vehicle finances
   const fEntries=proRataEntries(b.startDate,b.endDate,b.amount,b.platform,b.notes,bId);
   fEntries.forEach(e=>(v.finances=v.finances||[]).push(e));
