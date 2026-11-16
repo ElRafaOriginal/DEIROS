@@ -807,7 +807,7 @@ function _clFind(d,bId){
   const otroDni=x=>!!(k&&_clKey(x.dni)&&_clKey(x.dni)!==k);
   if(bId){
     const c=CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(bId));
-    if(c&&!(n&&_clName(c.name)&&_clName(c.name)!==n&&!(k&&_clKey(c.dni)===k)&&!(t&&_clTel(c.phone)===t)))return c;
+    if(c&&!otroDni(c)&&!(n&&_clName(c.name)&&_clName(c.name)!==n&&!(k&&_clKey(c.dni)===k)&&!(t&&_clTel(c.phone)===t)))return c;
   }
   if(k){const c=CL.find(x=>_clKey(x.dni)===k);if(c)return c;}
   if(t.length>=6){const c=CL.find(x=>_clTel(x.phone)===t&&!otroDni(x));if(c)return c;}
@@ -846,6 +846,25 @@ function _clUpsert(d,opt){
     if(!cl.bookingIds.includes(opt.bId))cl.bookingIds.push(opt.bId);
   }
   return cl;
+}
+// Cambio de DNI: nunca dos fichas con el mismo DNI. {ok:true,other:null} sin conflicto; {ok:true,other:ficha} aceptó usar la otra
+// (enlazada con linkOnly si hay opt.bId); {ok:false} canceló o la ficha destino es menor de 26 (opt.startDate): no se escribe nada.
+function _clOtherByDni(dni,exceptId){
+  const k=_clKey(dni);if(!k)return null;
+  return CL.find(x=>x.id!==exceptId&&_clKey(x.dni)===k)||null;
+}
+function _clDniChange(curId,nuevoDni,opt){
+  opt=opt||{};
+  const other=_clOtherByDni(nuevoDni,curId);
+  if(!other)return {ok:true,other:null};
+  const msg='Ese DNI ya es de la ficha «'+(other.name||'sin nombre')+'». Aceptar: usar esa ficha'+(opt.bId?' y enlazar este alquiler a ella (no se cambiarán su nombre ni su teléfono)':' (no se guardará ese DNI en esta ficha)')+'. Cancelar: corrige el DNI.';
+  if(!confirm(msg))return {ok:false};
+  if(opt.startDate){
+    const e=_clAge(other.birthdate,opt.startDate);
+    if(e!=null&&e<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return {ok:false};}
+  }
+  if(opt.bId)_clUpsert({id:other.id},{bId:opt.bId,linkOnly:true});
+  return {ok:true,other};
 }
 // Avisos (no bloquean): mayor de 25 = 26 cumplidos el día de inicio; carnet en vigor hasta la devolución
 function _clAge(nac,dia){const a=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(nac||'')),b=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(dia||''));if(!a||!b)return null;let e=+b[1]-+a[1];if(b[2]+b[3]<a[2]+a[3])e--;return e;}
@@ -1131,6 +1150,7 @@ function openEditClient(id){
 
 function submitEditClient(id){
   const cl=CL.find(c=>c.id===id);if(!cl)return;
+  {const _dn=(document.getElementById('eclDni')?.value||'').trim();const _ch=_clDniChange(id,_dn,{});if(!_ch.ok||_ch.other)return;}
   cl.name=(document.getElementById('eclN')?.value||cl.name).trim();
   cl.dni=(document.getElementById('eclDni')?.value||'').trim();
   cl.nationality=(document.getElementById('eclNationality')?.value||'').trim();
@@ -4286,15 +4306,14 @@ function generateContractPDF(vId,bookingId){
   // Ficha única: crea o completa la ficha con todo lo escrito (pregunta una vez si cambia algún dato) y le enlaza este alquiler
   const _pickId=document.getElementById('ctClPick')?.dataset?.clId||'';
   const _curCl=(_pickId&&CL.find(x=>x.id===_pickId))||CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(b.id))||null;
-  const _otra=_curCl&&_clKey(cl.nif)?CL.find(x=>x.id!==_curCl.id&&_clKey(x.dni)===_clKey(cl.nif)):null;
+  const _chg=_clDniChange(_curCl?_curCl.id:_pickId,cl.nif,{bId:b.id,startDate:b.startDate}); // DNI de otra ficha: confirma, comprueba edad y enlaza (linkOnly) antes de tocar nada
   let _fc;
-  if(_otra){
+  if(!_chg.ok){if(typeof _ctGo==='function')_ctGo(2);return;}
+  if(_chg.other){
     // El DNI escrito ya es de otra ficha: nunca dos fichas con el mismo DNI
-    if(!confirm('Ese DNI ya es de la ficha «'+(_otra.name||'sin nombre')+'». Aceptar: usar esa ficha y enlazar este alquiler a ella (no se cambiarán su nombre ni su teléfono). Cancelar: vuelve al paso 2 para corregir el DNI.')){if(typeof _ctGo==='function')_ctGo(2);return;}
-    _fc=_clUpsert({id:_otra.id},{bId:b.id,linkOnly:true});
+    _fc=_chg.other;
     // El documento usa los datos de la ficha elegida
     cl.nombre=_fc.name||'';cl.nif=_fc.dni||'';cl.tel=_fc.phone||'';cl.dir=_fc.address||'';cl.nac=_fc.birthdate||'';cl.nacionalidad=_fc.nationality||'';cl.lic=_fc.license||'';cl.licExp=_fc.licenseExp||'';
-    const _ea=_clAge(cl.nac,b.startDate);if(_ea!=null&&_ea<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');if(typeof _ctGo==='function')_ctGo(2);return;}
   }else{
     _fc=_clUpsert({id:_pickId,name:cl.nombre,dni:cl.nif,phone:cl.tel,address:cl.dir,birthdate:cl.nac,nationality:cl.nacionalidad,license:cl.lic,licenseExp:cl.licExp},{bId:b.id});
     // Si se canceló «Actualizar la ficha…» y el DNI escrito no coincide con el de la ficha, no se escribe en el alquiler
@@ -6641,7 +6660,7 @@ function editBooking(id){
     <input id="rCP" type="hidden" value="${esc(b.clientPhone||'')}"/>
     <input id="rCDNI" type="hidden" value="${esc(b.clientDni||'')}"/>
     <div oninput="_clStatusUpd('rClientPicker')" onchange="_clStatusUpd('rClientPicker')">
-    <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||'')}</div>
+    <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||_clE&&_clE.name||'',_clE&&_clE.id||'')}</div>
     ${b.clientName?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
         ${ico('user')} ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}
@@ -6821,14 +6840,26 @@ function submitEditBooking(id){
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
 
+  // DNI escrito: si es de otra ficha, se decide ANTES de tocar el alquiler (cancelar = no cambia nada)
+  const _clD=_clFormVals('rClientPicker');_clD.dni=(_clD.dni||'').toUpperCase();
+  const _pkE=document.getElementById('rClientPicker')?.dataset?.clId||'';
+  const _curE=(_pkE&&CL.find(x=>x.id===_pkE))||CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(id))||null;
+  const _chgE=_clDniChange(_curE?_curE.id:_pkE,_clD.dni,{bId:id,startDate:sd});
+  if(!_chgE.ok)return;
+
   // Update booking fields
   b.startDate=sd;b.startTime=st;b.endDate=ed;b.endTime=et;
   b.platform=_plat;b.amount=amt;
   // Cliente: lo escrito va al alquiler; la ficha se crea/completa y el alquiler queda solo en ella (sin cliente: se desenlaza)
-  const _clD=_clFormVals('rClientPicker');_clD.dni=(_clD.dni||'').toUpperCase();
-  b.clientName=_clD.name||'';b.clientPhone=_clD.phone||'';b.clientDni=_clD.dni;
-  if(!_clUpsert(Object.assign({},_clD,{id:document.getElementById('rClientPicker')?.dataset?.clId||''}),{bId:id}))
-    CL.forEach(c=>{if(Array.isArray(c.bookingIds))c.bookingIds=c.bookingIds.filter(x=>x!==id);});
+  if(_chgE.other){
+    b.clientName=_chgE.other.name||'';b.clientPhone=_chgE.other.phone||'';b.clientDni=(_chgE.other.dni||'').toUpperCase();
+  }else{
+    b.clientName=_clD.name||'';b.clientPhone=_clD.phone||'';b.clientDni=_clD.dni;
+    const _fcE=_clUpsert(Object.assign({},_clD,{id:_pkE}),{bId:id});
+    if(!_fcE)CL.forEach(c=>{if(Array.isArray(c.bookingIds))c.bookingIds=c.bookingIds.filter(x=>x!==id);});
+    // Si se canceló «Actualizar la ficha…», el alquiler conserva el DNI de su ficha
+    else if(_clKey(_fcE.dni)&&_clKey(_fcE.dni)!==_clKey(b.clientDni)){b.clientDni=(_fcE.dni||'').toUpperCase();alert('El DNI se queda como el de la ficha del cliente (no se actualizó la ficha).');}
+  }
   b.notes=(document.getElementById('rNotes')?.value||'').trim();
   b.fianza=parseFloat(document.getElementById('rFianza')?.value||'0')||0;
   b.kmStart=kmStart;b.kmEnd=kmEnd;
@@ -7131,7 +7162,7 @@ function submitRental(){
   const amt=parseFloat(document.getElementById('rAmt').value);
   // Cliente: lo escrito en el formulario (al elegir una ficha se rellena con sus datos y se puede corregir)
   const _clD=_clFormVals('rClientPicker');
-  const clientName=_clD.name||'',clientPhone=_clD.phone||'',clientDni=(_clD.dni||'').toUpperCase();
+  let clientName=_clD.name||'',clientPhone=_clD.phone||'',clientDni=(_clD.dni||'').toUpperCase();
   const notes=(document.getElementById('rNotes')?.value||'').trim();
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
@@ -7143,6 +7174,18 @@ function submitRental(){
   if(conflict){alert('Conflicto:\n'+_conflictText(conflict));return;}
   {const _ea=_clAge(_clD.birthdate,sd);if(_ea!=null&&_ea<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}}
   const bId=uid();
+  // Ficha única (antes de crear nada): DNI de otra ficha → confirma y enlaza; si se cancela algo, no se crea el alquiler
+  {
+    const _pkR=document.getElementById('rClientPicker')?.dataset?.clId||'';
+    const _unlinkR=()=>CL.forEach(c=>{if(Array.isArray(c.bookingIds))c.bookingIds=c.bookingIds.filter(x=>x!==bId);});
+    const _chgR=_clDniChange(_pkR,clientDni,{bId,startDate:sd});
+    if(!_chgR.ok)return;
+    if(_chgR.other){clientName=_chgR.other.name||'';clientPhone=_chgR.other.phone||'';clientDni=(_chgR.other.dni||'').toUpperCase();}
+    else{
+      const _fcR=_clUpsert(Object.assign({},_clD,{id:_pkR,dni:clientDni}),{bId});
+      if(_fcR&&_clKey(_fcR.dni)&&_clKey(_fcR.dni)!==_clKey(clientDni)){_unlinkR();alert('El DNI escrito no coincide con el de la ficha del cliente. Corrígelo o acepta actualizar la ficha.');return;}
+    }
+  }
   if(!v.finances)v.finances=[];
   if(!v.bookings)v.bookings=[];
   // Recoger extras seleccionados
@@ -7167,8 +7210,6 @@ function submitRental(){
     v.finances.push({id:uid(),type:'income',date:sd.slice(0,7)+'-01',category:ex.label,amount:ex.amount,description:ex.label+' · '+(clientName||'')+' · '+(v.plate||''),_bookingId:bId,_autoExtra:true});
   });
   if(kmEnd&&kmEnd>0){v.km=String(kmEnd);}
-  // Ficha única: crea o completa la ficha (pregunta una vez si cambia algún dato) y le enlaza este alquiler
-  _clUpsert(Object.assign({},_clD,{id:document.getElementById('rClientPicker')?.dataset?.clId||'',dni:clientDni}),{bId});
   save();closeSheet();renderDetail(document.getElementById('PC'));
 }
 
