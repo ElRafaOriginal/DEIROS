@@ -1875,7 +1875,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     cells.forEach(([txt,x,a,col,bold])=>{
       doc.setFontSize(7.5);doc.setFont('helvetica',bold?'bold':'normal');
       doc.setTextColor(...(col||[40,30,70]));
-      if(txt!==null&&txt!==undefined)doc.text(String(txt).substring(0,80),x,y+h*0.6,{align:a||'left'});
+      if(txt!==null&&txt!==undefined)doc.text(String(txt),x,y+h*0.6,{align:a||'left'});
     });
     doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+h,mg+cW,y+h);
     y+=h;
@@ -2017,7 +2017,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const isGest=m.v.vtype==='managed';
       const comm=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));
       _tblR([
-        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-4-(mg+3),true),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
+        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-3-(mg+3),true),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
         [fE(m.pInc),mg+62,'right',GREEN],
         [fE(m.pExp),mg+92,'right',RED],
         [fE(prof),mg+128,'right',prof>=0?GREEN:RED,false],
@@ -2380,12 +2380,17 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   if(beVs.length){
     y+=3;doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(...DGREEN);
     doc.text('Break-even dinámico (meses al ritmo del período):',mg,y);y+=5;
+    _tblH([
+      ['VEHÍCULO',mg+3,'left'],['COMPRA',mg+112,'right'],['REC.',mg+140,'right'],['MESES',W-mg,'right'],
+    ],PURPLE);
     beVs.forEach(m=>{
       _safeAddPage(7,'PROYECCIÓN');
       const monthlyP=m.pProfit/periodMonths;
       const mLeft=monthlyP>0?Math.ceil((m.pp-m.allProfit)/monthlyP):null;
       _tblR([
-        [(m.v.name+' · '+m.v.plate+' — compra: '+fE(m.pp)+' · rec.: '+fE(m.allProfit)).substring(0,48),mg+3,'left'],
+        [_vehLblW(doc,m.v.name,m.v.plate,' · ','',(mg+112)-_incW(fE(m.pp))-3-(mg+3)),mg+3,'left'],
+        [fE(m.pp),mg+112,'right'],
+        [fE(m.allProfit),mg+140,'right'],
         [mLeft!==null?'~'+mLeft+' meses':'--',W-mg,'right',AMBER,true],
       ],false);
     });
@@ -5113,8 +5118,8 @@ function _vehLblW(doc,name,plate,sep,suffix,maxW,bold){
   doc.setFontSize(7.5);doc.setFont('helvetica',bold?'bold':'normal');
   if(doc.getTextWidth(n+tail)<=maxW)return n+tail;
   let r=n;
-  while(r.length>1&&doc.getTextWidth(r.trimEnd()+'...'+tail)>maxW)r=r.slice(0,-1);
-  return r.trimEnd()+'...'+tail;
+  while(r.length>1&&doc.getTextWidth(r.trimEnd()+'…'+tail)>maxW)r=r.slice(0,-1);
+  return r.trimEnd()+'…'+tail;
 }
 // Color de TEXTO de plataforma (claro: tonos oscuros; oscuro: marca aclarada donde la marca no llega a 4,5:1)
 function _uiPlatTxt(plat,dot){
