@@ -755,11 +755,14 @@ const KM_RATE_CFG={
 const MON_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MON_S=['En','Fe','Ma','Ab','My','Jn','Jl','Ag','Se','Oc','No','Di'];
 const INC_CATS=['Alquiler','Venta','Seguro','Depósito','Extra km','Limpieza','Otros ingresos'];
-const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Lavado','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
+const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Lavado','Limpieza','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
 // Cláusula Quinta (5.2): gastos que paga directamente EL PROPIETARIO (incluye los recurrentes Seguro, Impuesto y Mantenimiento)
 const OWNER_PAID_CATS=['Seguro','Mantenimiento','Mantenimiento periódico','Reparación','ITV','Impuesto'];
 // Cláusula Quinta (5.3): LISTA PERMITIDA de gastos que se descuentan al propietario. El resto no se le descuenta.
 const OWNER_DEDUCT_CATS=['Combustible','Lavado','Limpieza','Plataforma','Parking','Suscripción'];
+// Clave de categoría sin mayúsculas, acentos ni espacios sobrantes (solo para comparar; no cambia lo guardado)
+function _catKey(c){return String(c||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
+const OWNER_DEDUCT_KEYS=OWNER_DEDUCT_CATS.map(_catKey);
 const BIZ_INC=['Subvención','Consultoría','Servicio','Comisión','Reembolso','Otros ingresos'];
 const BIZ_EXP=['Oficina','Software','Marketing','Gestoría/Asesoría','Seguros generales','Sueldos','Impuestos','Alquiler local','Teléfono/Internet','Material','Préstamo','Formación','Otros gastos'];
 const PLATS={amovens:{label:'Amovens',icon:'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#FB7AAC;flex-shrink:0"></span>',cls:'plat-amovens'},getaround:{label:'Getaround',icon:'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#8B5CF6;flex-shrink:0"></span>',cls:'plat-getaround'},sinapp:{label:'Sin app',icon:ico('handshake'),cls:'plat-sinapp'}};
@@ -4765,7 +4768,7 @@ function generateMgmtContractPDF(ownerId,vIdParam){
   clauseHeader('Quinta','Facturación, gastos, comisión del gestor y liquidación');
   para('5.1. Se entenderá por facturación mensual la suma de los importes facturados en el mes por el alquiler del vehículo, incluidos los extras contratados por los clientes y las penalizaciones por cancelación. No forman parte de la facturación las fianzas, tampoco cuando se retengan total o parcialmente para cubrir daños o gastos.');
   para('5.2. Correrán a cargo de EL PROPIETARIO, que los abonará directamente con independencia de la facturación del mes, los gastos de seguro del vehículo, mantenimiento (incluido el periódico), reparaciones, ITV e impuestos del vehículo. Estos gastos no se descontarán en la liquidación.');
-  para('5.3. Se descontarán en la liquidación los siguientes gastos de explotación del mes: combustible, lavado y limpieza, comisiones de plataformas, parking y suscripciones.');
+  para('5.3. Se descontarán en la liquidación únicamente los siguientes gastos de explotación del mes: combustible, lavado y limpieza, comisiones de plataformas, parking y suscripciones. No se descontará a EL PROPIETARIO ningún otro gasto. Las multas y sanciones generadas durante un alquiler correrán a cargo del cliente arrendatario.');
   para('5.4. EL GESTOR percibirá como retribución una comisión del '+comision+'% sobre la facturación mensual. La comisión se devengará aunque en ese mes los gastos del apartado 5.3 superen la facturación. Si en un mes el vehículo no genera facturación, no se devengará comisión alguna.');
   para('5.5. Corresponderá a EL PROPIETARIO la facturación mensual, menos la comisión de EL GESTOR y los gastos del apartado 5.3. Si el resultado fuese negativo, la diferencia será asumida por EL GESTOR y la liquidación a EL PROPIETARIO será de cero euros (0 €); en ningún caso se liquidará a EL PROPIETARIO un importe negativo.');
   para('5.6. La liquidación se realizará mensualmente. EL GESTOR presentará un resumen detallado con la facturación, los gastos descontados y la comisión. El pago a EL PROPIETARIO se efectuará mediante transferencia bancaria a la cuenta '+(owner.iban||'indicada por el propietario')+', en un plazo de '+plazo+'.');
@@ -5294,7 +5297,7 @@ function _isOwnerPaid(v,e){return !!(v&&v.vtype==='managed'&&v.ownerId&&e&&e.typ
 // Movimientos que cuentan para la rentabilidad (P&L): quita los gastos pagados por el propietario
 function _plFins(v,fins){return fins.filter(e=>!_isOwnerPaid(v,e));}
 // Gasto que se descuenta en la liquidación. Coches en gestión con propietario: solo OWNER_DEDUCT_CATS (5.3). Resto: como antes.
-function _isOwnerDeduct(v,e){if(!e||e.type!=='expense')return false;if(v&&v.vtype==='managed'&&v.ownerId)return OWNER_DEDUCT_CATS.includes(e.category);return !_isOwnerPaid(v,e);}
+function _isOwnerDeduct(v,e){if(!e||e.type!=='expense')return false;if(v&&v.vtype==='managed'&&v.ownerId)return OWNER_DEDUCT_KEYS.includes(_catKey(e.category));return !_isOwnerPaid(v,e);}
 // Liquidación de UN mes (cláusulas 5.3-5.5). fins = movimientos de ese mes del coche.
 // toOwner = max(0, facturado − comisión − gastos 5.3); si saldría negativo, el déficit lo asume el gestor: mgr = comisión − déficit.
 function _ownerSettle(v,fins){
@@ -8838,7 +8841,7 @@ function genOwnerReport(ownerId){
       <!-- Global summary -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
         <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--green)"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmtE(totI)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">INGRESOS TOTALES</div></div>
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--red)"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmtE(totE)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">GASTOS TOTALES</div></div>
+        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--red)"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmtE(totE)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">GASTOS DESCONTADOS</div></div>
         <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--purple)"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--purple)">${fmtE(totComm)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">COMISIÓN DEIROS</div></div>
         <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--amber)"><div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${fmtE(totOwner)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">A PAGAR AL PROPIETARIO</div></div>
       </div>
@@ -8854,7 +8857,7 @@ function genOwnerReport(ownerId){
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
           <div style="text-align:center;background:var(--bg);border-radius:7px;padding:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">${fmtE(d.tI)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">Ingresos</div></div>
-          <div style="text-align:center;background:var(--bg);border-radius:7px;padding:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red)">${fmtE(d.tE)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">Gastos</div></div>
+          <div style="text-align:center;background:var(--bg);border-radius:7px;padding:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red)">${fmtE(d.tE)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">Gastos descontados</div></div>
           <div style="text-align:center;background:var(--bg);border-radius:7px;padding:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${d.tP>=0?'var(--green)':'var(--red)'}">${fmtE(d.tP)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">Beneficio</div></div>
         </div>
         <div style="background:#8B5CF610;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center">
@@ -8869,7 +8872,7 @@ function genOwnerReport(ownerId){
         </div>
         ${d.paid>0?`<div style="font-size:11px;color:var(--text3);margin-top:8px">Pagado directamente por el propietario (no se descuenta): ${fmtE(d.paid)}</div>`:''}
         ${d.deficit>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Déficit asumido por el gestor: ${fmtE(d.deficit)}</div>`:''}
-        ${d.other>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Otros gastos no descontados al propietario: ${fmtE(d.other)}</div>`:''}
+        ${d.other>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Gastos no descontados al propietario (las multas corren a cargo del cliente): ${fmtE(d.other)}</div>`:''}
         ${d.fins.filter(e=>_isOwnerDeduct(d.v,e)).length?`
         <div style="margin-top:10px">
           <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">GASTOS DESCONTADOS (5.3)</div>
@@ -8932,7 +8935,7 @@ function dlOwnerReport(ownerId,month){
     doc.text('Comisión '+d.comm+'%',margin+cW-3,y+7,{align:'right'});
     y+=14;
     const bW=(cW-6)/4;
-    [['Ingresos',fmtE(d.tI),16,185,129],['Gastos',fmtE(d.tE),239,68,68],['Beneficio',fmtE(d.tP),d.tP>=0?16:239,d.tP>=0?185:68,d.tP>=0?129:68],['Al propietario',fmtE(d.toOwner),106,13,173]].forEach(([l,val,r,g,b],i)=>{
+    [['Ingresos',fmtE(d.tI),16,185,129],['Gastos descontados',fmtE(d.tE),239,68,68],['Beneficio',fmtE(d.tP),d.tP>=0?16:239,d.tP>=0?185:68,d.tP>=0?129:68],['Al propietario',fmtE(d.toOwner),106,13,173]].forEach(([l,val,r,g,b],i)=>{
       const bx=margin+i*(bW+2);
       doc.setDrawColor(r,g||0,b||0);doc.setLineWidth(0.6);doc.line(bx,y,bx+bW,y);doc.setLineWidth(0.2);
       doc.setFontSize(5.5);doc.setFont('jbm','normal');doc.setTextColor(140,140,160);doc.text(l,bx,y+3.8);
@@ -8943,7 +8946,7 @@ function dlOwnerReport(ownerId,month){
     const _info=[];
     if(d.paid>0)_info.push('Pagado directamente por el propietario (no se descuenta): '+fmtE(d.paid));
     if(d.deficit>0)_info.push('Déficit asumido por el gestor: '+fmtE(d.deficit));
-    if(d.other>0)_info.push('Otros gastos no descontados al propietario: '+fmtE(d.other));
+    if(d.other>0)_info.push('Gastos no descontados al propietario (las multas corren a cargo del cliente): '+fmtE(d.other));
     if(_info.length){doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(100,100,120);_info.forEach(t=>{doc.text(t,margin,y+2);y+=5;});y+=1;}
     const vInc=d.fins.filter(e=>e.type==='income');
     if(vInc.length){y=_pdfTableRows(doc,margin,cW,y,vInc,[16,185,129],262,addPage);}
