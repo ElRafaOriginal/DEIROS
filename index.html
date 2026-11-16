@@ -761,7 +761,7 @@ const OWNER_PAID_CATS=['Seguro','Mantenimiento','Mantenimiento periódico','Repa
 // Cláusula Quinta (5.3): LISTA PERMITIDA de gastos que se descuentan al propietario. El resto no se le descuenta.
 const OWNER_DEDUCT_CATS=['Combustible','Lavado','Limpieza','Plataforma','Parking','Suscripción'];
 // Clave de categoría sin mayúsculas, acentos ni espacios sobrantes (solo para comparar; no cambia lo guardado)
-function _catKey(c){return String(c||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
+function _catKey(c){return String(c||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
 const OWNER_DEDUCT_KEYS=OWNER_DEDUCT_CATS.map(_catKey);
 const BIZ_INC=['Subvención','Consultoría','Servicio','Comisión','Reembolso','Otros ingresos'];
 const BIZ_EXP=['Oficina','Software','Marketing','Gestoría/Asesoría','Seguros generales','Sueldos','Impuestos','Alquiler local','Teléfono/Internet','Material','Préstamo','Formación','Otros gastos'];
