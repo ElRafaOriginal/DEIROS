@@ -835,7 +835,7 @@ function _clUpsert(d,opt){
     cl={id:uid(),name:'',dni:'',phone:'',email:'',notes:'',rating:0,bookingIds:[]};CL.push(cl);
   }
   const dif=[];
-  _CL_F.forEach(([k,lbl])=>{
+  (opt.linkOnly?[]:_CL_F).forEach(([k,lbl])=>{
     const n=nv(k);if(!n)return;
     const o=String(cl[k]==null?'':cl[k]).trim();
     if(!o)cl[k]=n;else if(!_clSame(k,o,n))dif.push([k,lbl,o,n]);
@@ -852,7 +852,26 @@ function _clUpsert(d,opt){
   }
   return cl;
 }
-// Avisos (no bloquean): mayor de 25 = 26 cumplidos el día de inicio; carnet en vigor hasta la devolución
+// Cambio de DNI: nunca dos fichas con el mismo DNI. {ok:true,other:null} sin conflicto; {ok:true,other:ficha} aceptó usar la otra
+// (enlazada con linkOnly si hay opt.bId); {ok:false} canceló o la ficha destino es menor de 26 (opt.startDate): no se escribe nada.
+function _clOtherByDni(dni,exceptId){
+  const k=_clKey(dni);if(!k)return null;
+  return CL.find(x=>x.id!==exceptId&&_clKey(x.dni)===k)||null;
+}
+function _clDniChange(curId,nuevoDni,opt){
+  opt=opt||{};
+  const other=_clOtherByDni(nuevoDni,curId);
+  if(!other)return {ok:true,other:null};
+  const msg='Ese DNI ya es de la ficha «'+(other.name||'sin nombre')+'». Aceptar: usar esa ficha'+(opt.bId?' y enlazar este alquiler a ella (no se cambiarán su nombre ni su teléfono)':' (no se guardará ese DNI en esta ficha)')+'. Cancelar: corrige el DNI.';
+  if(!confirm(msg))return {ok:false};
+  if(opt.startDate){
+    const e=_clAge(other.birthdate,opt.startDate);
+    if(e!=null&&e<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return {ok:false};}
+  }
+  if(opt.bId)_clUpsert({id:other.id},{bId:opt.bId,linkOnly:true});
+  return {ok:true,other};
+}
+// Avisos (no bloquean): 26 años cumplidos el día de inicio; carnet en vigor hasta la devolución
 function _clAge(nac,dia){const a=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(nac||'')),b=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(dia||''));if(!a||!b)return null;let e=+b[1]-+a[1];if(b[2]+b[3]<a[2]+a[3])e--;return e;}
 function _clWarn(d,sd,ed){
   const w=[];const e=_clAge(d.birthdate,sd);
@@ -1102,6 +1121,7 @@ function submitAddClient(){
   const name=(document.getElementById('clN')?.value||'').trim();
   if(!name){alert('El nombre es obligatorio');return;}
   const _g=id=>(document.getElementById(id)?.value||'').trim();
+  {const _o=_clOtherByDni(_g('clDni'),'');if(_o){alert('Ese DNI ya es de la ficha «'+(_o.name||'sin nombre')+'». Corrige el DNI.');return;}}
   CL.push({id:uid(),name,dni:_g('clDni').toUpperCase(),phone:_g('clPhone'),email:_g('clEmail'),notes:_g('clNotes'),rating:0,bookingIds:[],address:_g('nclAddr'),birthdate:_g('nclBirth'),nationality:_g('nclNat'),license:_g('nclLic').toUpperCase(),licenseExp:_g('nclLicExp')});
   save();closeSheet();renderClientsBody();
 }
@@ -1136,6 +1156,7 @@ function openEditClient(id){
 
 function submitEditClient(id){
   const cl=CL.find(c=>c.id===id);if(!cl)return;
+  {const _dn=(document.getElementById('eclDni')?.value||'').trim();const _o=_clOtherByDni(_dn,id);if(_o){alert('Ese DNI ya es de la ficha «'+(_o.name||'sin nombre')+'». Corrige el DNI.');return;}}
   cl.name=(document.getElementById('eclN')?.value||cl.name).trim();
   cl.dni=(document.getElementById('eclDni')?.value||'').trim();
   cl.nationality=(document.getElementById('eclNationality')?.value||'').trim();
@@ -3573,7 +3594,7 @@ function openContractForm(vId,bookingId){
     <div id="ctClCard" style="flex:1;min-width:0;font-size:12px;color:var(--text2);line-height:1.4">${_ctClCardHtml(cl)}</div>
     <button type="button" class="btn-sec tap44" style="width:auto;min-height:44px;padding:0 14px;flex-shrink:0" onclick="_ctClPickToggle()">${ico('search')} ${cl?'Cambiar cliente':'Buscar cliente'}</button>
   </div>
-  <div id="ctClPickBox" class="fg" style="display:none">${_clPickerHtml('ctClPick','')}</div>
+  <div id="ctClPickBox" class="fg" style="display:none">${_clPickerHtml('ctClPick',cl?(cl.name||''):'',cl?(cl.id||''):'')}</div>
   <div id="ctClStatus" data-sd="${esc(b.startDate||'')}" data-ed="${esc(b.endDate||'')}" style="margin-bottom:10px"></div>
   <div oninput="_clStatusUpd('ctClPick')" onchange="_clStatusUpd('ctClPick')">
   <div class="r2">
@@ -3598,21 +3619,21 @@ function openContractForm(vId,bookingId){
   <div style="background:var(--bg3);border-radius:10px;padding:12px;margin:10px 0">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;min-height:44px">
-        <input type="checkbox" id="ctHasExtra" onchange="document.getElementById('ctExtraBlock').style.display=this.checked?'block':'none'"/>
+        <input type="checkbox" id="ctHasExtra"${(b.hasExtraDriver||b.extraDriverName)?' checked':''} onchange="document.getElementById('ctExtraBlock').style.display=this.checked?'block':'none'"/>
         <span style="font-size:13px;font-weight:700">${ico('user')} Añadir conductor adicional</span>
       </label>
     </div>
-    <div id="ctExtraBlock" style="display:none" oninput="_clStatusUpd('ctEx2Pick')" onchange="_clStatusUpd('ctEx2Pick')">
-      <div class="fg"><label class="lbl">BUSCAR EN CLIENTES</label>${_clPickerHtml('ctEx2Pick','')}</div>
-      <input id="ctEx2Birth" type="hidden" value=""/>
+    <div id="ctExtraBlock" style="display:${(b.hasExtraDriver||b.extraDriverName)?'block':'none'}" oninput="_clStatusUpd('ctEx2Pick')" onchange="_clStatusUpd('ctEx2Pick')">
+      <div class="fg"><label class="lbl">BUSCAR EN CLIENTES</label>${_clPickerHtml('ctEx2Pick',b.extraDriverName||'',b.extraDriverId||'')}</div>
       <div id="ctEx2Status" data-sd="${esc(b.startDate||'')}" data-ed="${esc(b.endDate||'')}" style="margin-bottom:8px"></div>
       <div class="r2">
-        <div class="fg"><label class="lbl">NOMBRE CONDUCTOR EXTRA</label><input id="ctEx2Nombre" value="" autocomplete="off"/></div>
-        <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctEx2Nif" value="" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+        <div class="fg"><label class="lbl">NOMBRE CONDUCTOR EXTRA</label><input id="ctEx2Nombre" value="${esc(b.extraDriverName||'')}" autocomplete="off"/></div>
+        <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctEx2Nif" value="${esc(b.extraDriverDni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
       </div>
       <div class="r2">
-        <div class="fg"><label class="lbl">Nº PERMISO</label><input id="ctEx2Lic" value="" autocomplete="off"/></div>
-        <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctEx2LicExp" value="" type="date"/></div>
+        <div class="fg"><label class="lbl">Nº PERMISO</label><input id="ctEx2Lic" value="${esc(b.extraDriverLicense||'')}" autocomplete="off"/></div>
+        <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctEx2LicExp" value="${esc(safeDate(b.extraDriverLicenseExp||''))}" type="date"/></div>
+        <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="ctEx2Birth" value="${esc(safeDate(b.extraDriverBirth||''))}" type="date"/></div>
       </div>
     </div>
   </div>
@@ -3627,7 +3648,7 @@ function openContractForm(vId,bookingId){
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">ZONA AUTORIZADA</label><input id="ctZona" value="${esc(co.zonaAut||'Territorio nacional')}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input value="Mayor de 25 años" readonly tabindex="-1"/></div>
+    <div class="fg"><label class="lbl">EDAD MÍNIMA CONDUCTOR</label><input value="26 años cumplidos" readonly tabindex="-1"/></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="lbl">PRECIO BASE ALQUILER (€)</label><input id="ctPrecioBase" value="${esc(b.amount||'')}" inputmode="decimal"/></div>
@@ -3832,7 +3853,9 @@ function _ctFold(k){
   if(btn)btn.textContent=open?'Confirmar':'Editar';
   if(!open)_ctSumUpd(k);
 }
+function _ctAgeCheck(sd){const v=id=>(document.getElementById(id)?.value||'').trim();const nac=v('ctClNac');if(!nac)return 'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';let e=_clAge(nac,sd);if(e!=null&&e<26)return _clWarn({birthdate:nac},sd,'')[0];if(document.getElementById('ctHasExtra')?.checked){if(!v('ctEx2Nombre')||!v('ctEx2Nif'))return 'Conductor adicional: faltan el nombre y el NIF/DNI.';const n2=v('ctEx2Birth');if(!n2)return 'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).';e=_clAge(n2,sd);if(e!=null&&e<26)return 'Conductor adicional: '+_clWarn({birthdate:n2},sd,'')[0];}return '';}
 function _ctValidate(cur){
+  if(cur===2){const _am=_ctAgeCheck(document.getElementById('ctClStatus')?.dataset?.sd||'');if(_am){alert(_am);return false;}}
   const need=cur===1?[['ctArNombre','ctFldAr','Ar'],['ctArNif','ctFldAr','Ar'],['ctArDir','ctFldAr','Ar']]
     :cur===2?[['ctClNombre'],['ctClNif']]:[];
   if(!need.length)return true;
@@ -4249,6 +4272,7 @@ function generateContractPDF(vId,bookingId){
   const g=id=>document.getElementById(id)?.value||'';
   if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato.');return;}
   if(!g('ctClNombre').trim()||!g('ctClNif').trim()){alert('Faltan el nombre y el NIF/DNI del cliente. Complétalos en el paso 2 antes de generar el contrato.');if(typeof _ctGo==='function')_ctGo(2);return;}
+  {const _am=_ctAgeCheck(b.startDate);if(_am){alert(_am);if(typeof _ctGo==='function')_ctGo(2);return;}}
   const _faltan=[['ctClDir','domicilio'],['ctClTel','teléfono'],['ctClNac','fecha de nacimiento'],['ctClLic','permiso de conducir'],['ctClLicExp','caducidad del permiso']].filter(x=>!g(x[0]).trim()).map(x=>x[1]);
   if(_faltan.length&&!confirm('Faltan datos del cliente: '+_faltan.join(', ')+'.\n\nSi continúas, el contrato indicará «[dato no informado]». ¿Generarlo igualmente?')){if(typeof _ctGo==='function')_ctGo(2);return;}
   const dur=daysBetween(b.startDate,b.endDate);
@@ -4280,17 +4304,34 @@ function generateContractPDF(vId,bookingId){
   const vehDesc=(veh.make&&veh.model?veh.make+' '+veh.model:veh.model||v.name);
   const cl={nombre:g('ctClNombre'),nif:g('ctClNif'),dir:g('ctClDir'),tel:g('ctClTel'),nac:g('ctClNac'),lic:g('ctClLic'),licExp:g('ctClLicExp'),nacionalidad:g('ctClNacionalidad')};
   const hasExtra=document.getElementById('ctHasExtra')?.checked;
-  const extra={nombre:g('ctEx2Nombre'),nif:g('ctEx2Nif'),lic:g('ctEx2Lic'),licExp:g('ctEx2LicExp')};
+  const extra={nombre:g('ctEx2Nombre'),nif:g('ctEx2Nif'),lic:g('ctEx2Lic'),licExp:g('ctEx2LicExp'),nac:g('ctEx2Birth')};
   const obs=g('ctObs');
   const extrasData=_calcExtrasTotal(dur);
   const extrasItems=Object.values(extrasData.items);
   const precioFinal=Number(b.amount)+extrasData.total;
   // Ficha única: crea o completa la ficha con todo lo escrito (pregunta una vez si cambia algún dato) y le enlaza este alquiler
-  _clUpsert({id:document.getElementById('ctClPick')?.dataset?.clId||'',name:cl.nombre,dni:cl.nif,phone:cl.tel,address:cl.dir,birthdate:cl.nac,nationality:cl.nacionalidad,license:cl.lic,licenseExp:cl.licExp},{bId:b.id});
+  const _pickId=document.getElementById('ctClPick')?.dataset?.clId||'';
+  const _curCl=(_pickId&&CL.find(x=>x.id===_pickId))||CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(b.id))||null;
+  const _chg=_clDniChange(_curCl?_curCl.id:_pickId,cl.nif,{bId:b.id,startDate:b.startDate}); // DNI de otra ficha: confirma, comprueba edad y enlaza (linkOnly) antes de tocar nada
+  let _fc;
+  if(!_chg.ok){if(typeof _ctGo==='function')_ctGo(2);return;}
+  if(_chg.other){
+    // El DNI escrito ya es de otra ficha: nunca dos fichas con el mismo DNI
+    _fc=_chg.other;
+    // El documento usa los datos de la ficha elegida
+    cl.nombre=_fc.name||'';cl.nif=_fc.dni||'';cl.tel=_fc.phone||'';cl.dir=_fc.address||'';cl.nac=_fc.birthdate||'';cl.nacionalidad=_fc.nationality||'';cl.lic=_fc.license||'';cl.licExp=_fc.licenseExp||'';
+  }else{
+    _fc=_clUpsert({id:_pickId,name:cl.nombre,dni:cl.nif,phone:cl.tel,address:cl.dir,birthdate:cl.nac,nationality:cl.nacionalidad,license:cl.lic,licenseExp:cl.licExp},{bId:b.id});
+    // Si se canceló «Actualizar la ficha…» y el DNI escrito no coincide con el de la ficha, no se escribe en el alquiler
+    if(_fc&&_clKey(_fc.dni)&&_clKey(_fc.dni)!==_clKey(cl.nif)){alert('El DNI escrito no coincide con el de la ficha del cliente. Corrígelo o acepta actualizar la ficha.');if(typeof _ctGo==='function')_ctGo(2);return;}
+  }
   // El alquiler muestra el cliente del contrato (nunca se borra con vacío)
   if(cl.nombre.trim())b.clientName=cl.nombre.trim();if(cl.nif.trim())b.clientDni=cl.nif.trim().toUpperCase();if(cl.tel.trim())b.clientPhone=cl.tel.trim();
   // Conductor adicional: ficha propia, SIN enlazarle este alquiler
-  if(hasExtra&&(extra.nombre.trim()||extra.nif.trim()))_clUpsert({id:document.getElementById('ctEx2Pick')?.dataset?.clId||'',name:extra.nombre,dni:extra.nif,license:extra.lic,licenseExp:extra.licExp});
+  if(hasExtra&&(extra.nombre.trim()||extra.nif.trim()))_clUpsert({id:document.getElementById('ctEx2Pick')?.dataset?.clId||'',name:extra.nombre,dni:extra.nif,license:extra.lic,licenseExp:extra.licExp,birthdate:extra.nac});
+  // Casilla de conductor adicional: se guarda en el alquiler (campos opcionales) para restaurarla al reabrir
+  if(hasExtra&&(extra.nombre.trim()||extra.nif.trim())){b.hasExtraDriver=true;b.extraDriverName=extra.nombre.trim();b.extraDriverDni=extra.nif.trim().toUpperCase();b.extraDriverLicense=extra.lic.trim();b.extraDriverLicenseExp=extra.licExp;b.extraDriverBirth=extra.nac;b.extraDriverId=document.getElementById('ctEx2Pick')?.dataset?.clId||'';}
+  else{b.hasExtraDriver=false;b.extraDriverName='';b.extraDriverDni='';b.extraDriverLicense='';b.extraDriverLicenseExp='';b.extraDriverBirth='';b.extraDriverId='';}
   save();
   // Save extras as income entries in booking finance
   if(Object.keys(extrasData.items).length>0){
@@ -4460,7 +4501,7 @@ function generateContractPDF(vId,bookingId){
   para('El impago del precio o la fianza facultará al ARRENDADOR para resolver el contrato de forma inmediata.');
 
   clauseHeader('Cuarta','Utilización del vehículo');
-  para('4.1. Solo podrán conducir el vehículo: el ARRENDATARIO'+(hasExtra&&extra.nombre?' y el conductor adicional D./Dña. '+extra.nombre:'')+'. Todos mayores de 25 años con permiso válido en vigor.');
+  para('4.1. Solo podrán conducir el vehículo: el ARRENDATARIO'+(hasExtra&&extra.nombre?' y el conductor adicional D./Dña. '+extra.nombre:'')+'. Todos con 26 años cumplidos y permiso válido en vigor.');
   para('4.2. Uso autorizado: '+co.uso+'. Zona autorizada: '+co.zonaAut+'.');
   para('4.3. Queda PROHIBIDO: transporte remunerado de pasajeros, remolcar vehículos, participar en competiciones, conducir bajo efectos de alcohol o drogas, transportar mercancías peligrosas, superar la carga máxima, subarrendar el vehículo, manipular el cuentakilómetros, o circular fuera de la zona autorizada.');
   para('4.4. Combustible: el vehículo se entrega con nivel "'+co.fuelLevel+'" y debe devolverse con el mismo nivel. Si se devuelve con menos combustible, el ARRENDATARIO abonará los litros que falten, calculados según la capacidad del depósito, al precio medio de ese carburante en el municipio donde se devuelva el vehículo, según los datos oficiales de precios de carburantes publicados por el Gobierno de España, más un recargo de '+_recXR+' € por litro.');
@@ -5100,7 +5141,8 @@ function safeColor(c){
 // Texto de matrícula: los colores guardados (propio / gestión) se pintan con un tono legible en cada modo
 function plateColor(c){const s=safeColor(c).toUpperCase();return s===COLOR_OWN?'var(--c-own)':s===COLOR_MAN?'var(--c-man)':safeColor(c);}
 function safeDate(s){
-  const t=String(s==null?'':s).trim();
+  let t=String(s==null?'':s).trim();
+  if(/^\d{4}-\d{2}-\d{2}[T ]/.test(t))t=t.slice(0,10);
   const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
   if(!m)return '';
   const y=+m[1],mo=+m[2],d=+m[3];
@@ -5196,6 +5238,7 @@ function _normBooking(b){
   ['deliveredFuelLevel','returnedFuelLevel'].forEach(k=>{if(k in b&&typeof b[k]!=='string')b[k]=b[k]==null?'':String(b[k]);});
   _normEnum(b,'fianzaStatus',['pending','returned','retained','partial'],'');
   _normNum(b,'fianzaRetainedAmount');
+  _normBool(b,'hasExtraDriver');_normDate(b,'extraDriverBirth');_normDate(b,'extraDriverLicenseExp');
   ['fianzaRetainedReason','fianzaReturnedAt'].forEach(k=>{if(b[k]!=null&&typeof b[k]!=='string')_normBump(b,k,'');});
   _normList(b,'finances');_normList(b,'extras');
   (b.finances||[]).forEach(_normEntry);
@@ -6626,7 +6669,7 @@ function editBooking(id){
     <input id="rCP" type="hidden" value="${esc(b.clientPhone||'')}"/>
     <input id="rCDNI" type="hidden" value="${esc(b.clientDni||'')}"/>
     <div oninput="_clStatusUpd('rClientPicker')" onchange="_clStatusUpd('rClientPicker')">
-    <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||'')}</div>
+    <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||_clE&&_clE.name||'',_clE&&_clE.id||'')}</div>
     ${b.clientName?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
         ${ico('user')} ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}
@@ -6793,6 +6836,7 @@ function submitEditBooking(id){
   const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
   if(ne<=ns){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
+  {const _ea=_clAge(_clFormVals('rClientPicker').birthdate,sd);if(_ea!=null&&_ea<26)alert('Aviso: el titular es menor de 26 en la fecha de inicio. Se guarda la edición del alquiler existente.');}
 
   const newVehicleId=document.getElementById('rNewVehicle')?.value||v.id;
   const targetV=V.find(x=>x.id===newVehicleId)||v;
@@ -6805,14 +6849,26 @@ function submitEditBooking(id){
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
 
+  // DNI escrito: si es de otra ficha, se decide ANTES de tocar el alquiler (cancelar = no cambia nada)
+  const _clD=_clFormVals('rClientPicker');_clD.dni=(_clD.dni||'').toUpperCase();
+  const _pkE=document.getElementById('rClientPicker')?.dataset?.clId||'';
+  const _curE=(_pkE&&CL.find(x=>x.id===_pkE))||CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(id))||null;
+  const _chgE=_clDniChange(_curE?_curE.id:_pkE,_clD.dni,{bId:id,startDate:sd});
+  if(!_chgE.ok)return;
+
   // Update booking fields
   b.startDate=sd;b.startTime=st;b.endDate=ed;b.endTime=et;
   b.platform=_plat;b.amount=amt;
   // Cliente: lo escrito va al alquiler; la ficha se crea/completa y el alquiler queda solo en ella (sin cliente: se desenlaza)
-  const _clD=_clFormVals('rClientPicker');_clD.dni=(_clD.dni||'').toUpperCase();
-  b.clientName=_clD.name||'';b.clientPhone=_clD.phone||'';b.clientDni=_clD.dni;
-  if(!_clUpsert(Object.assign({},_clD,{id:document.getElementById('rClientPicker')?.dataset?.clId||''}),{bId:id}))
-    CL.forEach(c=>{if(Array.isArray(c.bookingIds))c.bookingIds=c.bookingIds.filter(x=>x!==id);});
+  if(_chgE.other){
+    b.clientName=_chgE.other.name||'';b.clientPhone=_chgE.other.phone||'';b.clientDni=(_chgE.other.dni||'').toUpperCase();
+  }else{
+    b.clientName=_clD.name||'';b.clientPhone=_clD.phone||'';b.clientDni=_clD.dni;
+    const _fcE=_clUpsert(Object.assign({},_clD,{id:_pkE}),{bId:id});
+    if(!_fcE)CL.forEach(c=>{if(Array.isArray(c.bookingIds))c.bookingIds=c.bookingIds.filter(x=>x!==id);});
+    // Si se canceló «Actualizar la ficha…», el alquiler conserva el DNI de su ficha
+    else if(_clKey(_fcE.dni)&&_clKey(_fcE.dni)!==_clKey(b.clientDni)){b.clientDni=(_fcE.dni||'').toUpperCase();alert('El DNI se queda como el de la ficha del cliente (no se actualizó la ficha).');}
+  }
   b.notes=(document.getElementById('rNotes')?.value||'').trim();
   b.fianza=parseFloat(document.getElementById('rFianza')?.value||'0')||0;
   b.kmStart=kmStart;b.kmEnd=kmEnd;
@@ -7115,7 +7171,7 @@ function submitRental(){
   const amt=parseFloat(document.getElementById('rAmt').value);
   // Cliente: lo escrito en el formulario (al elegir una ficha se rellena con sus datos y se puede corregir)
   const _clD=_clFormVals('rClientPicker');
-  const clientName=_clD.name||'',clientPhone=_clD.phone||'',clientDni=(_clD.dni||'').toUpperCase();
+  let clientName=_clD.name||'',clientPhone=_clD.phone||'',clientDni=(_clD.dni||'').toUpperCase();
   const notes=(document.getElementById('rNotes')?.value||'').trim();
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
@@ -7125,7 +7181,20 @@ function submitRental(){
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
   const conflict=_findBookingConflict(v,sd,st,ed,et);
   if(conflict){alert('Conflicto:\n'+_conflictText(conflict));return;}
+  {const _ea=_clAge(_clD.birthdate,sd);if(_ea!=null&&_ea<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}}
   const bId=uid();
+  // Ficha única (antes de crear nada): DNI de otra ficha → confirma y enlaza; si se cancela algo, no se crea el alquiler
+  {
+    const _pkR=document.getElementById('rClientPicker')?.dataset?.clId||'';
+    const _unlinkR=()=>CL.forEach(c=>{if(Array.isArray(c.bookingIds))c.bookingIds=c.bookingIds.filter(x=>x!==bId);});
+    const _chgR=_clDniChange(_pkR,clientDni,{bId,startDate:sd});
+    if(!_chgR.ok)return;
+    if(_chgR.other){clientName=_chgR.other.name||'';clientPhone=_chgR.other.phone||'';clientDni=(_chgR.other.dni||'').toUpperCase();}
+    else{
+      const _fcR=_clUpsert(Object.assign({},_clD,{id:_pkR,dni:clientDni}),{bId});
+      if(_fcR&&_clKey(_fcR.dni)&&_clKey(_fcR.dni)!==_clKey(clientDni)){_unlinkR();alert('El DNI escrito no coincide con el de la ficha del cliente. Corrígelo o acepta actualizar la ficha.');return;}
+    }
+  }
   if(!v.finances)v.finances=[];
   if(!v.bookings)v.bookings=[];
   // Recoger extras seleccionados
@@ -7150,8 +7219,6 @@ function submitRental(){
     v.finances.push({id:uid(),type:'income',date:sd.slice(0,7)+'-01',category:ex.label,amount:ex.amount,description:ex.label+' · '+(clientName||'')+' · '+(v.plate||''),_bookingId:bId,_autoExtra:true});
   });
   if(kmEnd&&kmEnd>0){v.km=String(kmEnd);}
-  // Ficha única: crea o completa la ficha (pregunta una vez si cambia algún dato) y le enlaza este alquiler
-  _clUpsert(Object.assign({},_clD,{id:document.getElementById('rClientPicker')?.dataset?.clId||'',dni:clientDni}),{bId});
   save();closeSheet();renderDetail(document.getElementById('PC'));
 }
 
@@ -10870,7 +10937,7 @@ function _checkEntry(e,label){
 }
 function _checkBooking(b,label){
   if(!_isPlainObject(b))return '«'+label+'» tiene que ser un objeto.';
-  let err=_expectStr(b,'id',label+' · id')||_expectDate(b,'startDate',label+' · inicio')||_expectDate(b,'endDate',label+' · fin')||_expectStr(b,'clientName',label+' · cliente')||_expectStr(b,'clientPhone',label+' · teléfono')||_expectStr(b,'clientDni',label+' · DNI')||_expectStr(b,'notes',label+' · notas')||_expectStr(b,'platform',label+' · plataforma')||_expectNum(b,'amount',label+' · importe');
+  let err=_expectStr(b,'id',label+' · id')||_expectDate(b,'startDate',label+' · inicio')||_expectDate(b,'endDate',label+' · fin')||_expectStr(b,'clientName',label+' · cliente')||_expectStr(b,'clientPhone',label+' · teléfono')||_expectStr(b,'clientDni',label+' · DNI')||_expectStr(b,'notes',label+' · notas')||_expectStr(b,'platform',label+' · plataforma')||_expectNum(b,'amount',label+' · importe')||_expectStr(b,'extraDriverName',label+' · conductor adicional')||_expectStr(b,'extraDriverDni',label+' · DNI conductor adicional')||_expectStr(b,'extraDriverLicense',label+' · permiso conductor adicional')||_expectStr(b,'extraDriverId',label+' · ficha conductor adicional')||_expectDate(b,'extraDriverBirth',label+' · nacimiento conductor adicional')||_expectDate(b,'extraDriverLicenseExp',label+' · caducidad permiso conductor adicional');
   if(err)return err;
   if('finances' in b&&b.finances!=null){
     if(!Array.isArray(b.finances))return '«'+label+' · finances» tiene que ser una lista.';
@@ -12050,6 +12117,10 @@ function convertQuoteToBooking(id){
     kmStart:Number(v.km)||0,
     finance:[],financeIds:[],financeId:null,
   };
+  const _chgQ=_clDniChange(_qCl?_qCl.id:'',b.clientDni,{bId,startDate:b.startDate});
+  if(!_chgQ.ok)return;
+  if(_chgQ.other){b.clientName=_chgQ.other.name||'';b.clientPhone=_chgQ.other.phone||'';b.clientDni=(_chgQ.other.dni||'').toUpperCase();}
+  {const _fq=_chgQ.other||_clFind({id:_qCl?_qCl.id:'',name:b.clientName,dni:b.clientDni,phone:b.clientPhone},null);const _eq=_fq?_clAge(_fq.birthdate,b.startDate):null;if(_eq!=null&&_eq<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return;}}
   // ProRata entries for vehicle finances
   const fEntries=proRataEntries(b.startDate,b.endDate,b.amount,b.platform,b.notes,bId);
   fEntries.forEach(e=>(v.finances=v.finances||[]).push(e));
@@ -12063,7 +12134,7 @@ function convertQuoteToBooking(id){
   });
   v.bookings.push(b);
   // Ficha única: con ficha elegida se enlaza a ella; sin ella, por nombre solo si no hay homónimos (si no, ficha nueva)
-  _clUpsert({id:_qCl?_qCl.id:'',name:b.clientName,phone:b.clientPhone,dni:b.clientDni},{bId});
+  if(!_chgQ.other)_clUpsert({id:_qCl?_qCl.id:'',name:b.clientName,phone:b.clientPhone,dni:b.clientDni},{bId});
   q.status='convertido';
   q.bookingId=bId;
   save();
@@ -12281,7 +12352,7 @@ function generateQuotePDF(id){
     '\u2022 Km incluidos para '+q.dur+' d\u00eda'+(q.dur!==1?'s':'')+': '+kmTotalConExtras+' (progresi\u00f3n logar\u00edtmica: 200km d\u00eda 1, ~3.000km/30d). Km prepago (anticipo): '+kmPreRate+'  \u2022  Exceso al devolver: '+kmExcRate,
     '\u2022 Combustible: pol\u00edtica full-to-full. Entrega y devoluci\u00f3n al mismo nivel.',
     '\u2022 Cancelaci\u00f3n gratuita hasta 24 h antes del inicio. Se\u00f1al del 30% no reembolsable si se cancela en menos de 24 h.',
-    '\u2022 Conductor mayor de 25 a\u00f1os. Carnet de conducir en vigor + DNI o pasaporte obligatorio.',
+    '\u2022 Conductor con 26 a\u00f1os cumplidos. Carnet de conducir en vigor + DNI o pasaporte obligatorio.',
     '\u2022 Las multas de tr\u00e1fico generadas durante el alquiler son responsabilidad del conductor.',
     '\u2022 Este presupuesto tiene validez de 15 d\u00edas desde la fecha de emisi\u00f3n.',
   ];
