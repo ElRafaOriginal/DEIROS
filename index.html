@@ -1867,13 +1867,15 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     y+=7;
   }
 
+  // Ancho (mm) de un importe en la fuente de las celdas (helvetica 7,5 normal)
+  function _incW(t){doc.setFontSize(7.5);doc.setFont('helvetica','normal');return doc.getTextWidth(String(t));}
   // Fila de datos en tabla (sin sombreado alterno: solo filete fino)
   function _tblR(cells,odd,rh){
     const h=rh||7;
     cells.forEach(([txt,x,a,col,bold])=>{
       doc.setFontSize(7.5);doc.setFont('helvetica',bold?'bold':'normal');
       doc.setTextColor(...(col||[40,30,70]));
-      if(txt!==null&&txt!==undefined)doc.text(String(txt).substring(0,38),x,y+h*0.6,{align:a||'left'});
+      if(txt!==null&&txt!==undefined)doc.text(String(txt).substring(0,80),x,y+h*0.6,{align:a||'left'});
     });
     doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+h,mg+cW,y+h);
     y+=h;
@@ -2015,7 +2017,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const isGest=m.v.vtype==='managed';
       const comm=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));
       _tblR([
-        [_vehLbl(m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',34),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
+        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-2-(mg+3),true),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
         [fE(m.pInc),mg+62,'right',GREEN],
         [fE(m.pExp),mg+92,'right',RED],
         [fE(prof),mg+128,'right',prof>=0?GREEN:RED,false],
@@ -5104,9 +5106,19 @@ function _vehLbl(name,plate,sep,suffix,max){
   const room=Math.max(4,max-tail.length);
   return (n.length>room?n.substring(0,room-1).trimEnd()+'.':n)+tail;
 }
-// Color de TEXTO de plataforma en modo claro (el oscuro conserva el color de marca)
+// Etiqueta "nombre + matrícula" recortada por ANCHO (mm): solo se recorta el nombre, con «...» ASCII
+function _vehLblW(doc,name,plate,sep,suffix,maxW,bold){
+  const tail=sep+String(plate||'')+(suffix||'');
+  const n=String(name||'');
+  doc.setFontSize(7.5);doc.setFont('helvetica',bold?'bold':'normal');
+  if(doc.getTextWidth(n+tail)<=maxW)return n+tail;
+  let r=n;
+  while(r.length>1&&doc.getTextWidth(r.trimEnd()+'...'+tail)>maxW)r=r.slice(0,-1);
+  return r.trimEnd()+'...'+tail;
+}
+// Color de TEXTO de plataforma (claro: tonos oscuros; oscuro: marca aclarada donde la marca no llega a 4,5:1)
 function _uiPlatTxt(plat,dot){
-  if(!_uiLight())return dot;
+  if(!_uiLight())return ({getaround:'#A78BFA'})[plat]||(dot==='#6B7280'?'#9CA3AF':dot);
   return ({amovens:'#9D174D',getaround:'#6A0DAD',sinapp:'#065F46'})[plat]||dot;
 }
 function safeColor(c){
@@ -6107,14 +6119,14 @@ function renderCal(v){
             '<span style="font-size:20px;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+(p.icon||ico('car'))+'</span>'+
             '<div>'+
               '<div style="font-size:13px;font-weight:800;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+esc(b.clientName||'Sin nombre')+'</div>'+
-              '<div style="font-size:10px;color:'+(_uiLight()?'rgba(13,13,13,.75)':'rgba(255,255,255,0.92)')+'">'+esc(b.clientPhone||p.label)+
+              '<div style="font-size:10px;color:'+(_uiLight()?'rgba(13,13,13,.9)':'rgba(255,255,255,0.92)')+'">'+esc(b.clientPhone||p.label)+
                 (multiMonth?'<span style="margin-left:6px;background:rgba(255,255,255,0.2);padding:1px 5px;border-radius:4px">+2 meses</span>':'')+
               '</div>'+
             '</div>'+
           '</div>'+
           '<div style="text-align:right">'+
             '<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+fmtF(total)+'</div>'+
-            (total>Number(b.amount||0)?'<div style="font-size:9px;color:'+(_uiLight()?'rgba(13,13,13,.75)':'rgba(255,255,255,0.92)')+'">'+fmtF(b.amount)+' base</div>':'')+
+            (total>Number(b.amount||0)?'<div style="font-size:9px;color:'+(_uiLight()?'rgba(13,13,13,.9)':'rgba(255,255,255,0.92)')+'">'+fmtF(b.amount)+' base</div>':'')+
           '</div>'+
         '</div>'+
         // Date/time row
