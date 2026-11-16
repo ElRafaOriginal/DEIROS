@@ -3568,7 +3568,7 @@ function openContractForm(vId,bookingId){
     <div id="ctClCard" style="flex:1;min-width:0;font-size:12px;color:var(--text2);line-height:1.4">${_ctClCardHtml(cl)}</div>
     <button type="button" class="btn-sec tap44" style="width:auto;min-height:44px;padding:0 14px;flex-shrink:0" onclick="_ctClPickToggle()">${ico('search')} ${cl?'Cambiar cliente':'Buscar cliente'}</button>
   </div>
-  <div id="ctClPickBox" class="fg" style="display:none">${_clPickerHtml('ctClPick','')}</div>
+  <div id="ctClPickBox" class="fg" style="display:none">${_clPickerHtml('ctClPick',cl?(cl.name||''):'',cl?(cl.id||''):'')}</div>
   <div id="ctClStatus" data-sd="${esc(b.startDate||'')}" data-ed="${esc(b.endDate||'')}" style="margin-bottom:10px"></div>
   <div oninput="_clStatusUpd('ctClPick')" onchange="_clStatusUpd('ctClPick')">
   <div class="r2">
@@ -3593,21 +3593,21 @@ function openContractForm(vId,bookingId){
   <div style="background:var(--bg3);border-radius:10px;padding:12px;margin:10px 0">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;min-height:44px">
-        <input type="checkbox" id="ctHasExtra" onchange="document.getElementById('ctExtraBlock').style.display=this.checked?'block':'none'"/>
+        <input type="checkbox" id="ctHasExtra"${(b.hasExtraDriver||b.extraDriverName)?' checked':''} onchange="document.getElementById('ctExtraBlock').style.display=this.checked?'block':'none'"/>
         <span style="font-size:13px;font-weight:700">${ico('user')} Añadir conductor adicional</span>
       </label>
     </div>
-    <div id="ctExtraBlock" style="display:none" oninput="_clStatusUpd('ctEx2Pick')" onchange="_clStatusUpd('ctEx2Pick')">
-      <div class="fg"><label class="lbl">BUSCAR EN CLIENTES</label>${_clPickerHtml('ctEx2Pick','')}</div>
-      <input id="ctEx2Birth" type="hidden" value=""/>
+    <div id="ctExtraBlock" style="display:${(b.hasExtraDriver||b.extraDriverName)?'block':'none'}" oninput="_clStatusUpd('ctEx2Pick')" onchange="_clStatusUpd('ctEx2Pick')">
+      <div class="fg"><label class="lbl">BUSCAR EN CLIENTES</label>${_clPickerHtml('ctEx2Pick',b.extraDriverName||'',b.extraDriverId||'')}</div>
       <div id="ctEx2Status" data-sd="${esc(b.startDate||'')}" data-ed="${esc(b.endDate||'')}" style="margin-bottom:8px"></div>
       <div class="r2">
-        <div class="fg"><label class="lbl">NOMBRE CONDUCTOR EXTRA</label><input id="ctEx2Nombre" value="" autocomplete="off"/></div>
-        <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctEx2Nif" value="" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+        <div class="fg"><label class="lbl">NOMBRE CONDUCTOR EXTRA</label><input id="ctEx2Nombre" value="${esc(b.extraDriverName||'')}" autocomplete="off"/></div>
+        <div class="fg"><label class="lbl">NIF / DNI</label><input id="ctEx2Nif" value="${esc(b.extraDriverDni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
       </div>
       <div class="r2">
-        <div class="fg"><label class="lbl">Nº PERMISO</label><input id="ctEx2Lic" value="" autocomplete="off"/></div>
-        <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctEx2LicExp" value="" type="date"/></div>
+        <div class="fg"><label class="lbl">Nº PERMISO</label><input id="ctEx2Lic" value="${esc(b.extraDriverLicense||'')}" autocomplete="off"/></div>
+        <div class="fg"><label class="lbl">CADUCIDAD PERMISO</label><input id="ctEx2LicExp" value="${esc(safeDate(b.extraDriverLicenseExp||''))}" type="date"/></div>
+        <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="ctEx2Birth" value="${esc(safeDate(b.extraDriverBirth||''))}" type="date"/></div>
       </div>
     </div>
   </div>
@@ -3827,7 +3827,9 @@ function _ctFold(k){
   if(btn)btn.textContent=open?'Confirmar':'Editar';
   if(!open)_ctSumUpd(k);
 }
+function _ctAgeCheck(sd){const v=id=>(document.getElementById(id)?.value||'').trim();const nac=v('ctClNac');if(!nac)return 'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';let e=_clAge(nac,sd);if(e!=null&&e<26)return _clWarn({birthdate:nac},sd,'')[0];if(document.getElementById('ctHasExtra')?.checked){if(!v('ctEx2Nombre')||!v('ctEx2Nif'))return 'Conductor adicional: faltan el nombre y el NIF/DNI.';const n2=v('ctEx2Birth');if(!n2)return 'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).';e=_clAge(n2,sd);if(e!=null&&e<26)return 'Conductor adicional: '+_clWarn({birthdate:n2},sd,'')[0];}return '';}
 function _ctValidate(cur){
+  if(cur===2){const _am=_ctAgeCheck(document.getElementById('ctClStatus')?.dataset?.sd||'');if(_am){alert(_am);return false;}}
   const need=cur===1?[['ctArNombre','ctFldAr','Ar'],['ctArNif','ctFldAr','Ar'],['ctArDir','ctFldAr','Ar']]
     :cur===2?[['ctClNombre'],['ctClNif']]:[];
   if(!need.length)return true;
@@ -4244,6 +4246,7 @@ function generateContractPDF(vId,bookingId){
   const g=id=>document.getElementById(id)?.value||'';
   if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato.');return;}
   if(!g('ctClNombre').trim()||!g('ctClNif').trim()){alert('Faltan el nombre y el NIF/DNI del cliente. Complétalos en el paso 2 antes de generar el contrato.');if(typeof _ctGo==='function')_ctGo(2);return;}
+  {const _am=_ctAgeCheck(b.startDate);if(_am){alert(_am);if(typeof _ctGo==='function')_ctGo(2);return;}}
   const _faltan=[['ctClDir','domicilio'],['ctClTel','teléfono'],['ctClNac','fecha de nacimiento'],['ctClLic','permiso de conducir'],['ctClLicExp','caducidad del permiso']].filter(x=>!g(x[0]).trim()).map(x=>x[1]);
   if(_faltan.length&&!confirm('Faltan datos del cliente: '+_faltan.join(', ')+'.\n\nSi continúas, el contrato indicará «[dato no informado]». ¿Generarlo igualmente?')){if(typeof _ctGo==='function')_ctGo(2);return;}
   const dur=daysBetween(b.startDate,b.endDate);
@@ -4275,7 +4278,7 @@ function generateContractPDF(vId,bookingId){
   const vehDesc=(veh.make&&veh.model?veh.make+' '+veh.model:veh.model||v.name);
   const cl={nombre:g('ctClNombre'),nif:g('ctClNif'),dir:g('ctClDir'),tel:g('ctClTel'),nac:g('ctClNac'),lic:g('ctClLic'),licExp:g('ctClLicExp'),nacionalidad:g('ctClNacionalidad')};
   const hasExtra=document.getElementById('ctHasExtra')?.checked;
-  const extra={nombre:g('ctEx2Nombre'),nif:g('ctEx2Nif'),lic:g('ctEx2Lic'),licExp:g('ctEx2LicExp')};
+  const extra={nombre:g('ctEx2Nombre'),nif:g('ctEx2Nif'),lic:g('ctEx2Lic'),licExp:g('ctEx2LicExp'),nac:g('ctEx2Birth')};
   const obs=g('ctObs');
   const extrasData=_calcExtrasTotal(dur);
   const extrasItems=Object.values(extrasData.items);
@@ -4285,7 +4288,10 @@ function generateContractPDF(vId,bookingId){
   // El alquiler muestra el cliente del contrato (nunca se borra con vacío)
   if(cl.nombre.trim())b.clientName=cl.nombre.trim();if(cl.nif.trim())b.clientDni=cl.nif.trim().toUpperCase();if(cl.tel.trim())b.clientPhone=cl.tel.trim();
   // Conductor adicional: ficha propia, SIN enlazarle este alquiler
-  if(hasExtra&&(extra.nombre.trim()||extra.nif.trim()))_clUpsert({id:document.getElementById('ctEx2Pick')?.dataset?.clId||'',name:extra.nombre,dni:extra.nif,license:extra.lic,licenseExp:extra.licExp});
+  if(hasExtra&&(extra.nombre.trim()||extra.nif.trim()))_clUpsert({id:document.getElementById('ctEx2Pick')?.dataset?.clId||'',name:extra.nombre,dni:extra.nif,license:extra.lic,licenseExp:extra.licExp,birthdate:extra.nac});
+  // Casilla de conductor adicional: se guarda en el alquiler (campos opcionales) para restaurarla al reabrir
+  if(hasExtra&&(extra.nombre.trim()||extra.nif.trim())){b.hasExtraDriver=true;b.extraDriverName=extra.nombre.trim();b.extraDriverDni=extra.nif.trim().toUpperCase();b.extraDriverLicense=extra.lic.trim();b.extraDriverLicenseExp=extra.licExp;b.extraDriverBirth=extra.nac;b.extraDriverId=document.getElementById('ctEx2Pick')?.dataset?.clId||'';}
+  else{b.hasExtraDriver=false;b.extraDriverName='';b.extraDriverDni='';b.extraDriverLicense='';b.extraDriverLicenseExp='';b.extraDriverBirth='';b.extraDriverId='';}
   save();
   // Save extras as income entries in booking finance
   if(Object.keys(extrasData.items).length>0){
@@ -5191,6 +5197,7 @@ function _normBooking(b){
   ['deliveredFuelLevel','returnedFuelLevel'].forEach(k=>{if(k in b&&typeof b[k]!=='string')b[k]=b[k]==null?'':String(b[k]);});
   _normEnum(b,'fianzaStatus',['pending','returned','retained','partial'],'');
   _normNum(b,'fianzaRetainedAmount');
+  _normBool(b,'hasExtraDriver');_normDate(b,'extraDriverBirth');_normDate(b,'extraDriverLicenseExp');
   ['fianzaRetainedReason','fianzaReturnedAt'].forEach(k=>{if(b[k]!=null&&typeof b[k]!=='string')_normBump(b,k,'');});
   _normList(b,'finances');_normList(b,'extras');
   (b.finances||[]).forEach(_normEntry);
@@ -6785,6 +6792,7 @@ function submitEditBooking(id){
   const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
   if(ne<=ns){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
+  {const _ea=_clAge(_clFormVals('rClientPicker').birthdate,sd);if(_ea!=null&&_ea<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}}
 
   const newVehicleId=document.getElementById('rNewVehicle')?.value||v.id;
   const targetV=V.find(x=>x.id===newVehicleId)||v;
@@ -7117,6 +7125,7 @@ function submitRental(){
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
   const conflict=_findBookingConflict(v,sd,st,ed,et);
   if(conflict){alert('Conflicto:\n'+_conflictText(conflict));return;}
+  {const _ea=_clAge(_clD.birthdate,sd);if(_ea!=null&&_ea<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}}
   const bId=uid();
   if(!v.finances)v.finances=[];
   if(!v.bookings)v.bookings=[];
@@ -10853,7 +10862,7 @@ function _checkEntry(e,label){
 }
 function _checkBooking(b,label){
   if(!_isPlainObject(b))return '«'+label+'» tiene que ser un objeto.';
-  let err=_expectStr(b,'id',label+' · id')||_expectDate(b,'startDate',label+' · inicio')||_expectDate(b,'endDate',label+' · fin')||_expectStr(b,'clientName',label+' · cliente')||_expectStr(b,'clientPhone',label+' · teléfono')||_expectStr(b,'clientDni',label+' · DNI')||_expectStr(b,'notes',label+' · notas')||_expectStr(b,'platform',label+' · plataforma')||_expectNum(b,'amount',label+' · importe');
+  let err=_expectStr(b,'id',label+' · id')||_expectDate(b,'startDate',label+' · inicio')||_expectDate(b,'endDate',label+' · fin')||_expectStr(b,'clientName',label+' · cliente')||_expectStr(b,'clientPhone',label+' · teléfono')||_expectStr(b,'clientDni',label+' · DNI')||_expectStr(b,'notes',label+' · notas')||_expectStr(b,'platform',label+' · plataforma')||_expectNum(b,'amount',label+' · importe')||_expectStr(b,'extraDriverName',label+' · conductor adicional')||_expectStr(b,'extraDriverDni',label+' · DNI conductor adicional')||_expectStr(b,'extraDriverLicense',label+' · permiso conductor adicional')||_expectStr(b,'extraDriverId',label+' · ficha conductor adicional')||_expectDate(b,'extraDriverBirth',label+' · nacimiento conductor adicional')||_expectDate(b,'extraDriverLicenseExp',label+' · caducidad permiso conductor adicional');
   if(err)return err;
   if('finances' in b&&b.finances!=null){
     if(!Array.isArray(b.finances))return '«'+label+' · finances» tiene que ser una lista.';
