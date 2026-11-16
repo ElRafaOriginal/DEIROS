@@ -755,9 +755,11 @@ const KM_RATE_CFG={
 const MON_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MON_S=['En','Fe','Ma','Ab','My','Jn','Jl','Ag','Se','Oc','No','Di'];
 const INC_CATS=['Alquiler','Venta','Seguro','Depósito','Extra km','Limpieza','Otros ingresos'];
-const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Lavado','Multa','Amortización','Otros gastos'];
+const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Lavado','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
 // Cláusula Quinta (5.2): gastos que paga directamente EL PROPIETARIO (incluye los recurrentes Seguro, Impuesto y Mantenimiento)
 const OWNER_PAID_CATS=['Seguro','Mantenimiento','Mantenimiento periódico','Reparación','ITV','Impuesto'];
+// Cláusula Quinta (5.3): LISTA PERMITIDA de gastos que se descuentan al propietario. El resto no se le descuenta.
+const OWNER_DEDUCT_CATS=['Combustible','Lavado','Limpieza','Plataforma','Parking','Suscripción'];
 const BIZ_INC=['Subvención','Consultoría','Servicio','Comisión','Reembolso','Otros ingresos'];
 const BIZ_EXP=['Oficina','Software','Marketing','Gestoría/Asesoría','Seguros generales','Sueldos','Impuestos','Alquiler local','Teléfono/Internet','Material','Préstamo','Formación','Otros gastos'];
 const PLATS={amovens:{label:'Amovens',icon:'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#FB7AAC;flex-shrink:0"></span>',cls:'plat-amovens'},getaround:{label:'Getaround',icon:'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#8B5CF6;flex-shrink:0"></span>',cls:'plat-getaround'},sinapp:{label:'Sin app',icon:ico('handshake'),cls:'plat-sinapp'}};
@@ -3379,7 +3381,7 @@ function openAddRecurring(editId,vId){
     <div class="r2">
       <div class="fg"><label class="lbl">CATEGORÍA</label>
         <select id="rrCat">
-          ${['Seguro','Plataforma','Parking','Suscripción','Impuesto','Mantenimiento','Préstamo','Otros gastos'].map(x=>`<option${(r&&r.category===x)?' selected':''}>${x}</option>`).join('')}
+          ${['Seguro','Plataforma','Parking','Suscripción','Impuesto','Mantenimiento','Préstamo','Otros gastos'].filter(x=>!(x==='Préstamo'&&!(r&&r.category==='Préstamo')&&V.find(v=>v.id===(vId||(r&&r.vId))&&v.vtype==='managed'))).map(x=>`<option${(r&&r.category===x)?' selected':''}>${x}</option>`).join('')}
         </select>
       </div>
       <div class="fg"><label class="lbl">FRECUENCIA</label>
@@ -4580,7 +4582,7 @@ function openMgmtContractForm(ownerId,vId){
   <div style="height:1px;background:var(--border);margin:12px 0"></div>
   <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--green);margin-bottom:8px">${ico('clipboard')} CONDICIONES</div>
   <div class="r2">
-    <div class="fg"><label class="lbl">COMISIÓN DEL GESTOR (%)</label><input id="mgComision" value="${veh?Number(veh.commission)||30:30}" inputmode="numeric"/></div>
+    <div class="fg"><label class="lbl">COMISIÓN DEL GESTOR (%)</label><input id="mgComision" value="${veh&&veh.commission!=null&&veh.commission!==''?Number(veh.commission):30}" inputmode="numeric"/></div>
     <div class="fg"><label class="lbl">PLAZO PAGO AL PROPIETARIO</label><input id="mgPlazo" value="10 primeros días del mes siguiente" autocomplete="off"/></div>
   </div>
   <div class="r2">
@@ -4613,7 +4615,7 @@ function generateMgmtContractPDF(ownerId,vIdParam){
   const veh=V.find(v=>v.id===resolvedVId);
   const gestor={nombre:g('mgGestorNombre'),nif:g('mgGestorNif'),dir:g('mgGestorDir'),tel:g('mgGestorTel'),email:g('mgGestorEmail')};
   const ciudad=g('mgCiudad'),fechaContrato=g('mgFecha');
-  const comision=parseInt(g('mgComision'))||30;
+  const _cm=parseInt(g('mgComision'),10);const comision=Number.isFinite(_cm)?Math.min(100,Math.max(0,_cm)):30;
   const propComision=100-comision;
   const plazo=g('mgPlazo');
   const inicioDate=g('mgInicioDate');
@@ -5291,22 +5293,25 @@ function tExp(v){return _plFins(v,_getVehicleAllFinances(v)).filter(e=>e.type===
 function _isOwnerPaid(v,e){return !!(v&&v.vtype==='managed'&&v.ownerId&&e&&e.type==='expense'&&OWNER_PAID_CATS.includes(e.category));}
 // Movimientos que cuentan para la rentabilidad (P&L): quita los gastos pagados por el propietario
 function _plFins(v,fins){return fins.filter(e=>!_isOwnerPaid(v,e));}
+// Gasto que se descuenta en la liquidación. Coches en gestión con propietario: solo OWNER_DEDUCT_CATS (5.3). Resto: como antes.
+function _isOwnerDeduct(v,e){if(!e||e.type!=='expense')return false;if(v&&v.vtype==='managed'&&v.ownerId)return OWNER_DEDUCT_CATS.includes(e.category);return !_isOwnerPaid(v,e);}
 // Liquidación de UN mes (cláusulas 5.3-5.5). fins = movimientos de ese mes del coche.
 // toOwner = max(0, facturado − comisión − gastos 5.3); si saldría negativo, el déficit lo asume el gestor: mgr = comisión − déficit.
 function _ownerSettle(v,fins){
   const sum=a=>a.reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tI=sum(fins.filter(e=>e.type==='income'));
   const paid=sum(fins.filter(e=>_isOwnerPaid(v,e)));
-  const tE=sum(fins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)));
+  const tE=sum(fins.filter(e=>_isOwnerDeduct(v,e)));
+  const other=sum(fins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)&&!_isOwnerDeduct(v,e))); // no se descuentan al propietario
   const comm=(v.commission==null||v.commission===''?30:Number(v.commission)),commAmt=tI*comm/100,raw=tI-commAmt-tE;
   const deficit=(v.ownerId&&raw<0)?-raw:0;
-  return{tI,tE,paid,tP:tI-tE,comm,commAmt,toOwner:raw+deficit,deficit,mgr:commAmt-deficit};
+  return{tI,tE,paid,other,tP:tI-tE,comm,commAmt,toOwner:raw+deficit,deficit,mgr:commAmt-deficit};
 }
 // Suma mes a mes de _ownerSettle (para acumulados y periodos de varios meses)
 function _settleTotals(v,fins){
   const by={};fins.forEach(e=>{if(typeof e.date!=='string')return;const m=e.date.slice(0,7);(by[m]=by[m]||[]).push(e);});
-  const t={tI:0,tE:0,paid:0,tP:0,commAmt:0,toOwner:0,deficit:0,mgr:0,comm:(v.commission==null||v.commission===''?30:Number(v.commission))};
-  Object.values(by).forEach(f=>{const x=_ownerSettle(v,f);['tI','tE','paid','tP','commAmt','toOwner','deficit','mgr'].forEach(k=>{t[k]+=x[k];});});
+  const t={tI:0,tE:0,paid:0,other:0,tP:0,commAmt:0,toOwner:0,deficit:0,mgr:0,comm:(v.commission==null||v.commission===''?30:Number(v.commission))};
+  Object.values(by).forEach(f=>{const x=_ownerSettle(v,f);['tI','tE','paid','other','tP','commAmt','toOwner','deficit','mgr'].forEach(k=>{t[k]+=x[k];});});
   return t;
 }
 function tDays(v){return new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking)).size;}
@@ -8864,6 +8869,12 @@ function genOwnerReport(ownerId){
         </div>
         ${d.paid>0?`<div style="font-size:11px;color:var(--text3);margin-top:8px">Pagado directamente por el propietario (no se descuenta): ${fmtE(d.paid)}</div>`:''}
         ${d.deficit>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Déficit asumido por el gestor: ${fmtE(d.deficit)}</div>`:''}
+        ${d.other>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Otros gastos no descontados al propietario: ${fmtE(d.other)}</div>`:''}
+        ${d.fins.filter(e=>_isOwnerDeduct(d.v,e)).length?`
+        <div style="margin-top:10px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">GASTOS DESCONTADOS (5.3)</div>
+          ${d.fins.filter(e=>_isOwnerDeduct(d.v,e)).map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${esc(fmtDMY(e.date))} · ${esc(e.category)}</span><span style="font-family:var(--mono);color:var(--red);font-weight:700">${fmtE(e.amount)}</span></div>`).join('')}
+        </div>`:''}
         ${d.fins.filter(e=>e.type==='income').length?`
         <div style="margin-top:10px">
           <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">INGRESOS DEL MES</div>
@@ -8932,9 +8943,12 @@ function dlOwnerReport(ownerId,month){
     const _info=[];
     if(d.paid>0)_info.push('Pagado directamente por el propietario (no se descuenta): '+fmtE(d.paid));
     if(d.deficit>0)_info.push('Déficit asumido por el gestor: '+fmtE(d.deficit));
+    if(d.other>0)_info.push('Otros gastos no descontados al propietario: '+fmtE(d.other));
     if(_info.length){doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(100,100,120);_info.forEach(t=>{doc.text(t,margin,y+2);y+=5;});y+=1;}
     const vInc=d.fins.filter(e=>e.type==='income');
     if(vInc.length){y=_pdfTableRows(doc,margin,cW,y,vInc,[16,185,129],262,addPage);}
+    const vDed=d.fins.filter(e=>_isOwnerDeduct(d.v,e));
+    if(vDed.length){if(y>250){y=addPage();}doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(90,90,110);doc.text('GASTOS DESCONTADOS (CLÁUSULA 5.3)',margin,y+3);y+=5;y=_pdfTableRows(doc,margin,cW,y,vDed,[185,28,28],262,addPage);}
     y+=4;
   });
   if(y>260){y=addPage();}
