@@ -6866,11 +6866,14 @@ function renderList(el){
 // ═══════════════════════════════════════════════════════════ DETAIL
 function renderDetail(el){
   const v=gV();if(!v){nav('vehicles');return;}
-  let h=`<div class="anim"><div class="vd-top"><div class="back" onclick="goBack()"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="chip ${v.vtype==='managed'?'chip-amber':'chip-gray'}">${v.vtype==='managed'?'GESTIÓN':'PROPIO'}</span></span></div>
-  <div class="tabs">
-    <div class="tab ${AT==='calendar'?'active':''}" onclick="switchTab('calendar')">${ico('calendar')} Alquileres</div>
-    <div class="tab ${AT==='finances'?'active':''}" onclick="switchTab('finances')">${ico('euro')} Finanzas</div>
-    <div class="tab ${AT==='info'?'active':''}" onclick="switchTab('info')">${ico('info')} Info</div>
+  const isM=v.vtype==='managed';
+  // Cabecera del coche en una línea (el nombre y la matrícula ya están en la barra, D1): punto + tipo · modelo · año · chip GESTIÓN (solo en gestión); pestañas en selector segmentado
+  let h=`<div class="anim"><div class="back fl-back" onclick="goBack()"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div>
+  <div class="fl-hd"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span><span class="d-meta">${[v.model,v.year].filter(Boolean).map(x=>esc(x)).join(' · ')}</span>${isM?'<span class="chip">'+ico('handshake')+' Gestión</span>':''}</div>
+  <div class="d-seg fl-tabs" role="group" aria-label="Ficha del vehículo">
+    <button type="button" aria-pressed="${AT==='calendar'}" onclick="switchTab('calendar')">${ico('calendar')} Alquileres</button>
+    <button type="button" aria-pressed="${AT==='finances'}" onclick="switchTab('finances')">${ico('euro')} Finanzas</button>
+    <button type="button" aria-pressed="${AT==='info'}" onclick="switchTab('info')">${ico('info')} Info</button>
   </div>`;
   if(AT==='calendar')h+=renderCal(v);
   else if(AT==='finances')h+=renderFin(v);
