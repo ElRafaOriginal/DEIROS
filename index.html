@@ -960,6 +960,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .d-menu .hmenu-item.on,.d-menu .hmenu-item.on .hmenu-icon,.d-menu .hmenu-item.on::after{color:var(--amber);}
 .d-menu .hmenu-item.err{color:var(--red);border-bottom:0;margin-top:20px;}
 .d-menu .hmenu-item.err .hmenu-icon{color:var(--red);}
+/* ══ PR C · Carga, acceso y error: como la sección final de la web (trama de puntos, rótulo, título en frase con punto en acento, botón píldora) ══ */
+.d-gate{position:fixed;inset:0;flex-direction:column;align-items:center;justify-content:center;padding:calc(32px + var(--st)) 24px calc(32px + var(--sb));background-color:var(--bg);background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);overflow-y:auto;}
+.d-gate-in{width:100%;max-width:360px;}
+.d-gate .lg{height:48px;width:auto;margin:0 0 28px -14px;}
+.d-gate h1{font-size:min(var(--fs-h1),8.2vw);font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--text);margin:12px 0 28px;}
+.d-gate h1 em{font-style:normal;color:var(--amber);}
+.d-gate p{font-size:15px;line-height:1.55;color:var(--text2);margin:-14px 0 24px;}
+.d-gate .d-f input{min-height:52px;}
+.d-gate .ico.big{width:40px;height:40px;color:var(--red);margin-bottom:16px;}
+.d-gate .d-err{font-family:var(--mono);font-size:var(--fs-min);line-height:1.5;color:var(--text2);word-break:break-all;border:1px solid var(--border2);border-radius:var(--r-in);padding:12px 14px;margin:-8px 0 20px;max-height:40vh;overflow:auto;}
+.d-gate .d-err b{color:var(--text);font-weight:500;}
+.d-load{display:flex;flex-direction:column;align-items:center;gap:20px;}
+.d-load .lg{margin:0;}
+.d-load .q::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber);margin-right:10px;vertical-align:middle;animation:dpulse 1.2s var(--ease) infinite alternate;}
+.d-load .q::after{content:none;}
+@keyframes dpulse{from{opacity:.25;}to{opacity:1;}}
+.d-gate p b{color:var(--text);font-weight:600;}
 </style>
 </head>
 <body>
@@ -1111,24 +1128,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <div class="sheet" id="SH"><div class="sh"></div><div id="SC"></div></div>
 
 <!-- LOADING SCREEN -->
-<div id="loadingScreen" style="position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-  <img class="logo-osc" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="220" height="66"/><img class="logo-cla" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="220" height="66"/>
-  <div style="font-size:13px;color:var(--text3);letter-spacing:1px">Conectando...</div>
+<div id="loadingScreen" class="d-gate" style="z-index:2000;display:flex">
+  <div class="d-load">
+    <img class="logo-osc lg" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="160" height="48"/><img class="logo-cla lg" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="160" height="48"/>
+    <span class="q">Conectando...</span>
+  </div>
 </div>
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" style="position:fixed;inset:0;z-index:1999;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px">
-  <div style="width:100%;max-width:360px">
-    <div style="text-align:center;margin-bottom:40px">
-      <img class="logo-osc" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="240" height="72" style="margin:0 auto"/><img class="logo-cla" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="240" height="72" style="margin:0 auto"/>
-      <div style="font-size:12px;color:var(--text3);letter-spacing:2px;margin-top:4px">GESTIÓN DE ALQUILERES</div>
-    </div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);display:block;margin-bottom:6px">EMAIL</label>
+<div id="loginScreen" class="d-gate" style="z-index:1999;display:none">
+  <div class="d-gate-in">
+    <img class="logo-osc lg" src="logo_horizontal_blanco_600x180.png" alt="DEIROS" width="160" height="48"/><img class="logo-cla lg" src="logo_horizontal_color_600x180.png" alt="DEIROS" width="160" height="48"/>
+    <span class="q ac">Fleet manager</span>
+    <h1>Gestión de <em>alquileres.</em></h1>
+    <div class="d-f">
+      <label class="q" for="loginEmail">Email</label>
       <input id="loginEmail" type="email" placeholder="tu@email.com" inputmode="email" autocomplete="email" style="width:100%"/>
     </div>
-    <div style="margin-bottom:24px">
-      <label style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);display:block;margin-bottom:6px">CONTRASEÑA</label>
+    <div class="d-f" style="margin-bottom:24px">
+      <label class="q" for="loginPass">Contraseña</label>
       <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" style="width:100%"/>
     </div>
     <button class="btn-pri" onclick="doLogin()" style="margin-bottom:12px">Entrar</button>
@@ -1144,7 +1162,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script>
 window.onerror=function(msg,src,line,col,err){
   var ls=document.getElementById('loadingScreen');
-  if(ls)ls.innerHTML='<div style="text-align:center;padding:24px;max-width:380px;font-family:monospace"><div style="margin-bottom:12px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.75" aria-hidden="true"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 9.5v5"/><rect x="11.1" y="16.2" width="1.8" height="1.8" fill="#EF4444" stroke="none"/></svg></div><div style="font-size:13px;font-weight:bold;color:#EF4444;margin-bottom:10px">ERROR JS</div><div style="font-size:11px;color:#F0F4FF;word-break:break-all;background:#1a1a2e;padding:12px;border-radius:8px;text-align:left"><b>Msg:</b> '+String(msg==null?'':msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<br><b>Line:</b> '+String(line==null?'':line).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br>'+(err?'<b>Stack:</b><br>'+String(err.stack||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button onclick="location.reload()" style="margin-top:12px;background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer">Recargar</button></div>';
+  if(ls)ls.innerHTML='<div class="d-gate-in"><svg class="ico big" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 9.5v5"/><rect x="11.1" y="16.2" width="1.8" height="1.8" fill="currentColor" stroke="none"/></svg><span class="q err">Error JS</span><h1>Algo ha <em>fallado.</em></h1><div class="d-err"><b>Msg:</b> '+String(msg==null?'':msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<br><b>Line:</b> '+String(line==null?'':line).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br>'+(err?'<b>Stack:</b><br>'+String(err.stack||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').slice(0,500):'')+'</div><button class="btn-pri" onclick="location.reload()">Recargar</button></div>';
   return false;
 };
 window.addEventListener('unhandledrejection',function(e){window.onerror('Promise rejection: '+(e.reason&&e.reason.message||e.reason),'',0,0,e.reason);});
@@ -1161,7 +1179,7 @@ const firebaseConfig={
 if(typeof firebase==='undefined'){
   document.addEventListener('DOMContentLoaded',()=>{
     const ls=document.getElementById('loadingScreen');
-    if(ls)ls.innerHTML='<div style="text-align:center;padding:32px;max-width:320px"><div style="margin-bottom:16px;color:var(--amber)"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M5 16.5H3V12.6l2.6-1.1L8 7.5h7.4l3.4 4L21 12.6v3.9h-2"/><path d="M9 16.5h6M5.6 11.5h13.2M12 7.5v4"/><circle cx="7" cy="16.5" r="2"/><circle cx="17" cy="16.5" r="2"/></svg></div><div style="font-size:20px;font-weight:800;color:var(--amber);margin-bottom:12px">DEIROS FLEET</div><div style="font-size:13px;color:#EF4444;font-weight:700;margin-bottom:12px">No se pudo conectar con Firebase</div><div style="font-size:12px;color:#94A3B8;line-height:1.7">Abre el archivo desde <strong style="color:#F0F4FF">GitHub Pages o Netlify</strong>, no directamente desde el disco.</div></div>';
+    if(ls)ls.innerHTML='<div class="d-gate-in"><svg class="ico big" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 9.5v5"/><rect x="11.1" y="16.2" width="1.8" height="1.8" fill="currentColor" stroke="none"/></svg><span class="q ac">DEIROS Fleet</span><h1>No se pudo conectar con <em>Firebase.</em></h1><p>Abre el archivo desde <b>GitHub Pages o Netlify</b>, no directamente desde el disco.</p></div>';
   });
   throw new Error('Firebase no disponible en este entorno');
 }
@@ -5442,12 +5460,12 @@ function _showLoadError(){
   const ls=document.getElementById('loadingScreen');
   if(!ls)return;
   ls.style.display='flex';
-  ls.innerHTML='<div style="text-align:center;padding:24px;max-width:360px">'
-    +('<div style="font-size:40px;margin-bottom:12px">'+ico('alert')+'</div>')
-    +'<div style="font-size:16px;font-weight:800;color:var(--amber);margin-bottom:10px">DEIROS</div>'
-    +'<div style="font-size:15px;font-weight:800;margin-bottom:8px">No se han podido cargar los datos</div>'
-    +'<div style="font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:16px">No se entra en la aplicación, para no guardar un estado vacío encima de los datos reales.</div>'
-    +'<button onclick="location.reload()" style="background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer">Reintentar</button>'
+  ls.innerHTML='<div class="d-gate-in">'
+    +ico('alert','40','big')
+    +'<span class="q err">Error de carga</span>'
+    +'<h1>No se han podido cargar los <em>datos.</em></h1>'
+    +'<p>No se entra en la aplicación, para no guardar un estado vacío encima de los datos reales.</p>'
+    +'<button class="btn-pri" onclick="location.reload()">Reintentar</button>'
     +'</div>';
 }
 
