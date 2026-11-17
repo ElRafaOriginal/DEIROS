@@ -7102,51 +7102,34 @@ function openCancelBooking(bookingId){
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
   closeSheet();
   openSheet(`
-    <div class="stitle">${ico('ban')} Cancelar alquiler</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:18px">
-      ${b.clientName?'<strong style="color:var(--text2)">'+esc(b.clientName)+'</strong> · ':''} ${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}
-    </div>
+    <div class="stitle">Cancelar alquiler</div>
+    <div class="d-meta al-mb">${b.clientName?esc(b.clientName)+' · ':''}${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
 
-    <div class="lbl">¿QUIÉN CANCELA?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px" id="cancelByGroup">
-      <button id="cancelByMe" onclick="_setCancelBy('deiros')"
-        style="padding:14px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        ${ico('home')} Yo (DEIROS)
-      </button>
-      <button id="cancelByClient" onclick="_setCancelBy('client')"
-        style="padding:14px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        ${ico('user')} El cliente
-      </button>
-    </div>
+    <div class="d-f"><span class="q">¿Quién cancela?</span>
+    <div class="d-seg" role="group" id="cancelByGroup">
+      <button type="button" id="cancelByMe" aria-pressed="false" onclick="_setCancelBy('deiros')">${ico('home')} Yo (DEIROS)</button>
+      <button type="button" id="cancelByClient" aria-pressed="false" onclick="_setCancelBy('client')">${ico('user')} El cliente</button>
+    </div></div>
 
-    <div class="lbl">¿HAY PENALIZACIÓN?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <button id="cancelPenNo" onclick="_setCancelPenalty(false)"
-        style="padding:12px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        Sin penalización
-      </button>
-      <button id="cancelPenYes" onclick="_setCancelPenalty(true)"
-        style="padding:12px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        Con penalización
-      </button>
-    </div>
+    <div class="d-f"><span class="q">¿Hay penalización?</span>
+    <div class="d-seg" role="group">
+      <button type="button" id="cancelPenNo" aria-pressed="false" onclick="_setCancelPenalty(false)">Sin penalización</button>
+      <button type="button" id="cancelPenYes" aria-pressed="false" onclick="_setCancelPenalty(true)">Con penalización</button>
+    </div></div>
 
-    <div id="cancelPenaltyBlock" style="display:none;margin-bottom:16px">
-      <div class="lbl">IMPORTE DE LA PENALIZACIÓN (€)</div>
-      <div style="position:relative">
-        <input type="number" id="cancelPenaltyAmt" min="0" step="0.01" inputmode="decimal"
-          placeholder="0,00"
-          style="padding-left:30px;width:100%;background:var(--bg2);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px 10px 30px;color:var(--text);font-family:var(--mono);font-size:16px"/>
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono);pointer-events:none">€</span>
+    <div id="cancelPenaltyBlock" style="display:none">
+      <div class="d-f"><label class="q" for="cancelPenaltyAmt">Importe de la penalización</label>
+        <div class="d-pre"><span>€</span><input type="number" id="cancelPenaltyAmt" min="0" step="0.01" inputmode="decimal" placeholder="0,00"/></div>
+        <div id="cancelPenaltyNote" class="d-hint" style="display:none"></div>
       </div>
-      <div id="cancelPenaltyNote" style="font-size:11px;color:var(--text3);margin-top:6px;padding:6px 10px;background:var(--bg3);border-radius:7px;display:none"></div>
     </div>
 
-    <div style="height:6px"></div>
-    <button onclick="submitCancelBooking('${escJs(bookingId)}')" class="btn-dang" style="margin-bottom:8px">
+    <div class="d-acts al-end">
+    <button onclick="submitCancelBooking('${escJs(bookingId)}')" class="btn-dang">
       ${ico('ban')} Confirmar cancelación
     </button>
-    <button onclick="closeSheet()" class="btn-sec">Volver</button>
+    <button onclick="closeSheet()" class="btn-txt">Volver</button>
+    </div>
   `);
   // Estado inicial
   window._cancelBy=null;
@@ -7158,16 +7141,8 @@ function _setCancelBy(who){
   const isDeiros=who==='deiros';
   const meBtn=document.getElementById('cancelByMe');
   const clBtn=document.getElementById('cancelByClient');
-  if(meBtn){
-    meBtn.style.border=isDeiros?'2px solid var(--amber)':'2px solid var(--border2)';
-    meBtn.style.background=isDeiros?'var(--acc-m)':'var(--bg3)';
-    meBtn.style.color=isDeiros?'var(--amber)':'var(--text2)';
-  }
-  if(clBtn){
-    clBtn.style.border=!isDeiros?'2px solid var(--red)':'2px solid var(--border2)';
-    clBtn.style.background=!isDeiros?'#EF444420':'var(--bg3)';
-    clBtn.style.color=!isDeiros?'var(--red)':'var(--text2)';
-  }
+  if(meBtn)meBtn.setAttribute('aria-pressed',String(isDeiros));
+  if(clBtn)clBtn.setAttribute('aria-pressed',String(!isDeiros));
   // Actualizar nota de penalización si ya está visible
   _updateCancelPenaltyNote();
 }
@@ -7177,16 +7152,8 @@ function _setCancelPenalty(hasPenalty){
   const noBtn=document.getElementById('cancelPenNo');
   const yesBtn=document.getElementById('cancelPenYes');
   const block=document.getElementById('cancelPenaltyBlock');
-  if(noBtn){
-    noBtn.style.border=!hasPenalty?'2px solid var(--green)':'2px solid var(--border2)';
-    noBtn.style.background=!hasPenalty?'#10B98120':'var(--bg3)';
-    noBtn.style.color=!hasPenalty?'var(--green)':'var(--text2)';
-  }
-  if(yesBtn){
-    yesBtn.style.border=hasPenalty?'2px solid var(--amber)':'2px solid var(--border2)';
-    yesBtn.style.background=hasPenalty?'var(--acc-m)':'var(--bg3)';
-    yesBtn.style.color=hasPenalty?'var(--amber)':'var(--text2)';
-  }
+  if(noBtn)noBtn.setAttribute('aria-pressed',String(!hasPenalty));
+  if(yesBtn)yesBtn.setAttribute('aria-pressed',String(hasPenalty));
   if(block) block.style.display=hasPenalty?'block':'none';
   _updateCancelPenaltyNote();
 }
