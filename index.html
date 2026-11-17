@@ -6894,10 +6894,9 @@ function renderCal(v){
   let rC=0;
   for(let d=1;d<=dim;d++){const k=dKey(d);if(dayStatus(v,k)==='rented')rC++;}
 
-  const PLAT_COLORS={amovens:'var(--blue)',getaround:'var(--amber)',sinapp:'var(--green)'};
   const dayBars={};
   (v.bookings||[]).forEach(b=>{
-    const col=safeColor(b.cancelled?'var(--border2)':(PLAT_COLORS[b.platform]||'var(--text2)'));
+    const col=safeColor(b.cancelled?'var(--border2)':'var(--amber)'); // barra de «alquilado» en acento (la plataforma va en la fila)
     _eachDate(b.startDate,b.endDate).forEach(k=>{
       if(!dayBars[k])dayBars[k]=[];
       dayBars[k].push({col,isStart:k===b.startDate,isEnd:k===b.endDate,id:b.id,startDate:b.startDate,startTime:b.startTime||'09:00',endTime:b.endTime||'09:00',client:b.clientName||'',cancelled:b.cancelled});
@@ -6923,9 +6922,9 @@ function renderCal(v){
         const k=dKey(d),s=dayStatus(v,k);
         const isT=d===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();
         const bars=dayBars[k]||[];
-        let bg='transparent',bd='var(--border)';
-        if(s==='maintenance'){bg='var(--info-s)';bd='var(--info-b)';}
-        else if(s==='blocked'){bg='var(--err-s)';bd='var(--err-b)';}
+        let bd='var(--border)',sc='';
+        if(s==='maintenance'){bd='var(--info-b)';sc=' m';}
+        else if(s==='blocked'){bd='var(--err-b)';sc=' b';}
         const fn=s==='rented'?`showBooking('${escJs(k)}')`:`toggleDay('${escJs(k)}')`;
         const lineHtml=bars.slice(0,3).map((b,i)=>{
           let lp=0,rp=0;
@@ -6935,7 +6934,7 @@ function renderCal(v){
           const top=50-(bars.length-1)*3+i*6;
           return `<div style="position:absolute;top:calc(${top}% - 2px);left:${lp}%;right:${rp}%;height:3px;background:${safeColor(b.col)};border-radius:${rL} ${rR} ${rR} ${rL}"></div>`;
         }).join('');
-        return `<div class="tap44 calcell${isT?' t':''}" onclick="${fn}" style="border-color:${isT?'var(--amber)':bd};background:${isT?'var(--acc-s)':bg}">
+        return `<div class="tap44 calcell${isT?' t':''}${sc}" onclick="${fn}" style="border-color:${isT?'var(--amber)':bd}">
           <span class="cal-d">${d}</span>
           ${lineHtml}
         </div>`;
@@ -6956,13 +6955,12 @@ function renderCal(v){
 
   let listHtml='';
   if(!allBk.length){
-    listHtml=('<div class="empty" style="padding:30px 0"><div class="ei">'+ico('car')+'</div><div class="et">Sin alquileres este mes</div></div>');
+    listHtml=('<div class="d-empty fl-em">'+ico('calendar')+'<h3>Sin alquileres este mes</h3><p>Pulsa «Nuevo alquiler» o cambia de mes.</p></div>');
   } else {
     allBk.forEach(b=>{
       const dur=daysBetween(b.startDate,b.endDate);
       if(b.paid&&!b.cobrado)b.cobrado=true; // normalize legacy field
       const p=PLATS[b.platform]||{label:b.platform||'Sin app',icon:ico('handshake')};
-      const platDot=safeColor(PLAT_COLORS[b.platform]||'var(--text2)');
       // ── Estado basado en toggles reales ──────────────────────────────────
       const _todayS=todayStr();
       const _tomorrowS=addDays(_todayS,1);
@@ -6985,17 +6983,11 @@ function renderCal(v){
       const multiMonth=b.startDate.slice(0,7)!==b.endDate.slice(0,7);
       const bId=b.id, bSd=b.startDate;
       listHtml+=
-        '<div class="ck" onclick="showBookingById(\''+escJs(bId)+'\')">'+
-        // Cabecera: estado (chip con icono) e importe
-        '<div class="ck-h"><span class="chip" style="color:'+safeColor(col)+'">'+lbl+'</span><b>'+fmtF(total)+'</b></div>'+
-        '<div class="ck-c"><span class="dh-dot" style="background:'+safeColor(platDot)+'"></span><span>'+esc(b.clientName||'Sin nombre')+'</span></div>'+
-        '<div class="ck-s">'+esc(b.clientPhone||p.label)+(multiMonth?' · +2 meses':'')+(total>Number(b.amount||0)?' · '+fmtF(b.amount)+' base':'')+'</div>'+
-        // Trayecto recogida → devolución (línea discontinua con la duración)
-        '<div class="ck-t">'+
-          '<div><span class="q">Recogida</span><b>'+esc(fmtDMY(b.startDate))+'</b>'+(b.startTime?'<em>'+esc(b.startTime)+'</em>':'')+'</div>'+
-          '<i><span>'+dur+'d</span></i>'+
-          '<div class="r"><span class="q">Devolución</span><b>'+esc(fmtDMY(b.endDate))+'</b>'+(b.endTime?'<em>'+esc(b.endTime)+'</em>':'')+'</div>'+
-        '</div>'+
+        '<div class="fl-bk" onclick="showBookingById(\''+escJs(bId)+'\')">'+
+        // Fila fina: cliente e importe · fechas y horas con la duración, estado (chip con icono) · teléfono o plataforma
+        '<div class="fl-bh"><span class="t">'+esc(b.clientName||'Sin nombre')+'</span><b>'+fmtF(total)+'</b></div>'+
+        '<div class="fl-bs"><span>'+esc(fmtDMY(b.startDate).slice(0,5))+(b.startTime?' '+esc(b.startTime):'')+' → '+esc(fmtDMY(b.endDate).slice(0,5))+(b.endTime?' '+esc(b.endTime):'')+' · '+dur+'d</span><span class="chip" style="color:'+safeColor(col)+'">'+lbl+'</span></div>'+
+        '<div class="fl-bm">'+esc(b.clientPhone||p.label)+(b.clientPhone?' · '+esc(p.label):'')+(multiMonth?' · +2 meses':'')+(total>Number(b.amount||0)?' · '+fmtF(b.amount)+' base':'')+'</div>'+
         // Action buttons
         '<div class="g8 ck-a">'+
           '<button class="tap44'+(b.delivered?' on':'')+'" onclick="event.stopPropagation();toggleDelivery(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
@@ -7005,9 +6997,8 @@ function renderCal(v){
           '<button class="tap44'+(b.cobrado?' on':'')+'" onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
             (b.cobrado?(ico('coins')+' Cobrado'):(ico('coins')+' Cobrar'))+'</button>'+
         '</div>'+
-        // Km row
-        (kmInfo?('<div class="ck-l"><span>'+ico('odometer')+' ')+kmInfo+' recorridos</span></div>':'')+
-        // Fianza + Abono / Pendiente row
+        // Km, fianza y cobros: líneas mono finas
+        (kmInfo?('<div class="fl-bl"><span>'+ico('odometer')+' ')+kmInfo+' recorridos</span></div>':'')+
         (()=>{
           const _ab=Number(b.abonoReserva||0);
           const _fi=Number(b.fianza||0);
@@ -7015,11 +7006,11 @@ function renderCal(v){
           const _tt=_bookingClientTotal(b)+_fi;
           const _pd=Math.max(0,_tt-_ab);
           let row='';
-          if(_fi>0)row+='<div class="ck-l">'
+          if(_fi>0)row+='<div class="fl-bl">'
             +('<span>'+ico('lock')+' Fianza: ')+fmtF(_fi)+'</span>'
             +'<span>Total c/fianza: '+fmtF(_tt)+'</span>'
             +'</div>';
-          if(_ab>0)row+='<div class="ck-l">'
+          if(_ab>0)row+='<div class="fl-bl">'
             +('<span style="color:var(--green)">'+ico('card')+' Recibido: ')+fmtF(_ab)+'</span>'
             +(_pd>0
               ?'<span style="color:var(--amber)">Pendiente: '+fmtF(_pd)+'</span>'
@@ -7033,21 +7024,19 @@ function renderCal(v){
 
   // ── Final layout ──────────────────────────────────────────────────────
   const calPanel=`
-  <button class="btn-pri" onclick="openNewRental()" style="margin-bottom:12px;width:100%">${ico('car')} + Nuevo alquiler</button>
+  <button class="btn-pri fl-nr" onclick="openNewRental()">${ico('car')} Nuevo alquiler</button>
   ${isD
     ? `<div style="display:grid;grid-template-columns:33% 1fr;gap:16px;align-items:start">
         <div style="position:sticky;top:16px">${miniCal}</div>
         <div style="max-height:calc(100vh - 180px);overflow-y:auto;padding-right:4px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:8px">${MON_ES[calM].toUpperCase()} ${calY} — ALQUILERES</div>
-          ${listHtml}
+          <div class="al-h fl-lh"><h3>Alquileres de ${MON_ES[calM].toLowerCase()}</h3><span class="q">${String(allBk.length).padStart(2,'0')}</span></div>
+          <div class="fl-bl0">${listHtml}</div>
         </div>
       </div>`
-    : `<div style="display:flex;flex-direction:column;gap:12px">
-        <div class="dh-card cal-card">${miniCal}</div>
-        <div>
-          <div class="q cal-lt">${MON_ES[calM]} ${calY} · alquileres</div>
-          ${listHtml}
-        </div>
+    : `<div>
+        <div class="d-card cal-card">${miniCal}</div>
+        <div class="al-h fl-lh"><h3>Alquileres de ${MON_ES[calM].toLowerCase()}</h3><span class="q">${String(allBk.length).padStart(2,'0')}</span></div>
+        <div class="fl-bl0">${listHtml}</div>
       </div>`
   }`;
 
