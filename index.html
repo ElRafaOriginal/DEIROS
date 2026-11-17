@@ -69,7 +69,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .page{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;padding-top:calc(60px + var(--st));-webkit-overflow-scrolling:touch;}
 .pi{padding:16px;}
 /* TOPBAR */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:200;padding:calc(var(--st)+12px) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;height:calc(60px + var(--st));}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;padding:calc(var(--st) + 8px) 16px 8px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;height:calc(60px + var(--st));}
 .tt{font-size:20px;font-weight:800;letter-spacing:1px;color:var(--amber);}
 .ts{font-size:10px;color:var(--text3);letter-spacing:2px;margin-top:1px;}
 /* BOTTOMNAV */
@@ -455,6 +455,30 @@ select option{background:var(--bg);}
 .enter>*:nth-child(6){animation-delay:calc(var(--stagger)*5);}.enter>*:nth-child(7){animation-delay:calc(var(--stagger)*6);}
 .enter>*:nth-child(n+8){animation-delay:calc(var(--stagger)*7);}
 @media (prefers-reduced-motion:reduce){.enter>*{animation:none!important;}}
+/* ══ Barras: superior de cristal (rgba .72 + blur 16 + línea 1 px) e inferior en UNA píldora flotante con el botón dorado contextual ══ */
+:root .topbar,:root.light .topbar{background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border-bottom:1px solid var(--border);}
+:root .tt,:root.light .tt{font-size:22px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--text);}
+.ts{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-top:6px;}
+.ts::before,.ts::after{content:'"';}
+#hamburgerBtn .hbar{height:1.5px;border-radius:0;background:var(--text);}
+@media(max-width:767px){
+  :root .bnav,:root.light .bnav{left:12px;right:12px;bottom:calc(12px + var(--sb));padding:6px;gap:4px;align-items:stretch;border-radius:var(--r-pill);background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border2);}
+  .ni{flex:1 1 0;min-width:0;min-height:52px;justify-content:center;gap:5px;padding:0;border-radius:var(--r-pill);color:var(--text2);}
+  .ni-icon{line-height:0;}
+  .ni-lbl{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.06em;color:var(--text2);}
+  .ni.active{background:var(--bg3);color:var(--text);}
+  .ni.active .ni-lbl{color:var(--text);}
+  .ni-dot{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);margin:0;}
+  .ni-new{flex:1.75 1 0;min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border:0;border-radius:var(--r-pill);background:var(--amber);color:var(--on-amber);font-family:var(--font);font-size:13px;font-weight:700;line-height:1.05;text-align:left;cursor:pointer;transition:transform .3s var(--ease),background-color .3s;}
+  .ni-new:active{transform:scale(.97);}
+  .ni-new .ico{width:20px;height:20px;flex-shrink:0;}
+  .ni-new.lg{gap:4px;font-size:11.5px;letter-spacing:-.02em;}
+  .ni-new.lg .ico{width:16px;height:16px;}
+  .alert-dot{border-color:var(--bg3);}
+  .fab{display:none!important;}
+  .page{padding-bottom:calc(96px + var(--sb));}
+}
+@media(min-width:768px){.ni-new{display:none;}}
 </style>
 </head>
 <body>
@@ -529,7 +553,7 @@ select option{background:var(--bg);}
 <div class="topbar">
   <div><div class="tt" id="TT">DEIROS</div><div class="ts" id="TS">FLEET MANAGER</div></div>
   <div style="display:flex;gap:8px;align-items:center">
-    <div class="tap44" onclick="toggleHamburger()" id="hamburgerBtn" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:9px">
+    <div class="tap44" onclick="toggleHamburger()" id="hamburgerBtn" style="width:44px;height:44px;background:transparent;border:1px solid var(--border2);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:12px">
       <span class="hbar" id="hbar1"></span>
       <span class="hbar" id="hbar2"></span>
       <span class="hbar" id="hbar3"></span>
@@ -600,8 +624,8 @@ select option{background:var(--bg);}
   <div class="ni" onclick="nav('rentals')" id="ni-rentals"><div class="ni-icon"><i data-ico="key"></i></div><div class="ni-lbl">ALQUIL.</div><div class="ni-dot" id="nd-rentals"></div></div>
   <div class="ni" onclick="nav('vehicles')" id="ni-vehicles"><div class="ni-icon"><i data-ico="car"></i></div><div class="ni-lbl">FLOTA</div><div class="ni-dot" id="nd-vehicles"></div></div>
   <div class="ni" onclick="nav('biz')" id="ni-biz"><div class="ni-icon"><i data-ico="briefcase"></i></div><div class="ni-lbl">NEGOCIO</div><div class="ni-dot" id="nd-biz"></div></div>
+  <button type="button" class="ni-new" id="NINEW" onclick="niNewClick()" aria-label="Nuevo alquiler"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg><span>Nuevo<br>alquiler</span></button>
 </nav>
-<div class="qa" id="QA"><button type="button" class="qa-b qa-new" onclick="openNewRentalPicker()">＋ Nuevo alquiler</button><button type="button" class="qa-b qa-free" onclick="openFreeVehiclesSearch()"><i data-ico="search"></i> Coches libres</button></div>
 <div class="fab" id="FAB" title="Nuevo" aria-label="Nuevo" onclick="fabClick()" style="display:none">＋</div>
 <div class="ov" id="OV" onclick="closeSheet()"></div>
 <div class="sheet" id="SH"><div class="sh"></div><div id="SC"></div></div>
@@ -5538,6 +5562,10 @@ function nav(view){
 function openV(id){AV=id;AT='calendar';calY=new Date().getFullYear();calM=new Date().getMonth();history.pushState(null,'');document.getElementById('BN').style.display='none';document.getElementById('FAB').style.display='none';render();}
 function goBack(){AV=null;_fabLabel('Nuevo');document.getElementById('BN').style.display='flex';document.getElementById('FAB').style.display=(CV==='vehicles'||CV==='biz'||CV==='owners'||CV==='clients'||CV==='rentals')?'flex':'none';render();}
 function fabClick(){if(CV==='vehicles')openAddV();else if(CV==='biz')openAddBiz();else if(CV==='owners')openAddOwner();else if(CV==='clients')openAddClient();else if(CV==='quotes')openNewQuote();else if(CV==='rentals')openNewRentalPicker();}
+// Botón dorado de la píldora inferior (móvil): en las pantallas donde había FAB hace lo mismo que él (fabClick); en el resto, «Nuevo alquiler»
+const _NI_NEW={vehicles:'vehículo',biz:'movimiento',owners:'propietario',clients:'cliente',quotes:'presupuesto',rentals:'alquiler'};
+function niNewClick(){if(_NI_NEW.hasOwnProperty(CV))fabClick();else openNewRentalPicker();}
+function _niNewSync(){const b=document.getElementById('NINEW');if(!b)return;const w=_NI_NEW.hasOwnProperty(CV)?_NI_NEW[CV]:'alquiler';if(b.dataset.w===w)return;b.dataset.w=w;b.querySelector('span').innerHTML='Nuevo<br>'+w;b.setAttribute('aria-label','Nuevo '+w);b.classList.toggle('lg',w.length>8);}
 
 // ═══════════════════════════════════════════════════════════ RENDER
 function render(){
@@ -5561,6 +5589,7 @@ function render(){
   const [title,sub]=AV?[gV()?.name||'—',gV()?.plate||'']:(TITLES[CV]||['DEIROS','FLEET MANAGER']);
   const tt=document.getElementById('TT'),ts=document.getElementById('TS');
   if(tt)tt.textContent=title;if(ts)ts.textContent=sub;
+  _niNewSync();
   // Mobile alert badge
   const urgents=getAlerts().filter(a=>a.urgent).length;
   const ni=document.getElementById('ni-dashboard');
