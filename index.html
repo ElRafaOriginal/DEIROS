@@ -906,6 +906,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .d-route .e small{font-family:var(--mono);font-size:var(--fs-meta);color:var(--text2);}
 .d-route .l{position:relative;height:24px;align-self:center;border-top:1px dashed var(--border2);top:12px;}
 .d-route .l .chip{position:absolute;left:50%;top:-13px;transform:translateX(-50%);background:var(--bg2);}
+/* ══ PR C · Avisos: tarjeta de cristal con borde e icono del color del estado (como la barra móvil de la web), encima de la píldora inferior ══ */
+.d-toast{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;min-height:52px;padding:12px 16px;border-radius:var(--r-card);background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border2);font-family:var(--font);font-size:14px;font-weight:600;line-height:1.4;color:var(--text);}
+.d-toast>.ico{flex:none;color:var(--text2);}
+.d-toast .grow{flex:1;min-width:0;}
+.d-toast.ok{border-color:var(--ok-b);}.d-toast.ok>.ico{color:var(--green);}
+.d-toast.err{border-color:var(--err-b);}.d-toast.err>.ico{color:var(--red);}
+.d-toast.warn{border-color:var(--acc-b);}.d-toast.warn>.ico{color:var(--amber);}
+.d-toast .acts{flex-basis:100%;display:flex;gap:8px;}
+.d-toast .acts>button{flex:1;width:auto;min-height:44px;padding:6px 14px;font-size:13px;}
+.d-fl{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--sb));z-index:9999;max-width:440px;margin:0 auto;animation:d26in .6s var(--ease) both;}
+#backupReminder.d-fl{bottom:calc(84px + var(--sb))!important;}
+@media(min-width:768px){.d-fl{left:252px;bottom:24px;}#backupReminder.d-fl{bottom:24px!important;}}
+/* Estado de guardado: píldora de cristal mono con punto (amarillo guardando · verde guardado · rojo error) */
+.d-stat{position:fixed;top:calc(var(--st) + 10px);left:50%;transform:translateX(-50%);z-index:1800;display:none;align-items:center;gap:8px;height:28px;padding:0 12px;border-radius:var(--r-pill);background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border2);font-family:var(--mono);font-size:var(--fs-min);font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text);pointer-events:none;white-space:nowrap;}
+.d-stat::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.d-stat.ok::before{background:var(--green);}
+.d-stat.err{border-color:var(--err-b);}.d-stat.err::before{background:var(--red);}
+/* Diálogo de conflicto con otro dispositivo: hoja centrada con los botones de la app */
+.d-dlg{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:24px;}
+.d-dlg>div{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-sheet);padding:24px;display:grid;gap:10px;color:var(--text);}
+.d-dlg h3{font-size:var(--fs-h3);font-weight:700;letter-spacing:-.02em;line-height:1.1;}
+.d-dlg p{font-size:14px;line-height:1.55;color:var(--text2);margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -5380,8 +5402,11 @@ function _emptyCloudState(){
 }
 function _saveToast(text,bg){
   const toast=document.createElement('div');
-  toast.textContent=text;
-  toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:'+(bg||'#EF4444')+';color:#fff;padding:12px 20px;border-radius:10px;z-index:9999;font-size:13px;font-weight:700;max-width:90vw;text-align:center';
+  // Aviso de cristal: error (rojo) o, si se pasa color, advertencia (acento)
+  toast.className='d-toast d-fl '+(bg?'warn':'err');
+  toast.setAttribute('role','alert');
+  toast.innerHTML=ico('alert','20');
+  const _tx=document.createElement('span');_tx.className='grow';_tx.textContent=text;toast.appendChild(_tx);
   document.body.appendChild(toast);
   setTimeout(()=>toast.remove(),6000);
 }
@@ -5409,13 +5434,13 @@ function _setSaveStatus(state,msg){
   if(!el){
     el=document.createElement('div');
     el.id='saveStatus';
-    el.style.cssText='position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:1800;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;pointer-events:none;font-family:inherit;display:none';
+    el.className='d-stat';
     document.body.appendChild(el);
   }
   clearTimeout(_saveStatusTimer);
-  if(state==='saving'){el.style.display='block';el.style.background='var(--amber)';el.style.color='var(--on-amber)';el.textContent='Guardando…';}
-  else if(state==='saved'){el.style.display='block';el.style.background='#10B981';el.style.color='#000';el.textContent='Guardado';_saveStatusTimer=setTimeout(function(){el.style.display='none';},1800);}
-  else if(state==='error'){el.style.display='block';el.style.background='#EF4444';el.style.color='#fff';el.textContent=msg||'Error al guardar';}
+  if(state==='saving'){el.className='d-stat';el.style.display='flex';el.textContent='Guardando…';}
+  else if(state==='saved'){el.className='d-stat ok';el.style.display='flex';el.textContent='Guardado';_saveStatusTimer=setTimeout(function(){el.style.display='none';},1800);}
+  else if(state==='error'){el.className='d-stat err';el.style.display='flex';el.textContent=msg||'Error al guardar';}
   else el.style.display='none';
 }
 function _showCloudConflict(){
@@ -5423,12 +5448,12 @@ function _showCloudConflict(){
   _saveBlocked=true;
   const d=document.createElement('div');
   d.id='cloudConflict';
-  d.style.cssText='position:fixed;inset:0;z-index:3000;background:#000000aa;display:flex;align-items:center;justify-content:center;padding:24px';
-  d.innerHTML='<div style="background:var(--bg2,#1a1a2e);color:var(--text,#F0F4FF);border:1px solid var(--border,#334);border-radius:14px;padding:22px;max-width:400px;width:100%">'
-    +'<div style="font-size:17px;font-weight:800;margin-bottom:10px">Hay cambios hechos desde otro dispositivo</div>'
-    +'<div style="font-size:13px;line-height:1.55;margin-bottom:18px">Hay cambios hechos desde otro dispositivo. Recarga para no perderlos. Los cambios de esta pantalla no se han subido.</div>'
-    +'<button id="cfReload" style="width:100%;background:#6A0DAD;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px">Recargar</button>'
-    +'<button id="cfDownload" style="width:100%;background:transparent;color:inherit;border:1px solid var(--border2,#64748b);border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">Descargar copia de mis cambios locales</button>'
+  d.className='d-dlg';
+  d.innerHTML='<div role="alertdialog" aria-modal="true">'
+    +'<h3>Hay cambios hechos desde otro dispositivo</h3>'
+    +'<p>Hay cambios hechos desde otro dispositivo. Recarga para no perderlos. Los cambios de esta pantalla no se han subido.</p>'
+    +'<button id="cfReload" class="btn-pri">Recargar</button>'
+    +'<button id="cfDownload" class="btn-sec">Descargar copia de mis cambios locales</button>'
     +'</div>';
   document.body.appendChild(d);
   d.querySelector('#cfReload').onclick=function(){location.reload();};
@@ -5846,23 +5871,25 @@ function _showNormNotice(n,mode){
   if(!n)return;
   const el=document.createElement('div');
   el.id='normNotice';
-  el.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:1900;background:#D97706;color:#111;padding:12px 14px;border-radius:12px;max-width:440px;width:calc(100% - 24px);font-family:inherit;box-shadow:0 8px 24px #0006';
+  el.className='d-toast d-fl warn';
+  el.setAttribute('role','alert');
+  el.innerHTML=ico('alert','20');
   const t=document.createElement('div');
-  t.style.cssText='font-size:13px;font-weight:700;line-height:1.45';
+  t.className='grow';
   t.textContent=mode==='import'
     ?'Se han corregido '+n+' valores no válidos del fichero importado.'
     :'Se han corregido '+n+' valores no válidos en la copia local. El documento en la nube no se ha modificado.';
   el.appendChild(t);
   if(mode!=='import'){
     const row=document.createElement('div');
-    row.style.cssText='display:flex;gap:8px;margin-top:10px';
+    row.className='acts';
     const keep=document.createElement('button');
     keep.textContent='Dejar la nube como está';
-    keep.style.cssText='flex:1;background:#111;color:#fff;border:none;border-radius:8px;padding:8px;font-weight:700;cursor:pointer';
+    keep.className='btn-sec';
     keep.onclick=function(){el.remove();};
     const up=document.createElement('button');
     up.textContent='Subir la copia corregida';
-    up.style.cssText='flex:1;background:#fff;color:#111;border:none;border-radius:8px;padding:8px;font-weight:700;cursor:pointer';
+    up.className='btn-pri';
     up.onclick=function(){_holdCloudWrite=false;el.remove();save();};
     row.appendChild(keep);row.appendChild(up);el.appendChild(row);
   }
@@ -11554,14 +11581,16 @@ function checkBackupReminder(){
   try{localStorage.setItem('deiros_lastBackupRemindAt',new Date(now).toISOString());}catch(e){}
   const el=document.createElement('div');
   el.id='backupReminder';
-  el.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#D97706;color:#fff;padding:12px 16px;border-radius:10px;z-index:9999;font-size:13px;font-weight:700;max-width:90vw;text-align:center';
+  el.className='d-toast d-fl warn';
+  el.innerHTML=ico('save','20');
   const txt=document.createElement('div');
+  txt.className='grow';
   txt.textContent='Conviene exportar una copia de seguridad. Última: '+(last?new Date(last).toLocaleDateString('es-ES'):'nunca');
   const row=document.createElement('div');
-  row.style.cssText='display:flex;gap:8px;justify-content:center;margin-top:8px';
-  const mk=(t,fn)=>{const b=document.createElement('button');b.textContent=t;b.className='bkp-btn';b.style.cssText='background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer';b.onclick=fn;return b;};
-  row.appendChild(mk('Hacer copia',()=>{el.remove();exportData();}));
-  row.appendChild(mk('Más tarde',()=>el.remove()));
+  row.className='acts';
+  const mk=(t,fn,c)=>{const b=document.createElement('button');b.textContent=t;b.className='bkp-btn '+c;b.onclick=fn;return b;};
+  row.appendChild(mk('Hacer copia',()=>{el.remove();exportData();},'btn-pri'));
+  row.appendChild(mk('Más tarde',()=>el.remove(),'btn-sec'));
   el.appendChild(txt);el.appendChild(row);
   document.body.appendChild(el);
   _syncBottomBars();
@@ -12530,8 +12559,9 @@ function _saveQuote(){
   _quoteEditId=q.id;
   // Toast de confirmación
   const toast=document.createElement('div');
-  toast.textContent=existing?'Presupuesto actualizado':'Presupuesto guardado ('+q.num+')';
-  toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#10B981;color:#fff;padding:12px 20px;border-radius:10px;z-index:9999;font-size:13px;font-weight:700;max-width:90vw;text-align:center';
+  toast.className='d-toast d-fl ok';
+  toast.innerHTML=ico('check-circle','20');
+  const _tx=document.createElement('span');_tx.className='grow';_tx.textContent=existing?'Presupuesto actualizado':'Presupuesto guardado ('+q.num+')';toast.appendChild(_tx);
   document.body.appendChild(toast);setTimeout(()=>toast.remove(),3000);
   showQuoteDetail(document.getElementById('PC'));
   }catch(err){alert('Error al guardar presupuesto:\n'+err.message);console.error(err);}
