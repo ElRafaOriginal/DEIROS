@@ -1098,6 +1098,135 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .al-pr{display:grid;grid-template-columns:auto 1fr;gap:8px;margin-bottom:8px;}
 .al-pr .btn-sec{width:auto;}
 .al-pr input{min-width:0;}
+/* ══ PR E · Flota y ficha del coche: tarjetas con nombre 700 y balance en Doto (solo chip GESTIÓN), cabecera del coche con punto, pestañas en selector segmentado,
+   alquileres del mes en filas finas, Finanzas con KPI en líneas de 1 px, movimientos en filas y beneficio en Doto tras línea discontinua, Info como ficha técnica,
+   vencimientos con chip de estado, formularios de vehículo y de movimiento con los campos del sistema ══ */
+/* Lista de Flota: nombre 700; tarjeta neutra (punto del coche, rótulo del tipo, chip solo en gestión) con el balance en Doto */
+.fl-n{font-weight:700;letter-spacing:-.02em;}
+.fl-r{align-items:start;}
+.fl-r>.dh-dot{margin-top:7px;}
+.fl-r .vr-c{align-items:center;gap:8px;}
+.fl-r .vr-c .chip{flex:none;}
+.fl-cl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text2);}
+.fl-k .d-ct{margin-top:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-k .fl-p{margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-bal{margin-top:20px;}
+.fl-bal .d-n{margin-top:8px;}
+.fl-k .spec.vk-s{margin-top:18px;}
+.fl-k .vk-ln{margin-top:14px;}
+.fl-em{margin-top:8px;}
+.vg .spec>div.w2{padding-top:8px;}
+/* Cabecera del coche en una línea (nombre y matrícula ya en la barra): punto + tipo · modelo · año · chip GESTIÓN; pestañas = selector segmentado */
+.fl-hd{display:flex;align-items:center;gap:12px;min-height:32px;margin:0 0 14px;}
+.fl-hd .d-meta{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-hd .chip .ico,.fl-k .chip .ico{width:14px;height:14px;}
+.fl-tabs{margin-bottom:20px;}
+.fl-tabs button .ico{width:16px;height:16px;}
+.fl-back{margin-bottom:8px;}
+/* Calendario: estado manual como barra de 3 px al pie (azul mantenimiento, rojo bloqueado); hoy solo con borde de acento */
+.calcell.m::after,.calcell.b::after{content:'';position:absolute;left:4px;right:4px;bottom:4px;height:3px;border-radius:2px;background:var(--blue);}
+.calcell.b::after{background:var(--red);}
+.cal-card{margin:0 0 4px;}
+.cal-m b{font-size:20px;font-weight:700;letter-spacing:-.02em;}
+.fl-nr{width:100%;margin-bottom:12px;}
+.fl-lh{margin:32px 0 12px;}
+/* Alquileres del mes: filas finas con línea (cliente e importe · fechas y estado · teléfono y plataforma · Entregar/Devolver/Cobrar) */
+.fl-bl0{border-top:1px solid var(--border2);}
+.fl-bl0>.d-empty{margin-top:16px;}
+.fl-bk{padding:16px 0;border-bottom:1px solid var(--border2);cursor:pointer;}
+.fl-bh,.fl-bs{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;}
+.fl-bh .t{min-width:0;font-size:16px;font-weight:600;line-height:1.25;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-bh b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;}
+.fl-bs{margin-top:6px;}
+.fl-bs>span:first-child{min-width:0;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.fl-bs .chip{border-color:currentColor;}
+.fl-bs .chip .ico{width:13px;height:13px;}
+.fl-bm{margin-top:4px;font-family:var(--mono);font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-bk .ck-a{margin-top:12px;}
+.fl-bl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.fl-bk:active{opacity:.7;}
+/* Finanzas: 1 principal + 2 secundarios + texto; KPI con líneas de 1 px; aviso de cobro con borde de acento; comisión como ficha técnica */
+.fl-acts{margin-bottom:8px;}
+.fl-acts .btn-txt{justify-self:center;}
+.fl-kpi b{font-size:20px;}
+.fl-pd{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;}
+.fl-pd .d-meta{margin-top:6px;}
+.fl-pd>b{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--amber);white-space:nowrap;}
+.fl-cm .spec.fl-c3{margin-top:0;}
+.fl-c3 b{font-size:14px;}
+.fl-c3 b.ok{color:var(--green);}
+.fl-own{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:14px;border-top:1px dashed var(--border2);font-size:14px;color:var(--text2);}
+.fl-own b{font-family:var(--mono);font-size:17px;font-weight:500;white-space:nowrap;}
+.fl-mh{margin-top:var(--sp-sec);}
+.fl-ff{margin-bottom:10px;}
+.fl-fm{width:100%;margin-bottom:20px;}
+.fl-tot{margin-bottom:8px;}
+.fl-tot .d-n.neg{color:var(--red);}
+.fl-ie{margin-top:8px;}
+.fl-ie>div{padding:12px 0;}
+.fl-ie b{font-size:17px;}
+.fl-ie b.ok{color:var(--green);}.fl-ie b.err{color:var(--red);}
+.fl-ml{margin-top:8px;}
+.fl-mv{display:grid;grid-template-columns:auto minmax(0,1fr) auto 44px;align-items:center;gap:10px;min-height:var(--row-h);padding:8px 0;border-bottom:1px solid var(--border2);}
+.fl-mv>.dt{margin:0;}
+.fl-mv .t{min-width:0;display:grid;gap:3px;}
+.fl-mv .c{font-size:15px;font-weight:600;line-height:1.3;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-mv .c .ico{width:15px;height:15px;color:var(--text2);vertical-align:-2px;}
+.fl-mv .s{font-family:var(--mono);font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-mv>b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.fl-mv>b.ok{color:var(--green);}.fl-mv>b.err{color:var(--red);}
+/* Info: foto con borde fino, ficha técnica, vencimientos en filas con chip de estado y campo de fecha, propietario, comisión, historiales y documentos */
+.fl-ph{position:relative;margin-bottom:8px;border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;}
+.fl-ph img{display:block;width:100%;max-height:220px;object-fit:cover;}
+.fl-phx{all:unset;cursor:pointer;position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border:1px solid var(--border2);border-radius:var(--r-pill);background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));font-family:var(--font);font-size:13px;font-weight:600;color:var(--text);}
+.fl-pha{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;padding:18px;border:1px dashed var(--border2);border-radius:var(--r-card);background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);text-align:center;}
+.fl-pha>.ico{width:24px;height:24px;color:var(--text2);}
+.fl-pha small{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--text2);}
+#photoPreview{display:inline-flex;flex-direction:column;align-items:center;gap:6px;font-size:14px;color:var(--text2);}
+.fl-ih{margin-top:28px;align-items:center;}
+.fl-ed{width:auto;min-height:44px;padding:0 18px;}
+.fl-spec{margin-top:0;}
+.fl-spec .w2 b{white-space:normal;overflow-wrap:anywhere;}
+.fl-sec .al-h .q{font-size:var(--fs-min);}
+.fl-vls{border-top:1px solid var(--border2);}
+.fl-vr{display:grid;grid-template-columns:minmax(0,1fr) 168px;align-items:center;gap:12px;min-height:var(--row-h);padding:12px 0;border-bottom:1px solid var(--border);}
+.fl-vr .t{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.fl-vr .t .ico{color:var(--text2);}
+.fl-vr .s{margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--text2);overflow-wrap:anywhere;}
+.fl-vl{min-width:0;}
+.fl-vr>input{font-size:15px!important;padding:12px 10px;}
+.fl-mt{grid-template-columns:1fr;border-bottom:0;padding-bottom:4px;}
+.fl-m2{padding-bottom:4px;}
+.fl-m2 .d-f{margin-bottom:8px;}
+.fl-m2 input{height:52px;min-height:52px;font-size:15px!important;padding:0 12px;}
+.d-hint.fl-wa{color:var(--amber);}
+.fl-nt{margin:4px 0 0;}
+.fl-or{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);}
+.fl-or .t{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);overflow-wrap:anywhere;}
+.fl-or .s{margin-top:4px;font-family:var(--mono);font-size:12px;color:var(--text2);overflow-wrap:anywhere;}
+.fl-or .btn-sec{width:auto;padding:0 18px;}
+.fl-cp{flex-wrap:wrap;overflow:visible;margin-top:-4px;}
+.fl-cp button{min-height:40px;padding:0 14px;font-family:var(--mono);font-size:13px;font-weight:500;}
+.fl-bl2{color:var(--blue)!important;}
+.fl-hr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;min-height:56px;padding:10px 0;border-bottom:1px solid var(--border);}
+.fl-hr .t{min-width:0;font-size:15px;font-weight:600;line-height:1.3;color:var(--text);overflow-wrap:anywhere;}
+.fl-hr .t span{display:block;margin-top:3px;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--text2);}
+.fl-hr .t span.fl-nx{color:var(--blue);}
+.fl-hr>b{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text2);white-space:nowrap;}
+.fl-hr>b.err{color:var(--red);}
+.fl-mr{margin-top:14px;}
+.fl-dz{margin-top:32px;}
+/* Formularios de vehículo y movimiento: campos de 52 px, matrícula/bastidor/póliza en mono, propiedad segmentada y tipo de vehículo en rejilla de 4 */
+.fl-form input:not([type=checkbox]),.fl-form select{min-height:52px;}
+.fl-form .m{font-family:var(--mono);letter-spacing:.04em;}
+.fl-seg{margin-bottom:0;}
+.fl-seg button .ico,.fl-et button .ico{width:18px;height:18px;}
+.fl-vt{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.fl-vt button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:60px;padding:6px 2px;border:1px solid var(--border2);border-radius:16px;text-align:center;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--text2);transition:background-color .3s,color .3s,border-color .3s;}
+.fl-vt button .ico{width:20px;height:20px;}
+.fl-vt button[aria-pressed=true]{background:var(--amber);border-color:var(--amber);color:var(--on-amber);}
+.fl-vt button:active,.fl-pha:active,.fl-phx:active{transform:scale(.97);}
+.fl-et{margin-bottom:20px;}
 </style>
 </head>
 <body>
