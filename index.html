@@ -649,6 +649,74 @@ select option{background:var(--bg);}
 .ag-leg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
 .ag-leg span{display:inline-flex;align-items:center;gap:8px;}
 .ag-leg .ag-c{width:18px;height:8px;cursor:default;}
+/* ══ Alquileres: fichas neutras (punto del coche, matrícula e importe en mono, trayecto con línea discontinua) ══ */
+.rk-sh{margin-top:32px;}
+.anim>.rk-sh:first-child{margin-top:4px;}
+.rk-e{padding:32px 20px;margin-bottom:4px;}
+.rk{padding:18px 20px;margin-bottom:12px;transition:transform .3s var(--ease),border-color .3s;}
+.rk:active{transform:scale(.98);}
+.rk-h{display:flex;align-items:center;gap:8px;min-width:0;}
+.rk-n{font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.rk-p{font-family:var(--mono);font-size:12px;color:var(--text2);white-space:nowrap;}
+.rk-a{margin-left:auto;padding-left:8px;font-family:var(--mono);font-size:17px;font-weight:500;color:var(--text);white-space:nowrap;}
+.rk-c{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;}
+.rk-cl{min-width:0;font-size:14px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rk .chip{flex-shrink:0;text-transform:uppercase;letter-spacing:.04em;}
+.rk-t{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:13px;color:var(--text);white-space:nowrap;}
+.rk-t i{flex:1;min-width:12px;border-top:1px dashed var(--border2);}
+.rk-d{color:var(--text2);font-size:12px;}
+.rk-f{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;min-height:22px;font-family:var(--mono);font-size:12px;color:var(--text2);}
+/* Ficha del alquiler (hoja): bloques con borde y líneas finas, sin rellenos de color */
+.bk-card{border:1px solid var(--border2);border-radius:var(--r-card);padding:18px;margin-bottom:16px;}
+.bk-tr{display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:12px;margin-bottom:16px;}
+.bk-tr .r{text-align:right;}
+.bk-hm{font-family:var(--mono);font-size:28px;font-weight:500;line-height:1.1;color:var(--text);margin-top:6px;}
+.bk-d{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:4px;}
+.bk-ln{align-self:center;border-top:1px dashed var(--border2);margin-top:18px;}
+.bk-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border);}
+.bk-dur{font-family:var(--mono);font-size:12px;color:var(--text2);}
+.bk-tot{margin-left:auto;text-align:right;}
+.bk-tot b{display:block;font-family:var(--mono);font-size:22px;font-weight:500;color:var(--text);}
+.bk-tot span{display:block;font-family:var(--mono);font-size:10px;color:var(--text2);margin-top:2px;}
+.bk-km{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text2);}
+.bk-km .q{font-size:11px;}
+.bk-km b{font-size:13px;font-weight:500;color:var(--text);}
+.bk-cli{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--text2);}
+.bk-note{margin-top:8px;font-size:13px;color:var(--text2);}
+.bk-fh{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0 8px;margin-bottom:4px;}
+.bk-fh .q{white-space:nowrap;}
+.bk-v{margin-left:auto;font-family:var(--mono);font-size:16px;font-weight:500;color:var(--text);white-space:nowrap;}
+.bk-sync{cursor:pointer;color:var(--text2);line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;}
+.bk-li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);}
+.bk-li b{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text);}
+.bk-fz{border-top:1px solid var(--border);margin-bottom:12px;}
+.bk-q{display:block;margin:12px 0 4px;font-size:11px;}
+.bk-qh{display:block;margin-bottom:12px;}
+.bk-res{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border2);}
+.bk-res b{font-family:var(--mono);font-size:18px;font-weight:500;}
+.bk-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.bk-fzr{display:flex;flex-wrap:wrap;gap:6px;}
+.bk-fzr .btn-dang{flex:1 1 auto;}
+.bk-sm{font-size:11px;color:var(--text2);}
+.bk-tb{border-top:1px solid var(--border2);}
+.bk-tr2{display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--border);}
+.bk-tr2.c2{grid-template-columns:1fr 1fr;}
+.bk-tr2>div{min-width:0;padding:12px 0;}
+.bk-tr2.c2>div:first-child{padding-right:12px;border-right:1px solid var(--border);}
+.bk-tr2.c2>div+div{padding-left:12px;}
+.bk-tr2 .q{display:block;font-size:10px;letter-spacing:.06em;}
+.bk-vv{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:6px;font-family:var(--mono);font-size:11px;}
+.bk-vv b{font-size:14px;font-weight:500;color:var(--text);}
+.bk-cn{padding:10px 0 0;font-size:12px;color:var(--amber);}
+.bk-cn.n{color:var(--text2);}
+.bk-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.btn-sec.on-green{background:transparent;color:var(--green);border-color:var(--ok-b);}
+/* Asistentes (nuevo alquiler, contrato, presupuesto): pasos unidos por línea discontinua, número en mono */
+.wiz-stp:not(:last-child)::after{top:14px;height:0;background:none;border-top:1px dashed var(--border2);}
+.wiz-stp.done::after{background:none;border-top-color:var(--amber);}
+.wiz-dot{width:28px;height:28px;border:1px solid var(--border2);font-family:var(--mono);font-size:12px;font-weight:500;}
+.wiz-lbl{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-top:8px;}
+.wiz-stp.active .wiz-lbl{color:var(--amber);}
 </style>
 </head>
 <body>
@@ -6539,7 +6607,7 @@ function showBooking(k,_overrideId){
   if(!b)return;
   const p=PLATS[b.platform];const dur=daysBetween(b.startDate,b.endDate);
   openSheet(`<div class="stitle">Detalle del alquiler</div>
-    ${b.cancelled?`<div style="background:#EF444415;border:1.5px solid #EF444440;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
+    ${b.cancelled?`<div style="background:var(--err-s);border:1px solid var(--err-b);border-radius:var(--r-in);padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
       <span style="font-size:20px;line-height:1;margin-top:1px">${ico('ban')}</span>
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:14px;color:var(--red);letter-spacing:.5px;margin-bottom:3px">ALQUILER CANCELADO</div>
@@ -6554,14 +6622,15 @@ function showBooking(k,_overrideId){
       <button class="btn-dang" onclick="restoreBooking('${escJs(b.id)}')" style="width:auto;flex-shrink:0;white-space:nowrap">${ico('undo')} Restablecer</button>
     </div>`:''}
     <div class="bk-sec">${ico('clipboard')} INFORMACIÓN</div>
-    <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.startTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.startDate))}</div></div>
-        <div><div class="lbl">FIN</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.endTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.endDate))}</div></div>
+    <div class="bk-card">
+      <div class="bk-tr">
+        <div><div class="lbl">INICIO</div><div class="bk-hm">${esc(b.startTime)}</div><div class="bk-d">${esc(fmtDMY(b.startDate))}</div></div>
+        <i class="bk-ln" aria-hidden="true"></i>
+        <div class="r"><div class="lbl">FIN</div><div class="bk-hm">${esc(b.endTime)}</div><div class="bk-d">${esc(fmtDMY(b.endDate))}</div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span class="pb ${p?.cls||''}">${p?.icon||''} ${esc(p?.label||b.platform)}</span>
-        <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">${dur} día${dur!==1?'s':''}</span>
+      <div class="bk-row">
+        <span class="chip chip-gray">${esc(p?.label||b.platform)}</span>
+        <span class="bk-dur">${dur} día${dur!==1?'s':''}</span>
         ${(()=>{
           const _fi=b.finance||[];
           const _ext=_fi.filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
@@ -6572,57 +6641,57 @@ function showBooking(k,_overrideId){
           const _hasExtras=_ext>0||_extrasArr>0;
           if(_inc>0||_exp>0||_hasExtras){
             const _extShow=_ext>0?_ext:_extrasArr;
-            return '<div style="margin-left:auto;text-align:right">'
-              +'<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green)">'+fmtF(_realTotal)+'</div>'
-              +'<div style="font-size:10px;color:var(--text3);margin-top:2px">base '+fmtF(b.amount)+(_hasExtras?' + extras '+fmtF(_extShow):'')
+            return '<div class="bk-tot">'
+              +'<b>'+fmtF(_realTotal)+'</b>'
+              +'<span>base '+fmtF(b.amount)+(_hasExtras?' + extras '+fmtF(_extShow):'')
               +(_inc>0?' + ingresos '+fmtF(_inc):'')
-              +(_exp>0?' − gastos '+fmtF(_exp):'')+'</div>'
+              +(_exp>0?' − gastos '+fmtF(_exp):'')+'</span>'
               +'</div>';
           }
-          return '<span style="margin-left:auto;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">'+fmtF(_realTotal)+'</span>';
+          return '<div class="bk-tot"><b>'+fmtF(_realTotal)+'</b></div>';
         })()}
       </div>
-      ${(b.kmStart||b.kmEnd)?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">
-        <span style="font-size:11px;color:var(--text3)">${ico('odometer')} Kilómetros</span>
-        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'} → ${b.kmEnd?esc(Number(b.kmEnd).toLocaleString('es-ES')+' km'):'—'}</span>
-        ${(b.kmStart&&b.kmEnd)?`<span style="font-family:var(--mono);font-size:11px;color:var(--text3)">(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
+      ${(b.kmStart||b.kmEnd)?`<div class="bk-km">
+        <span class="q">Kilómetros</span>
+        <b>${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'} → ${b.kmEnd?esc(Number(b.kmEnd).toLocaleString('es-ES')+' km'):'—'}</b>
+        ${(b.kmStart&&b.kmEnd)?`<span>(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
       </div>`:''}
-      ${b.clientName?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">${ico('user')} ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
-      ${b.notes?`<div style="margin-top:6px;font-size:13px;color:var(--text2)">${ico('quote')} ${esc(b.notes)}</div>`:''}
+      ${b.clientName?`<div class="bk-cli"><div>${ico('user')} ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
+      ${b.notes?`<div class="bk-note">${ico('quote')} ${esc(b.notes)}</div>`:''}
     </div>
     <div class="bk-sec">${ico('coins')} INGRESOS, COBROS Y FIANZA</div>
     ${(()=>{
       const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
       const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
       const fmt2=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
-      let h='<div style="margin-top:12px;background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
-        +('<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3)">'+ico('briefcase')+' INGRESOS Y GASTOS</div>')
-        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" style="cursor:pointer;font-size:14px;color:var(--text3);line-height:1">'+ico('repeat')+'</span></div>')
+      let h='<div class="bk-card">';
+      h+='<div class="bk-fh">'
+        +('<div style="display:flex;align-items:center;gap:8px"><div class="q">Ingresos y gastos</div>')
+        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" class="bk-sync">'+ico('repeat')+'</span></div>')
         +(()=>{
-          return '<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+fmt2(_bookingClientTotal(b))+' total</div>';
+          return '<div class="bk-v">'+fmt2(_bookingClientTotal(b))+' total</div>';
         })()
         +'</div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:6px 8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">'
-        +'<span>Base alquiler</span><span style="font-family:var(--mono);font-weight:700;color:var(--text2)">+'+fmt2(b.amount)+'</span>'
+        +'<div class="bk-li">'
+        +'<span>Base alquiler</span><b>+'+fmt2(b.amount)+'</b>'
         +'</div>'
         +(()=>{
           const _autoExtraSum=(b.finance||[]).filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
           const _extrasArrSum=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
           const _extTotal=_autoExtraSum>0?_autoExtraSum:_extrasArrSum;
-          return _extTotal>0?'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:4px 8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">'
-          +'<span>Extras contrato</span><span style="font-family:var(--mono);font-weight:700;color:var(--amber)">+'+fmt2(_extTotal)+'</span></div>':'';
+          return _extTotal>0?'<div class="bk-li">'
+          +'<span>Extras contrato</span><b>+'+fmt2(_extTotal)+'</b></div>':'';
         })()
-      if(fI.length){h+='<div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px">INGRESOS ADICIONALES</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
-      if(fE.length){h+='<div style="font-size:10px;font-weight:700;color:var(--red);margin:6px 0 4px">GASTOS</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
-      h+='<div style="border-top:2px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">'
-        +'<span style="font-size:11px;font-weight:700;color:var(--text3)">RESULTADO DEL ALQUILER</span>'
+      if(fI.length){h+='<div class="q ok bk-q">Ingresos adicionales</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
+      if(fE.length){h+='<div class="q err bk-q">Gastos</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
+      h+='<div class="bk-res">'
+        +'<span class="q">Resultado del alquiler</span>'
         +(()=>{
           const _t=_bookingRealTotal(b);
-          return '<span style="font-family:var(--mono);font-size:18px;font-weight:800;color:'+(_t>=0?'var(--green)':'var(--red)')+'">'+fmt2(_t)+'</span>';
+          return '<b style="color:'+(_t>=0?'var(--text)':'var(--red)')+'">'+fmt2(_t)+'</b>';
         })()
         +'</div>';
-      h+='<div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">';
+      h+='<div class="g8 bk-2">';
       h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
       h+='<button class="_bfbtn btn-dang" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
       h+='</div></div>';return h;
@@ -6636,38 +6705,38 @@ function showBooking(k,_overrideId){
       const _pend=Math.max(0,_totTotal-_abono);
       const _hasFianza=_fianza>0;
       const _hasAbono=_abono>0||_hasFianza||_cobSinImp;
-      return `<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">${ico('card')} COBROS Y FIANZA</div>
-        ${_hasFianza?`<div style="display:flex;justify-content:space-between;align-items:center;background:#3B82F610;border:1px solid #3B82F630;border-radius:8px;padding:8px 12px;margin-bottom:8px">
-          <span style="font-size:12px;color:var(--blue);font-weight:700">${ico('lock')} Fianza reembolsable</span>
-          <span style="font-family:var(--mono);font-size:14px;font-weight:800;color:var(--blue)">${fmtF(_fianza)}</span>
+      return `<div class="bk-card">
+        <div class="q bk-qh">Cobros y fianza</div>
+        ${_hasFianza?`<div class="bk-li bk-fz">
+          <span>${ico('lock')} Fianza reembolsable</span>
+          <b>${fmtF(_fianza)}</b>
         </div>
         ${(()=>{
           const _st=_fianzaStatus(b);
           const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
-          const _C={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:(_uiLight()?'#9A3412':'#F97316')}[_st];
-          const _is='background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;min-width:0';
+          const _C={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-amber'}[_st];
+          const _is='min-width:0';
           const _id=escJs(b.id);
           return `<div style="margin-bottom:10px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <span style="font-size:11px;font-weight:700;color:${_C};border:1px solid ${_C};border-radius:99px;padding:2px 10px">${_L}</span>
-              ${_st==='retained'||_st==='partial'?`<span style="font-size:11px;color:var(--text3)">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
+              <span class="chip ${_C}">${_L}</span>
+              ${_st==='retained'||_st==='partial'?`<span class="bk-sm">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
             </div>
             <div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
               ${_st!=='returned'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','returned')">${ico('check-circle')} Marcar devuelta</button>`:''}
               ${_st!=='retained'?`<button class="tap44 btn-dang" onclick="retainFianzaFull('${_id}')">${ico('ban')} Retener toda</button>`:''}
               ${_st!=='pending'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','pending')">${ico('undo')} Volver a pendiente</button>`:''}
             </div>
-            <div class="g8" style="display:flex;gap:6px">
-              <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:90px;font-family:var(--mono)"/>
-              <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1"/>
+            <div class="g8 bk-fzr">
+              <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:112px;font-family:var(--mono)"/>
+              <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1 1 120px"/>
               <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')" style="width:auto;white-space:nowrap">Retener parte</button>
             </div>
           </div>`;
         })()}`:''}
         <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
-          <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
-          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="color:var(--on-amber);white-space:nowrap;width:auto">Guardar</button>
+          <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;font-family:var(--mono)"/>
+          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="white-space:nowrap;width:auto">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -6679,50 +6748,50 @@ function showBooking(k,_overrideId){
           if(_alqPend>0&&_fiaPend>0)_concepto='alquiler y fianza';
           else if(_alqPend>0)_concepto='alquiler';
           else if(_fiaPend>0)_concepto='fianza';
-          return `<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden">
-            <div style="display:grid;grid-template-columns:${_hasFianza?'1fr 1fr':'1fr'};border-bottom:1px solid var(--border)">
-              <div style="padding:8px 10px;${_hasFianza?'border-right:1px solid var(--border)':''}">
-                <div style="font-size:7px;color:var(--text3);font-weight:700;margin-bottom:2px">ALQUILER</div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline">
-                  <span style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--text)">${fmtF(_totAlq)}</span>
-                  <span style="font-size:9px;font-weight:700;color:${_alqPend===0?'var(--green)':'var(--amber)'}">
+          return `<div class="bk-tb">
+            <div class="bk-tr2${_hasFianza?' c2':''}">
+              <div>
+                <div class="q">Alquiler</div>
+                <div class="bk-vv">
+                  <b>${fmtF(_totAlq)}</b>
+                  <span style="color:${_alqPend===0?'var(--green)':'var(--amber)'}">
                     ${_cobSinImp?'sin importe':_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}
                   </span>
                 </div>
               </div>
-              ${_hasFianza?`<div style="padding:8px 10px">
-                <div style="font-size:7px;color:var(--blue);font-weight:700;margin-bottom:2px">FIANZA</div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline">
-                  <span style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--blue)">${fmtF(_fianza)}</span>
-                  <span style="font-size:9px;font-weight:700;color:${_fiaPend===0?'var(--green)':'var(--amber)'}">
+              ${_hasFianza?`<div>
+                <div class="q">Fianza</div>
+                <div class="bk-vv">
+                  <b>${fmtF(_fianza)}</b>
+                  <span style="color:${_fiaPend===0?'var(--green)':'var(--amber)'}">
                     ${_cobSinImp?'sin importe':_fiaPend===0?(ico('check')+' cubierta'):'falta '+fmtF(_fiaPend)}
                   </span>
                 </div>
               </div>`:''}
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:${_pend>0&&!_cobSinImp?'1px solid var(--border)':'none'}">
-              <div style="padding:8px 10px;border-right:1px solid var(--border)">
-                <div style="font-size:7px;color:var(--text3);font-weight:700;margin-bottom:2px">RECIBIDO</div>
-                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</div>
+            <div class="bk-tr2 c2">
+              <div>
+                <div class="q">Recibido</div>
+                <div class="bk-vv"><b style="color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</b></div>
               </div>
-              <div style="padding:8px 10px">
-                <div style="font-size:7px;color:${_cobSinImp?'var(--text3)':_pend>0?'var(--amber)':'var(--green)'};font-weight:700;margin-bottom:2px">PENDIENTE</div>
-                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:${_cobSinImp?'var(--text3)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</div>
+              <div>
+                <div class="q">Pendiente</div>
+                <div class="bk-vv"><b style="color:${_cobSinImp?'var(--text2)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</b></div>
               </div>
             </div>
-            ${_pend>0&&_concepto&&!_cobSinImp?`<div style="padding:5px 10px;background:var(--acc-s);font-size:10px;color:var(--amber)">En concepto de: <strong>${_concepto}</strong></div>`:''}
-            ${_cobSinImp?`<div style="padding:5px 10px;font-size:10px;color:var(--text3)">Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</div>`:''}
+            ${_pend>0&&_concepto&&!_cobSinImp?`<div class="bk-cn">En concepto de: <strong>${_concepto}</strong></div>`:''}
+            ${_cobSinImp?`<div class="bk-cn n">Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</div>`:''}
           </div>`;
         })()}`:''}
       </div>`;
     })()}
     <div class="bk-sec">${ico('bolt')} ACCIONES</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <div class="bk-acts">
       <button class="btn-pri" onclick="editBooking('${escJs(b.id)}')">${ico('edit')} Editar</button>
-      <button class="btn-pri" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
-      <button class="btn-pri" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>
-      <button class="btn-pri" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>
-      ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-pri" onclick="generateExtensionPDF('${escJs(b.id)}')" style="grid-column:1/-1">${ico('clipboard')} Anexo de ampliación</button>`:''}
+      <button class="btn-sec" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
+      <button class="btn-sec" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>
+      <button class="btn-sec" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>
+      ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec" onclick="generateExtensionPDF('${escJs(b.id)}')" style="grid-column:1/-1">${ico('clipboard')} Anexo de ampliación</button>`:''}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
       <button class="btn-sec${b.delivered?' on-green':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
@@ -9621,7 +9690,7 @@ function renderRentals(el){
   const upcoming=all.filter(b=>b.startDate>hoy&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
-  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip plat-${esc(b.platform)}">${esc(p.label)}</span>`:'';};
+  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-gray">${esc(p.label)}</span>`:'';};
 
   const statusChip=b=>{
     const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
@@ -9629,71 +9698,50 @@ function renderRentals(el){
     if(dEnd<=2)return `<span class="chip chip-amber">Termina en ${dEnd}d</span>`;
     return `<span class="chip chip-green">${ico('check')} En curso · ${dEnd}d</span>`;
   };
+  const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
+  const _n2=n=>String(n).padStart(2,'0');
 
+  // Ficha neutra: punto del color del coche, nombre, matrícula en mono, importe; cliente y estado; trayecto de fechas con línea discontinua
   const bookingCard=(b,isActive)=>{
     const v=b._v;
     const dur=daysBetween(b.startDate,b.endDate);
     const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);
-    return `<div class="rcard" onclick="openV('${escJs(v.id)}')">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
-            <span style="font-weight:800;font-size:14px">${esc(v.name)}</span>
-            <span style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}</span>
-            ${platBadge(b)}
-          </div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600">${esc(b.clientName||'Sin cliente')}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))} · ${dur}d</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:var(--mono);font-size:17px;font-weight:800;color:var(--green)">${fmtF(b.amount||0)}</div>
-          <div style="margin-top:5px">${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
-        </div>
-      </div>
-      ${b.startTime||b.endTime?`<div style="font-size:11px;color:var(--text3)">${ico('clock')} ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}</div>`:''}
+    return `<div class="rcard rk" onclick="openV('${escJs(v.id)}')">
+      <div class="rk-h">${_dot(v)}<span class="rk-n">${esc(v.name)}</span><span class="rk-p">${esc(v.plate)}</span><b class="rk-a">${fmtF(b.amount||0)}</b></div>
+      <div class="rk-c"><span class="rk-cl">${esc(b.clientName||'Sin cliente')}</span>${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
+      <div class="rk-t"><span>${esc(fmtDMY(b.startDate))}</span><i aria-hidden="true"></i><span>${esc(fmtDMY(b.endDate))}</span><span class="rk-d">${dur}d</span></div>
+      <div class="rk-f"><span>${b.startTime||b.endTime?`${ico('clock')} ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}`:''}</span>${platBadge(b)}</div>
     </div>`;
   };
 
   let h=`<div class="anim">`;
 
   // ── En curso
-  h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--green)">${ico('key')} EN CURSO (${active.length})</div>
-  </div>`;
+  h+=`<div class="dh-sh rk-sh"><h2>En curso</h2><span class="q ok">${_n2(active.length)}</span></div>`;
   if(active.length){
     h+=active.map(b=>bookingCard(b,true)).join('');
   } else {
-    h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px">
-      <div style="font-size:28px;margin-bottom:6px">${ico('sun')}</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text2)">Ningún vehículo en alquiler ahora</div>
-    </div>`;
+    h+=`<div class="empty rk-e"><div class="ei">${ico('sun')}</div><div class="et">Ningún vehículo en alquiler ahora</div></div>`;
   }
 
   // ── Próximos (30 días)
-  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--amber);margin:16px 0 10px">${ico('calendar')} PRÓXIMOS 30 DÍAS (${upcoming.length})</div>`;
+  h+=`<div class="dh-sh rk-sh"><h2>Próximos 30 días</h2><span class="q">${_n2(upcoming.length)}</span></div>`;
   if(upcoming.length){
     h+=upcoming.map(b=>bookingCard(b,false)).join('');
   } else {
-    h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px">
-      <div style="font-size:28px;margin-bottom:6px">${ico('clipboard')}</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text2)">Sin alquileres próximos</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:4px">Pulsa + para generar un contrato</div>
-    </div>`;
+    h+=`<div class="empty rk-e"><div class="ei">${ico('clipboard')}</div><div class="et">Sin alquileres próximos</div><div class="es">Pulsa + para generar un contrato</div></div>`;
   }
 
-  // ── Recientes
+  // ── Recientes: lista técnica
   if(recent.length){
-    h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text3);margin:16px 0 10px">${ico('clock')} RECIENTES</div>`;
-    h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px">`;
-    recent.forEach((b,i)=>{
+    h+=`<div class="dh-sh rk-sh"><h2>Recientes</h2><span class="q">${_n2(recent.length)}</span></div>`;
+    h+=`<div class="dh-list">`;
+    recent.forEach(b=>{
       const v=b._v;const dur=daysBetween(b.startDate,b.endDate);
-      h+=`<div onclick="openV('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<recent.length-1?'1px solid var(--border)':'none'};transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <div style="width:4px;height:30px;border-radius:2px;background:${safeColor(v.color)};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)} <span style="font-weight:500;color:var(--text3)">· ${esc(b.clientName||'—')}</span></div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(fmtDMY(b.endDate))} · ${dur}d</div>
-        </div>
-        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text2);flex-shrink:0">${fmtF(b.amount||0)}</div>
+      h+=`<div class="dh-row" onclick="openV('${escJs(v.id)}')">
+        ${_dot(v)}
+        <div style="min-width:0"><div class="t ell">${esc(v.name)} <span class="mono2">· ${esc(b.clientName||'—')}</span></div><div class="s">${esc(fmtDMY(b.endDate))} · ${dur}d</div></div>
+        <div class="r"><b>${fmtF(b.amount||0)}</b></div>
       </div>`;
     });
     h+=`</div>`;
