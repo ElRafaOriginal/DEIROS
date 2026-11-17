@@ -6930,96 +6930,50 @@ function showBooking(k,_overrideId){
          ||(v.bookings||[]).find(b=>k>=b.startDate&&k<=b.endDate);
   if(!b)return;
   const p=PLATS[b.platform];const dur=daysBetween(b.startDate,b.endDate);
-  openSheet(`<div class="stitle">Detalle del alquiler</div>
-    ${b.cancelled?`<div style="background:var(--err-s);border:1px solid var(--err-b);border-radius:var(--r-in);padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
-      <span style="font-size:20px;line-height:1;margin-top:1px">${ico('ban')}</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:14px;color:var(--red);letter-spacing:.5px;margin-bottom:3px">ALQUILER CANCELADO</div>
-        <div style="font-size:11px;color:var(--text3)">
-          ${b.cancellation?.by==='client'?'Cancelado por el <strong style="color:var(--text2)">cliente</strong>':'Cancelado por <strong style="color:var(--text2)">DEIROS</strong>'}
-          ${b.cancellation?.date?' · '+esc(fmtDMY(safeDate(b.cancellation.date))):''}
-        </div>
-        ${(b.cancellation?.penalty>0)?`<div style="margin-top:5px;font-size:12px;font-weight:700;color:${b.cancellation.by==='client'?'var(--green)':'var(--amber)'}">
-          Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}
-        </div>`:''}
-      </div>
-      <button class="btn-dang" onclick="restoreBooking('${escJs(b.id)}')" style="width:auto;flex-shrink:0;white-space:nowrap">${ico('undo')} Restablecer</button>
+  // Estado → chip y UN botón principal (D5). Solo presentación: los onclick son los mismos de los botones de siempre
+  const _id=escJs(b.id),_hoy=todayStr();
+  const _st=b.cancelled?'can':b.returned?((b.paid||b.cobrado)?'fin':'cob'):(b.startDate>_hoy?'pro':(!b.delivered&&b.startDate===_hoy)?'ent':'cur');
+  const _stChip={pro:'<span class="chip chip-blue">Próximo</span>',ent:'<span class="chip chip-amber">Entrega hoy</span>',cur:'<span class="chip chip-green">En curso</span>',cob:'<span class="chip chip-amber">Por cobrar</span>',fin:'<span class="chip chip-gray">Terminado</span>',can:'<span class="chip chip-red">Cancelado</span>'}[_st];
+  const _pri={pro:[`closeSheet();openContractForm('${escJs(v.id)}','${_id}')`,'doc','Contrato'],
+    ent:[`toggleDelivery('${_id}');closeSheet();renderDetail(document.getElementById('PC'))`,'car','Marcar entregado'],
+    cur:[`toggleReturn('${_id}')`,'key','Registrar devolución'],
+    cob:[`togglePayStatus('${_id}');closeSheet();renderDetail(document.getElementById('PC'))`,'coins','Marcar cobrado'],
+    fin:[`generateReceiptPDF('${_id}')`,'receipt','Recibo']}[_st];
+  // Total (Doto): el mismo _bookingClientTotal que antes se mostraba como «total» en Ingresos y gastos; céntimos en mono
+  const _tV=_bookingClientTotal(b),_tS=fmtF(_tV).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
+  const _PL='<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>';
+  const _hasKm=!!(b.kmStart||b.kmEnd);
+  openSheet(`<div class="d-ch al-ch"><span class="q ac">Detalle del alquiler</span>${_stChip}</div>
+    <div class="d-ct al-ct">${esc(b.clientName||'Sin cliente')}</div>
+    <div class="d-meta al-mt6">${esc(v.name)} · ${esc(v.plate)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div>
+    ${b.cancelled?`<div class="al-cx">
+      <div>${b.cancellation?.by==='client'?'Cancelado por el <strong>cliente</strong>':'Cancelado por <strong>DEIROS</strong>'}${b.cancellation?.date?' · '+esc(fmtDMY(safeDate(b.cancellation.date))):''}</div>
+      ${(b.cancellation?.penalty>0)?`<div class="al-cxp" style="color:${b.cancellation.by==='client'?'var(--green)':'var(--amber)'}">Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}</div>`:''}
+      <button class="btn-sec" onclick="restoreBooking('${escJs(b.id)}')">${ico('undo')} Restablecer</button>
     </div>`:''}
-    <div class="bk-sec">${ico('clipboard')} INFORMACIÓN</div>
-    <div class="bk-card">
-      <div class="bk-tr">
-        <div><div class="lbl">INICIO</div><div class="bk-hm">${esc(b.startTime)}</div><div class="bk-d">${esc(fmtDMY(b.startDate))}</div></div>
-        <i class="bk-ln" aria-hidden="true"></i>
-        <div class="r"><div class="lbl">FIN</div><div class="bk-hm">${esc(b.endTime)}</div><div class="bk-d">${esc(fmtDMY(b.endDate))}</div></div>
-      </div>
-      <div class="bk-row">
-        <span class="chip chip-gray">${esc(p?.label||b.platform)}</span>
-        <span class="bk-dur">${dur} día${dur!==1?'s':''}</span>
-        ${(()=>{
-          const _fi=b.finance||[];
-          const _ext=_fi.filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
-          const _inc=_fi.filter(f=>f.type==='income'&&!f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
-          const _exp=_fi.filter(f=>f.type==='expense').reduce((s,f)=>s+Number(f.amount),0);
-          const _extrasArr=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
-          const _realTotal=_bookingRealTotal(b);
-          const _hasExtras=_ext>0||_extrasArr>0;
-          if(_inc>0||_exp>0||_hasExtras){
-            const _extShow=_ext>0?_ext:_extrasArr;
-            return '<div class="bk-tot">'
-              +'<b>'+fmtF(_realTotal)+'</b>'
-              +'<span>base '+fmtF(b.amount)+(_hasExtras?' + extras '+fmtF(_extShow):'')
-              +(_inc>0?' + ingresos '+fmtF(_inc):'')
-              +(_exp>0?' − gastos '+fmtF(_exp):'')+'</span>'
-              +'</div>';
-          }
-          return '<div class="bk-tot"><b>'+fmtF(_realTotal)+'</b></div>';
-        })()}
-      </div>
-      ${(b.kmStart||b.kmEnd)?`<div class="bk-km">
-        <span class="q">Kilómetros</span>
-        <b>${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'} → ${b.kmEnd?esc(Number(b.kmEnd).toLocaleString('es-ES')+' km'):'—'}</b>
-        ${(b.kmStart&&b.kmEnd)?`<span>(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
-      </div>`:''}
-      ${b.clientName?`<div class="bk-cli"><div>${ico('user')} ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
-      ${b.notes?`<div class="bk-note">${ico('quote')} ${esc(b.notes)}</div>`:''}
+    <div class="d-route al-rt">
+      <div class="e"><span class="q">Inicio</span><b>${esc(b.startTime||'—')}</b><small>${esc(fmtDMY(b.startDate))}</small></div>
+      <div class="l"><span class="chip no-dot">${dur} día${dur!==1?'s':''}</span></div>
+      <div class="e"><span class="q">Fin</span><b>${esc(b.endTime||'—')}</b><small>${esc(fmtDMY(b.endDate))}</small></div>
     </div>
-    <div class="bk-sec">${ico('coins')} INGRESOS, COBROS Y FIANZA</div>
-    ${(()=>{
-      const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
-      const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
-      const fmt2=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
-      let h='<div class="bk-card">';
-      h+='<div class="bk-fh">'
-        +('<div style="display:flex;align-items:center;gap:8px"><div class="q">Ingresos y gastos</div>')
-        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" class="bk-sync">'+ico('repeat')+'</span></div>')
-        +(()=>{
-          return '<div class="bk-v">'+fmt2(_bookingClientTotal(b))+' total</div>';
-        })()
-        +'</div>'
-        +'<div class="bk-li">'
-        +'<span>Base alquiler</span><b>+'+fmt2(b.amount)+'</b>'
-        +'</div>'
-        +(()=>{
-          const _autoExtraSum=(b.finance||[]).filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
-          const _extrasArrSum=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
-          const _extTotal=_autoExtraSum>0?_autoExtraSum:_extrasArrSum;
-          return _extTotal>0?'<div class="bk-li">'
-          +'<span>Extras contrato</span><b>+'+fmt2(_extTotal)+'</b></div>':'';
-        })()
-      if(fI.length){h+='<div class="q ok bk-q">Ingresos adicionales</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
-      if(fE.length){h+='<div class="q err bk-q">Gastos</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
-      h+='<div class="bk-res">'
-        +'<span class="q">Resultado del alquiler</span>'
-        +(()=>{
-          const _t=_bookingRealTotal(b);
-          return '<b style="color:'+(_t>=0?'var(--text)':'var(--red)')+'">'+fmt2(_t)+'</b>';
-        })()
-        +'</div>';
-      h+='<div class="g8 bk-2">';
-      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
-      h+='<button class="_bfbtn btn-dang" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
-      h+='</div></div>';return h;
-    })()}
+    <div class="spec al-sp">
+      <div${_hasKm?'':' class="w2"'}>Plataforma<b>${esc(p?.label||b.platform)}</b></div>
+      ${_hasKm?`<div>Km entrega<b>${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'}</b></div>
+      ${b.kmEnd?`<div>Km devolución<b>${esc(Number(b.kmEnd).toLocaleString('es-ES')+' km')}</b></div>`:''}
+      ${(b.kmStart&&b.kmEnd)?`<div>Recorridos<b>${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km</b></div>`:''}`:''}
+    </div>
+    ${b.notes?`<p class="d-note al-nt">${esc(b.notes)}</p>`:''}
+    <div class="d-tot al-tot">
+      <span class="q">Total</span>
+      <div class="d-n n2${_tV<0?' neg':''}">${esc(_tE)}<small>${esc(_tD)}</small></div>
+      <p>IVA incluido</p>
+    </div>
+    ${_pri?`<button class="btn-pri al-pri" onclick="${_pri[0]}">${ico(_pri[1])} ${_pri[2]}</button>`:''}
+    <div class="al-tg" role="group" aria-label="Estado">
+      <button class="${b.delivered?'on':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
+      <button class="${b.returned?'on':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?(ico('check-circle')+' Devuelto '+ico('check')):(ico('key')+' Marcar devuelto')}</button>
+      <button class="${b.paid?'on':''}" onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.paid?(ico('check-circle')+' Cobrado'):(ico('hourglass')+' Marcar cobrado')}</button>
+    </div>
     ${(()=>{
       const _abono=Number(b.abonoReserva||0);
       const _cobSinImp=!!(b.cobrado||b.paid)&&!_abono;
@@ -7029,38 +6983,11 @@ function showBooking(k,_overrideId){
       const _pend=Math.max(0,_totTotal-_abono);
       const _hasFianza=_fianza>0;
       const _hasAbono=_abono>0||_hasFianza||_cobSinImp;
-      return `<div class="bk-card">
-        <div class="q bk-qh">Cobros y fianza</div>
-        ${_hasFianza?`<div class="bk-li bk-fz">
-          <span>${ico('lock')} Fianza reembolsable</span>
-          <b>${fmtF(_fianza)}</b>
-        </div>
-        ${(()=>{
-          const _st=_fianzaStatus(b);
-          const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
-          const _C={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-amber'}[_st];
-          const _is='min-width:0';
-          const _id=escJs(b.id);
-          return `<div style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <span class="chip ${_C}">${_L}</span>
-              ${_st==='retained'||_st==='partial'?`<span class="bk-sm">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
-            </div>
-            <div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-              ${_st!=='returned'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','returned')">${ico('check-circle')} Marcar devuelta</button>`:''}
-              ${_st!=='retained'?`<button class="tap44 btn-dang" onclick="retainFianzaFull('${_id}')">${ico('ban')} Retener toda</button>`:''}
-              ${_st!=='pending'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','pending')">${ico('undo')} Volver a pendiente</button>`:''}
-            </div>
-            <div class="g8 bk-fzr">
-              <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:112px;font-family:var(--mono)"/>
-              <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1 1 120px"/>
-              <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')" style="width:auto;white-space:nowrap">Retener parte</button>
-            </div>
-          </div>`;
-        })()}`:''}
-        <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
-          <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;font-family:var(--mono)"/>
-          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="white-space:nowrap;width:auto">Guardar</button>
+      return `<section class="al-s">
+        <div class="al-h"><h3>Cobros y fianza</h3></div>
+        <div class="d-f"><label class="q" for="abonoInput_${esc(b.id)}">Cantidad recibida</label>
+          <div class="al-in"><div class="d-pre"><span>€</span><input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(_abono||'')}" placeholder="0,00"/></div>
+          <button class="tap44 btn-sec" onclick="setBookingAbono('${escJs(b.id)}')">Guardar</button></div>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -7072,61 +6999,82 @@ function showBooking(k,_overrideId){
           if(_alqPend>0&&_fiaPend>0)_concepto='alquiler y fianza';
           else if(_alqPend>0)_concepto='alquiler';
           else if(_fiaPend>0)_concepto='fianza';
-          return `<div class="bk-tb">
-            <div class="bk-tr2${_hasFianza?' c2':''}">
-              <div>
-                <div class="q">Alquiler</div>
-                <div class="bk-vv">
-                  <b>${fmtF(_totAlq)}</b>
-                  <span style="color:${_alqPend===0?'var(--green)':'var(--amber)'}">
-                    ${_cobSinImp?'sin importe':_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}
-                  </span>
-                </div>
-              </div>
-              ${_hasFianza?`<div>
-                <div class="q">Fianza</div>
-                <div class="bk-vv">
-                  <b>${fmtF(_fianza)}</b>
-                  <span style="color:${_fiaPend===0?'var(--green)':'var(--amber)'}">
-                    ${_cobSinImp?'sin importe':_fiaPend===0?(ico('check')+' cubierta'):'falta '+fmtF(_fiaPend)}
-                  </span>
-                </div>
-              </div>`:''}
+          return `<div class="spec al-sp">
+              <div>Alquiler<b>${fmtF(_totAlq)}</b><span class="dh-sub" style="color:${_alqPend===0?'var(--green)':'var(--amber)'}">${_cobSinImp?'sin importe':_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}</span></div>
+              ${_hasFianza?`<div>Fianza<b>${fmtF(_fianza)}</b><span class="dh-sub" style="color:${_fiaPend===0?'var(--green)':'var(--amber)'}">${_cobSinImp?'sin importe':_fiaPend===0?(ico('check')+' cubierta'):'falta '+fmtF(_fiaPend)}</span></div>`:''}
+              <div${_hasFianza?' class="w2"':''}>Recibido<b style="color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</b></div>
             </div>
-            <div class="bk-tr2 c2">
-              <div>
-                <div class="q">Recibido</div>
-                <div class="bk-vv"><b style="color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</b></div>
-              </div>
-              <div>
-                <div class="q">Pendiente</div>
-                <div class="bk-vv"><b style="color:${_cobSinImp?'var(--text2)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</b></div>
-              </div>
-            </div>
-            ${_pend>0&&_concepto&&!_cobSinImp?`<div class="bk-cn">En concepto de: <strong>${_concepto}</strong></div>`:''}
-            ${_cobSinImp?`<div class="bk-cn n">Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</div>`:''}
-          </div>`;
+            <div class="d-tot al-pd"><span class="q">Pendiente</span><b style="color:${_cobSinImp?'var(--text2)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</b>
+              ${_pend>0&&_concepto&&!_cobSinImp?`<p>En concepto de: <strong>${_concepto}</strong></p>`:''}
+              ${_cobSinImp?`<p>Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</p>`:''}
+            </div>`;
         })()}`:''}
-      </div>`;
+        ${_hasFianza?(()=>{
+          const _st=_fianzaStatus(b);
+          const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
+          const _C={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-amber'}[_st];
+          const _id=escJs(b.id);
+          return `<div class="al-fz">
+            <div class="al-fzs"><span class="q">Fianza reembolsable</span><span class="chip ${_C}">${_L}</span></div>
+            ${_st==='retained'||_st==='partial'?`<div class="al-sm">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</div>`:''}
+            <div class="d-seg al-seg" role="group" aria-label="Estado de la fianza">
+              <button type="button" aria-pressed="${_st==='pending'}"${_st!=='pending'?` onclick="setBookingFianzaStatus('${_id}','pending')"`:''}>Pendiente</button>
+              <button type="button" aria-pressed="${_st==='returned'}"${_st!=='returned'?` onclick="setBookingFianzaStatus('${_id}','returned')"`:''}>Devuelta</button>
+              <button type="button" aria-pressed="${_st==='retained'}"${_st!=='retained'?` onclick="retainFianzaFull('${_id}')"`:''}>Retenida</button>
+            </div>
+            <details class="d-acc al-acc"${_st==='partial'?' open':''}><summary><span class="t">Retener una parte</span>${_PL}</summary><div>
+              <div class="al-fzr">
+                <div class="d-pre"><span>€</span><input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" inputmode="decimal" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe"/></div>
+                <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo"/>
+              </div>
+              <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')">Retener parte</button>
+            </div></details>
+          </div>`;
+        })():''}
+      </section>`;
     })()}
-    <div class="bk-sec">${ico('bolt')} ACCIONES</div>
-    <div class="bk-acts">
-      <button class="btn-pri" onclick="editBooking('${escJs(b.id)}')">${ico('edit')} Editar</button>
-      <button class="btn-sec" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
-      <button class="btn-sec" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>
-      <button class="btn-sec" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>
-      ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec" onclick="generateExtensionPDF('${escJs(b.id)}')" style="grid-column:1/-1">${ico('clipboard')} Anexo de ampliación</button>`:''}
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
-      <button class="btn-sec${b.delivered?' on-green':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
-      <button class="btn-sec${b.returned?' on-green':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?(ico('check-circle')+' Devuelto '+ico('check')):(ico('key')+' Marcar devuelto')}</button>
-      <button class="btn-sec${b.paid?' on-green':''}" onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.paid?(ico('check-circle')+' Cobrado'):(ico('hourglass')+' Marcar cobrado')}</button>
-    </div>
-    <div style="display:grid;grid-template-columns:${!b.cancelled?'1fr 1fr':'1fr'};gap:8px">
-      ${!b.cancelled?`<button class="btn-dang" onclick="openCancelBooking('${escJs(b.id)}')">${ico('ban')} Cancelar alquiler</button>`:''}
-      <button class="btn-dang" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">${ico('trash')} Eliminar</button>
-    </div>
-    </div>`);
+    ${(()=>{
+      const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
+      const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
+      const fmt2=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
+      let h='<section class="al-s"><div class="al-h"><h3>Ingresos y gastos</h3>'
+        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" class="bk-sync">'+ico('repeat')+'</span></div>')
+        +'<div class="al-l">'
+        +'<div class="al-li"><span>Base alquiler</span><b>+'+fmt2(b.amount)+'</b></div>'
+        +(()=>{
+          const _autoExtraSum=(b.finance||[]).filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
+          const _extrasArrSum=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+          const _extTotal=_autoExtraSum>0?_autoExtraSum:_extrasArrSum;
+          return _extTotal>0?'<div class="al-li"><span>Extras contrato</span><b>+'+fmt2(_extTotal)+'</b></div>':'';
+        })();
+      if(fI.length){h+='<span class="q ok al-q">Ingresos adicionales</span>';fI.forEach(f=>{h+='<div class="al-mv"><div class="t">'+esc(f.concept)+'<span>'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</span></div><b class="ok">+'+fmt2(f.amount)+'</b><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" class="al-x">×</span></div>';});h+='<div class="al-st ok">Total: +'+fmt2(tI)+'</div>';}
+      if(fE.length){h+='<span class="q err al-q">Gastos</span>';fE.forEach(f=>{h+='<div class="al-mv"><div class="t">'+esc(f.concept)+'<span>'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</span></div><b class="err">-'+fmt2(f.amount)+'</b><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" class="al-x">×</span></div>';});h+='<div class="al-st err">Total: -'+fmt2(tE)+'</div>';}
+      h+='</div><div class="d-tot al-res">'
+        +'<span class="q">Resultado del alquiler</span>'
+        +(()=>{
+          const _t=_bookingRealTotal(b);
+          return '<b style="color:'+(_t>=0?'var(--text)':'var(--red)')+'">'+fmt2(_t)+'</b>';
+        })()
+        +'</div>';
+      h+='<div class="d-acts"><div class="two">';
+      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
+      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
+      h+='</div></div></section>';return h;
+    })()}
+    <section class="al-s">
+      <div class="al-h"><h3>Más acciones</h3></div>
+      <div class="d-acts"><div class="two al-two">
+        <button class="btn-sec" onclick="editBooking('${escJs(b.id)}')">${ico('edit')} Editar</button>
+        <button class="btn-sec" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
+        ${_st!=='pro'?`<button class="btn-sec" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>`:''}
+        ${_st!=='fin'?`<button class="btn-sec" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>`:''}
+        ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec al-w" onclick="generateExtensionPDF('${escJs(b.id)}')">${ico('clipboard')} Anexo de ampliación</button>`:''}
+      </div></div>
+      <div class="al-dz">
+        ${!b.cancelled?`<button class="btn-txt err" onclick="openCancelBooking('${escJs(b.id)}')">${ico('ban')} Cancelar alquiler</button>`:''}
+        <button class="btn-txt err" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">${ico('trash')} Eliminar</button>
+      </div>
+    </section>`);
 }
 
 // ─── CANCELACIÓN DE ALQUILER ──────────────────────────────────────────────
