@@ -977,6 +977,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .d-load .q::after{content:none;}
 @keyframes dpulse{from{opacity:.25;}to{opacity:1;}}
 .d-gate p b{color:var(--text);font-weight:600;}
+/* ══ PR C · Fallos visibles ══ */
+/* Meses en las filas de filtro (Negocio y Finanzas del coche): el campo pasa a su propia línea en vez de salirse por la derecha */
+.pills:has(>input){flex-wrap:wrap;overflow:visible;}
+.pills>input{flex:1 1 100%;width:100%;}
+/* Parejas de meses (Analítica «Período A/B», informes de negocio y de analítica): una debajo de otra en el móvil */
+@media(max-width:767px){:is(.r2,[style*="grid-template-columns:1fr 1fr;"]):has(>*>input[type=month]){grid-template-columns:1fr!important;}}
+/* Campos de fecha en rejillas de 2 columnas (vencimientos de la ficha del coche, formularios): la columna no crece por el ancho mínimo del campo */
+:is(.r2,[style*="grid-template-columns:1fr 1fr"])>*,[style*="display:flex"]>input{min-width:0;}
+/* Calendario del coche: las barras de alquiler bajan al pie de la celda y ya no tachan el número */
+.calcell>div{top:auto!important;bottom:6px;}
+.calcell>div:nth-of-type(2){bottom:10px;}
+.calcell>div:nth-of-type(3){bottom:14px;}
+.calcell .cal-d{margin-top:-8px;}
+/* Gráfica: los bordes del desplazamiento se funden en vez de cortar la primera etiqueta del eje */
+.dh-chart .dh-scr{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);}
+
+/* «Marcar días»: con el rótulo a 11 px ya no cabe en la fila; pasa encima de las dos píldoras */
+.cal-mp .q{flex-basis:100%;}
 </style>
 </head>
 <body>
