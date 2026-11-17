@@ -1098,6 +1098,135 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .al-pr{display:grid;grid-template-columns:auto 1fr;gap:8px;margin-bottom:8px;}
 .al-pr .btn-sec{width:auto;}
 .al-pr input{min-width:0;}
+/* ══ PR E · Flota y ficha del coche: tarjetas con nombre 700 y balance en Doto (solo chip GESTIÓN), cabecera del coche con punto, pestañas en selector segmentado,
+   alquileres del mes en filas finas, Finanzas con KPI en líneas de 1 px, movimientos en filas y beneficio en Doto tras línea discontinua, Info como ficha técnica,
+   vencimientos con chip de estado, formularios de vehículo y de movimiento con los campos del sistema ══ */
+/* Lista de Flota: nombre 700; tarjeta neutra (punto del coche, rótulo del tipo, chip solo en gestión) con el balance en Doto */
+.fl-n{font-weight:700;letter-spacing:-.02em;}
+.fl-r{align-items:start;}
+.fl-r>.dh-dot{margin-top:7px;}
+.fl-r .vr-c{align-items:center;gap:8px;}
+.fl-r .vr-c .chip{flex:none;}
+.fl-cl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text2);}
+.fl-k .d-ct{margin-top:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-k .fl-p{margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-bal{margin-top:20px;}
+.fl-bal .d-n{margin-top:8px;}
+.fl-k .spec.vk-s{margin-top:18px;}
+.fl-k .vk-ln{margin-top:14px;}
+.fl-em{margin-top:8px;}
+.vg .spec>div.w2{padding-top:8px;}
+/* Cabecera del coche en una línea (nombre y matrícula ya en la barra): punto + tipo · modelo · año · chip GESTIÓN; pestañas = selector segmentado */
+.fl-hd{display:flex;align-items:center;gap:12px;min-height:32px;margin:0 0 14px;}
+.fl-hd .d-meta{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-hd .chip .ico,.fl-k .chip .ico{width:14px;height:14px;}
+.fl-tabs{margin-bottom:20px;}
+.fl-tabs button .ico{width:16px;height:16px;}
+.fl-back{margin-bottom:8px;}
+/* Calendario: estado manual como barra de 3 px al pie (azul mantenimiento, rojo bloqueado); hoy solo con borde de acento */
+.calcell.m::after,.calcell.b::after{content:'';position:absolute;left:4px;right:4px;bottom:4px;height:3px;border-radius:2px;background:var(--blue);}
+.calcell.b::after{background:var(--red);}
+.cal-card{margin:0 0 4px;}
+.cal-m b{font-size:20px;font-weight:700;letter-spacing:-.02em;}
+.fl-nr{width:100%;margin-bottom:12px;}
+.fl-lh{margin:32px 0 12px;}
+/* Alquileres del mes: filas finas con línea (cliente e importe · fechas y estado · teléfono y plataforma · Entregar/Devolver/Cobrar) */
+.fl-bl0{border-top:1px solid var(--border2);}
+.fl-bl0>.d-empty{margin-top:16px;}
+.fl-bk{padding:16px 0;border-bottom:1px solid var(--border2);cursor:pointer;}
+.fl-bh,.fl-bs{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;}
+.fl-bh .t{min-width:0;font-size:16px;font-weight:600;line-height:1.25;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-bh b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;}
+.fl-bs{margin-top:6px;}
+.fl-bs>span:first-child{min-width:0;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.fl-bs .chip{border-color:currentColor;}
+.fl-bs .chip .ico{width:13px;height:13px;}
+.fl-bm{margin-top:4px;font-family:var(--mono);font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-bk .ck-a{margin-top:12px;}
+.fl-bl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.fl-bk:active{opacity:.7;}
+/* Finanzas: 1 principal + 2 secundarios + texto; KPI con líneas de 1 px; aviso de cobro con borde de acento; comisión como ficha técnica */
+.fl-acts{margin-bottom:8px;}
+.fl-acts .btn-txt{justify-self:center;}
+.fl-kpi b{font-size:20px;}
+.fl-pd{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;}
+.fl-pd .d-meta{margin-top:6px;}
+.fl-pd>b{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--amber);white-space:nowrap;}
+.fl-cm .spec.fl-c3{margin-top:0;}
+.fl-c3 b{font-size:14px;}
+.fl-c3 b.ok{color:var(--green);}
+.fl-own{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:14px;border-top:1px dashed var(--border2);font-size:14px;color:var(--text2);}
+.fl-own b{font-family:var(--mono);font-size:17px;font-weight:500;white-space:nowrap;}
+.fl-mh{margin-top:var(--sp-sec);}
+.fl-ff{margin-bottom:10px;}
+.fl-fm{width:100%;margin-bottom:20px;}
+.fl-tot{margin-bottom:8px;}
+.fl-tot .d-n.neg{color:var(--red);}
+.fl-ie{margin-top:8px;}
+.fl-ie>div{padding:12px 0;}
+.fl-ie b{font-size:17px;}
+.fl-ie b.ok{color:var(--green);}.fl-ie b.err{color:var(--red);}
+.fl-ml{margin-top:8px;}
+.fl-mv{display:grid;grid-template-columns:auto minmax(0,1fr) auto 44px;align-items:center;gap:10px;min-height:var(--row-h);padding:8px 0;border-bottom:1px solid var(--border2);}
+.fl-mv>.dt{margin:0;}
+.fl-mv .t{min-width:0;display:grid;gap:3px;}
+.fl-mv .c{font-size:15px;font-weight:600;line-height:1.3;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-mv .c .ico{width:15px;height:15px;color:var(--text2);vertical-align:-2px;}
+.fl-mv .s{font-family:var(--mono);font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fl-mv>b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.fl-mv>b.ok{color:var(--green);}.fl-mv>b.err{color:var(--red);}
+/* Info: foto con borde fino, ficha técnica, vencimientos en filas con chip de estado y campo de fecha, propietario, comisión, historiales y documentos */
+.fl-ph{position:relative;margin-bottom:8px;border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;}
+.fl-ph img{display:block;width:100%;max-height:220px;object-fit:cover;}
+.fl-phx{all:unset;cursor:pointer;position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border:1px solid var(--border2);border-radius:var(--r-pill);background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));font-family:var(--font);font-size:13px;font-weight:600;color:var(--text);}
+.fl-pha{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;padding:18px;border:1px dashed var(--border2);border-radius:var(--r-card);background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);text-align:center;}
+.fl-pha>.ico{width:24px;height:24px;color:var(--text2);}
+.fl-pha small{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--text2);}
+#photoPreview{display:inline-flex;flex-direction:column;align-items:center;gap:6px;font-size:14px;color:var(--text2);}
+.fl-ih{margin-top:28px;align-items:center;}
+.fl-ed{width:auto;min-height:44px;padding:0 18px;}
+.fl-spec{margin-top:0;}
+.fl-spec .w2 b{white-space:normal;overflow-wrap:anywhere;}
+.fl-sec .al-h .q{font-size:var(--fs-min);}
+.fl-vls{border-top:1px solid var(--border2);}
+.fl-vr{display:grid;grid-template-columns:minmax(0,1fr) 168px;align-items:center;gap:12px;min-height:var(--row-h);padding:12px 0;border-bottom:1px solid var(--border);}
+.fl-vr .t{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.fl-vr .t .ico{color:var(--text2);}
+.fl-vr .s{margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--text2);overflow-wrap:anywhere;}
+.fl-vl{min-width:0;}
+.fl-vr>input{font-size:15px!important;padding:12px 10px;}
+.fl-mt{grid-template-columns:1fr;border-bottom:0;padding-bottom:4px;}
+.fl-m2{padding-bottom:4px;}
+.fl-m2 .d-f{margin-bottom:8px;}
+.fl-m2 input{height:52px;min-height:52px;font-size:15px!important;padding:0 12px;}
+.d-hint.fl-wa{color:var(--amber);}
+.fl-nt{margin:4px 0 0;}
+.fl-or{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);}
+.fl-or .t{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);overflow-wrap:anywhere;}
+.fl-or .s{margin-top:4px;font-family:var(--mono);font-size:12px;color:var(--text2);overflow-wrap:anywhere;}
+.fl-or .btn-sec{width:auto;padding:0 18px;}
+.fl-cp{flex-wrap:wrap;overflow:visible;margin-top:-4px;}
+.fl-cp button{min-height:40px;padding:0 14px;font-family:var(--mono);font-size:13px;font-weight:500;}
+.fl-bl2{color:var(--blue)!important;}
+.fl-hr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;min-height:56px;padding:10px 0;border-bottom:1px solid var(--border);}
+.fl-hr .t{min-width:0;font-size:15px;font-weight:600;line-height:1.3;color:var(--text);overflow-wrap:anywhere;}
+.fl-hr .t span{display:block;margin-top:3px;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--text2);}
+.fl-hr .t span.fl-nx{color:var(--blue);}
+.fl-hr>b{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text2);white-space:nowrap;}
+.fl-hr>b.err{color:var(--red);}
+.fl-mr{margin-top:14px;}
+.fl-dz{margin-top:32px;}
+/* Formularios de vehículo y movimiento: campos de 52 px, matrícula/bastidor/póliza en mono, propiedad segmentada y tipo de vehículo en rejilla de 4 */
+.fl-form input:not([type=checkbox]),.fl-form select{min-height:52px;}
+.fl-form .m{font-family:var(--mono);letter-spacing:.04em;}
+.fl-seg{margin-bottom:0;}
+.fl-seg button .ico,.fl-et button .ico{width:18px;height:18px;}
+.fl-vt{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.fl-vt button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:60px;padding:6px 2px;border:1px solid var(--border2);border-radius:16px;text-align:center;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--text2);transition:background-color .3s,color .3s,border-color .3s;}
+.fl-vt button .ico{width:20px;height:20px;}
+.fl-vt button[aria-pressed=true]{background:var(--amber);border-color:var(--amber);color:var(--on-amber);}
+.fl-vt button:active,.fl-pha:active,.fl-phx:active{transform:scale(.97);}
+.fl-et{margin-bottom:20px;}
 </style>
 </head>
 <body>
@@ -6552,18 +6681,20 @@ function vcardH(v){
   const isM=v.vtype==='managed';
   const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
   const share=isM?_settleTotals(v,_getVehicleAllFinances(v)).mgr:null;
-  return `<div class="vcard vk" onclick="openV('${escJs(v.id)}')">
-    <div class="vk-h"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span><span class="chip ${isM?'chip-amber':'chip-gray'}">${isM?ico('handshake')+' GESTIÓN':'PROPIO'}</span></div>
-    <div class="vk-n">${esc(v.name)}</div>
-    <div class="vk-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}${v.year?' · '+esc(v.year):''}</div>
+  // Balance en Doto: entero sin separador de miles + céntimos en mono (mismo importe que antes: vP)
+  const _bS=fmtF(vP).split(','),_bE=(vP>=0?'+':'')+_bS[0].replace(/\./g,''),_bD=_bS.length>1?','+_bS.slice(1).join(','):'';
+  return `<div class="vcard vk fl-k" onclick="openV('${escJs(v.id)}')">
+    <div class="d-ch"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span>${isM?'<span class="chip">'+ico('handshake')+' Gestión</span>':''}</div>
+    <div class="d-ct fl-n">${esc(v.name)}</div>
+    <div class="d-meta fl-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}${v.year?' · '+esc(v.year):''}</div>
+    <div class="fl-bal"><span class="q">Balance</span><div class="d-n n3${vP<0?' neg':''}">${esc(_bE)}<small>${esc(_bD)}</small></div></div>
     <div class="spec vk-s">
       <div><i class="dt dt-ok"></i>INGRESOS<b>${fmt(vI)}</b></div>
       <div><i class="dt dt-err"></i>GASTOS<b>${fmt(vE)}</b></div>
       <div>DÍAS<b>${vD}d</b></div>
     </div>
-    ${isM?`<div class="vk-ln"><span class="q">Comisión Deiros · ${comm}%</span><b style="color:${share>=0?'var(--text)':'var(--red)'}">${fmtF(share)}</b></div>`:''}
     <div class="vk-bar"><i style="width:${Number(iPct)}%"></i><i style="width:${Number(ePct)}%"></i></div>
-    <div class="vk-ln"><span class="q">Balance</span><b style="color:${vP>=0?'var(--text)':'var(--red)'}">${vP>=0?'+':''}${fmtF(vP)}</b></div>
+    ${isM?`<div class="vk-ln"><span class="q">Comisión Deiros · ${comm}%</span><b style="color:${share>=0?'var(--text)':'var(--red)'}">${fmtF(share)}</b></div>`:''}
   </div>`;
 }
 
@@ -6607,12 +6738,12 @@ function renderListBody(){
     if(d)d.setAttribute('aria-pressed',String(m===mode));
   });
   let h='';
-  if(!activeV.length){h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div><div class="es">Pulsa + para añadir</div></div>`;}
-  else if(!filtered.length){h+=`<div class="empty"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;}
+  if(!activeV.length){h+=`<div class="d-empty fl-em">${ico('car')}<h3>Sin vehículos</h3><p>Pulsa «Nuevo vehículo» para añadir el primero.</p></div>`;}
+  else if(!filtered.length){h+=`<div class="d-empty fl-em">${ico('search')}<h3>Sin resultados</h3><p>Prueba con otra búsqueda o quita los filtros.</p></div>`;}
   else{
     const _n2=n=>String(n).padStart(2,'0');
     const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
-    const _sh=(t,n)=>`<div class="dh-sh vk-sh"><h2>${t}</h2><span class="q">${_n2(n)}</span></div>`;
+    const _sh=(t,n)=>`<div class="d-sh vk-sh"><h2>${t}</h2><span class="q">${_n2(n)}</span></div>`;
     if(mode==='grid'){
       // Grid: 2 columnas de fichas neutras con el punto del color del coche
       const drawGrid=(list,t)=>{
@@ -6623,7 +6754,7 @@ function renderListBody(){
           h+=`<div class="vg" onclick="openV('${escJs(v.id)}')">
             <div class="vg-n">${_dot(v)}<span>${esc(v.name)}</span></div>
             <div class="vk-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
-            <div class="spec"><div>ING<b>${fmt(vI)}</b></div><div>BEN<b style="color:${vP>=0?'var(--text)':'var(--red)'}">${fmt(vP)}</b></div></div>
+            <div class="spec"><div class="w2">INGRESOS<b>${fmt(vI)}</b></div><div class="w2">BALANCE<b style="color:${vP>=0?'var(--text)':'var(--red)'}">${fmt(vP)}</b></div></div>
           </div>`;
         });
         h+=`</div>`;
@@ -6636,20 +6767,20 @@ function renderListBody(){
       const getVStatus=v=>{
         const bks=v.bookings||[];
         const inProgress=bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
-        if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')}<span>${esc(inProgress.clientName||'En alquiler')}</span></span>`,sort:1};
+        if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')}<span>${esc(inProgress.clientName||'En alquiler')}</span></span>`,row:`<span class="chip chip-amber">Alquilado</span><span class="fl-cl">${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
         const nextB=bks.filter(b=>b.startDate>hoy).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')}<span>En ${dUntil}d</span></span>`,sort:2};}
-        return{chip:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`,sort:3};
+        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')}<span>En ${dUntil}d</span></span>`,row:`<span class="chip chip-blue">En ${dUntil}d</span><span class="fl-cl">Libre hasta ${esc(fmtDMY(nextB.startDate))}</span>`,sort:2};}
+        return{chip:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`,row:`<span class="chip chip-green">Disponible</span>`,sort:3};
       };
       const drawCompactSection=(list,t)=>{
         if(!list.length)return;
         if(window.innerWidth<768){
-          h+=_sh(t,list.length)+`<div class="dh-list vr-l">`;
+          h+=_sh(t,list.length)+`<div class="d-list vr-l">`;
           list.forEach(v=>{
             const vI=tInc(v),vP=vI-tExp(v);
-            h+=`<div class="dh-row" onclick="openV('${escJs(v.id)}')">
+            h+=`<div class="d-row dh-row fl-r" onclick="openV('${escJs(v.id)}')">
               ${_dot(v)}
-              <div style="min-width:0"><div class="t ell">${esc(v.name)}</div><div class="s ell">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div><div class="vr-c">${getVStatus(v).chip}</div></div>
+              <div style="min-width:0"><div class="t ell fl-n">${esc(v.name)}</div><div class="s ell">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div><div class="vr-c">${getVStatus(v).row}</div></div>
               <div class="r"><b>${fmt(vI)}</b><span class="vr-b" style="color:${vP>=0?'var(--text2)':'var(--red)'}">${vP>=0?'+':''}${fmt(vP)}</span></div>
             </div>`;
           });
@@ -6735,11 +6866,14 @@ function renderList(el){
 // ═══════════════════════════════════════════════════════════ DETAIL
 function renderDetail(el){
   const v=gV();if(!v){nav('vehicles');return;}
-  let h=`<div class="anim"><div class="vd-top"><div class="back" onclick="goBack()"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="chip ${v.vtype==='managed'?'chip-amber':'chip-gray'}">${v.vtype==='managed'?'GESTIÓN':'PROPIO'}</span></span></div>
-  <div class="tabs">
-    <div class="tab ${AT==='calendar'?'active':''}" onclick="switchTab('calendar')">${ico('calendar')} Alquileres</div>
-    <div class="tab ${AT==='finances'?'active':''}" onclick="switchTab('finances')">${ico('euro')} Finanzas</div>
-    <div class="tab ${AT==='info'?'active':''}" onclick="switchTab('info')">${ico('info')} Info</div>
+  const isM=v.vtype==='managed';
+  // Cabecera del coche en una línea (el nombre y la matrícula ya están en la barra, D1): punto + tipo · modelo · año · chip GESTIÓN (solo en gestión); pestañas en selector segmentado
+  let h=`<div class="anim"><div class="back fl-back" onclick="goBack()"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div>
+  <div class="fl-hd"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span><span class="d-meta">${[v.model,v.year].filter(Boolean).map(x=>esc(x)).join(' · ')}</span>${isM?'<span class="chip">'+ico('handshake')+' Gestión</span>':''}</div>
+  <div class="d-seg fl-tabs" role="group" aria-label="Ficha del vehículo">
+    <button type="button" aria-pressed="${AT==='calendar'}" onclick="switchTab('calendar')">${ico('calendar')} Alquileres</button>
+    <button type="button" aria-pressed="${AT==='finances'}" onclick="switchTab('finances')">${ico('euro')} Finanzas</button>
+    <button type="button" aria-pressed="${AT==='info'}" onclick="switchTab('info')">${ico('info')} Info</button>
   </div>`;
   if(AT==='calendar')h+=renderCal(v);
   else if(AT==='finances')h+=renderFin(v);
@@ -6760,10 +6894,9 @@ function renderCal(v){
   let rC=0;
   for(let d=1;d<=dim;d++){const k=dKey(d);if(dayStatus(v,k)==='rented')rC++;}
 
-  const PLAT_COLORS={amovens:'var(--blue)',getaround:'var(--amber)',sinapp:'var(--green)'};
   const dayBars={};
   (v.bookings||[]).forEach(b=>{
-    const col=safeColor(b.cancelled?'var(--border2)':(PLAT_COLORS[b.platform]||'var(--text2)'));
+    const col=safeColor(b.cancelled?'var(--border2)':'var(--amber)'); // barra de «alquilado» en acento (la plataforma va en la fila)
     _eachDate(b.startDate,b.endDate).forEach(k=>{
       if(!dayBars[k])dayBars[k]=[];
       dayBars[k].push({col,isStart:k===b.startDate,isEnd:k===b.endDate,id:b.id,startDate:b.startDate,startTime:b.startTime||'09:00',endTime:b.endTime||'09:00',client:b.clientName||'',cancelled:b.cancelled});
@@ -6789,9 +6922,9 @@ function renderCal(v){
         const k=dKey(d),s=dayStatus(v,k);
         const isT=d===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();
         const bars=dayBars[k]||[];
-        let bg='transparent',bd='var(--border)';
-        if(s==='maintenance'){bg='var(--info-s)';bd='var(--info-b)';}
-        else if(s==='blocked'){bg='var(--err-s)';bd='var(--err-b)';}
+        let bd='var(--border)',sc='';
+        if(s==='maintenance'){bd='var(--info-b)';sc=' m';}
+        else if(s==='blocked'){bd='var(--err-b)';sc=' b';}
         const fn=s==='rented'?`showBooking('${escJs(k)}')`:`toggleDay('${escJs(k)}')`;
         const lineHtml=bars.slice(0,3).map((b,i)=>{
           let lp=0,rp=0;
@@ -6801,7 +6934,7 @@ function renderCal(v){
           const top=50-(bars.length-1)*3+i*6;
           return `<div style="position:absolute;top:calc(${top}% - 2px);left:${lp}%;right:${rp}%;height:3px;background:${safeColor(b.col)};border-radius:${rL} ${rR} ${rR} ${rL}"></div>`;
         }).join('');
-        return `<div class="tap44 calcell${isT?' t':''}" onclick="${fn}" style="border-color:${isT?'var(--amber)':bd};background:${isT?'var(--acc-s)':bg}">
+        return `<div class="tap44 calcell${isT?' t':''}${sc}" onclick="${fn}" style="border-color:${isT?'var(--amber)':bd}">
           <span class="cal-d">${d}</span>
           ${lineHtml}
         </div>`;
@@ -6822,13 +6955,12 @@ function renderCal(v){
 
   let listHtml='';
   if(!allBk.length){
-    listHtml=('<div class="empty" style="padding:30px 0"><div class="ei">'+ico('car')+'</div><div class="et">Sin alquileres este mes</div></div>');
+    listHtml=('<div class="d-empty fl-em">'+ico('calendar')+'<h3>Sin alquileres este mes</h3><p>Pulsa «Nuevo alquiler» o cambia de mes.</p></div>');
   } else {
     allBk.forEach(b=>{
       const dur=daysBetween(b.startDate,b.endDate);
       if(b.paid&&!b.cobrado)b.cobrado=true; // normalize legacy field
       const p=PLATS[b.platform]||{label:b.platform||'Sin app',icon:ico('handshake')};
-      const platDot=safeColor(PLAT_COLORS[b.platform]||'var(--text2)');
       // ── Estado basado en toggles reales ──────────────────────────────────
       const _todayS=todayStr();
       const _tomorrowS=addDays(_todayS,1);
@@ -6851,17 +6983,11 @@ function renderCal(v){
       const multiMonth=b.startDate.slice(0,7)!==b.endDate.slice(0,7);
       const bId=b.id, bSd=b.startDate;
       listHtml+=
-        '<div class="ck" onclick="showBookingById(\''+escJs(bId)+'\')">'+
-        // Cabecera: estado (chip con icono) e importe
-        '<div class="ck-h"><span class="chip" style="color:'+safeColor(col)+'">'+lbl+'</span><b>'+fmtF(total)+'</b></div>'+
-        '<div class="ck-c"><span class="dh-dot" style="background:'+safeColor(platDot)+'"></span><span>'+esc(b.clientName||'Sin nombre')+'</span></div>'+
-        '<div class="ck-s">'+esc(b.clientPhone||p.label)+(multiMonth?' · +2 meses':'')+(total>Number(b.amount||0)?' · '+fmtF(b.amount)+' base':'')+'</div>'+
-        // Trayecto recogida → devolución (línea discontinua con la duración)
-        '<div class="ck-t">'+
-          '<div><span class="q">Recogida</span><b>'+esc(fmtDMY(b.startDate))+'</b>'+(b.startTime?'<em>'+esc(b.startTime)+'</em>':'')+'</div>'+
-          '<i><span>'+dur+'d</span></i>'+
-          '<div class="r"><span class="q">Devolución</span><b>'+esc(fmtDMY(b.endDate))+'</b>'+(b.endTime?'<em>'+esc(b.endTime)+'</em>':'')+'</div>'+
-        '</div>'+
+        '<div class="fl-bk" onclick="showBookingById(\''+escJs(bId)+'\')">'+
+        // Fila fina: cliente e importe · fechas y horas con la duración, estado (chip con icono) · teléfono o plataforma
+        '<div class="fl-bh"><span class="t">'+esc(b.clientName||'Sin nombre')+'</span><b>'+fmtF(total)+'</b></div>'+
+        '<div class="fl-bs"><span>'+esc(fmtDMY(b.startDate).slice(0,5))+(b.startTime?' '+esc(b.startTime):'')+' → '+esc(fmtDMY(b.endDate).slice(0,5))+(b.endTime?' '+esc(b.endTime):'')+' · '+dur+'d</span><span class="chip" style="color:'+safeColor(col)+'">'+lbl+'</span></div>'+
+        '<div class="fl-bm">'+esc(b.clientPhone||p.label)+(b.clientPhone?' · '+esc(p.label):'')+(multiMonth?' · +2 meses':'')+(total>Number(b.amount||0)?' · '+fmtF(b.amount)+' base':'')+'</div>'+
         // Action buttons
         '<div class="g8 ck-a">'+
           '<button class="tap44'+(b.delivered?' on':'')+'" onclick="event.stopPropagation();toggleDelivery(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
@@ -6871,9 +6997,8 @@ function renderCal(v){
           '<button class="tap44'+(b.cobrado?' on':'')+'" onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
             (b.cobrado?(ico('coins')+' Cobrado'):(ico('coins')+' Cobrar'))+'</button>'+
         '</div>'+
-        // Km row
-        (kmInfo?('<div class="ck-l"><span>'+ico('odometer')+' ')+kmInfo+' recorridos</span></div>':'')+
-        // Fianza + Abono / Pendiente row
+        // Km, fianza y cobros: líneas mono finas
+        (kmInfo?('<div class="fl-bl"><span>'+ico('odometer')+' ')+kmInfo+' recorridos</span></div>':'')+
         (()=>{
           const _ab=Number(b.abonoReserva||0);
           const _fi=Number(b.fianza||0);
@@ -6881,11 +7006,11 @@ function renderCal(v){
           const _tt=_bookingClientTotal(b)+_fi;
           const _pd=Math.max(0,_tt-_ab);
           let row='';
-          if(_fi>0)row+='<div class="ck-l">'
+          if(_fi>0)row+='<div class="fl-bl">'
             +('<span>'+ico('lock')+' Fianza: ')+fmtF(_fi)+'</span>'
             +'<span>Total c/fianza: '+fmtF(_tt)+'</span>'
             +'</div>';
-          if(_ab>0)row+='<div class="ck-l">'
+          if(_ab>0)row+='<div class="fl-bl">'
             +('<span style="color:var(--green)">'+ico('card')+' Recibido: ')+fmtF(_ab)+'</span>'
             +(_pd>0
               ?'<span style="color:var(--amber)">Pendiente: '+fmtF(_pd)+'</span>'
@@ -6899,21 +7024,19 @@ function renderCal(v){
 
   // ── Final layout ──────────────────────────────────────────────────────
   const calPanel=`
-  <button class="btn-pri" onclick="openNewRental()" style="margin-bottom:12px;width:100%">${ico('car')} + Nuevo alquiler</button>
+  <button class="btn-pri fl-nr" onclick="openNewRental()">${ico('car')} Nuevo alquiler</button>
   ${isD
     ? `<div style="display:grid;grid-template-columns:33% 1fr;gap:16px;align-items:start">
         <div style="position:sticky;top:16px">${miniCal}</div>
         <div style="max-height:calc(100vh - 180px);overflow-y:auto;padding-right:4px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:8px">${MON_ES[calM].toUpperCase()} ${calY} — ALQUILERES</div>
-          ${listHtml}
+          <div class="al-h fl-lh"><h3>Alquileres de ${MON_ES[calM].toLowerCase()}</h3><span class="q">${String(allBk.length).padStart(2,'0')}</span></div>
+          <div class="fl-bl0">${listHtml}</div>
         </div>
       </div>`
-    : `<div style="display:flex;flex-direction:column;gap:12px">
-        <div class="dh-card cal-card">${miniCal}</div>
-        <div>
-          <div class="q cal-lt">${MON_ES[calM]} ${calY} · alquileres</div>
-          ${listHtml}
-        </div>
+    : `<div>
+        <div class="d-card cal-card">${miniCal}</div>
+        <div class="al-h fl-lh"><h3>Alquileres de ${MON_ES[calM].toLowerCase()}</h3><span class="q">${String(allBk.length).padStart(2,'0')}</span></div>
+        <div class="fl-bl0">${listHtml}</div>
       </div>`
   }`;
 
@@ -8033,49 +8156,52 @@ function renderFin(v){
   const avgDur=allBk.length?Math.round(allBk.reduce((s,b)=>s+Math.max(1,Math.ceil((new Date(b.endDate)-new Date(b.startDate))/864e5)+1),0)/allBk.length*10)/10:0;
   const rpd=Math.round(tInc(v)/(tDays(v)||1));
   const isD=window.innerWidth>=768;
-  let h=`<div>${isD?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;height:calc(100vh - 140px)"><div style="overflow-y:auto;height:100%">':''}
+  // Cifra Doto de la pantalla: el beneficio de los movimientos filtrados (mismo tP de siempre)
+  const _pS=fmtF(tP).split(','),_pE=_pS[0].replace(/\./g,''),_pD=_pS.length>1?','+_pS.slice(1).join(','):'';
+  let h=`<div class="fl-fin">${isD?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;height:calc(100vh - 140px)"><div style="overflow-y:auto;height:100%">':''}
+  <div class="d-acts fl-acts">
+    <button class="btn-pri" onclick="openAddEntry()">＋ Añadir movimiento</button>
+    <div class="two">
+      <button class="btn-sec" onclick="openVehicleRecurring('${escJs(v.id)}')">${ico('repeat')} Recurrentes</button>
+      <button class="btn-sec" onclick="openReport('${escJs(v.id)}')">${ico('doc')} Informe</button>
+    </div>
+    <button class="btn-txt" onclick="syncBookingExtensions()">${ico('repeat')} Sincronizar ampliaciones</button>
+  </div>
+  <div class="al-h"><h3>Este mes</h3><span class="q">${MON_ES[now.getMonth()]}</span></div>
+  <div class="d-kpi fl-kpi" style="--c:2">
+    <div><b>${occ}%</b><span>Ocupación</span></div>
+    <div><b>${avgDur}d</b><span>Duración media</span></div>
+    <div><b>${mBk.length}</b><span>Alquileres</span></div>
+    <div><b>${fmt(rpd)}</b><span>€ / día</span></div>
+  </div>
   ${buildMonthlyChart(v)}
-  <div class="f3" style="${isD?'margin-bottom:20px':''}">
-    <div class="fb" style="border-top:2px solid var(--green)"><div class="fv" style="color:var(--green);${isD?'font-size:24px':''}">${fmt(tI)}</div><div class="fl">${finMonth?'MES':'TOTAL'} ING.</div></div>
-    <div class="fb" style="border-top:2px solid var(--red)"><div class="fv" style="color:var(--red)">${fmt(tE)}</div><div class="fl">${finMonth?'MES':'TOTAL'} GST.</div></div>
-    <div class="fb" style="border-top:2px solid ${tP>=0?'var(--green)':'var(--red)'}"><div class="fv" style="color:${tP>=0?'var(--green)':'var(--red)'}">${fmt(tP)}</div><div class="fl">BENEFICIO</div></div>
-  </div>
-  <div class="sec">KPIs — ESTE MES</div>
-  <div class="kpi4" style="${isD?'gap:12px':''}">
-    <div class="kbox"><div class="kv" style="color:var(--amber)">${occ}%</div><div class="kl">OCUPACIÓN</div></div>
-    <div class="kbox"><div class="kv" style="color:var(--blue)">${avgDur}d</div><div class="kl">DURACIÓN</div></div>
-    <div class="kbox"><div class="kv" style="color:var(--green)">${mBk.length}</div><div class="kl">ALQUILERES</div></div>
-    <div class="kbox"><div class="kv" style="color:var(--purple)">${fmt(rpd)}</div><div class="kl">€/DÍA</div></div>
-  </div>
   ${isD?'</div><div style="height:100%;display:flex;flex-direction:column;min-height:0">':''}
-  <button class="btn-pri" onclick="openAddEntry()" style="width:100%;margin-bottom:8px">＋ Añadir movimiento</button>
-  <button class="btn-sec" onclick="syncBookingExtensions()" style="width:100%;margin-bottom:8px;font-size:11px">${ico('repeat')} Sincronizar ampliaciones</button>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-    <button class="btn-sec" onclick="openVehicleRecurring('${escJs(v.id)}')">${ico('repeat')} Recurrentes</button>
-    <button class="btn-sec" onclick="openReport('${escJs(v.id)}')">${ico('doc')} Informe</button>
+  <div class="al-h fl-mh"><h3>Movimientos</h3><span class="q">${String(filtered.length).padStart(2,'0')}</span></div>
+  <div class="d-pills fl-ff" role="group" aria-label="Tipo de movimiento">
+    ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<button type="button" aria-pressed="${a}" onclick="setFF('${escJs(t)}')">${L[t]}</button>`;}).join('')}
   </div>
-  <div class="pills">
-    ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setFF('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'var(--acc-m)':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
-    <input type="month" value="${esc(safeMonth(finMonth))}" onchange="setFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
+  <input type="month" class="fl-fm" aria-label="Mes" value="${esc(safeMonth(finMonth))}" onchange="setFM(this.value)"/>
+  <div class="d-tot fl-tot">
+    <span class="q">Beneficio · ${finMonth?'mes':'total'}</span>
+    <div class="d-n n2${tP<0?' neg':''}">${esc(_pE)}<small>${esc(_pD)}</small></div>
+    <div class="spec fl-ie"><div><i class="dt dt-ok"></i>${finMonth?'MES':'TOTAL'} ING.<b class="ok">${fmt(tI)}</b></div><div><i class="dt dt-err"></i>${finMonth?'MES':'TOTAL'} GST.<b class="err">${fmt(tE)}</b></div></div>
   </div>
   ${isD?'<div style="flex:1;overflow-y:auto;min-height:0;padding-right:4px">':''}`;
-  if(!filtered.length){h+=`<div class="empty" style="padding:36px 0"><div class="ei">${ico('euro')}</div><div class="et">Sin movimientos</div></div>`;}  
-  else filtered.forEach(e=>{
-    const isIn=e.type==='income';const isA=!!e.autoFromBooking;
-    h+=`<div class="fe">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap">
-          <span class="fb2" style="background:${isIn?'#10B98120':'#EF444420'};color:${isIn?'var(--green)':'var(--red)'}">${isIn?'ING':'GST'}</span>
-          ${isA?`<span class="fb2" style="background:var(--acc-s);color:var(--amber)">${ico('car')}</span>`:''}
-          <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${esc(e.category)}</span>
-        </div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(fmtDMY(e.date))}${e.description?' · '+esc(e.description):''}</div>
-        ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">${ico('wrench')} ${esc(e.maint.work||'')}${e.maint.km?' · '+esc(Number(e.maint.km).toLocaleString('es-ES'))+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</div>`:''}
-      </div>
-      <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};white-space:nowrap;margin-left:8px">${isIn?'+':'-'}${fmt(e.amount)}</div>
-      ${!isA?`<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer;flex-shrink:0" onclick="delEntry('${escJs(e.id)}')">×</div>`:`<div style="width:28px"></div>`}
-    </div>`;
-  });
+  if(!filtered.length){h+=`<div class="d-empty fl-em">${ico('euro')}<h3>Sin movimientos</h3><p>Prueba con otro filtro o pulsa «Añadir movimiento».</p></div>`;}
+  else{
+    h+='<div class="d-list fl-ml">';
+    filtered.forEach(e=>{
+      const isIn=e.type==='income';const isA=!!e.autoFromBooking;
+      // Fila fina: punto verde/rojo · categoría (icono de coche si viene de un alquiler) / fecha · descripción / mantenimiento · importe con signo · ×
+      h+=`<div class="fl-mv">
+        <i class="dt ${isIn?'dt-ok':'dt-err'}"></i>
+        <div class="t"><span class="c">${isA?ico('car')+' ':''}${esc(e.category)}</span><span class="s">${esc(fmtDMY(e.date))}${e.description?' · '+esc(e.description):''}</span>${e.maint?`<span class="s">${ico('wrench')} ${esc(e.maint.work||'')}${e.maint.km?' · '+esc(Number(e.maint.km).toLocaleString('es-ES'))+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</span>`:''}</div>
+        <b class="${isIn?'ok':'err'}">${isIn?'+':'-'}${fmt(e.amount)}</b>
+        ${!isA?`<span class="al-x" role="button" aria-label="Borrar movimiento" onclick="delEntry('${escJs(e.id)}')">×</span>`:'<span></span>'}
+      </div>`;
+    });
+    h+='</div>';
+  }
   h+=`${isD?'</div></div></div>':''}`;h+='</div>';return h;
 }
 function setFF(f){finFilter=f;renderDetail(document.getElementById('PC'));}
@@ -8085,24 +8211,26 @@ function openAddEntry(){
   _etype='expense';
   const today=todayStr();
   openSheet(`<div class="stitle">Movimiento manual</div>
-    <div class="tsw"><div class="to" id="tInc" onclick="swET('income')" style="color:var(--text3)">${ico('coins')} Ingreso</div><div class="to" id="tExp" onclick="swET('expense')" style="background:var(--bg);color:var(--red)">${ico('trend-down')} Gasto</div></div>
-    <div class="fg"><label class="lbl">FECHA</label><input id="eDate" type="date" value="${esc(safeDate(today))}"/></div>
-    <div class="fg"><label class="lbl">CATEGORÍA</label><select id="eCat" onchange="toggleMaintFields()">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
-    <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="eAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">DESCRIPCIÓN (opcional)</label><input id="eDesc" placeholder="Nota..." autocomplete="off"/></div>
-    <div id="maintFields" style="display:none">
-      <div class="divider"></div>
-      <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:12px">${ico('wrench')} DETALLES DEL MANTENIMIENTO</div>
-      <div class="fg"><label class="lbl">¿QUÉ SE HA HECHO?</label><input id="eMaintWork" placeholder="Ej: Cambio de aceite, filtros, pastillas..." autocomplete="off"/></div>
-      <div class="r2">
-        <div class="fg"><label class="lbl">KM EN ESTE MANT.</label><input id="eMaintKm" type="number" inputmode="numeric" placeholder="Km actuales"/></div>
-        <div class="fg"><label class="lbl">PRÓXIMO MANT. (KM)</label><input id="eMaintNextKm" type="number" inputmode="numeric" placeholder="Ej: 55000"/></div>
-      </div>
-      <div class="fg"><label class="lbl">PRÓXIMA FECHA (opcional)</label><input id="eMaintNextDate" type="date"/></div>
-      <div class="fg"><label class="lbl">TALLER / PROVEEDOR</label><input id="eMaintShop" placeholder="Nombre del taller..." autocomplete="off"/></div>
+    <div class="ssub">Ingreso o gasto de este vehículo</div>
+    <div class="d-seg fl-et" role="group" aria-label="Tipo de movimiento"><button type="button" id="tInc" aria-pressed="false" onclick="swET('income')">${ico('coins')} Ingreso</button><button type="button" id="tExp" aria-pressed="true" onclick="swET('expense')">${ico('trend-down')} Gasto</button></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="eAmt">Importe</label><div class="d-pre"><span>€</span><input id="eAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="eDate">Fecha</label><input id="eDate" type="date" value="${esc(safeDate(today))}"/></div>
     </div>
-    <button class="btn-pri" onclick="submitEntry()">Añadir</button><div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="eCat">Categoría</label><select id="eCat" onchange="toggleMaintFields()">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    <div class="d-f"><label class="q" for="eDesc">Descripción</label><input id="eDesc" placeholder="Opcional" autocomplete="off"/></div>
+    <div id="maintFields" style="display:none">
+      <div class="al-h"><h3>Mantenimiento</h3>${ico('wrench')}</div>
+      <div class="d-f"><label class="q" for="eMaintWork">Trabajo</label><input id="eMaintWork" placeholder="Ej: Cambio de aceite, filtros, pastillas..." autocomplete="off"/></div>
+      <div class="d-2">
+        <div class="d-f"><label class="q" for="eMaintKm">Km ahora</label><input id="eMaintKm" type="number" inputmode="numeric" placeholder="Km actuales"/></div>
+        <div class="d-f"><label class="q" for="eMaintNextKm">Próximo (km)</label><input id="eMaintNextKm" type="number" inputmode="numeric" placeholder="Ej: 55000"/></div>
+      </div>
+      <div class="d-f"><label class="q" for="eMaintNextDate">Próxima fecha</label><input id="eMaintNextDate" type="date"/><div class="d-hint">Opcional</div></div>
+      <div class="d-f"><label class="q" for="eMaintShop">Taller</label><input id="eMaintShop" placeholder="Nombre del taller o proveedor..." autocomplete="off"/></div>
+    </div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitEntry()">${ico('save')} Añadir</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function toggleMaintFields(){
   const cat=document.getElementById('eCat');
@@ -8114,8 +8242,10 @@ function swET(t){
   _etype=t;
   const inc=document.getElementById('tInc'),exp=document.getElementById('tExp'),cat=document.getElementById('eCat');
   if(!inc||!exp||!cat)return;
-  if(t==='income'){inc.style.background='var(--bg)';inc.style.color='var(--green)';exp.style.background='transparent';exp.style.color='var(--text3)';cat.innerHTML=INC_CATS.map(c=>`<option>${c}</option>`).join('');}
-  else{exp.style.background='var(--bg)';exp.style.color='var(--red)';inc.style.background='transparent';inc.style.color='var(--text3)';cat.innerHTML=EXP_CATS.map(c=>`<option>${c}</option>`).join('');}
+  // Estado del segmentado con aria-pressed (antes colores en línea); mismas categorías
+  inc.setAttribute('aria-pressed',String(t==='income'));exp.setAttribute('aria-pressed',String(t!=='income'));
+  if(t==='income'){cat.innerHTML=INC_CATS.map(c=>`<option>${c}</option>`).join('');}
+  else{cat.innerHTML=EXP_CATS.map(c=>`<option>${c}</option>`).join('');}
 }
 function submitEntry(){
   const v=gV();if(!v)return;
@@ -8148,19 +8278,18 @@ function renderInfo(v){
   const isM=v.vtype==='managed';
   const comm=(v.commission==null||v.commission===''?30:Number(v.commission));
   const fields=[['Tipo',isM?'En gestión':'Propio'],['Tipo vehículo',vtypeLabel(v.vehicle_type||'turismo')],['Nombre',v.name],['Matrícula',v.plate],['Modelo',v.model||'—'],['Año',v.year||'—'],['Combustible',v.fuel||'—'],['Km actuales',v.km?Number(v.km).toLocaleString('es-ES')+' km':'—'],['Km últ. mant.',v.maint_km?Number(v.maint_km).toLocaleString('es-ES')+' km'+(v.km?' ('+Number(Number(v.km)-Number(v.maint_km)).toLocaleString('es-ES')+' km desde entonces)':''):'—'],['Nº bastidor',v.chassis||'—'],['Precio compra',v.purchase_price?fmtF(Number(v.purchase_price)):'—'],['Año compra',v.purchase_year||'—'],['Notas',v.notes||'—']];
-  let h=`<div>
-  ${v.photo?`<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1.5px solid ${safeColor(v.color)}44;position:relative">
-    <img src="${esc(v.photo)}" alt="" style="width:100%;max-height:200px;object-fit:cover;display:block"/>
-    <button onclick="removeVPhoto('${escJs(v.id)}')" style="position:absolute;top:8px;right:8px;background:#0008;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer">${ico('trash')} Quitar</button>
-  </div>`:`<button onclick="pickVPhoto('${escJs(v.id)}')" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:1.5px dashed var(--border2);border-radius:12px;padding:20px;cursor:pointer;margin-bottom:16px;font-family:var(--font)">
-    <span style="font-size:24px">${ico('camera')}</span>
-    <span style="font-size:13px;color:var(--text3);font-weight:600">Añadir foto del vehículo</span>
-    <span style="font-size:11px;color:var(--text3)">Solo visible en la ficha</span>
+  const _w=['Km últ. mant.','Nº bastidor','Notas']; // datos largos: a todo el ancho de la ficha técnica
+  const _chip=(c,t)=>'<span class="chip '+c+'">'+t+'</span>';
+  let h=`<div class="fl-inf">
+  ${v.photo?`<div class="fl-ph">
+    <img src="${esc(v.photo)}" alt=""/>
+    <button class="fl-phx" onclick="removeVPhoto('${escJs(v.id)}')">${ico('trash')} Quitar</button>
+  </div>`:`<button class="fl-pha" onclick="pickVPhoto('${escJs(v.id)}')">
+    ${ico('camera')}
+    <span>Añadir foto del vehículo</span>
+    <small>Solo visible en la ficha</small>
   </button>`}
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <div class="sec" style="margin-bottom:0">FICHA DEL VEHÍCULO</div>
-    <button class="btn-pri" onclick="openEditV('${escJs(v.id)}')" style="width:auto">${ico('edit')} Editar</button>
-  </div>
+  <div class="al-h fl-ih"><h3>Ficha del vehículo</h3><button class="btn-sec fl-ed" onclick="openEditV('${escJs(v.id)}')">${ico('edit')} Editar</button></div>
   ${(()=>{const isD=window.innerWidth>=768;
   const curKm=Number(v.km)||0;const maintKm=Number(v.maint_km)||0;
   const kmDiff=curKm&&maintKm?curKm-maintKm:null;
@@ -8169,126 +8298,116 @@ function renderInfo(v){
   const maintDays=maintDateVal?Math.ceil((new Date(maintDateVal)-new Date())/864e5):null;
   const maintDateExpired=maintDays!==null&&maintDays<0;
   const maintDateUrgent=maintDays!==null&&maintDays<=30&&!maintDateExpired;
-  // Card border: red if either is expired, amber if either is urgent
+  // Estado del mantenimiento: rojo si algo ha vencido, acento si está cerca (chip con punto + texto, sin cajas de color)
   const anyExpired=kmExpired||maintDateExpired;
   const anyUrgent=kmUrgent||maintDateUrgent;
-  const cardBorder=anyExpired?'var(--red)':anyUrgent?'var(--amber)':'var(--border)';
-  const cardColor=anyExpired?'var(--red)':anyUrgent?'var(--amber)':'var(--text3)';
-  const kmColor=kmExpired?'var(--red)':kmUrgent?'var(--amber)':'var(--text3)';
-  const dateColor=maintDateExpired?'var(--red)':maintDateUrgent?'var(--amber)':'var(--text3)';
-  const maintKmCard='<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+safeColor(cardBorder)+';grid-column:1/-1">'
-    +'<div style="font-size:10px;font-weight:700;color:'+safeColor(cardColor)+(';margin-bottom:8px">'+ico('wrench')+' MANTENIMIENTO PERIÓDICO')+(anyExpired?(' '+ico('alert')):anyUrgent?(' '+ico('bolt')):'')+'</div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+  const kmCls=kmExpired?' err':kmUrgent?' fl-wa':'';
+  const dateCls=maintDateExpired?' err':maintDateUrgent?' fl-wa':'';
+  const maintKmCard='<div class="fl-vr fl-mt"><div class="fl-vl"><div class="t">'+ico('wrench')+' Mantenimiento periódico</div>'
+    +(anyExpired?_chip('chip-red','Vencido'):anyUrgent?_chip('chip-amber','Próximo'):(kmDiff!==null||maintDays!==null)?_chip('chip-green','Al día'):_chip('chip-gray','Sin datos'))
+    +'</div></div>'
+    +'<div class="d-2 fl-m2">'
     // --- KM column ---
-    +'<div>'
-    +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">KM ÚLTIMO MANT.</div>'
-    +'<div style="display:flex;align-items:center;gap:5px">'
-    +'<input type="number" value="'+esc(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" onchange="saveMaintKm(\''+escJs(v.id)+'\',this.value)" style="font-size:12px;padding:5px 6px;flex:1"/>'
-    +'<span style="font-size:10px;color:var(--text3)">km</span>'
-    +'</div>'
-    +(kmDiff!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(kmColor)+'">'+(kmExpired?(ico('alert')+' Vencido (+')+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div style="font-size:10px;margin-top:3px;color:var(--text3)">Alerta a 10.000km</div>')
+    +'<div class="d-f"><span class="q">Km último mant.</span>'
+    +'<div class="al-suf"><input type="number" value="'+esc(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" aria-label="Km del último mantenimiento" onchange="saveMaintKm(\''+escJs(v.id)+'\',this.value)"/><span>km</span></div>'
+    +(kmDiff!==null?'<div class="d-hint'+kmCls+'">'+(kmExpired?(ico('alert')+' Vencido (+')+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div class="d-hint">Alerta a 10.000km</div>')
     +'</div>'
     // --- Date column ---
-    +'<div>'
-    +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">PRÓXIMA FECHA</div>'
-    +'<input type="date" value="'+esc(safeDate(maintDateVal))+'" onchange="saveDate(\''+escJs(v.id)+'\',\'maint_date\',this.value)" style="font-size:12px;padding:5px 6px;width:100%"/>'
-    +(maintDays!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(dateColor)+'">'+(maintDateExpired?(ico('alert')+' Fecha vencida'):maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
+    +'<div class="d-f"><span class="q">Próxima fecha</span>'
+    +'<input type="date" value="'+esc(safeDate(maintDateVal))+'" aria-label="Próxima fecha de mantenimiento" onchange="saveDate(\''+escJs(v.id)+'\',\'maint_date\',this.value)"/>'
+    +(maintDays!==null?'<div class="d-hint'+dateCls+'">'+(maintDateExpired?(ico('alert')+' Fecha vencida'):maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
     +'</div>'
     +'</div>'
-    +((anyExpired||anyUrgent)?'<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;font-weight:700;color:'+safeColor(cardColor)+'">Hacer lo que llegue primero (km o fecha)</div>':'')
-    +'</div>';
-  const alertsPanel=`<div><div class="sec">ALERTAS Y VENCIMIENTOS</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+    +((anyExpired||anyUrgent)?'<p class="d-note fl-nt">Hacer lo que llegue primero (km o fecha)</p>':'');
+  const _ins=[v.insurer,v.policy?'póliza '+v.policy:'',v.insurance_type].filter(Boolean).join(' · ');
+  const alertsPanel=`<div class="fl-sec"><div class="al-h"><h3>Vencimientos</h3><span class="q">ITV · seguro · taller</span></div>
+  <div class="fl-vls">
     ${ALERT_FIELDS.map(([field,label,ic])=>{
       const val=v[field]||'';
       const days=val?Math.ceil((new Date(val)-new Date())/864e5):null;
       const urgent=days!==null&&days<=30;
       const expired=days!==null&&days<0;
-      const color=expired?'var(--red)':urgent?'var(--amber)':'var(--text3)';
-      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+safeColor(color)+';margin-bottom:6px">'+ico(ic)+' '+label+'</div><input type="date" value="'+esc(safeDate(val))+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(color)+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
+      const st=days===null?_chip('chip-gray','Sin fecha'):_chip(expired?'chip-red':urgent?'chip-amber':'chip-green',expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d');
+      const sub=field==='insurance_date'&&_ins?'<div class="s">'+esc(_ins)+'</div>':'';
+      return '<div class="fl-vr"><div class="fl-vl"><div class="t">'+ico(ic)+' '+label+'</div>'+st+sub+'</div><input type="date" value="'+esc(safeDate(val))+'" aria-label="'+label+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)"/></div>';
     }).join('')}
     ${maintKmCard}
   </div></div>`;
-  const fichaPanel='<div>'+fields.map(([k,val])=>'<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:12px"><div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);min-width:100px;padding-top:2px">'+k.toUpperCase()+'</div><div style="font-family:var(--mono);font-size:13px;color:var(--text2)">'+esc(val)+'</div></div>').join('')+'</div>';
+  const fichaPanel='<div class="spec fl-spec">'+fields.map(([k,val])=>'<div'+(_w.includes(k)?' class="w2"':'')+'>'+esc(k)+'<b>'+esc(val)+'</b></div>').join('')+'</div>';
   if(isD)return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:16px">'+fichaPanel+alertsPanel+'</div>';
-  return fichaPanel+'<div class="divider"></div>'+alertsPanel;
+  return fichaPanel+alertsPanel;
   })()}
-  ${isM?`<div class="divider"></div>
-  <div class="sec" style="color:var(--purple)">PROPIETARIO</div>
+  ${isM?`<div class="fl-sec"><div class="al-h"><h3>Propietario</h3></div>
   ${(()=>{
     const owner=OW.find(o=>o.id===v.ownerId);
     if(owner){
-      return '<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">'
-        +'<div>'
-        +'<div style="font-size:14px;font-weight:700;color:var(--text)">'+esc(owner.name)+'</div>'
-        +(owner.phone?('<div style="font-size:11px;color:var(--text3);margin-top:2px">'+ico('phone')+' ')+esc(owner.phone)+'</div>':'')
-        +(owner.email?('<div style="font-size:11px;color:var(--text3);">'+ico('mail')+' ')+esc(owner.email)+'</div>':'')
+      return '<div class="fl-or">'
+        +'<div class="fl-ol">'
+        +'<div class="t">'+esc(owner.name)+'</div>'
+        +(owner.phone?('<div class="s">'+ico('phone')+' ')+esc(owner.phone)+'</div>':'')
+        +(owner.email?('<div class="s">'+ico('mail')+' ')+esc(owner.email)+'</div>':'')
         +'</div>'
-        +'<button class="btn-pri" onclick="openOwnerReport(\''+escJs(owner.id)+('\')" style="width:auto;font-size:12px">'+ico('doc')+' Informe</button>')
+        +'<button class="btn-sec" onclick="openOwnerReport(\''+escJs(owner.id)+('\')">'+ico('doc')+' Informe</button>')
         +'</div>';
     }
-    return '<div style="margin-bottom:16px">'
-      +'<select id="ownerAssign" onchange="assignOwner(\''+escJs(v.id)+'\',this.value)" style="width:100%">'
+    return '<div class="d-f">'
+      +'<select id="ownerAssign" onchange="assignOwner(\''+escJs(v.id)+'\',this.value)" aria-label="Propietario">'
       +'<option value="">— Sin asignar —</option>'
       +OW.map(o=>'<option value="'+esc(o.id)+'"'+(o.id===v.ownerId?' selected':'')+'>'+esc(o.name)+'</option>').join('')
       +'</select>'
-      +(OW.length===0?('<div style="font-size:11px;color:var(--text3);margin-top:8px">Primero crea propietarios en la sección '+ico('users')+'</div>'):'')
+      +(OW.length===0?('<div class="d-hint">Primero crea propietarios en la sección '+ico('users')+'</div>'):'')
       +'</div>';
-  })()}
-  <div class="divider"></div><div class="sec" style="color:var(--purple)">COMISIÓN DEIROS</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">% del beneficio neto que va al negocio.</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <div style="position:relative;flex:1"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal" style="padding-right:36px"/><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--purple);font-weight:700;font-family:var(--mono)">%</span></div>
-      <button class="btn-pri" onclick="saveComm('${escJs(v.id)}')" style="width:auto;white-space:nowrap">Guardar</button>
+  })()}</div>
+  <div class="fl-sec"><div class="al-h"><h3>Comisión Deiros</h3></div>
+    <div class="d-f"><label class="q" for="commInput">Porcentaje</label>
+    <div class="al-in"><div class="al-suf"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal"/><span>%</span></div>
+      <button class="btn-sec" onclick="saveComm('${escJs(v.id)}')">Guardar</button>
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${[10,20,25,30,35,40,50].map(p=>`<div onclick="document.getElementById('commInput').value=${p}" style="padding:5px 12px;border-radius:20px;border:1px solid #8B5CF640;background:#8B5CF610;color:var(--purple);font-size:12px;font-weight:700;cursor:pointer">${p}%</div>`).join('')}</div>`:''}
-  <div class="divider"></div>
-  <div class="sec">${ico('odometer')} HISTORIAL DE KILÓMETROS</div>
+    <div class="d-hint">% del beneficio neto que va al negocio.</div></div>
+    <div class="d-pills fl-cp">${[10,20,25,30,35,40,50].map(p=>`<button type="button" onclick="document.getElementById('commInput').value=${p}">${p}%</button>`).join('')}</div></div>`:''}
+  <div class="fl-sec"><div class="al-h"><h3>Kilómetros</h3>${ico('odometer')}</div>
   ${(()=>{
     const bksKm=(v.bookings||[]).filter(b=>b.kmStart||b.kmEnd).sort((a,b)=>b.startDate.localeCompare(a.startDate));
     const totalKm=bksKm.reduce((s,b)=>s+(b.kmStart&&b.kmEnd?b.kmEnd-b.kmStart:0),0);
-    if(!bksKm.length) return '<div style="font-size:12px;color:var(--text3);padding:8px 0;margin-bottom:12px">Sin registros de km. Añádelos al crear alquileres.</div>';
-    return '<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:16px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
-      +'<span style="font-size:11px;color:var(--text3)">Total km registrados</span>'
-      +'<span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--blue)">'+totalKm.toLocaleString('es-ES')+' km</span>'
-      +'</div>'
+    if(!bksKm.length) return '<div class="d-hint">Sin registros de km. Añádelos al crear alquileres.</div>';
+    return '<div class="d-kv"><span>Total km registrados</span><b class="fl-bl2">'+totalKm.toLocaleString('es-ES')+' km</b></div>'
+      +'<div class="d-list">'
       +bksKm.slice(0,8).map(b=>{
         const km=b.kmStart&&b.kmEnd?b.kmEnd-b.kmStart:null;
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border)">'
-          +'<div><div style="font-size:11px;font-weight:600;color:var(--text2)">'+esc(fmtDMY(b.startDate))+'</div>'
-          +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px">'+(b.kmStart?b.kmStart.toLocaleString('es-ES'):'—')+' → '+(b.kmEnd?b.kmEnd.toLocaleString('es-ES'):'—')+' km</div></div>'
-          +'<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+(km?'var(--blue)':'var(--text3)')+'">'+(km?'+'+km.toLocaleString('es-ES')+' km':'—')+'</span>'
+        return '<div class="fl-hr">'
+          +'<div class="t">'+esc(fmtDMY(b.startDate))+'<span>'+(b.kmStart?b.kmStart.toLocaleString('es-ES'):'—')+' → '+(b.kmEnd?b.kmEnd.toLocaleString('es-ES'):'—')+' km</span></div>'
+          +'<b'+(km?' class="fl-bl2"':'')+'>'+(km?'+'+km.toLocaleString('es-ES')+' km':'—')+'</b>'
           +'</div>';
       }).join('')
       +'</div>';
-  })()}
-  <div class="divider"></div>
-  <div class="sec">${ico('wrench')} HISTORIAL DE MANTENIMIENTOS</div>
+  })()}</div>
+  <div class="fl-sec"><div class="al-h"><h3>Mantenimientos</h3>${ico('wrench')}</div>
   ${(()=>{
     const maints=(v.finances||[]).filter(e=>(e.category==='Mantenimiento periódico'||e.category==='Mantenimiento')).sort((a,b)=>b.date.localeCompare(a.date));
-    if(!maints.length)return '<div style="font-size:12px;color:var(--text3);padding:8px 0;margin-bottom:12px">Sin mantenimientos registrados. Añade un gasto de categoría "Mantenimiento" o "Mantenimiento periódico".</div>';
-    return '<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:16px">'
+    if(!maints.length)return '<div class="d-hint">Sin mantenimientos registrados. Añade un gasto de categoría "Mantenimiento" o "Mantenimiento periódico".</div>';
+    return '<div class="d-list">'
       +maints.map((e,i)=>{const m=e.maint||{};
-        return '<div style="padding:'+(i>0?'12px 0 0':'0 0 0')+';">'
-          +(i>0?'<div style="height:1px;background:var(--border);margin-bottom:12px"></div>':'')
-          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
-          +'<div style="font-size:12px;font-weight:700;color:var(--text)">'+esc(m.work||'Sin descripción')+'</div>'
-          +'<div style="font-family:var(--mono);font-size:11px;color:var(--amber);font-weight:700">-'+fmt(e.amount)+'</div>'
+        return '<div class="fl-hr">'
+          +'<div class="t">'+esc(m.work||'Sin descripción')
+          +('<span>'+ico('calendar')+' ')+esc(fmtDMY(e.date))+(m.km?' · '+m.km.toLocaleString('es-ES')+' km':'')+(m.shop?' · '+esc(m.shop):'')+'</span>'
+          +(m.nextKm||m.nextDate?'<span class="fl-nx">Próximo: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' / ':'')+esc(m.nextDate||'')+'</span>':'')
           +'</div>'
-          +('<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px">'+ico('calendar')+' ')+esc(fmtDMY(e.date))+(m.km?' · '+m.km.toLocaleString('es-ES')+' km':'')+(m.shop?' · '+esc(m.shop):'')+'</div>'
-          +(m.nextKm||m.nextDate?'<div style="font-size:10px;color:var(--blue)">Próximo: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' / ':'')+esc(m.nextDate||'')+'</div>':'')
+          +'<b class="err">-'+fmt(e.amount)+'</b>'
           +'</div>';
       }).join('')
       +'</div>'
-      +'<button onclick="dlMaintReport(\''+escJs(v.id)+('\')" class="btn-sec" style="margin-bottom:12px">'+ico('doc')+' Informe de mantenimientos</button>');
-  })()}
-  ${isM&&v.ownerId?`<button class="btn-sec" onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="margin-bottom:8px">${ico('clipboard')} Contrato de gestión</button>`:''}
-  <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')" style="margin-bottom:8px">${ico('chart')} Exportar a Excel</button>
-  <div style="height:8px"></div>
-  ${v.archived?`<button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="margin-bottom:8px">${ico('undo')} Reactivar vehículo</button>`:
-  `<button class="btn-sec" onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="margin-bottom:8px">${isM?(ico('handshake')+' Fin de gestión'):(ico('tag')+' Vendido')}</button>`}
-  <button class="btn-dang" onclick="deleteV('${escJs(v.id)}')">${ico('trash')} Eliminar definitivamente</button>
+      +'<button onclick="dlMaintReport(\''+escJs(v.id)+('\')" class="btn-sec fl-mr">'+ico('doc')+' Informe de mantenimientos</button>');
+  })()}</div>
+  <div class="fl-sec"><div class="al-h"><h3>Documentos</h3></div>
+  <div class="d-acts"><div class="two al-two">
+  ${isM&&v.ownerId?`<button class="btn-sec" onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')">${ico('clipboard')} Contrato de gestión</button>`:''}
+  <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')">${ico('chart')} Exportar a Excel</button>
+  ${v.archived?`<button class="btn-sec" onclick="restoreV('${escJs(v.id)}')">${ico('undo')} Reactivar vehículo</button>`:''}
+  </div></div></div>
+  <div class="al-dz fl-dz">
+  ${v.archived?'':`<button class="btn-txt" onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')">${isM?(ico('handshake')+' Fin de gestión'):(ico('tag')+' Vendido')}</button>`}
+  <button class="btn-txt err" onclick="deleteV('${escJs(v.id)}')">${ico('trash')} Eliminar definitivamente</button>
+  </div>
   </div>`;
   return h;
 }
@@ -8304,82 +8423,78 @@ function openEditV(id){
   window._editVtype=v.vtype||'own';
   window._editVehicleType=v.vehicle_type||'turismo';
 
+  // Tipo de vehículo: rejilla de 4 × 2 opciones (la activa en acento, como el selector segmentado)
   const vtypeGrid=VTYPES.map(t=>{
     const active=t.id===(v.vehicle_type||'turismo');
-    return `<div onclick="selEditVehicleType('${escJs(t.id)}')" id="evt_${t.id}" style="border-radius:8px;border:2px solid ${active?'var(--amber)':'var(--border2)'};background:${active?'var(--acc-s)':'transparent'};padding:10px 6px;text-align:center;cursor:pointer">
-      <div style="font-size:18px">${ico(t.icon)}</div>
-      <div style="font-size:11px;font-weight:700;color:${active?'var(--amber)':'var(--text3)'};margin-top:2px">${t.label}</div>
-    </div>`;
+    return `<button type="button" onclick="selEditVehicleType('${escJs(t.id)}')" id="evt_${t.id}" aria-pressed="${active}">${ico(t.icon)}<span>${t.label}</span></button>`;
   }).join('');
+  const _vtd=(VTYPES.find(t=>t.id===(v.vehicle_type||'turismo'))||{}).desc||'';
 
   const ownerOpts=OW.map(o=>`<option value="${esc(o.id)}"${o.id===v.ownerId?' selected':''}>${esc(o.name)}</option>`).join('');
 
-  openSheet(`<div class="stitle">Editar vehículo</div>
-    <div class="fg"><div class="lbl">PROPIETARIO / GESTIÓN</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
-        <div id="evt_own" onclick="selEditVtype('own')" style="border-radius:10px;border:2px solid ${!isM?'var(--amber)':'var(--border2)'};background:${!isM?'var(--acc-s)':'transparent'};padding:12px 8px;text-align:center;cursor:pointer">
-          <div style="font-size:20px;margin-bottom:4px">${ico('car')}</div><div style="font-size:12px;font-weight:700;color:${!isM?'var(--amber)':'var(--text3)'}">PROPIO</div>
-        </div>
-        <div id="evt_managed" onclick="selEditVtype('managed')" style="border-radius:10px;border:2px solid ${isM?'var(--purple)':'var(--border2)'};background:${isM?'#8B5CF615':'transparent'};padding:12px 8px;text-align:center;cursor:pointer">
-          <div style="font-size:20px;margin-bottom:4px">${ico('handshake')}</div><div style="font-size:12px;font-weight:700;color:${isM?'var(--purple)':'var(--text3)'}">EN GESTIÓN</div>
-        </div>
+  openSheet(`<div class="fl-form"><div class="stitle">Editar vehículo</div>
+    <div class="ssub">${esc(v.name)} · ${esc(v.plate)}</div>
+    <div class="d-f"><span class="q">Propiedad</span>
+      <div class="d-seg fl-seg" role="group" aria-label="Propiedad">
+        <button type="button" id="evt_own" aria-pressed="${!isM}" onclick="selEditVtype('own')">${ico('car')} Propio</button>
+        <button type="button" id="evt_managed" aria-pressed="${isM}" onclick="selEditVtype('managed')">${ico('handshake')} En gestión</button>
       </div>
     </div>
     <div id="editOwnerRow" style="display:${isM?'block':'none'}">
-      <div class="fg"><label class="lbl">PROPIETARIO</label>
+      <div class="d-f"><label class="q" for="evOwner">Propietario</label>
         <select id="evOwner"><option value="">— Sin asignar —</option>${ownerOpts}</select>
       </div>
     </div>
-    <div class="fg"><label class="lbl">TIPO DE VEHÍCULO</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">${vtypeGrid}</div>
+    <div class="d-f"><span class="q">Tipo de vehículo</span>
+      <div class="fl-vt" role="group" aria-label="Tipo de vehículo">${vtypeGrid}</div>
+      <div class="d-hint" id="evt_hint">${esc(_vtd)}</div>
     </div>
-    <div class="fg"><label class="lbl">NOMBRE / ALIAS *</label><input id="evN" value="${esc(v.name)}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">MATRÍCULA *</label><input id="evP" value="${esc(v.plate)}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">MARCA</label><input id="evMake" value="${esc(v.make||'')}" placeholder="Ej: Renault" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">MODELO</label><input id="evM" value="${esc(v.model||'')}" placeholder="Ej: Clio" autocomplete="off"/></div>
+    <div class="d-f"><label class="q" for="evN">Nombre o alias *</label><input id="evN" value="${esc(v.name)}" autocomplete="off"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evP">Matrícula *</label><input id="evP" class="m" value="${esc(v.plate)}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="evY">Año</label><input id="evY" type="number" value="${esc(v.year||'')}"/></div>
     </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">AÑO</label><input id="evY" type="number" value="${esc(v.year||'')}"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evMake">Marca</label><input id="evMake" value="${esc(v.make||'')}" placeholder="Ej: Renault" autocomplete="off"/></div>
+      <div class="d-f"><label class="q" for="evM">Modelo</label><input id="evM" value="${esc(v.model||'')}" placeholder="Ej: Clio" autocomplete="off"/></div>
     </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">COMBUSTIBLE</label>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evFuel">Combustible</label>
         <select id="evFuel">
           <option value="">—</option>
           ${['Gasolina','Diésel','Híbrido','Eléctrico','GLP'].map(f=>`<option${f===(v.fuel||'')?'  selected':''}>${f}</option>`).join('')}
         </select>
       </div>
-      <div class="fg"><label class="lbl">KM ACTUALES</label><input id="evKm" type="number" value="${esc(v.km||'')}" inputmode="numeric"/></div>
+      <div class="d-f"><label class="q" for="evKm">Km actuales</label><input id="evKm" type="number" value="${esc(v.km||'')}" inputmode="numeric"/></div>
     </div>
-    <div class="fg"><label class="lbl">DEPÓSITO (LITROS) <span style="font-size:9px;font-weight:400;color:var(--text3)">para calcular el combustible que falta</span></label><input id="evTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50" value="${esc(Number(v.tankL)>0?v.tankL:'')}"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="evPrice" type="number" value="${esc(v.purchase_price||'')}" inputmode="decimal"/></div>
-      <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="evBuyYear" type="number" value="${esc(v.purchase_year||'')}"/></div>
+    <div class="d-f"><label class="q" for="evTank">Depósito</label><div class="al-suf"><input id="evTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50" value="${esc(Number(v.tankL)>0?v.tankL:'')}"/><span>litros</span></div><div class="d-hint">Para calcular el combustible que falta</div></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evPrice">Precio compra</label><div class="d-pre"><span>€</span><input id="evPrice" type="number" value="${esc(v.purchase_price||'')}" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="evBuyYear">Año compra</label><input id="evBuyYear" type="number" value="${esc(v.purchase_year||'')}"/></div>
     </div>
-    <div class="fg"><label class="lbl">Nº BASTIDOR (VIN)</label><input id="evChassis" value="${esc(v.chassis||'')}" placeholder="VIN / Nº bastidor" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="evNo" value="${esc(v.notes||'')}" autocomplete="off"/></div>
-    <div style="height:1px;background:var(--border);margin:10px 0"></div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">${ico('shield')} SEGURO</div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">ASEGURADORA</label><input id="evInsurer" value="${esc(v.insurer||'')}" placeholder="Ej: Mapfre" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">Nº PÓLIZA</label><input id="evPolicy" value="${esc(v.policy||'')}" placeholder="Nº póliza" autocomplete="off"/></div>
+    <div class="d-f"><label class="q" for="evChassis">Nº bastidor</label><input id="evChassis" class="m" value="${esc(v.chassis||'')}" placeholder="VIN / Nº bastidor" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="d-f"><label class="q" for="evNo">Notas</label><input id="evNo" value="${esc(v.notes||'')}" autocomplete="off"/></div>
+    <div class="al-h"><h3>Seguro</h3>${ico('shield')}</div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evInsurer">Aseguradora</label><input id="evInsurer" value="${esc(v.insurer||'')}" placeholder="Ej: Mapfre" autocomplete="off"/></div>
+      <div class="d-f"><label class="q" for="evPolicy">Nº póliza</label><input id="evPolicy" class="m" value="${esc(v.policy||'')}" placeholder="Nº póliza" autocomplete="off"/></div>
     </div>
-    <div class="fg"><label class="lbl">TIPO</label>
+    <div class="d-f"><label class="q" for="evInsType">Cobertura</label>
         <select id="evInsType">
           <option value="">—</option>
           ${['A todo riesgo','A terceros','A terceros ampliado'].map(x=>'<option'+(x===(v.insurance_type||'')?' selected':'')+'>'+x+'</option>').join('')}
         </select>
       </div>
-    <button class="btn-pri" onclick="submitEditV()">${ico('save')} Guardar cambios</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitEditV()">${ico('save')} Guardar cambios</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div></div>`);
 }
 
 function selEditVtype(t){
   window._editVtype=t;
   const o=document.getElementById('evt_own'),m=document.getElementById('evt_managed');
-  if(o){o.style.border=t==='own'?'2px solid var(--amber)':'2px solid var(--border2)';o.style.background=t==='own'?'var(--acc-s)':'transparent';o.querySelector('div:last-child').style.color=t==='own'?'var(--amber)':'var(--text3)';}
-  if(m){m.style.border=t==='managed'?'2px solid var(--purple)':'2px solid var(--border2)';m.style.background=t==='managed'?'#8B5CF615':'transparent';m.querySelector('div:last-child').style.color=t==='managed'?'var(--purple)':'var(--text3)';}
+  // Estado del segmentado con aria-pressed (antes bordes y fondos en línea)
+  if(o)o.setAttribute('aria-pressed',String(t==='own'));
+  if(m)m.setAttribute('aria-pressed',String(t==='managed'));
   const ownerRow=document.getElementById('editOwnerRow');
   if(ownerRow)ownerRow.style.display=t==='managed'?'block':'none';
 }
@@ -8389,12 +8504,9 @@ function selEditVehicleType(t){
   VTYPES.forEach(vt=>{
     const el=document.getElementById('evt_'+vt.id);
     if(!el)return;
-    const active=vt.id===t;
-    el.style.border=active?'2px solid var(--amber)':'2px solid var(--border2)';
-    el.style.background=active?'var(--acc-s)':'transparent';
-    const lbl=el.querySelector('div:nth-child(2)');
-    if(lbl)lbl.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String(vt.id===t));
   });
+  const hint=document.getElementById('evt_hint');if(hint)hint.textContent=(VTYPES.find(vt=>vt.id===t)||{}).desc||'';
 }
 
 function submitEditV(){
@@ -10673,72 +10785,52 @@ function confirmDelete(id){V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===
 // ═══════════════════════════════════════════════════════════ ADD VEHICLE
 function openAddV(){
   _vtype='own';window._newVPhoto=null;window._newVehicleType='turismo';
-  openSheet(`<div class="stitle">Nuevo vehículo</div>
-    <div class="fg"><div class="lbl">TIPO</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div id="vt_own" onclick="selVtype('own')" style="border-radius:10px;border:2px solid var(--amber);background:var(--acc-s);padding:12px 8px;text-align:center;cursor:pointer"><div style="font-size:20px;margin-bottom:4px">${ico('car')}</div><div style="font-size:12px;font-weight:700;color:var(--amber)">PROPIO</div></div>
-        <div id="vt_managed" onclick="selVtype('managed')" style="border-radius:10px;border:2px solid var(--border2);padding:12px 8px;text-align:center;cursor:pointer"><div style="font-size:20px;margin-bottom:4px">${ico('handshake')}</div><div style="font-size:12px;font-weight:700;color:var(--text3)">EN GESTIÓN</div></div>
+  openSheet(`<div class="fl-form"><div class="stitle">Nuevo vehículo</div>
+    <div class="ssub">Nombre y matrícula son obligatorios; lo demás puede esperar</div>
+    <div class="d-f"><span class="q">Propiedad</span>
+      <div class="d-seg fl-seg" role="group" aria-label="Propiedad">
+        <button type="button" id="vt_own" aria-pressed="true" onclick="selVtype('own')">${ico('car')} Propio</button>
+        <button type="button" id="vt_managed" aria-pressed="false" onclick="selVtype('managed')">${ico('handshake')} En gestión</button>
       </div>
     </div>
-    <div class="fg"><label class="lbl">NOMBRE / ALIAS *</label><input id="vN" placeholder="Ej: Polo Blanco" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">MATRÍCULA *</label><input id="vP" placeholder="1234 ABC" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="r2">
-      <div class="r2">
-      <div class="fg"><label class="lbl">MARCA</label><input id="vMake" placeholder="Ej: Volkswagen" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">MODELO</label><input id="vM" placeholder="Ej: Polo" autocomplete="off"/></div>
-    </div>
-      <div class="fg"><label class="lbl">AÑO</label><input id="vY" type="number" placeholder="2020"/></div>
-    </div>
-    <div class="fg"><label class="lbl">TIPO DE VEHÍCULO</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="vtypeGrid">
-        <div onclick="selVehicleType('turismo')" id="vvt_turismo" style="border-radius:8px;border:2px solid var(--amber);background:var(--acc-s);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('car')}</div><div style="font-size:11px;font-weight:700;color:var(--amber);margin-top:2px">Turismo</div>
-        </div>
-        <div onclick="selVehicleType('l1h1')" id="vvt_l1h1" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L1H1</div><div style="font-size:9px;color:var(--text3)">Reparto urbano</div>
-        </div>
-        <div onclick="selVehicleType('l2h1')" id="vvt_l2h1" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L2H1</div><div style="font-size:9px;color:var(--text3)">Polivalente</div>
-        </div>
-        <div onclick="selVehicleType('l2h2')" id="vvt_l2h2" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L2H2</div><div style="font-size:9px;color:var(--text3)">Polivalente</div>
-        </div>
-        <div onclick="selVehicleType('l3h2')" id="vvt_l3h2" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van-xl')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L3H2</div><div style="font-size:9px;color:var(--text3)">Mudanzas/logística</div>
-        </div>
-        <div onclick="selVehicleType('l3h3')" id="vvt_l3h3" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van-xl')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L3H3</div><div style="font-size:9px;color:var(--text3)">Mudanzas/logística</div>
-        </div>
-        <div onclick="selVehicleType('l4h2')" id="vvt_l4h2" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('truck')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L4H2</div><div style="font-size:9px;color:var(--text3)">Grandes volúmenes</div>
-        </div>
-        <div onclick="selVehicleType('l4h3')" id="vvt_l4h3" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('truck')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L4H3</div><div style="font-size:9px;color:var(--text3)">Grandes volúmenes</div>
-        </div>
-      </div>
-    </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">COMBUSTIBLE</label><select id="vFuel"><option value="">—</option><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option><option>GLP</option></select></div>
-      <div class="fg"><label class="lbl">KM ACTUALES</label><input id="vKm" type="number" placeholder="45000" inputmode="numeric"/></div>
-    </div>
-    <div class="fg"><label class="lbl">DEPÓSITO (LITROS) <span style="font-size:9px;font-weight:400;color:var(--text3)">para calcular el combustible que falta</span></label><input id="vTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="vPrice" type="number" placeholder="8500" inputmode="decimal"/></div>
-      <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="vBuyYear" type="number" placeholder="2021"/></div>
-    </div>
-    <div class="fg" id="ownerRow" style="display:none"><label class="lbl">PROPIETARIO</label>
+    <div class="d-f" id="ownerRow" style="display:none"><label class="q" for="vOwner">Propietario</label>
       <select id="vOwner">
         <option value="">— Sin asignar —</option>
       </select>
     </div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="vNo" placeholder="Observaciones..."/></div>
-    <div class="fg"><label class="lbl">FOTO DEL VEHÍCULO (opcional)</label>
-      <button type="button" onclick="pickNewVPhoto()" id="photoLabel" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:1.5px dashed var(--border2);border-radius:var(--rsm);padding:18px;cursor:pointer;font-family:var(--font);min-height:80px">
-        <span id="photoPreview" style="font-size:13px;color:var(--text3)">${ico('camera')} Pulsa para seleccionar foto</span>
-      </button>
+    <div class="d-f"><span class="q">Tipo de vehículo</span>
+      <div class="fl-vt" role="group" aria-label="Tipo de vehículo" id="vtypeGrid">
+        ${VTYPES.map(t=>`<button type="button" onclick="selVehicleType('${escJs(t.id)}')" id="vvt_${t.id}" aria-pressed="${t.id==='turismo'}">${ico(t.icon)}<span>${t.label}</span></button>`).join('')}
+      </div>
+      <div class="d-hint" id="vvt_hint"></div>
     </div>
-    <button class="btn-pri" onclick="submitV()">Crear vehículo</button><div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="vN">Nombre o alias *</label><input id="vN" placeholder="Ej: Polo Blanco" autocomplete="off"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vP">Matrícula *</label><input id="vP" class="m" placeholder="1234 ABC" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="vY">Año</label><input id="vY" type="number" placeholder="2020"/></div>
+    </div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vMake">Marca</label><input id="vMake" placeholder="Ej: Volkswagen" autocomplete="off"/></div>
+      <div class="d-f"><label class="q" for="vM">Modelo</label><input id="vM" placeholder="Ej: Polo" autocomplete="off"/></div>
+    </div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vFuel">Combustible</label><select id="vFuel"><option value="">—</option><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option><option>GLP</option></select></div>
+      <div class="d-f"><label class="q" for="vKm">Km actuales</label><input id="vKm" type="number" placeholder="45000" inputmode="numeric"/></div>
+    </div>
+    <div class="d-f"><label class="q" for="vTank">Depósito</label><div class="al-suf"><input id="vTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50"/><span>litros</span></div><div class="d-hint">Para calcular el combustible que falta</div></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vPrice">Precio compra</label><div class="d-pre"><span>€</span><input id="vPrice" type="number" placeholder="8500" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="vBuyYear">Año compra</label><input id="vBuyYear" type="number" placeholder="2021"/></div>
+    </div>
+    <div class="d-f"><label class="q" for="vNo">Notas</label><input id="vNo" placeholder="Observaciones..."/></div>
+    <div class="d-f"><span class="q">Foto del vehículo</span>
+      <button type="button" onclick="pickNewVPhoto()" id="photoLabel" class="fl-pha">
+        <span id="photoPreview">${ico('camera')} Pulsa para seleccionar foto</span>
+      </button>
+      <div class="d-hint">Opcional · solo visible en la ficha</div>
+    </div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitV()">${ico('save')} Crear vehículo</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div></div>`);
 }
 // Programmatic file picker — works on mobile where label/input in innerHTML fails
 function _pickFile(accept, cb){
@@ -10781,19 +10873,17 @@ function selVehicleType(t){
   VTYPES.forEach(vt=>{
     const el=document.getElementById('vvt_'+vt.id);
     if(!el)return;
-    const isActive=vt.id===t;
-    el.style.border=isActive?'2px solid var(--amber)':'2px solid var(--border2)';
-    el.style.background=isActive?'var(--acc-s)':'transparent';
-    const lbl=el.querySelector('div:nth-child(2)');
-    if(lbl)lbl.style.color=isActive?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String(vt.id===t));
   });
+  const hint=document.getElementById('vvt_hint');if(hint)hint.textContent=(VTYPES.find(vt=>vt.id===t)||{}).desc||'';
 }
 function selVtype(t){
   _vtype=t;
   const o=document.getElementById('vt_own'),m=document.getElementById('vt_managed');
   if(!o||!m)return;
-  o.style.border=t==='own'?'2px solid var(--amber)':'2px solid var(--border2)';o.style.background=t==='own'?'var(--acc-s)':'transparent';o.querySelector('div:last-child').style.color=t==='own'?'var(--amber)':'var(--text3)';
-  m.style.border=t==='managed'?'2px solid var(--purple)':'2px solid var(--border2)';m.style.background=t==='managed'?'#8B5CF615':'transparent';m.querySelector('div:last-child').style.color=t==='managed'?'var(--purple)':'var(--text3)';
+  // Estado del segmentado con aria-pressed (antes bordes y fondos en línea)
+  o.setAttribute('aria-pressed',String(t==='own'));
+  m.setAttribute('aria-pressed',String(t==='managed'));
   // Show/hide owner selector
   const ownerRow=document.getElementById('ownerRow');
   const ownerSel=document.getElementById('vOwner');
@@ -10910,28 +11000,20 @@ function buildMonthlyChart(v){
     const mOwner=_ownerSettle(v,mF).toOwner; // mínimo 0 si tiene propietario
     const [sy,sm]=sk.split('-');
     const mLabel=(MON_S[parseInt(sm)-1]||'')+' '+sy;
-    commRow=`<div style="margin-top:10px;background:#8B5CF610;border:1px solid #8B5CF630;border-radius:10px;padding:12px 14px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:10px">COMISIÓN — ${mLabel.toUpperCase()}</div>
-      <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:4px;align-items:center">
-        <div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmtF(mInc)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">Facturado mes</div></div>
-        <div style="text-align:center;color:var(--text3);font-size:13px;padding:0 2px">×</div>
-        <div style="text-align:center;background:#8B5CF625;border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--purple)">${comm}%</div><div style="font-size:9px;color:var(--purple);margin-top:3px">Comisión</div></div>
-        <div style="text-align:center;color:var(--text3);font-size:13px;padding:0 2px">=</div>
-        <div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--purple)">${fmtF(mComm)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">Al negocio</div></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid #8B5CF630;padding-top:8px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:10px;color:var(--text3)">Queda para el propietario</span>
-        <span style="font-family:var(--mono);font-size:14px;font-weight:700;color:${mOwner>=0?'var(--green)':'var(--red)'}">${fmtF(mOwner)}</span>
-      </div>
+    // Comisión del mes como ficha técnica (sin rellenos morados): facturado × % = al negocio; queda para el propietario
+    commRow=`<div class="d-card s fl-cm">
+      <span class="q">Comisión · ${esc(mLabel)}</span>
+      <div class="spec c3 fl-c3"><div>Facturado<b class="ok">${fmtF(mInc)}</b></div><div>Comisión<b>${comm}%</b></div><div>Al negocio<b>${fmtF(mComm)}</b></div></div>
+      <div class="fl-own"><span>Queda para el propietario</span><b style="color:${mOwner>=0?'var(--green)':'var(--red)'}">${fmtF(mOwner)}</b></div>
     </div>`;
   }
   // Pending: unpaid bookings for THIS vehicle only
   const pendingBks=(v.bookings||[]).filter(b=>!b.paid&&Number(b.amount)>0);
   const totalPending=pendingBks.reduce((s,b)=>s+(Number(b.amount)||0),0);
   const pendingRow=totalPending>0
-    ?`<div style="margin-top:8px;background:var(--acc-s);border:1px solid var(--acc-b);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:10px;font-weight:700;color:var(--amber)">${ico('hourglass')} PENDIENTE DE COBRO</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${pendingBks.length} alquiler${pendingBks.length!==1?'es':''} sin cobrar</div></div>
-        <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--amber)">${fmtF(totalPending)}</div>
+    ?`<div class="d-card s hl fl-pd">
+        <div><span class="q ac">Pendiente de cobro</span><div class="d-meta">${pendingBks.length} alquiler${pendingBks.length!==1?'es':''} sin cobrar</div></div>
+        <b>${fmtF(totalPending)}</b>
       </div>`:''
   return buildChart(fins,chartYear,selKey,'setFM','prevChartYr','nextChartYr','')+pendingRow+commRow;
 }
