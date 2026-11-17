@@ -10014,8 +10014,6 @@ function renderRentals(el){
   const upcoming=all.filter(b=>b.startDate>hoy&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
-  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-gray">${esc(p.label)}</span>`:'';};
-
   const statusChip=b=>{
     const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
     if(dEnd<=1)return `<span class="chip chip-red">${ico('alert')} Termina hoy</span>`;
@@ -10024,51 +10022,40 @@ function renderRentals(el){
   };
   const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
   const _n2=n=>String(n).padStart(2,'0');
+  const _dm=(d,t)=>esc(fmtDMY(d).slice(0,5))+(t?' '+esc(t):'');
 
-  // Ficha neutra: punto del color del coche, nombre, matrícula en mono, importe; cliente y estado; trayecto de fechas con línea discontinua
-  const bookingCard=(b,isActive)=>{
+  // Fila fina (.d-row, como el FAQ de la web): punto del coche · coche y matrícula / cliente / fechas y horas · importe y estado
+  const bookingRow=(b,chip)=>{
     const v=b._v;
-    const dur=daysBetween(b.startDate,b.endDate);
-    const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);
-    return `<div class="rcard rk" onclick="openV('${escJs(v.id)}')">
-      <div class="rk-h">${_dot(v)}<span class="rk-n">${esc(v.name)}</span><span class="rk-p">${esc(v.plate)}</span><b class="rk-a">${fmtF(b.amount||0)}</b></div>
-      <div class="rk-c"><span class="rk-cl">${esc(b.clientName||'Sin cliente')}</span>${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
-      <div class="rk-t"><span>${esc(fmtDMY(b.startDate))}</span><i aria-hidden="true"></i><span>${esc(fmtDMY(b.endDate))}</span><span class="rk-d">${dur}d</span></div>
-      <div class="rk-f"><span>${b.startTime||b.endTime?`${ico('clock')} ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}`:''}</span>${platBadge(b)}</div>
+    return `<div class="d-row al-r" onclick="openV('${escJs(v.id)}')">
+      ${_dot(v)}
+      <div class="al-b"><div class="t ell">${esc(v.name)} <span class="mono2">${esc(v.plate)}</span></div><div class="al-c">${esc(b.clientName||'Sin cliente')}</div><div class="s">${_dm(b.startDate,b.startTime)} → ${_dm(b.endDate,b.endTime)}</div></div>
+      <div class="r"><b>${fmtF(b.amount||0)}</b>${chip}</div>
     </div>`;
   };
 
   let h=`<div class="anim">`;
 
   // ── En curso
-  h+=`<div class="dh-sh rk-sh"><h2>En curso</h2><span class="q ok">${_n2(active.length)}</span></div>`;
+  h+=`<div class="d-sh al-sh"><h2>En curso</h2><span class="q ok">${_n2(active.length)}</span></div>`;
   if(active.length){
-    h+=active.map(b=>bookingCard(b,true)).join('');
+    h+=`<div class="d-list">${active.map(b=>bookingRow(b,statusChip(b))).join('')}</div>`;
   } else {
-    h+=`<div class="empty rk-e"><div class="ei">${ico('sun')}</div><div class="et">Ningún vehículo en alquiler ahora</div></div>`;
+    h+=`<div class="d-empty al-e">${ico('sun')}<h3>Ningún vehículo en alquiler ahora</h3></div>`;
   }
 
   // ── Próximos (30 días)
-  h+=`<div class="dh-sh rk-sh"><h2>Próximos 30 días</h2><span class="q">${_n2(upcoming.length)}</span></div>`;
+  h+=`<div class="d-sh al-sh"><h2>Próximos</h2><span class="q">30 días · ${_n2(upcoming.length)}</span></div>`;
   if(upcoming.length){
-    h+=upcoming.map(b=>bookingCard(b,false)).join('');
+    h+=`<div class="d-list">${upcoming.map(b=>{const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);return bookingRow(b,`<span class="chip chip-blue">En ${daysUntil}d</span>`);}).join('')}</div>`;
   } else {
-    h+=`<div class="empty rk-e"><div class="ei">${ico('clipboard')}</div><div class="et">Sin alquileres próximos</div><div class="es">Pulsa + para generar un contrato</div></div>`;
+    h+=`<div class="d-empty al-e">${ico('clipboard')}<h3>Sin alquileres próximos</h3><p>Pulsa «Nuevo alquiler» para crear uno</p></div>`;
   }
 
-  // ── Recientes: lista técnica
+  // ── Recientes
   if(recent.length){
-    h+=`<div class="dh-sh rk-sh"><h2>Recientes</h2><span class="q">${_n2(recent.length)}</span></div>`;
-    h+=`<div class="dh-list">`;
-    recent.forEach(b=>{
-      const v=b._v;const dur=daysBetween(b.startDate,b.endDate);
-      h+=`<div class="dh-row" onclick="openV('${escJs(v.id)}')">
-        ${_dot(v)}
-        <div style="min-width:0"><div class="t ell">${esc(v.name)} <span class="mono2">· ${esc(b.clientName||'—')}</span></div><div class="s">${esc(fmtDMY(b.endDate))} · ${dur}d</div></div>
-        <div class="r"><b>${fmtF(b.amount||0)}</b></div>
-      </div>`;
-    });
-    h+=`</div>`;
+    h+=`<div class="d-sh al-sh"><h2>Recientes</h2><span class="q">${_n2(recent.length)}</span></div>`;
+    h+=`<div class="d-list">${recent.map(b=>bookingRow(b,'')).join('')}</div>`;
   }
 
   h+=`</div>`;
