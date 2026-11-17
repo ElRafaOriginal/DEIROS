@@ -8278,19 +8278,18 @@ function renderInfo(v){
   const isM=v.vtype==='managed';
   const comm=(v.commission==null||v.commission===''?30:Number(v.commission));
   const fields=[['Tipo',isM?'En gestión':'Propio'],['Tipo vehículo',vtypeLabel(v.vehicle_type||'turismo')],['Nombre',v.name],['Matrícula',v.plate],['Modelo',v.model||'—'],['Año',v.year||'—'],['Combustible',v.fuel||'—'],['Km actuales',v.km?Number(v.km).toLocaleString('es-ES')+' km':'—'],['Km últ. mant.',v.maint_km?Number(v.maint_km).toLocaleString('es-ES')+' km'+(v.km?' ('+Number(Number(v.km)-Number(v.maint_km)).toLocaleString('es-ES')+' km desde entonces)':''):'—'],['Nº bastidor',v.chassis||'—'],['Precio compra',v.purchase_price?fmtF(Number(v.purchase_price)):'—'],['Año compra',v.purchase_year||'—'],['Notas',v.notes||'—']];
-  let h=`<div>
-  ${v.photo?`<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1.5px solid ${safeColor(v.color)}44;position:relative">
-    <img src="${esc(v.photo)}" alt="" style="width:100%;max-height:200px;object-fit:cover;display:block"/>
-    <button onclick="removeVPhoto('${escJs(v.id)}')" style="position:absolute;top:8px;right:8px;background:#0008;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer">${ico('trash')} Quitar</button>
-  </div>`:`<button onclick="pickVPhoto('${escJs(v.id)}')" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:1.5px dashed var(--border2);border-radius:12px;padding:20px;cursor:pointer;margin-bottom:16px;font-family:var(--font)">
-    <span style="font-size:24px">${ico('camera')}</span>
-    <span style="font-size:13px;color:var(--text3);font-weight:600">Añadir foto del vehículo</span>
-    <span style="font-size:11px;color:var(--text3)">Solo visible en la ficha</span>
+  const _w=['Km últ. mant.','Nº bastidor','Notas']; // datos largos: a todo el ancho de la ficha técnica
+  const _chip=(c,t)=>'<span class="chip '+c+'">'+t+'</span>';
+  let h=`<div class="fl-inf">
+  ${v.photo?`<div class="fl-ph">
+    <img src="${esc(v.photo)}" alt=""/>
+    <button class="fl-phx" onclick="removeVPhoto('${escJs(v.id)}')">${ico('trash')} Quitar</button>
+  </div>`:`<button class="fl-pha" onclick="pickVPhoto('${escJs(v.id)}')">
+    ${ico('camera')}
+    <span>Añadir foto del vehículo</span>
+    <small>Solo visible en la ficha</small>
   </button>`}
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <div class="sec" style="margin-bottom:0">FICHA DEL VEHÍCULO</div>
-    <button class="btn-pri" onclick="openEditV('${escJs(v.id)}')" style="width:auto">${ico('edit')} Editar</button>
-  </div>
+  <div class="al-h fl-ih"><h3>Ficha del vehículo</h3><button class="btn-sec fl-ed" onclick="openEditV('${escJs(v.id)}')">${ico('edit')} Editar</button></div>
   ${(()=>{const isD=window.innerWidth>=768;
   const curKm=Number(v.km)||0;const maintKm=Number(v.maint_km)||0;
   const kmDiff=curKm&&maintKm?curKm-maintKm:null;
@@ -8299,126 +8298,116 @@ function renderInfo(v){
   const maintDays=maintDateVal?Math.ceil((new Date(maintDateVal)-new Date())/864e5):null;
   const maintDateExpired=maintDays!==null&&maintDays<0;
   const maintDateUrgent=maintDays!==null&&maintDays<=30&&!maintDateExpired;
-  // Card border: red if either is expired, amber if either is urgent
+  // Estado del mantenimiento: rojo si algo ha vencido, acento si está cerca (chip con punto + texto, sin cajas de color)
   const anyExpired=kmExpired||maintDateExpired;
   const anyUrgent=kmUrgent||maintDateUrgent;
-  const cardBorder=anyExpired?'var(--red)':anyUrgent?'var(--amber)':'var(--border)';
-  const cardColor=anyExpired?'var(--red)':anyUrgent?'var(--amber)':'var(--text3)';
-  const kmColor=kmExpired?'var(--red)':kmUrgent?'var(--amber)':'var(--text3)';
-  const dateColor=maintDateExpired?'var(--red)':maintDateUrgent?'var(--amber)':'var(--text3)';
-  const maintKmCard='<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+safeColor(cardBorder)+';grid-column:1/-1">'
-    +'<div style="font-size:10px;font-weight:700;color:'+safeColor(cardColor)+(';margin-bottom:8px">'+ico('wrench')+' MANTENIMIENTO PERIÓDICO')+(anyExpired?(' '+ico('alert')):anyUrgent?(' '+ico('bolt')):'')+'</div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+  const kmCls=kmExpired?' err':kmUrgent?' fl-wa':'';
+  const dateCls=maintDateExpired?' err':maintDateUrgent?' fl-wa':'';
+  const maintKmCard='<div class="fl-vr fl-mt"><div class="fl-vl"><div class="t">'+ico('wrench')+' Mantenimiento periódico</div>'
+    +(anyExpired?_chip('chip-red','Vencido'):anyUrgent?_chip('chip-amber','Próximo'):(kmDiff!==null||maintDays!==null)?_chip('chip-green','Al día'):_chip('chip-gray','Sin datos'))
+    +'</div></div>'
+    +'<div class="d-2 fl-m2">'
     // --- KM column ---
-    +'<div>'
-    +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">KM ÚLTIMO MANT.</div>'
-    +'<div style="display:flex;align-items:center;gap:5px">'
-    +'<input type="number" value="'+esc(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" onchange="saveMaintKm(\''+escJs(v.id)+'\',this.value)" style="font-size:12px;padding:5px 6px;flex:1"/>'
-    +'<span style="font-size:10px;color:var(--text3)">km</span>'
-    +'</div>'
-    +(kmDiff!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(kmColor)+'">'+(kmExpired?(ico('alert')+' Vencido (+')+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div style="font-size:10px;margin-top:3px;color:var(--text3)">Alerta a 10.000km</div>')
+    +'<div class="d-f"><span class="q">Km último mant.</span>'
+    +'<div class="al-suf"><input type="number" value="'+esc(v.maint_km||'')+'" inputmode="numeric" placeholder="Ej: 45000" aria-label="Km del último mantenimiento" onchange="saveMaintKm(\''+escJs(v.id)+'\',this.value)"/><span>km</span></div>'
+    +(kmDiff!==null?'<div class="d-hint'+kmCls+'">'+(kmExpired?(ico('alert')+' Vencido (+')+kmDiff.toLocaleString('es-ES')+'km)':kmUrgent?'Faltan '+(10000-kmDiff).toLocaleString('es-ES')+'km':kmDiff.toLocaleString('es-ES')+'km recorridos')+'</div>':'<div class="d-hint">Alerta a 10.000km</div>')
     +'</div>'
     // --- Date column ---
-    +'<div>'
-    +'<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:4px">PRÓXIMA FECHA</div>'
-    +'<input type="date" value="'+esc(safeDate(maintDateVal))+'" onchange="saveDate(\''+escJs(v.id)+'\',\'maint_date\',this.value)" style="font-size:12px;padding:5px 6px;width:100%"/>'
-    +(maintDays!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(dateColor)+'">'+(maintDateExpired?(ico('alert')+' Fecha vencida'):maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
+    +'<div class="d-f"><span class="q">Próxima fecha</span>'
+    +'<input type="date" value="'+esc(safeDate(maintDateVal))+'" aria-label="Próxima fecha de mantenimiento" onchange="saveDate(\''+escJs(v.id)+'\',\'maint_date\',this.value)"/>'
+    +(maintDays!==null?'<div class="d-hint'+dateCls+'">'+(maintDateExpired?(ico('alert')+' Fecha vencida'):maintDateUrgent?'En '+maintDays+'d':'En '+maintDays+'d')+'</div>':'')
     +'</div>'
     +'</div>'
-    +((anyExpired||anyUrgent)?'<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;font-weight:700;color:'+safeColor(cardColor)+'">Hacer lo que llegue primero (km o fecha)</div>':'')
-    +'</div>';
-  const alertsPanel=`<div><div class="sec">ALERTAS Y VENCIMIENTOS</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+    +((anyExpired||anyUrgent)?'<p class="d-note fl-nt">Hacer lo que llegue primero (km o fecha)</p>':'');
+  const _ins=[v.insurer,v.policy?'póliza '+v.policy:'',v.insurance_type].filter(Boolean).join(' · ');
+  const alertsPanel=`<div class="fl-sec"><div class="al-h"><h3>Vencimientos</h3><span class="q">ITV · seguro · taller</span></div>
+  <div class="fl-vls">
     ${ALERT_FIELDS.map(([field,label,ic])=>{
       const val=v[field]||'';
       const days=val?Math.ceil((new Date(val)-new Date())/864e5):null;
       const urgent=days!==null&&days<=30;
       const expired=days!==null&&days<0;
-      const color=expired?'var(--red)':urgent?'var(--amber)':'var(--text3)';
-      return '<div style="background:var(--bg3);border-radius:8px;padding:10px;border:1px solid '+(expired?'var(--red)':urgent?'var(--amber)':'var(--border)')+'"><div style="font-size:10px;font-weight:700;color:'+safeColor(color)+';margin-bottom:6px">'+ico(ic)+' '+label+'</div><input type="date" value="'+esc(safeDate(val))+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)" style="font-size:12px;padding:6px 8px;width:100%"/>'+(days!==null?'<div style="font-size:10px;margin-top:4px;color:'+safeColor(color)+'">'+(expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d')+'</div>':'')+'</div>';
+      const st=days===null?_chip('chip-gray','Sin fecha'):_chip(expired?'chip-red':urgent?'chip-amber':'chip-green',expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d');
+      const sub=field==='insurance_date'&&_ins?'<div class="s">'+esc(_ins)+'</div>':'';
+      return '<div class="fl-vr"><div class="fl-vl"><div class="t">'+ico(ic)+' '+label+'</div>'+st+sub+'</div><input type="date" value="'+esc(safeDate(val))+'" aria-label="'+label+'" onchange="saveDate(\''+escJs(v.id)+'\',\''+field+'\',this.value)"/></div>';
     }).join('')}
     ${maintKmCard}
   </div></div>`;
-  const fichaPanel='<div>'+fields.map(([k,val])=>'<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:12px"><div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);min-width:100px;padding-top:2px">'+k.toUpperCase()+'</div><div style="font-family:var(--mono);font-size:13px;color:var(--text2)">'+esc(val)+'</div></div>').join('')+'</div>';
+  const fichaPanel='<div class="spec fl-spec">'+fields.map(([k,val])=>'<div'+(_w.includes(k)?' class="w2"':'')+'>'+esc(k)+'<b>'+esc(val)+'</b></div>').join('')+'</div>';
   if(isD)return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:16px">'+fichaPanel+alertsPanel+'</div>';
-  return fichaPanel+'<div class="divider"></div>'+alertsPanel;
+  return fichaPanel+alertsPanel;
   })()}
-  ${isM?`<div class="divider"></div>
-  <div class="sec" style="color:var(--purple)">PROPIETARIO</div>
+  ${isM?`<div class="fl-sec"><div class="al-h"><h3>Propietario</h3></div>
   ${(()=>{
     const owner=OW.find(o=>o.id===v.ownerId);
     if(owner){
-      return '<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">'
-        +'<div>'
-        +'<div style="font-size:14px;font-weight:700;color:var(--text)">'+esc(owner.name)+'</div>'
-        +(owner.phone?('<div style="font-size:11px;color:var(--text3);margin-top:2px">'+ico('phone')+' ')+esc(owner.phone)+'</div>':'')
-        +(owner.email?('<div style="font-size:11px;color:var(--text3);">'+ico('mail')+' ')+esc(owner.email)+'</div>':'')
+      return '<div class="fl-or">'
+        +'<div class="fl-ol">'
+        +'<div class="t">'+esc(owner.name)+'</div>'
+        +(owner.phone?('<div class="s">'+ico('phone')+' ')+esc(owner.phone)+'</div>':'')
+        +(owner.email?('<div class="s">'+ico('mail')+' ')+esc(owner.email)+'</div>':'')
         +'</div>'
-        +'<button class="btn-pri" onclick="openOwnerReport(\''+escJs(owner.id)+('\')" style="width:auto;font-size:12px">'+ico('doc')+' Informe</button>')
+        +'<button class="btn-sec" onclick="openOwnerReport(\''+escJs(owner.id)+('\')">'+ico('doc')+' Informe</button>')
         +'</div>';
     }
-    return '<div style="margin-bottom:16px">'
-      +'<select id="ownerAssign" onchange="assignOwner(\''+escJs(v.id)+'\',this.value)" style="width:100%">'
+    return '<div class="d-f">'
+      +'<select id="ownerAssign" onchange="assignOwner(\''+escJs(v.id)+'\',this.value)" aria-label="Propietario">'
       +'<option value="">— Sin asignar —</option>'
       +OW.map(o=>'<option value="'+esc(o.id)+'"'+(o.id===v.ownerId?' selected':'')+'>'+esc(o.name)+'</option>').join('')
       +'</select>'
-      +(OW.length===0?('<div style="font-size:11px;color:var(--text3);margin-top:8px">Primero crea propietarios en la sección '+ico('users')+'</div>'):'')
+      +(OW.length===0?('<div class="d-hint">Primero crea propietarios en la sección '+ico('users')+'</div>'):'')
       +'</div>';
-  })()}
-  <div class="divider"></div><div class="sec" style="color:var(--purple)">COMISIÓN DEIROS</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">% del beneficio neto que va al negocio.</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <div style="position:relative;flex:1"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal" style="padding-right:36px"/><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--purple);font-weight:700;font-family:var(--mono)">%</span></div>
-      <button class="btn-pri" onclick="saveComm('${escJs(v.id)}')" style="width:auto;white-space:nowrap">Guardar</button>
+  })()}</div>
+  <div class="fl-sec"><div class="al-h"><h3>Comisión Deiros</h3></div>
+    <div class="d-f"><label class="q" for="commInput">Porcentaje</label>
+    <div class="al-in"><div class="al-suf"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal"/><span>%</span></div>
+      <button class="btn-sec" onclick="saveComm('${escJs(v.id)}')">Guardar</button>
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${[10,20,25,30,35,40,50].map(p=>`<div onclick="document.getElementById('commInput').value=${p}" style="padding:5px 12px;border-radius:20px;border:1px solid #8B5CF640;background:#8B5CF610;color:var(--purple);font-size:12px;font-weight:700;cursor:pointer">${p}%</div>`).join('')}</div>`:''}
-  <div class="divider"></div>
-  <div class="sec">${ico('odometer')} HISTORIAL DE KILÓMETROS</div>
+    <div class="d-hint">% del beneficio neto que va al negocio.</div></div>
+    <div class="d-pills fl-cp">${[10,20,25,30,35,40,50].map(p=>`<button type="button" onclick="document.getElementById('commInput').value=${p}">${p}%</button>`).join('')}</div></div>`:''}
+  <div class="fl-sec"><div class="al-h"><h3>Kilómetros</h3>${ico('odometer')}</div>
   ${(()=>{
     const bksKm=(v.bookings||[]).filter(b=>b.kmStart||b.kmEnd).sort((a,b)=>b.startDate.localeCompare(a.startDate));
     const totalKm=bksKm.reduce((s,b)=>s+(b.kmStart&&b.kmEnd?b.kmEnd-b.kmStart:0),0);
-    if(!bksKm.length) return '<div style="font-size:12px;color:var(--text3);padding:8px 0;margin-bottom:12px">Sin registros de km. Añádelos al crear alquileres.</div>';
-    return '<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:16px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
-      +'<span style="font-size:11px;color:var(--text3)">Total km registrados</span>'
-      +'<span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--blue)">'+totalKm.toLocaleString('es-ES')+' km</span>'
-      +'</div>'
+    if(!bksKm.length) return '<div class="d-hint">Sin registros de km. Añádelos al crear alquileres.</div>';
+    return '<div class="d-kv"><span>Total km registrados</span><b class="fl-bl2">'+totalKm.toLocaleString('es-ES')+' km</b></div>'
+      +'<div class="d-list">'
       +bksKm.slice(0,8).map(b=>{
         const km=b.kmStart&&b.kmEnd?b.kmEnd-b.kmStart:null;
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border)">'
-          +'<div><div style="font-size:11px;font-weight:600;color:var(--text2)">'+esc(fmtDMY(b.startDate))+'</div>'
-          +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px">'+(b.kmStart?b.kmStart.toLocaleString('es-ES'):'—')+' → '+(b.kmEnd?b.kmEnd.toLocaleString('es-ES'):'—')+' km</div></div>'
-          +'<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+(km?'var(--blue)':'var(--text3)')+'">'+(km?'+'+km.toLocaleString('es-ES')+' km':'—')+'</span>'
+        return '<div class="fl-hr">'
+          +'<div class="t">'+esc(fmtDMY(b.startDate))+'<span>'+(b.kmStart?b.kmStart.toLocaleString('es-ES'):'—')+' → '+(b.kmEnd?b.kmEnd.toLocaleString('es-ES'):'—')+' km</span></div>'
+          +'<b'+(km?' class="fl-bl2"':'')+'>'+(km?'+'+km.toLocaleString('es-ES')+' km':'—')+'</b>'
           +'</div>';
       }).join('')
       +'</div>';
-  })()}
-  <div class="divider"></div>
-  <div class="sec">${ico('wrench')} HISTORIAL DE MANTENIMIENTOS</div>
+  })()}</div>
+  <div class="fl-sec"><div class="al-h"><h3>Mantenimientos</h3>${ico('wrench')}</div>
   ${(()=>{
     const maints=(v.finances||[]).filter(e=>(e.category==='Mantenimiento periódico'||e.category==='Mantenimiento')).sort((a,b)=>b.date.localeCompare(a.date));
-    if(!maints.length)return '<div style="font-size:12px;color:var(--text3);padding:8px 0;margin-bottom:12px">Sin mantenimientos registrados. Añade un gasto de categoría "Mantenimiento" o "Mantenimiento periódico".</div>';
-    return '<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:16px">'
+    if(!maints.length)return '<div class="d-hint">Sin mantenimientos registrados. Añade un gasto de categoría "Mantenimiento" o "Mantenimiento periódico".</div>';
+    return '<div class="d-list">'
       +maints.map((e,i)=>{const m=e.maint||{};
-        return '<div style="padding:'+(i>0?'12px 0 0':'0 0 0')+';">'
-          +(i>0?'<div style="height:1px;background:var(--border);margin-bottom:12px"></div>':'')
-          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
-          +'<div style="font-size:12px;font-weight:700;color:var(--text)">'+esc(m.work||'Sin descripción')+'</div>'
-          +'<div style="font-family:var(--mono);font-size:11px;color:var(--amber);font-weight:700">-'+fmt(e.amount)+'</div>'
+        return '<div class="fl-hr">'
+          +'<div class="t">'+esc(m.work||'Sin descripción')
+          +('<span>'+ico('calendar')+' ')+esc(fmtDMY(e.date))+(m.km?' · '+m.km.toLocaleString('es-ES')+' km':'')+(m.shop?' · '+esc(m.shop):'')+'</span>'
+          +(m.nextKm||m.nextDate?'<span class="fl-nx">Próximo: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' / ':'')+esc(m.nextDate||'')+'</span>':'')
           +'</div>'
-          +('<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px">'+ico('calendar')+' ')+esc(fmtDMY(e.date))+(m.km?' · '+m.km.toLocaleString('es-ES')+' km':'')+(m.shop?' · '+esc(m.shop):'')+'</div>'
-          +(m.nextKm||m.nextDate?'<div style="font-size:10px;color:var(--blue)">Próximo: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' / ':'')+esc(m.nextDate||'')+'</div>':'')
+          +'<b class="err">-'+fmt(e.amount)+'</b>'
           +'</div>';
       }).join('')
       +'</div>'
-      +'<button onclick="dlMaintReport(\''+escJs(v.id)+('\')" class="btn-sec" style="margin-bottom:12px">'+ico('doc')+' Informe de mantenimientos</button>');
-  })()}
-  ${isM&&v.ownerId?`<button class="btn-sec" onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')" style="margin-bottom:8px">${ico('clipboard')} Contrato de gestión</button>`:''}
-  <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')" style="margin-bottom:8px">${ico('chart')} Exportar a Excel</button>
-  <div style="height:8px"></div>
-  ${v.archived?`<button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="margin-bottom:8px">${ico('undo')} Reactivar vehículo</button>`:
-  `<button class="btn-sec" onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')" style="margin-bottom:8px">${isM?(ico('handshake')+' Fin de gestión'):(ico('tag')+' Vendido')}</button>`}
-  <button class="btn-dang" onclick="deleteV('${escJs(v.id)}')">${ico('trash')} Eliminar definitivamente</button>
+      +'<button onclick="dlMaintReport(\''+escJs(v.id)+('\')" class="btn-sec fl-mr">'+ico('doc')+' Informe de mantenimientos</button>');
+  })()}</div>
+  <div class="fl-sec"><div class="al-h"><h3>Documentos</h3></div>
+  <div class="d-acts"><div class="two al-two">
+  ${isM&&v.ownerId?`<button class="btn-sec" onclick="openMgmtContractForm('${escJs(v.ownerId)}','${escJs(v.id)}')">${ico('clipboard')} Contrato de gestión</button>`:''}
+  <button class="btn-sec" onclick="exportExcel('${escJs(v.id)}')">${ico('chart')} Exportar a Excel</button>
+  ${v.archived?`<button class="btn-sec" onclick="restoreV('${escJs(v.id)}')">${ico('undo')} Reactivar vehículo</button>`:''}
+  </div></div></div>
+  <div class="al-dz fl-dz">
+  ${v.archived?'':`<button class="btn-txt" onclick="archiveV('${escJs(v.id)}','${isM?'end':'sold'}')">${isM?(ico('handshake')+' Fin de gestión'):(ico('tag')+' Vendido')}</button>`}
+  <button class="btn-txt err" onclick="deleteV('${escJs(v.id)}')">${ico('trash')} Eliminar definitivamente</button>
+  </div>
   </div>`;
   return h;
 }
