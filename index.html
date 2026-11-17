@@ -6681,18 +6681,20 @@ function vcardH(v){
   const isM=v.vtype==='managed';
   const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
   const share=isM?_settleTotals(v,_getVehicleAllFinances(v)).mgr:null;
-  return `<div class="vcard vk" onclick="openV('${escJs(v.id)}')">
-    <div class="vk-h"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span><span class="chip ${isM?'chip-amber':'chip-gray'}">${isM?ico('handshake')+' GESTIÓN':'PROPIO'}</span></div>
-    <div class="vk-n">${esc(v.name)}</div>
-    <div class="vk-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}${v.year?' · '+esc(v.year):''}</div>
+  // Balance en Doto: entero sin separador de miles + céntimos en mono (mismo importe que antes: vP)
+  const _bS=fmtF(vP).split(','),_bE=(vP>=0?'+':'')+_bS[0].replace(/\./g,''),_bD=_bS.length>1?','+_bS.slice(1).join(','):'';
+  return `<div class="vcard vk fl-k" onclick="openV('${escJs(v.id)}')">
+    <div class="d-ch"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span>${isM?'<span class="chip">'+ico('handshake')+' Gestión</span>':''}</div>
+    <div class="d-ct fl-n">${esc(v.name)}</div>
+    <div class="d-meta fl-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}${v.year?' · '+esc(v.year):''}</div>
+    <div class="fl-bal"><span class="q">Balance</span><div class="d-n n3${vP<0?' neg':''}">${esc(_bE)}<small>${esc(_bD)}</small></div></div>
     <div class="spec vk-s">
       <div><i class="dt dt-ok"></i>INGRESOS<b>${fmt(vI)}</b></div>
       <div><i class="dt dt-err"></i>GASTOS<b>${fmt(vE)}</b></div>
       <div>DÍAS<b>${vD}d</b></div>
     </div>
-    ${isM?`<div class="vk-ln"><span class="q">Comisión Deiros · ${comm}%</span><b style="color:${share>=0?'var(--text)':'var(--red)'}">${fmtF(share)}</b></div>`:''}
     <div class="vk-bar"><i style="width:${Number(iPct)}%"></i><i style="width:${Number(ePct)}%"></i></div>
-    <div class="vk-ln"><span class="q">Balance</span><b style="color:${vP>=0?'var(--text)':'var(--red)'}">${vP>=0?'+':''}${fmtF(vP)}</b></div>
+    ${isM?`<div class="vk-ln"><span class="q">Comisión Deiros · ${comm}%</span><b style="color:${share>=0?'var(--text)':'var(--red)'}">${fmtF(share)}</b></div>`:''}
   </div>`;
 }
 
@@ -6736,12 +6738,12 @@ function renderListBody(){
     if(d)d.setAttribute('aria-pressed',String(m===mode));
   });
   let h='';
-  if(!activeV.length){h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div><div class="es">Pulsa + para añadir</div></div>`;}
-  else if(!filtered.length){h+=`<div class="empty"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;}
+  if(!activeV.length){h+=`<div class="d-empty fl-em">${ico('car')}<h3>Sin vehículos</h3><p>Pulsa «Nuevo vehículo» para añadir el primero.</p></div>`;}
+  else if(!filtered.length){h+=`<div class="d-empty fl-em">${ico('search')}<h3>Sin resultados</h3><p>Prueba con otra búsqueda o quita los filtros.</p></div>`;}
   else{
     const _n2=n=>String(n).padStart(2,'0');
     const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
-    const _sh=(t,n)=>`<div class="dh-sh vk-sh"><h2>${t}</h2><span class="q">${_n2(n)}</span></div>`;
+    const _sh=(t,n)=>`<div class="d-sh vk-sh"><h2>${t}</h2><span class="q">${_n2(n)}</span></div>`;
     if(mode==='grid'){
       // Grid: 2 columnas de fichas neutras con el punto del color del coche
       const drawGrid=(list,t)=>{
@@ -6752,7 +6754,7 @@ function renderListBody(){
           h+=`<div class="vg" onclick="openV('${escJs(v.id)}')">
             <div class="vg-n">${_dot(v)}<span>${esc(v.name)}</span></div>
             <div class="vk-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
-            <div class="spec"><div>ING<b>${fmt(vI)}</b></div><div>BEN<b style="color:${vP>=0?'var(--text)':'var(--red)'}">${fmt(vP)}</b></div></div>
+            <div class="spec"><div class="w2">INGRESOS<b>${fmt(vI)}</b></div><div class="w2">BALANCE<b style="color:${vP>=0?'var(--text)':'var(--red)'}">${fmt(vP)}</b></div></div>
           </div>`;
         });
         h+=`</div>`;
@@ -6765,20 +6767,20 @@ function renderListBody(){
       const getVStatus=v=>{
         const bks=v.bookings||[];
         const inProgress=bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
-        if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')}<span>${esc(inProgress.clientName||'En alquiler')}</span></span>`,sort:1};
+        if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')}<span>${esc(inProgress.clientName||'En alquiler')}</span></span>`,row:`<span class="chip chip-amber">Alquilado</span><span class="fl-cl">${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
         const nextB=bks.filter(b=>b.startDate>hoy).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')}<span>En ${dUntil}d</span></span>`,sort:2};}
-        return{chip:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`,sort:3};
+        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')}<span>En ${dUntil}d</span></span>`,row:`<span class="chip chip-blue">En ${dUntil}d</span><span class="fl-cl">Libre hasta ${esc(fmtDMY(nextB.startDate))}</span>`,sort:2};}
+        return{chip:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`,row:`<span class="chip chip-green">Disponible</span>`,sort:3};
       };
       const drawCompactSection=(list,t)=>{
         if(!list.length)return;
         if(window.innerWidth<768){
-          h+=_sh(t,list.length)+`<div class="dh-list vr-l">`;
+          h+=_sh(t,list.length)+`<div class="d-list vr-l">`;
           list.forEach(v=>{
             const vI=tInc(v),vP=vI-tExp(v);
-            h+=`<div class="dh-row" onclick="openV('${escJs(v.id)}')">
+            h+=`<div class="d-row dh-row fl-r" onclick="openV('${escJs(v.id)}')">
               ${_dot(v)}
-              <div style="min-width:0"><div class="t ell">${esc(v.name)}</div><div class="s ell">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div><div class="vr-c">${getVStatus(v).chip}</div></div>
+              <div style="min-width:0"><div class="t ell fl-n">${esc(v.name)}</div><div class="s ell">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div><div class="vr-c">${getVStatus(v).row}</div></div>
               <div class="r"><b>${fmt(vI)}</b><span class="vr-b" style="color:${vP>=0?'var(--text2)':'var(--red)'}">${vP>=0?'+':''}${fmt(vP)}</span></div>
             </div>`;
           });
