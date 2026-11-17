@@ -995,6 +995,109 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 /* «Marcar días»: con el rótulo a 11 px ya no cabe en la fila; pasa encima de las dos píldoras */
 .cal-mp .q{flex-basis:100%;}
+/* ══ PR D · Alquileres a fondo: lista en filas finas (.d-row), ficha del alquiler sin cajas anidadas (ficha técnica, total Doto, un botón principal según el estado),
+   asistente con selector segmentado y resumen tras línea discontinua, devolución en 3 pasos con nivel de combustible segmentado, ampliación, cobros y cancelación ══ */
+/* Lista de Alquileres: filas finas con punto del coche · coche y matrícula / cliente / fechas · importe y estado */
+.al-sh{margin-top:var(--sp-sec);}
+.anim>.al-sh:first-child{margin-top:4px;}
+.al-r{align-items:start;}
+.al-r>.dh-dot{margin-top:7px;}
+.al-r:active{opacity:.6;}
+.al-b{min-width:0;}
+.al-c{font-size:14px;line-height:1.3;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.al-r .r{padding-top:2px;}
+/* Hojas de alquiler: cabeceras de sección, filas de dato y totales */
+.al-ch{margin-bottom:14px;}
+.al-ct{overflow-wrap:anywhere;}
+.al-mt6{margin-top:6px;}
+.al-mb{margin-bottom:16px;}
+.al-mt{margin-top:16px;}
+.al-end{margin-top:28px;}
+.al-cx{display:grid;gap:10px;margin-top:18px;padding:14px 16px;border:1px solid var(--err-b);border-radius:16px;font-size:14px;line-height:1.45;color:var(--text2);}
+.al-cx strong{color:var(--text);font-weight:600;}
+.al-cxp{font-family:var(--mono);font-size:13px;}
+.al-rt{margin-top:28px;}
+.al-sp{margin-top:20px;}
+.al-sp .dh-sub{font-size:var(--fs-min);}
+.al-nt{margin-top:16px;}
+.al-tot{margin-top:24px;}
+.al-tot .d-n.neg{color:var(--red);}
+.al-pri{margin-top:20px;}
+.al-s{margin-top:var(--sp-sec);}
+.al-h{display:flex;align-items:baseline;gap:10px;margin:32px 0 14px;}
+.al-h h3{flex:1;min-width:0;font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.1;color:var(--text);}
+.al-s>.al-h:first-child,.al-h0{margin-top:0;}
+.al-h .bk-sync{align-self:center;margin:-12px -10px -12px 0;}
+.al-q{display:block;margin:18px 0 8px;}
+.al-q0{display:block;margin-bottom:6px;}
+/* Estado (entregado / devuelto / cobrado): tira de 3 con líneas de 1 px, como la ficha técnica; el estado hecho en verde con su icono */
+.al-tg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:12px;background:var(--border2);border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;}
+.al-tg button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;align-content:center;gap:6px 4px;min-height:72px;padding:10px 6px;background:var(--bg2);text-align:center;font-family:var(--font);font-size:13px;font-weight:600;line-height:1.2;color:var(--text2);}
+.al-tg button>.ico:first-child{flex:0 0 100%;height:20px;}
+.al-tg button.on{color:var(--green);}
+.al-tg button:active{opacity:.6;}
+/* Ingresos y gastos: filas con línea fina y resultado tras línea discontinua */
+.al-l{border-top:1px solid var(--border2);}
+.al-li{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text2);}
+.al-li b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;}
+.al-li b.ok,.al-mv b.ok{color:var(--green);}
+.al-mv b.err{color:var(--red);}
+.al-mv{display:grid;grid-template-columns:1fr auto 44px;align-items:center;gap:8px;min-height:56px;padding:6px 0;border-bottom:1px solid var(--border);}
+.al-mv .t{min-width:0;font-size:15px;font-weight:600;line-height:1.3;color:var(--text);overflow-wrap:anywhere;}
+.al-mv .t span{display:block;margin-top:2px;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--text2);}
+.al-mv b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.al-x{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;font-size:20px;line-height:1;color:var(--text2);}
+.al-st{padding:8px 0;text-align:right;font-family:var(--mono);font-size:13px;}
+.al-st.ok{color:var(--green);}.al-st.err{color:var(--red);}
+.al-res,.al-pd{margin-top:16px;grid-template-columns:1fr auto;align-items:center;}
+.al-res>b,.al-pd>b{font-family:var(--mono);font-size:22px;font-weight:500;white-space:nowrap;}
+.al-res p,.al-pd p{grid-column:1/-1;}
+.al-pd p strong{color:var(--text);font-weight:600;}
+.al-s .d-acts{margin-top:16px;}
+.al-two>:last-child:nth-child(odd),.al-two>.al-w{grid-column:1/-1;}
+.al-dz{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 16px;margin-top:24px;padding-top:8px;border-top:1px solid var(--border);}
+/* Cobros y fianza: campo con «€», estado de la fianza segmentado, retención parcial plegada */
+.al-in{display:grid;grid-template-columns:1fr auto;gap:8px;}
+.al-in .btn-sec{width:auto;padding:0 22px;}
+.al-fz{margin-top:28px;}
+.al-fzs{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.al-sm{margin:-4px 0 12px;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.al-seg{margin:0;}
+.al-acc{margin-top:12px;}
+.al-acc summary{min-height:56px;font-size:15px;}
+.al-fzr{display:grid;grid-template-columns:128px 1fr;gap:8px;margin-bottom:8px;}
+.al-fzr>*{min-width:0;}
+/* Asistente: plataforma segmentada (la activa en acento: clase .sel que pone selPlat), extras en lista técnica con marca redonda */
+.al-plat{margin-bottom:0;}
+.al-plat button.sel{background:var(--amber);color:var(--on-amber);}
+.d-hint:empty{display:none;}
+.al-suf{position:relative;}
+.al-suf>span{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--text2);pointer-events:none;}
+.al-exl{border-top:1px solid var(--border2);}
+.al-ex{display:grid;grid-template-columns:24px 1fr auto 28px;align-items:center;gap:12px;min-height:56px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;background:transparent!important;}
+.al-ex .i{display:grid;place-items:center;font-size:20px;color:var(--text2);}
+.al-ex .t{min-width:0;font-size:15px;font-weight:600;line-height:1.3;color:var(--text);}
+.al-ex .t small{display:block;margin-top:2px;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--text2);}
+.al-ex .p{font-family:var(--mono);font-size:13px;color:var(--text2);white-space:nowrap;}
+.al-ck{box-sizing:border-box;width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--border2);border-radius:50%;font-size:15px;color:var(--on-amber);}
+.al-ex:not(:has(input[type=checkbox]:checked)) .al-ck{background:transparent!important;}
+.al-ex:has(input[type=checkbox]:checked) .p{color:var(--text);}
+.al-ex:has(input[type=checkbox]:checked) .i{color:var(--amber);}
+.al-kmn{width:84px!important;min-height:44px;padding:8px 10px!important;text-align:right;}
+.al-ext{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 0 4px;}
+.al-ext span{font-size:15px;font-weight:600;color:var(--text);}
+.al-ext b{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--text);}
+.al-sum .d-kv b{min-width:0;overflow-wrap:anywhere;}
+/* «Atrás / Siguiente» del asistente: barra de cristal fija al pie de la hoja (al alcance del pulgar), como la barra móvil de la web */
+.al-nav{position:sticky;bottom:calc(-28px - var(--sb));z-index:2;display:grid;grid-template-columns:1fr 2fr;gap:10px;margin:28px -16px calc(-28px - var(--sb));padding:12px 16px calc(12px + var(--sb));background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border-top:1px solid var(--border);}
+/* Devolución: el <select> de nivel queda oculto (lo rellena el segmentado); resumen con líneas, sin caja */
+.al-hid{display:none!important;}
+.al-fu{margin:0;}
+.al-fu button{min-width:0;}
+.al-rs{margin-bottom:8px;padding-top:12px;border-top:1px solid var(--border2);}
+.al-pr{display:grid;grid-template-columns:auto 1fr;gap:8px;margin-bottom:8px;}
+.al-pr .btn-sec{width:auto;}
+.al-pr input{min-width:0;}
 </style>
 </head>
 <body>
@@ -3311,27 +3414,24 @@ function openExtendBooking(bookingId){
   const _curTotal=_bookingClientTotal(_bb);
   const _fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
 
-  openSheet(('<div class="stitle">'+ico('calendar')+' Ampliar alquiler</div>')
-    +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
-    +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:4px">Periodo actual: <strong>'+esc(fmtDMY(_bb.startDate))+'</strong> → <strong>'+esc(fmtDMY(origEnd))+'</strong>'
-    +(_bb.endTime?' · hasta las <strong>'+esc(_bb.endTime)+'</strong>':'')+'</div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--text3)">Total actual del alquiler</span>'
-    +'<span style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+_fmtE(_curTotal)+'</span></div>'
+  openSheet('<div class="stitle">Ampliar alquiler</div>'
+    +'<div class="d-meta">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
+    +'<div class="spec al-sp al-mb">'
+    +'<div class="w2">Periodo actual<b>'+esc(fmtDMY(_bb.startDate))+' → '+esc(fmtDMY(origEnd))+'</b>'+(_bb.endTime?'<span class="dh-sub">hasta las '+esc(_bb.endTime)+'</span>':'')+'</div>'
+    +'<div class="w2">Total actual del alquiler<b>'+_fmtE(_curTotal)+'</b></div>'
     +'</div>'
-    +'<div class="r2">'
-    +'<div class="fg"><label class="lbl">NUEVA FECHA FIN *</label><input id="extNewEnd" type="date" value="'+esc(safeDate(origEnd))+'" min="'+esc(safeDate(origEnd))+'"/></div>'
-    +'<div class="fg"><label class="lbl">HORA FIN</label><input id="extNewTime" type="time" value="'+esc(safeTime(_bb.endTime)||'20:00')+'"/></div>'
+    +'<div class="d-2">'
+    +'<div class="d-f"><label class="q" for="extNewEnd">Nueva fecha fin *</label><input id="extNewEnd" type="date" value="'+esc(safeDate(origEnd))+'" min="'+esc(safeDate(origEnd))+'"/></div>'
+    +'<div class="d-f"><label class="q" for="extNewTime">Hora fin</label><input id="extNewTime" type="time" value="'+esc(safeTime(_bb.endTime)||'20:00')+'"/></div>'
     +'</div>'
-    +'<div class="fg"><label class="lbl">NUEVO IMPORTE TOTAL DEL ALQUILER (€)</label>'
-    +'<input id="extNewTotal" type="number" step="0.01" inputmode="decimal" placeholder="'+_curTotal.toFixed(2)+'" oninput="_extUpdateCalc('+_curTotal+')"/></div>'
-    +'<div id="extCalcBox" style="border-radius:8px;padding:12px;margin-bottom:12px;text-align:center;background:var(--bg3);border:1px solid var(--border2)">'
-    +'<span style="font-size:12px;color:var(--text3)">Introduce el nuevo total para ver la diferencia</span>'
+    +'<div class="d-f"><label class="q" for="extNewTotal">Nuevo importe total</label>'
+    +'<div class="d-pre"><span>€</span><input id="extNewTotal" type="number" step="0.01" inputmode="decimal" placeholder="'+_curTotal.toFixed(2)+'" oninput="_extUpdateCalc('+_curTotal+')"/></div></div>'
+    +'<div id="extCalcBox" class="d-tot al-tot">'
+    +'<p>Introduce el nuevo total para ver la diferencia</p>'
     +'</div>'
-    +('<button class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
-    +'<div style="height:8px"></div>'
-    +('<button onclick="generateExtensionPDF(window._extBookingId)" class="btn-pri" style="margin-bottom:8px">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
-    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+    +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
+    +('<button onclick="generateExtensionPDF(window._extBookingId)" class="btn-sec">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
+    +'<button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
 }
 
 function _extUpdateCalc(curTotal){
@@ -3341,16 +3441,16 @@ function _extUpdateCalc(curTotal){
   const newTotal=parseFloat(inp.value)||0;
   const diff=Math.round((newTotal-curTotal)*100)/100;
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
-  if(!inp.value){box.innerHTML='<span style="font-size:12px;color:var(--text3)">Introduce el nuevo total para ver la diferencia</span>';return;}
+  if(!inp.value){box.innerHTML='<p>Introduce el nuevo total para ver la diferencia</p>';return;}
   if(diff<=0){
-    box.style.background='#EF444415';box.style.borderColor='#EF444440';
-    box.innerHTML=('<span style="color:var(--red);font-weight:700">'+ico('alert')+' El nuevo total debe ser mayor que el actual (')+fE(curTotal)+')</span>';
+    box.innerHTML=('<p class="d-hint err">'+ico('alert')+' El nuevo total debe ser mayor que el actual (')+fE(curTotal)+')</p>';
   } else {
-    box.style.background='#10B98115';box.style.borderColor='#10B98140';
-    box.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:4px">Desglose de la ampliación</div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Total anterior</span><span style="font-family:var(--mono);color:var(--text2)">'+fE(curTotal)+'</span></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px"><span style="color:var(--green)">+ Importe ampliación</span><span style="font-family:var(--mono);color:var(--green);font-weight:700">'+fE(diff)+'</span></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-top:8px;padding-top:8px;border-top:1px solid #10B98130"><span>Nuevo total</span><span style="font-family:var(--mono);color:var(--green)">'+fE(newTotal)+'</span></div>';
+    const _dS=fE(diff).split(',');
+    box.innerHTML='<span class="q">Importe de la ampliación</span>'
+      +'<div class="d-n n2">+'+esc(_dS[0].replace(/\./g,''))+'<small>'+esc(_dS.length>1?','+_dS.slice(1).join(','):'')+'</small></div>'
+      +'<div class="al-l"><div class="al-li"><span>Total anterior</span><b>'+fE(curTotal)+'</b></div>'
+      +'<div class="al-li"><span>+ Importe ampliación</span><b class="ok">'+fE(diff)+'</b></div>'
+      +'<div class="al-li"><span>Nuevo total</span><b>'+fE(newTotal)+'</b></div></div>';
   }
   window._extDiff=diff>0?diff:0;
 }
@@ -3514,38 +3614,45 @@ function openReturnModal(bookingId){
   window._retKmRate=kmRate;
   window._retDelivFuel=delivFuel;
   window._retFuelProd=fuelProd;window._retTankL=tankL;window._retRecargo=recargo;
-  openSheet(('<div class="stitle">'+ico('key')+' Registrar devoluci\u00f3n</div>')
-    +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
-    +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' \u00b7 '+esc(_bv.plate)+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:3px">Km entrega: <strong>'+(kmStart?kmStart.toLocaleString('es-ES')+' km':'no registrado')+'</strong> \u00b7 Combustible entrega: <strong>'+(delivFuel?esc(delivFuel):'no registrado')+'</strong></div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:2px">Km incluidos: <strong>'+(isIlim?'Ilimitados':kmLimit.toLocaleString('es-ES')+' km')+'</strong></div>'
+  // Nivel de combustible (D9): selector segmentado que escribe en el mismo <select> (oculto) que leen _calcReturnSummary y _confirmReturn
+  const _fuSeg=(id,sel)=>'<div class="d-seg al-fu" role="group" data-for="'+id+'">'+['Reserva','1/4','1/2','3/4','Lleno (100%)'].map(f=>'<button type="button" aria-pressed="'+(f===sel)+'" data-v="'+f+'" onclick="_retSeg(this)">'+({'1/4':'¼','1/2':'½','3/4':'¾','Lleno (100%)':'Lleno'}[f]||f)+'</button>').join('')+'</div>';
+  openSheet('<div class="stitle">Registrar devolución</div>'
+    +'<div class="d-meta">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
+    +'<div class="spec al-sp">'
+    +'<div>Km entrega<b>'+(kmStart?kmStart.toLocaleString('es-ES')+' km':'no registrado')+'</b></div>'
+    +'<div>Combustible entrega<b>'+(delivFuel?esc(delivFuel):'no registrado')+'</b></div>'
+    +'<div class="w2">Km incluidos<b>'+(isIlim?'Ilimitados':kmLimit.toLocaleString('es-ES')+' km')+'</b></div>'
     +'</div>'
-    +'<div class="fg"><label class="lbl">KM ACTUALES EN DEVOLUCIÓN *</label>'
+    +'<div class="al-h"><span class="q ac">01</span><h3>Kilómetros</h3></div>'
+    +'<div class="d-f"><label class="q" for="retKm">Km actuales *</label>'
     +'<input id="retKm" type="number" inputmode="numeric" placeholder="Ej: 141200" oninput="_calcReturnSummary()"/></div>'
-    +(delivFuel?'':'<div class="fg"><label class="lbl">NIVEL EN ENTREGA (sin dato guardado: se propone Lleno)</label>'
-    +'<select id="retDeliv" onchange="_calcReturnSummary()">'
-    +fuelOpts.map(f=>'<option'+(f==='Lleno (100%)'?' selected':'')+'>'+f+'</option>').join('')+'</select></div>')
-    +'<div class="fg"><label class="lbl">NIVEL COMBUSTIBLE EN DEVOLUCIÓN *</label>'
-    +'<select id="retFuel" onchange="_calcReturnSummary()">'
+    +'<div class="al-h"><span class="q ac">02</span><h3>Combustible</h3></div>'
+    +(delivFuel?'':'<div class="d-f"><span class="q">Nivel en entrega</span>'+_fuSeg('retDeliv','Lleno (100%)')
+    +'<select id="retDeliv" class="al-hid" onchange="_calcReturnSummary()">'
+    +fuelOpts.map(f=>'<option'+(f==='Lleno (100%)'?' selected':'')+'>'+f+'</option>').join('')+'</select>'
+    +'<span class="d-hint">Sin dato guardado: se propone Lleno</span></div>')
+    +'<div class="d-f"><span class="q">Nivel en devolución *</span>'+_fuSeg('retFuel','')
+    +'<select id="retFuel" class="al-hid" onchange="_calcReturnSummary()">'
     +'<option value="">— Seleccionar —</option>'
     +fuelOpts.map(f=>'<option>'+f+'</option>').join('')
     +'</select></div>'
-    +'<div id="retSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px;display:none"></div>'
-    +'<div class="r2"><div class="fg"><label class="lbl">KM EXTRA</label><input id="retKmExtra" type="number" min="0" inputmode="numeric" value="0" oninput="_retKmAmtSync()"/></div>'
-    +'<div class="fg"><label class="lbl">IMPORTE KM (€)</label><input id="retKmAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div></div>'
+    +'<div id="retSummary" class="al-rs" style="display:none"></div>'
+    +'<div class="al-h"><span class="q ac">03</span><h3>Cargos</h3></div>'
+    +'<div class="d-2"><div class="d-f"><label class="q" for="retKmExtra">Km extra</label><input id="retKmExtra" type="number" min="0" inputmode="numeric" value="0" oninput="_retKmAmtSync()"/></div>'
+    +'<div class="d-f"><label class="q" for="retKmAmt">Importe km</label><div class="d-pre"><span>€</span><input id="retKmAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0" oninput="_retTotUpd()"/></div></div></div>'
     +(fuelProd==='elec'
-      ?('<div style="font-size:12px;color:var(--text3);margin-bottom:12px">'+ico('bolt')+' Vehículo eléctrico: sin cargo de combustible.</div>')
+      ?('<p class="d-hint al-mb">'+ico('bolt')+' Vehículo eléctrico: sin cargo de combustible.</p>')
         +'<input id="retFuelL" type="hidden" value="0"/><input id="retFuelPrice" type="hidden" value=""/><input id="retFuelAmt" type="hidden" value="0"/>'
-      :'<div class="r2"><div class="fg"><label class="lbl">LITROS QUE FALTAN</label><input id="retFuelL" type="number" min="0" step="0.1" inputmode="decimal" value="0" oninput="_retFuelAmtSync()"/></div>'
-        +'<div class="fg"><label class="lbl">PRECIO MEDIO (€/L)</label><input id="retFuelPrice" type="number" min="0" step="0.001" inputmode="decimal" placeholder="Escríbelo" oninput="_retFuelAmtSync()"/></div></div>'
-        +('<div style="display:flex;gap:8px;margin-bottom:6px"><button type="button" class="btn-sec" onclick="_retPriceHere()" style="flex:1;width:auto">'+ico('pin')+' Precio de aquí</button>')
-        +'<input id="retMuni" list="retMuniList" placeholder="o busca el municipio" autocomplete="off" onchange="_retPriceMuni(this.value)" style="flex:1.4;min-width:0;min-height:44px"/><datalist id="retMuniList"></datalist></div>'
-        +'<div id="retPriceInfo" style="font-size:10px;color:var(--text3);margin-bottom:10px">'+(tankL?esc(FUEL_PROD_LBL[fuelProd])+' · depósito de '+tankL+' L':'Sin capacidad del depósito en la ficha del coche: escribe los litros a mano.')+'</div>'
-        +'<div class="fg"><label class="lbl">IMPORTE COMBUSTIBLE (€) · litros × (precio + '+esc(String(recargo).replace('.',','))+' €/L)</label><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div>')
-    +'<div style="font-size:10px;color:var(--text3);margin:-6px 0 12px">Importes sugeridos y editables. Con 0 no se crea cobro.</div>'
-    +('<button class="btn-pri" onclick="_confirmReturn()">'+ico('check-circle')+' Confirmar devoluci\u00f3n</button>')
-    +'<div style="height:8px"></div>'
-    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+      :'<div class="d-2"><div class="d-f"><label class="q" for="retFuelL">LITROS QUE FALTAN</label><input id="retFuelL" type="number" min="0" step="0.1" inputmode="decimal" value="0" oninput="_retFuelAmtSync()"/></div>'
+        +'<div class="d-f"><label class="q" for="retFuelPrice">Precio medio €/L</label><input id="retFuelPrice" type="number" min="0" step="0.001" inputmode="decimal" placeholder="Escríbelo" oninput="_retFuelAmtSync()"/></div></div>'
+        +('<div class="al-pr"><button type="button" class="btn-sec" onclick="_retPriceHere()">'+ico('pin')+' Precio de aquí</button>')
+        +'<input id="retMuni" list="retMuniList" placeholder="o busca el municipio" autocomplete="off" onchange="_retPriceMuni(this.value)"/><datalist id="retMuniList"></datalist></div>'
+        +'<div id="retPriceInfo" class="d-hint al-mb">'+(tankL?esc(FUEL_PROD_LBL[fuelProd])+' · depósito de '+tankL+' L':'Sin capacidad del depósito en la ficha del coche: escribe los litros a mano.')+'</div>'
+        +'<div class="d-f"><label class="q" for="retFuelAmt">Importe combustible</label><div class="d-pre"><span>€</span><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0" oninput="_retTotUpd()"/></div>'
+        +'<span class="d-hint">Litros × (precio + '+esc(String(recargo).replace('.',','))+' €/L)</span></div>')
+    +'<div class="d-tot al-tot"><span class="q">A cobrar</span><div class="d-n n2" id="retTot">0<small>,00 €</small></div><p>Importes sugeridos y editables. Con 0 no se crea cobro.</p></div>'
+    +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmReturn()">'+ico('check-circle')+' Confirmar devolución</button>')
+    +'<button class="btn-sec" onclick="closeSheet()">Cancelar</button></div>');
   if(fuelProd!=='elec')_retLoadMunis();
 }
 
@@ -3554,6 +3661,7 @@ function _fuelFrac(s){if(!s)return 1;s=s.toLowerCase();if(s.includes('100')||s.i
 function _retKmAmtSync(){
   const ex=parseInt(document.getElementById('retKmExtra')?.value)||0;
   const i=document.getElementById('retKmAmt');if(i)i.value=Math.round(Math.max(0,ex)*(window._retKmRate||0.19)*100)/100;
+  if(typeof _retTotUpd==='function')_retTotUpd(); // solo pinta «A cobrar»
 }
 // Importe = litros × (precio medio + recargo/L). Sin precio, no se pisa un importe escrito a mano.
 function _retFuelAmtSync(){
@@ -3562,6 +3670,21 @@ function _retFuelAmtSync(){
   const i=document.getElementById('retFuelAmt');if(!i)return;
   if(L>0&&p>0)i.value=Math.round(L*(p+(window._retRecargo??2))*100)/100;
   else if(L<=0)i.value=0;
+  if(typeof _retTotUpd==='function')_retTotUpd(); // solo pinta «A cobrar»
+}
+// Solo presentación: «A cobrar» en Doto = importe km + importe combustible tal como están escritos (lo mismo que _confirmReturn convierte en cobros)
+function _retTotUpd(){
+  const e=document.getElementById('retTot');if(!e)return;
+  const n=['retKmAmt','retFuelAmt'].reduce((s,id)=>s+Math.max(0,parseFloat(document.getElementById(id)?.value)||0),0);
+  const t=fmtF(Math.round(n*100)/100).split(',');
+  e.innerHTML=esc(t[0].replace(/\./g,''))+'<small>'+esc(t.length>1?','+t.slice(1).join(','):'')+'</small>';
+}
+// Selector segmentado del nivel de combustible: escribe en su <select> oculto y recalcula como su onchange
+function _retSeg(btn){
+  const g=btn.parentNode,s=document.getElementById(g.getAttribute('data-for'));if(!s)return;
+  s.value=btn.getAttribute('data-v');
+  g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
+  _calcReturnSummary();
 }
 function _calcReturnSummary(){
   const kmStart=window._retKmStart||0,kmLimit=window._retKmLimit||9999999,kmRate=window._retKmRate||0.19;
@@ -3581,7 +3704,7 @@ function _calcReturnSummary(){
   setV('retKmExtra',kmExcess);setV('retKmAmt',kmCharge);
   if(!isElec&&(tankL>0||fuelDiff<=0))setV('retFuelL',fuelL); // sin depósito en la ficha: los litros se escriben a mano
   _retFuelAmtSync();
-  let html='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">RESUMEN DEVOLUCIÓN</div>';
+  let html='<span class="q al-q0">Resumen devolución</span>';
   if(kmStart>0){html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>Km recorridos</span><span style="font-family:var(--mono);font-weight:700">'+kmUsed.toLocaleString('es-ES')+' km</span></div>';}
   if(kmExcess>0){html+=('<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--red)">'+ico('alert')+' Exceso km: ')+kmExcess.toLocaleString('es-ES')+' km \u00d7 '+kmRate+'\u20ac</span><span style="font-family:var(--mono);font-weight:700;color:var(--red)">'+fmtE(kmCharge)+'</span></div>';}
   else if(kmStart>0)html+=('<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--green)">'+ico('check-circle')+' Sin exceso de km</div>');
@@ -3618,14 +3741,13 @@ function _confirmReturn(){
 function openBookingFinance(bookingId,type){
   window._bfBookingId=bookingId;window._bfType=type;window._bfEditId=null;
   const today=todayStr();
-  openSheet('<div class="stitle">'+(type==='income'?(ico('coins')+' Ingreso adicional'):(ico('trend-down')+' Gasto del alquiler'))+'</div>'
-    +'<div class="fg"><label class="lbl">CONCEPTO *</label><input id="bfConcept" placeholder="'+(type==='income'?'Ej: Exceso km, limpieza extra...':'Ej: Limpieza, combustible...')+'" autocomplete="off"/></div>'
-    +'<div class="r2"><div class="fg"><label class="lbl">IMPORTE (€) *</label><input id="bfAmt" type="number" step="0.01" inputmode="decimal"/></div>'
-    +'<div class="fg"><label class="lbl">FECHA</label><input id="bfDate" type="date" value="'+esc(safeDate(today))+'"/></div></div>'
-    +'<div class="fg"><label class="lbl">OBSERVACIONES</label><input id="bfNotes" autocomplete="off"/></div>'
-    +('<button class="btn-pri" onclick="_saveBookingFinance()">'+ico('save')+' Guardar</button>')
-    +'<div style="height:8px"></div>'
-    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+  openSheet('<div class="stitle">'+(type==='income'?'Ingreso adicional':'Gasto del alquiler')+'</div><div class="ssub">'+(type==='income'?'Se suma al total del alquiler':'Se resta del resultado del alquiler')+'</div>'
+    +'<div class="d-f"><label class="q" for="bfConcept">Concepto *</label><input id="bfConcept" placeholder="'+(type==='income'?'Ej: Exceso km, limpieza extra...':'Ej: Limpieza, combustible...')+'" autocomplete="off"/></div>'
+    +'<div class="d-2"><div class="d-f"><label class="q" for="bfAmt">Importe *</label><div class="d-pre"><span>€</span><input id="bfAmt" type="number" step="0.01" inputmode="decimal"/></div></div>'
+    +'<div class="d-f"><label class="q" for="bfDate">Fecha</label><input id="bfDate" type="date" value="'+esc(safeDate(today))+'"/></div></div>'
+    +'<div class="d-f"><label class="q" for="bfNotes">Observaciones</label><input id="bfNotes" autocomplete="off"/></div>'
+    +('<div class="d-acts al-end"><button class="btn-pri" onclick="_saveBookingFinance()">'+ico('save')+' Guardar</button>')
+    +'<button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
 }
 function _saveBookingFinance(){
   const bookingId=window._bfBookingId;
@@ -6827,96 +6949,50 @@ function showBooking(k,_overrideId){
          ||(v.bookings||[]).find(b=>k>=b.startDate&&k<=b.endDate);
   if(!b)return;
   const p=PLATS[b.platform];const dur=daysBetween(b.startDate,b.endDate);
-  openSheet(`<div class="stitle">Detalle del alquiler</div>
-    ${b.cancelled?`<div style="background:var(--err-s);border:1px solid var(--err-b);border-radius:var(--r-in);padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
-      <span style="font-size:20px;line-height:1;margin-top:1px">${ico('ban')}</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:14px;color:var(--red);letter-spacing:.5px;margin-bottom:3px">ALQUILER CANCELADO</div>
-        <div style="font-size:11px;color:var(--text3)">
-          ${b.cancellation?.by==='client'?'Cancelado por el <strong style="color:var(--text2)">cliente</strong>':'Cancelado por <strong style="color:var(--text2)">DEIROS</strong>'}
-          ${b.cancellation?.date?' · '+esc(fmtDMY(safeDate(b.cancellation.date))):''}
-        </div>
-        ${(b.cancellation?.penalty>0)?`<div style="margin-top:5px;font-size:12px;font-weight:700;color:${b.cancellation.by==='client'?'var(--green)':'var(--amber)'}">
-          Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}
-        </div>`:''}
-      </div>
-      <button class="btn-dang" onclick="restoreBooking('${escJs(b.id)}')" style="width:auto;flex-shrink:0;white-space:nowrap">${ico('undo')} Restablecer</button>
+  // Estado → chip y UN botón principal (D5). Solo presentación: los onclick son los mismos de los botones de siempre
+  const _id=escJs(b.id),_hoy=todayStr();
+  const _st=b.cancelled?'can':b.returned?((b.paid||b.cobrado)?'fin':'cob'):(b.startDate>_hoy?'pro':(!b.delivered&&b.startDate===_hoy)?'ent':'cur');
+  const _stChip={pro:'<span class="chip chip-blue">Próximo</span>',ent:'<span class="chip chip-amber">Entrega hoy</span>',cur:'<span class="chip chip-green">En curso</span>',cob:'<span class="chip chip-amber">Por cobrar</span>',fin:'<span class="chip chip-gray">Terminado</span>',can:'<span class="chip chip-red">Cancelado</span>'}[_st];
+  const _pri={pro:[`closeSheet();openContractForm('${escJs(v.id)}','${_id}')`,'doc','Contrato'],
+    ent:[`toggleDelivery('${_id}');closeSheet();renderDetail(document.getElementById('PC'))`,'car','Marcar entregado'],
+    cur:[`toggleReturn('${_id}')`,'key','Registrar devolución'],
+    cob:[`togglePayStatus('${_id}');closeSheet();renderDetail(document.getElementById('PC'))`,'coins','Marcar cobrado'],
+    fin:[`generateReceiptPDF('${_id}')`,'receipt','Recibo']}[_st];
+  // Total (Doto): el mismo _bookingClientTotal que antes se mostraba como «total» en Ingresos y gastos; céntimos en mono
+  const _tV=_bookingClientTotal(b),_tS=fmtF(_tV).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
+  const _PL='<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>';
+  const _hasKm=!!(b.kmStart||b.kmEnd);
+  openSheet(`<div class="d-ch al-ch"><span class="q ac">Detalle del alquiler</span>${_stChip}</div>
+    <div class="d-ct al-ct">${esc(b.clientName||'Sin cliente')}</div>
+    <div class="d-meta al-mt6">${esc(v.name)} · ${esc(v.plate)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div>
+    ${b.cancelled?`<div class="al-cx">
+      <div>${b.cancellation?.by==='client'?'Cancelado por el <strong>cliente</strong>':'Cancelado por <strong>DEIROS</strong>'}${b.cancellation?.date?' · '+esc(fmtDMY(safeDate(b.cancellation.date))):''}</div>
+      ${(b.cancellation?.penalty>0)?`<div class="al-cxp" style="color:${b.cancellation.by==='client'?'var(--green)':'var(--amber)'}">Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}</div>`:''}
+      <button class="btn-sec" onclick="restoreBooking('${escJs(b.id)}')">${ico('undo')} Restablecer</button>
     </div>`:''}
-    <div class="bk-sec">${ico('clipboard')} INFORMACIÓN</div>
-    <div class="bk-card">
-      <div class="bk-tr">
-        <div><div class="lbl">INICIO</div><div class="bk-hm">${esc(b.startTime)}</div><div class="bk-d">${esc(fmtDMY(b.startDate))}</div></div>
-        <i class="bk-ln" aria-hidden="true"></i>
-        <div class="r"><div class="lbl">FIN</div><div class="bk-hm">${esc(b.endTime)}</div><div class="bk-d">${esc(fmtDMY(b.endDate))}</div></div>
-      </div>
-      <div class="bk-row">
-        <span class="chip chip-gray">${esc(p?.label||b.platform)}</span>
-        <span class="bk-dur">${dur} día${dur!==1?'s':''}</span>
-        ${(()=>{
-          const _fi=b.finance||[];
-          const _ext=_fi.filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
-          const _inc=_fi.filter(f=>f.type==='income'&&!f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
-          const _exp=_fi.filter(f=>f.type==='expense').reduce((s,f)=>s+Number(f.amount),0);
-          const _extrasArr=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
-          const _realTotal=_bookingRealTotal(b);
-          const _hasExtras=_ext>0||_extrasArr>0;
-          if(_inc>0||_exp>0||_hasExtras){
-            const _extShow=_ext>0?_ext:_extrasArr;
-            return '<div class="bk-tot">'
-              +'<b>'+fmtF(_realTotal)+'</b>'
-              +'<span>base '+fmtF(b.amount)+(_hasExtras?' + extras '+fmtF(_extShow):'')
-              +(_inc>0?' + ingresos '+fmtF(_inc):'')
-              +(_exp>0?' − gastos '+fmtF(_exp):'')+'</span>'
-              +'</div>';
-          }
-          return '<div class="bk-tot"><b>'+fmtF(_realTotal)+'</b></div>';
-        })()}
-      </div>
-      ${(b.kmStart||b.kmEnd)?`<div class="bk-km">
-        <span class="q">Kilómetros</span>
-        <b>${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'} → ${b.kmEnd?esc(Number(b.kmEnd).toLocaleString('es-ES')+' km'):'—'}</b>
-        ${(b.kmStart&&b.kmEnd)?`<span>(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
-      </div>`:''}
-      ${b.clientName?`<div class="bk-cli"><div>${ico('user')} ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
-      ${b.notes?`<div class="bk-note">${ico('quote')} ${esc(b.notes)}</div>`:''}
+    <div class="d-route al-rt">
+      <div class="e"><span class="q">Inicio</span><b>${esc(b.startTime||'—')}</b><small>${esc(fmtDMY(b.startDate))}</small></div>
+      <div class="l"><span class="chip no-dot">${dur} día${dur!==1?'s':''}</span></div>
+      <div class="e"><span class="q">Fin</span><b>${esc(b.endTime||'—')}</b><small>${esc(fmtDMY(b.endDate))}</small></div>
     </div>
-    <div class="bk-sec">${ico('coins')} INGRESOS, COBROS Y FIANZA</div>
-    ${(()=>{
-      const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
-      const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
-      const fmt2=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
-      let h='<div class="bk-card">';
-      h+='<div class="bk-fh">'
-        +('<div style="display:flex;align-items:center;gap:8px"><div class="q">Ingresos y gastos</div>')
-        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" class="bk-sync">'+ico('repeat')+'</span></div>')
-        +(()=>{
-          return '<div class="bk-v">'+fmt2(_bookingClientTotal(b))+' total</div>';
-        })()
-        +'</div>'
-        +'<div class="bk-li">'
-        +'<span>Base alquiler</span><b>+'+fmt2(b.amount)+'</b>'
-        +'</div>'
-        +(()=>{
-          const _autoExtraSum=(b.finance||[]).filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
-          const _extrasArrSum=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
-          const _extTotal=_autoExtraSum>0?_autoExtraSum:_extrasArrSum;
-          return _extTotal>0?'<div class="bk-li">'
-          +'<span>Extras contrato</span><b>+'+fmt2(_extTotal)+'</b></div>':'';
-        })()
-      if(fI.length){h+='<div class="q ok bk-q">Ingresos adicionales</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
-      if(fE.length){h+='<div class="q err bk-q">Gastos</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
-      h+='<div class="bk-res">'
-        +'<span class="q">Resultado del alquiler</span>'
-        +(()=>{
-          const _t=_bookingRealTotal(b);
-          return '<b style="color:'+(_t>=0?'var(--text)':'var(--red)')+'">'+fmt2(_t)+'</b>';
-        })()
-        +'</div>';
-      h+='<div class="g8 bk-2">';
-      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
-      h+='<button class="_bfbtn btn-dang" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
-      h+='</div></div>';return h;
-    })()}
+    <div class="spec al-sp">
+      <div${_hasKm?'':' class="w2"'}>Plataforma<b>${esc(p?.label||b.platform)}</b></div>
+      ${_hasKm?`<div>Km entrega<b>${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'}</b></div>
+      ${b.kmEnd?`<div>Km devolución<b>${esc(Number(b.kmEnd).toLocaleString('es-ES')+' km')}</b></div>`:''}
+      ${(b.kmStart&&b.kmEnd)?`<div>Recorridos<b>${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km</b></div>`:''}`:''}
+    </div>
+    ${b.notes?`<p class="d-note al-nt">${esc(b.notes)}</p>`:''}
+    <div class="d-tot al-tot">
+      <span class="q">Total</span>
+      <div class="d-n n2${_tV<0?' neg':''}">${esc(_tE)}<small>${esc(_tD)}</small></div>
+      <p>IVA incluido</p>
+    </div>
+    ${_pri?`<button class="btn-pri al-pri" onclick="${_pri[0]}">${ico(_pri[1])} ${_pri[2]}</button>`:''}
+    <div class="al-tg" role="group" aria-label="Estado">
+      <button class="${b.delivered?'on':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
+      <button class="${b.returned?'on':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?(ico('check-circle')+' Devuelto '+ico('check')):(ico('key')+' Marcar devuelto')}</button>
+      <button class="${b.paid?'on':''}" onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.paid?(ico('check-circle')+' Cobrado'):(ico('hourglass')+' Marcar cobrado')}</button>
+    </div>
     ${(()=>{
       const _abono=Number(b.abonoReserva||0);
       const _cobSinImp=!!(b.cobrado||b.paid)&&!_abono;
@@ -6926,38 +7002,11 @@ function showBooking(k,_overrideId){
       const _pend=Math.max(0,_totTotal-_abono);
       const _hasFianza=_fianza>0;
       const _hasAbono=_abono>0||_hasFianza||_cobSinImp;
-      return `<div class="bk-card">
-        <div class="q bk-qh">Cobros y fianza</div>
-        ${_hasFianza?`<div class="bk-li bk-fz">
-          <span>${ico('lock')} Fianza reembolsable</span>
-          <b>${fmtF(_fianza)}</b>
-        </div>
-        ${(()=>{
-          const _st=_fianzaStatus(b);
-          const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
-          const _C={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-amber'}[_st];
-          const _is='min-width:0';
-          const _id=escJs(b.id);
-          return `<div style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <span class="chip ${_C}">${_L}</span>
-              ${_st==='retained'||_st==='partial'?`<span class="bk-sm">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
-            </div>
-            <div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-              ${_st!=='returned'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','returned')">${ico('check-circle')} Marcar devuelta</button>`:''}
-              ${_st!=='retained'?`<button class="tap44 btn-dang" onclick="retainFianzaFull('${_id}')">${ico('ban')} Retener toda</button>`:''}
-              ${_st!=='pending'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','pending')">${ico('undo')} Volver a pendiente</button>`:''}
-            </div>
-            <div class="g8 bk-fzr">
-              <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:112px;font-family:var(--mono)"/>
-              <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1 1 120px"/>
-              <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')" style="width:auto;white-space:nowrap">Retener parte</button>
-            </div>
-          </div>`;
-        })()}`:''}
-        <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
-          <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;font-family:var(--mono)"/>
-          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="white-space:nowrap;width:auto">Guardar</button>
+      return `<section class="al-s">
+        <div class="al-h"><h3>Cobros y fianza</h3></div>
+        <div class="d-f"><label class="q" for="abonoInput_${esc(b.id)}">Cantidad recibida</label>
+          <div class="al-in"><div class="d-pre"><span>€</span><input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(_abono||'')}" placeholder="0,00"/></div>
+          <button class="tap44 btn-sec" onclick="setBookingAbono('${escJs(b.id)}')">Guardar</button></div>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -6969,61 +7018,82 @@ function showBooking(k,_overrideId){
           if(_alqPend>0&&_fiaPend>0)_concepto='alquiler y fianza';
           else if(_alqPend>0)_concepto='alquiler';
           else if(_fiaPend>0)_concepto='fianza';
-          return `<div class="bk-tb">
-            <div class="bk-tr2${_hasFianza?' c2':''}">
-              <div>
-                <div class="q">Alquiler</div>
-                <div class="bk-vv">
-                  <b>${fmtF(_totAlq)}</b>
-                  <span style="color:${_alqPend===0?'var(--green)':'var(--amber)'}">
-                    ${_cobSinImp?'sin importe':_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}
-                  </span>
-                </div>
-              </div>
-              ${_hasFianza?`<div>
-                <div class="q">Fianza</div>
-                <div class="bk-vv">
-                  <b>${fmtF(_fianza)}</b>
-                  <span style="color:${_fiaPend===0?'var(--green)':'var(--amber)'}">
-                    ${_cobSinImp?'sin importe':_fiaPend===0?(ico('check')+' cubierta'):'falta '+fmtF(_fiaPend)}
-                  </span>
-                </div>
-              </div>`:''}
+          return `<div class="spec al-sp">
+              <div>Alquiler<b>${fmtF(_totAlq)}</b><span class="dh-sub" style="color:${_alqPend===0?'var(--green)':'var(--amber)'}">${_cobSinImp?'sin importe':_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}</span></div>
+              ${_hasFianza?`<div>Fianza<b>${fmtF(_fianza)}</b><span class="dh-sub" style="color:${_fiaPend===0?'var(--green)':'var(--amber)'}">${_cobSinImp?'sin importe':_fiaPend===0?(ico('check')+' cubierta'):'falta '+fmtF(_fiaPend)}</span></div>`:''}
+              <div${_hasFianza?' class="w2"':''}>Recibido<b style="color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</b></div>
             </div>
-            <div class="bk-tr2 c2">
-              <div>
-                <div class="q">Recibido</div>
-                <div class="bk-vv"><b style="color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</b></div>
-              </div>
-              <div>
-                <div class="q">Pendiente</div>
-                <div class="bk-vv"><b style="color:${_cobSinImp?'var(--text2)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</b></div>
-              </div>
-            </div>
-            ${_pend>0&&_concepto&&!_cobSinImp?`<div class="bk-cn">En concepto de: <strong>${_concepto}</strong></div>`:''}
-            ${_cobSinImp?`<div class="bk-cn n">Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</div>`:''}
-          </div>`;
+            <div class="d-tot al-pd"><span class="q">Pendiente</span><b style="color:${_cobSinImp?'var(--text2)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</b>
+              ${_pend>0&&_concepto&&!_cobSinImp?`<p>En concepto de: <strong>${_concepto}</strong></p>`:''}
+              ${_cobSinImp?`<p>Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</p>`:''}
+            </div>`;
         })()}`:''}
-      </div>`;
+        ${_hasFianza?(()=>{
+          const _st=_fianzaStatus(b);
+          const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
+          const _C={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-amber'}[_st];
+          const _id=escJs(b.id);
+          return `<div class="al-fz">
+            <div class="al-fzs"><span class="q">Fianza reembolsable</span><span class="chip ${_C}">${_L}</span></div>
+            ${_st==='retained'||_st==='partial'?`<div class="al-sm">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</div>`:''}
+            <div class="d-seg al-seg" role="group" aria-label="Estado de la fianza">
+              <button type="button" aria-pressed="${_st==='pending'}"${_st!=='pending'?` onclick="setBookingFianzaStatus('${_id}','pending')"`:''}>Pendiente</button>
+              <button type="button" aria-pressed="${_st==='returned'}"${_st!=='returned'?` onclick="setBookingFianzaStatus('${_id}','returned')"`:''}>Devuelta</button>
+              <button type="button" aria-pressed="${_st==='retained'}"${_st!=='retained'?` onclick="retainFianzaFull('${_id}')"`:''}>Retenida</button>
+            </div>
+            <details class="d-acc al-acc"${_st==='partial'?' open':''}><summary><span class="t">Retener una parte</span>${_PL}</summary><div>
+              <div class="al-fzr">
+                <div class="d-pre"><span>€</span><input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" inputmode="decimal" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe"/></div>
+                <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo"/>
+              </div>
+              <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')">Retener parte</button>
+            </div></details>
+          </div>`;
+        })():''}
+      </section>`;
     })()}
-    <div class="bk-sec">${ico('bolt')} ACCIONES</div>
-    <div class="bk-acts">
-      <button class="btn-pri" onclick="editBooking('${escJs(b.id)}')">${ico('edit')} Editar</button>
-      <button class="btn-sec" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
-      <button class="btn-sec" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>
-      <button class="btn-sec" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>
-      ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec" onclick="generateExtensionPDF('${escJs(b.id)}')" style="grid-column:1/-1">${ico('clipboard')} Anexo de ampliación</button>`:''}
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
-      <button class="btn-sec${b.delivered?' on-green':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
-      <button class="btn-sec${b.returned?' on-green':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?(ico('check-circle')+' Devuelto '+ico('check')):(ico('key')+' Marcar devuelto')}</button>
-      <button class="btn-sec${b.paid?' on-green':''}" onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.paid?(ico('check-circle')+' Cobrado'):(ico('hourglass')+' Marcar cobrado')}</button>
-    </div>
-    <div style="display:grid;grid-template-columns:${!b.cancelled?'1fr 1fr':'1fr'};gap:8px">
-      ${!b.cancelled?`<button class="btn-dang" onclick="openCancelBooking('${escJs(b.id)}')">${ico('ban')} Cancelar alquiler</button>`:''}
-      <button class="btn-dang" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">${ico('trash')} Eliminar</button>
-    </div>
-    </div>`);
+    ${(()=>{
+      const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
+      const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
+      const fmt2=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
+      let h='<section class="al-s"><div class="al-h"><h3>Ingresos y gastos</h3>'
+        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" class="bk-sync">'+ico('repeat')+'</span></div>')
+        +'<div class="al-l">'
+        +'<div class="al-li"><span>Base alquiler</span><b>+'+fmt2(b.amount)+'</b></div>'
+        +(()=>{
+          const _autoExtraSum=(b.finance||[]).filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
+          const _extrasArrSum=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+          const _extTotal=_autoExtraSum>0?_autoExtraSum:_extrasArrSum;
+          return _extTotal>0?'<div class="al-li"><span>Extras contrato</span><b>+'+fmt2(_extTotal)+'</b></div>':'';
+        })();
+      if(fI.length){h+='<span class="q ok al-q">Ingresos adicionales</span>';fI.forEach(f=>{h+='<div class="al-mv"><div class="t">'+esc(f.concept)+'<span>'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</span></div><b class="ok">+'+fmt2(f.amount)+'</b><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" class="al-x">×</span></div>';});h+='<div class="al-st ok">Total: +'+fmt2(tI)+'</div>';}
+      if(fE.length){h+='<span class="q err al-q">Gastos</span>';fE.forEach(f=>{h+='<div class="al-mv"><div class="t">'+esc(f.concept)+'<span>'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</span></div><b class="err">-'+fmt2(f.amount)+'</b><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" class="al-x">×</span></div>';});h+='<div class="al-st err">Total: -'+fmt2(tE)+'</div>';}
+      h+='</div><div class="d-tot al-res">'
+        +'<span class="q">Resultado del alquiler</span>'
+        +(()=>{
+          const _t=_bookingRealTotal(b);
+          return '<b style="color:'+(_t>=0?'var(--text)':'var(--red)')+'">'+fmt2(_t)+'</b>';
+        })()
+        +'</div>';
+      h+='<div class="d-acts"><div class="two">';
+      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
+      h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
+      h+='</div></div></section>';return h;
+    })()}
+    <section class="al-s">
+      <div class="al-h"><h3>Más acciones</h3></div>
+      <div class="d-acts"><div class="two al-two">
+        <button class="btn-sec" onclick="editBooking('${escJs(b.id)}')">${ico('edit')} Editar</button>
+        <button class="btn-sec" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
+        ${_st!=='pro'?`<button class="btn-sec" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>`:''}
+        ${_st!=='fin'?`<button class="btn-sec" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>`:''}
+        ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec al-w" onclick="generateExtensionPDF('${escJs(b.id)}')">${ico('clipboard')} Anexo de ampliación</button>`:''}
+      </div></div>
+      <div class="al-dz">
+        ${!b.cancelled?`<button class="btn-txt err" onclick="openCancelBooking('${escJs(b.id)}')">${ico('ban')} Cancelar alquiler</button>`:''}
+        <button class="btn-txt err" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">${ico('trash')} Eliminar</button>
+      </div>
+    </section>`);
 }
 
 // ─── CANCELACIÓN DE ALQUILER ──────────────────────────────────────────────
@@ -7032,51 +7102,34 @@ function openCancelBooking(bookingId){
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
   closeSheet();
   openSheet(`
-    <div class="stitle">${ico('ban')} Cancelar alquiler</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:18px">
-      ${b.clientName?'<strong style="color:var(--text2)">'+esc(b.clientName)+'</strong> · ':''} ${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}
-    </div>
+    <div class="stitle">Cancelar alquiler</div>
+    <div class="d-meta al-mb">${b.clientName?esc(b.clientName)+' · ':''}${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
 
-    <div class="lbl">¿QUIÉN CANCELA?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px" id="cancelByGroup">
-      <button id="cancelByMe" onclick="_setCancelBy('deiros')"
-        style="padding:14px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        ${ico('home')} Yo (DEIROS)
-      </button>
-      <button id="cancelByClient" onclick="_setCancelBy('client')"
-        style="padding:14px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        ${ico('user')} El cliente
-      </button>
-    </div>
+    <div class="d-f"><span class="q">¿Quién cancela?</span>
+    <div class="d-seg" role="group" id="cancelByGroup">
+      <button type="button" id="cancelByMe" aria-pressed="false" onclick="_setCancelBy('deiros')">${ico('home')} Yo (DEIROS)</button>
+      <button type="button" id="cancelByClient" aria-pressed="false" onclick="_setCancelBy('client')">${ico('user')} El cliente</button>
+    </div></div>
 
-    <div class="lbl">¿HAY PENALIZACIÓN?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <button id="cancelPenNo" onclick="_setCancelPenalty(false)"
-        style="padding:12px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        Sin penalización
-      </button>
-      <button id="cancelPenYes" onclick="_setCancelPenalty(true)"
-        style="padding:12px 10px;border-radius:10px;border:2px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">
-        Con penalización
-      </button>
-    </div>
+    <div class="d-f"><span class="q">¿Hay penalización?</span>
+    <div class="d-seg" role="group">
+      <button type="button" id="cancelPenNo" aria-pressed="false" onclick="_setCancelPenalty(false)">Sin penalización</button>
+      <button type="button" id="cancelPenYes" aria-pressed="false" onclick="_setCancelPenalty(true)">Con penalización</button>
+    </div></div>
 
-    <div id="cancelPenaltyBlock" style="display:none;margin-bottom:16px">
-      <div class="lbl">IMPORTE DE LA PENALIZACIÓN (€)</div>
-      <div style="position:relative">
-        <input type="number" id="cancelPenaltyAmt" min="0" step="0.01" inputmode="decimal"
-          placeholder="0,00"
-          style="padding-left:30px;width:100%;background:var(--bg2);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px 10px 30px;color:var(--text);font-family:var(--mono);font-size:16px"/>
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono);pointer-events:none">€</span>
+    <div id="cancelPenaltyBlock" style="display:none">
+      <div class="d-f"><label class="q" for="cancelPenaltyAmt">Importe de la penalización</label>
+        <div class="d-pre"><span>€</span><input type="number" id="cancelPenaltyAmt" min="0" step="0.01" inputmode="decimal" placeholder="0,00"/></div>
+        <div id="cancelPenaltyNote" class="d-hint" style="display:none"></div>
       </div>
-      <div id="cancelPenaltyNote" style="font-size:11px;color:var(--text3);margin-top:6px;padding:6px 10px;background:var(--bg3);border-radius:7px;display:none"></div>
     </div>
 
-    <div style="height:6px"></div>
-    <button onclick="submitCancelBooking('${escJs(bookingId)}')" class="btn-dang" style="margin-bottom:8px">
+    <div class="d-acts al-end">
+    <button onclick="submitCancelBooking('${escJs(bookingId)}')" class="btn-dang">
       ${ico('ban')} Confirmar cancelación
     </button>
-    <button onclick="closeSheet()" class="btn-sec">Volver</button>
+    <button onclick="closeSheet()" class="btn-txt">Volver</button>
+    </div>
   `);
   // Estado inicial
   window._cancelBy=null;
@@ -7088,16 +7141,8 @@ function _setCancelBy(who){
   const isDeiros=who==='deiros';
   const meBtn=document.getElementById('cancelByMe');
   const clBtn=document.getElementById('cancelByClient');
-  if(meBtn){
-    meBtn.style.border=isDeiros?'2px solid var(--amber)':'2px solid var(--border2)';
-    meBtn.style.background=isDeiros?'var(--acc-m)':'var(--bg3)';
-    meBtn.style.color=isDeiros?'var(--amber)':'var(--text2)';
-  }
-  if(clBtn){
-    clBtn.style.border=!isDeiros?'2px solid var(--red)':'2px solid var(--border2)';
-    clBtn.style.background=!isDeiros?'#EF444420':'var(--bg3)';
-    clBtn.style.color=!isDeiros?'var(--red)':'var(--text2)';
-  }
+  if(meBtn)meBtn.setAttribute('aria-pressed',String(isDeiros));
+  if(clBtn)clBtn.setAttribute('aria-pressed',String(!isDeiros));
   // Actualizar nota de penalización si ya está visible
   _updateCancelPenaltyNote();
 }
@@ -7107,16 +7152,8 @@ function _setCancelPenalty(hasPenalty){
   const noBtn=document.getElementById('cancelPenNo');
   const yesBtn=document.getElementById('cancelPenYes');
   const block=document.getElementById('cancelPenaltyBlock');
-  if(noBtn){
-    noBtn.style.border=!hasPenalty?'2px solid var(--green)':'2px solid var(--border2)';
-    noBtn.style.background=!hasPenalty?'#10B98120':'var(--bg3)';
-    noBtn.style.color=!hasPenalty?'var(--green)':'var(--text2)';
-  }
-  if(yesBtn){
-    yesBtn.style.border=hasPenalty?'2px solid var(--amber)':'2px solid var(--border2)';
-    yesBtn.style.background=hasPenalty?'var(--acc-m)':'var(--bg3)';
-    yesBtn.style.color=hasPenalty?'var(--amber)':'var(--text2)';
-  }
+  if(noBtn)noBtn.setAttribute('aria-pressed',String(!hasPenalty));
+  if(yesBtn)yesBtn.setAttribute('aria-pressed',String(hasPenalty));
   if(block) block.style.display=hasPenalty?'block':'none';
   _updateCancelPenaltyNote();
 }
@@ -7578,81 +7615,80 @@ function openNewRental(){
   const hh=String(new Date().getHours()).padStart(2,'0')+':00';
   const h1=String((new Date().getHours()+1)%24).padStart(2,'0')+':00';
   const _vNR=gV();const isFurgNR=(_vNR?.vehicle_type||'turismo').startsWith('l');const durNR=1;
+  // Fila de extra (lista técnica): icono · nombre · precio · marca redonda. Mismos ids, clases _exrow/_kmrow y data-* que leen _toggleExtra/_kmToggleStyled
+  const _exR=(id,icon,label,price,km)=>'<div class="_exrow'+(km?' _kmrow':'')+' al-ex" data-exid="'+id+'" data-dur="'+durNR+'" id="row_ex_'+id+'"><span class="i">'+ico(icon)+'</span><span class="t">'+label+'</span><span class="p">'+price+'</span><div id="chk_ex_'+id+'" class="al-ck">&nbsp;</div><input type="checkbox" id="ex_'+id+'" style="display:none"/></div>';
   openSheet(`<div class="stitle">Nuevo alquiler</div><div class="ssub" id="rwSub">Paso 1: lo imprescindible</div>
-    <div class="wiz-bar">${['Datos','Extras','Resumen'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="rwS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
+    <div class="wiz-bar">${['Datos','Extras','Resumen'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="rwS'+(i+1)+'"><div class="wiz-dot">'+String(i+1).padStart(2,'0')+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
     <div data-rw="1">
-    <div class="lbl">PLATAFORMA</div>
-    <div class="plat-opts">
-      ${Object.entries(PLATS).map(([k,p])=>`<div class="plat-opt${k==='amovens'?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">${k==='amovens'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#FB7AAC"></span>':k==='getaround'?'<span style="display:inline-block;width:28px;height:28px;border-radius:50%;background:#8B5CF6"></span>':p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${esc(p.label)}</div></div>`).join('')}
-    </div>
-    <div class="lbl">PRECIO/DÍA (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">base para cálculo por horas</span></div>
-    <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" step="0.01" inputmode="decimal" placeholder="${isFurgNR?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="lbl">INICIO</div>
-    <div class="r2 fg"><input type="date" id="rSD" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(hh))}" oninput="_recalcRentalExtras()"/></div>
-    <div class="lbl">FIN</div>
-    <div class="r2 fg"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div>
-    <div class="lbl">IMPORTE (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
-    <div style="position:relative;margin-bottom:14px"><input type="number" id="rAmt" placeholder="0.00" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="lbl">FIANZA / DEPÓSITO (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">vacío: ${esc(_fianzaDefault())} € si es sin app, 0 en plataformas</span></div>
-    <div style="position:relative;margin-bottom:14px"><input type="number" id="rFianza" step="0.01" inputmode="decimal" placeholder="${esc(_fianzaDefault())}" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--blue);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="sec" style="margin-bottom:6px">CLIENTE (opcional)</div>
+    <div class="d-f"><span class="q">Plataforma</span>
+    <div class="d-seg al-plat" role="group" aria-label="Plataforma">
+      ${Object.entries(PLATS).map(([k,p])=>`<button type="button" class="${k==='amovens'?'sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')">${esc(p.label)}</button>`).join('')}
+    </div></div>
+    <div class="d-f"><label class="q" for="rPriceDay">Precio/día</label>
+      <div class="d-pre"><span>€</span><input type="number" id="rPriceDay" step="0.01" inputmode="decimal" placeholder="${isFurgNR?'45':'30'}" oninput="_recalcRentalExtras()"/></div>
+      <span class="d-hint">Base para el cálculo por horas</span></div>
+    <div class="d-f"><span class="q">Inicio</span>
+      <div class="d-2"><input type="date" id="rSD" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(hh))}" oninput="_recalcRentalExtras()"/></div></div>
+    <div class="d-f"><span class="q">Fin</span>
+      <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div></div>
+    <div class="d-f"><label class="q" for="rAmt">Importe</label>
+      <div class="d-pre"><span>€</span><input type="number" id="rAmt" placeholder="0.00" step="0.01" inputmode="decimal"/></div>
+      <span class="d-hint" id="rAmtHint"></span></div>
+    <div class="d-f"><label class="q" for="rFianza">Fianza</label>
+      <div class="d-pre"><span>€</span><input type="number" id="rFianza" step="0.01" inputmode="decimal" placeholder="${esc(_fianzaDefault())}"/></div>
+      <span class="d-hint">Vacío: ${esc(_fianzaDefault())} € si es sin app, 0 en plataformas</span></div>
+    <div class="al-h"><h3>Cliente</h3><span class="mono2">Opcional</span></div>
     <input id="rCN" type="hidden"/>
     <input id="rCP" type="hidden"/>
     <input id="rCDNI" type="hidden"/>
     <div oninput="_clStatusUpd('rClientPicker')" onchange="_clStatusUpd('rClientPicker')">
     <div class="fg">${_clPickerHtml('rClientPicker','')}</div>
-    <div class="r2 fg">
-      <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" oninput="document.getElementById('rCP').value=this.value"/></div>
-      <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="rCPvis">Teléfono</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" oninput="document.getElementById('rCP').value=this.value"/></div>
+      <div class="d-f"><label class="q" for="rCDNIvis">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()"/></div>
     </div>
     <div id="rClStatus" style="margin:-4px 0 10px"></div>
     ${_clMoreHtml(null)}
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_rwGo(2)">Siguiente ›</button></div>
+    <div class="al-nav"><button class="btn-sec tap44" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" onclick="_rwGo(2)">Siguiente ›</button></div>
     </div>
     <div data-rw="2" style="display:none">
-    <div class="sec" style="margin-bottom:10px">KILÓMETROS (opcional)</div>
-    <div class="r2 fg">
-      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
-      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
+    <div class="al-h al-h0"><h3>Kilómetros</h3><span class="mono2">Opcional</span></div>
+    <div class="d-2">
+      <div class="al-suf"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric"/><span>km</span></div>
+      <div class="al-suf"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric"/><span>km</span></div>
     </div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off"/></div>
-    <div style="height:1px;background:var(--border);margin:12px 0"></div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">${ico('star')} EXTRAS <span id="rExDurLabel" style="font-weight:400;color:var(--text3)">(${durNR} día)</span></div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px">POR DÍA</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      ${[['exConductorAdicional','user','Conductor adicional','14,99€/día'],['exProteccionDeiros','shield','Protección Deiros','9,99€/día'],['exCargadorUniversal','plug','Cargador universal','2,99€/día']].map(([id,icon,label,price])=>'<div class="_exrow" data-exid="'+id+'" data-dur="'+durNR+'" id="row_ex_'+id+'" style="display:flex;align-items:center;gap:0;cursor:pointer;border-bottom:1px solid var(--border)"><div style="padding:10px 10px;font-size:18px;background:var(--bg2);flex-shrink:0">'+ico(icon)+'</div><div style="flex:1;padding:8px 10px;font-size:13px;font-weight:600">'+label+'</div><div style="padding:8px 14px;text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</div><div id="chk_ex_'+id+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">&nbsp;</div></div><input type="checkbox" id="ex_'+id+'" style="display:none"/></div>').join('')}
+    <div class="d-f al-mt"><label class="q" for="rNotes">Notas</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off"/></div>
+    <div class="al-h"><h3>Extras</h3><span class="mono2" id="rExDurLabel">(${durNR} día)</span></div>
+    <span class="q al-q">Por día</span>
+    <div class="al-exl">
+      ${[['exConductorAdicional','user','Conductor adicional','14,99€/día'],['exProteccionDeiros','shield','Protección Deiros','9,99€/día'],['exCargadorUniversal','plug','Cargador universal','2,99€/día']].map(([id,icon,label,price])=>_exR(id,icon,label,price)).join('')}
     </div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px">FIJO POR ALQUILER</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€'],['exEntregaDomicilio','home','Entrega a domicilio','49€'],['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel','59€'],['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([id,icon,label,price])=>'<div class="_exrow" data-exid="'+id+'" data-dur="'+durNR+'" id="row_ex_'+id+'" style="display:flex;align-items:center;gap:0;cursor:pointer;border-bottom:1px solid var(--border)"><div style="padding:10px 10px;font-size:18px;background:var(--bg2);flex-shrink:0">'+ico(icon)+'</div><div style="flex:1;padding:8px 10px;font-size:13px;font-weight:600">'+label+'</div><div style="padding:8px 14px;text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</div><div id="chk_ex_'+id+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">&nbsp;</div></div><input type="checkbox" id="ex_'+id+'" style="display:none"/></div>').join('')}
+    <span class="q al-q">Fijo por alquiler</span>
+    <div class="al-exl">
+      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€'],['exEntregaDomicilio','home','Entrega a domicilio','49€'],['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel','59€'],['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([id,icon,label,price])=>_exR(id,icon,label,price)).join('')}
     </div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px">PACKS</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      ${[['exPackBebe','child-seat','Pack Bebé','34,99€'],['exPackVerano','sun','Pack Verano','44,99€'],['exPackInvierno','snow','Pack Invierno','24,99€'],['exPackOcio','racket','Pack Ocio','4,99€/día'],['exPackCamping','tent','Pack Camping','49,99€'],['exPackMascota','paw','Pack Mascota','19,99€'],['exPackConfort','sparkle','Pack Confort','174,99€']].map(([id,icon,label,price])=>'<div class="_exrow" data-exid="'+id+'" data-dur="'+durNR+'" id="row_ex_'+id+'" style="display:flex;align-items:center;gap:0;cursor:pointer;border-bottom:1px solid var(--border)"><div style="padding:10px 10px;font-size:18px;background:var(--bg2);flex-shrink:0">'+ico(icon)+'</div><div style="flex:1;padding:8px 10px;font-size:13px;font-weight:600">'+label+'</div><div style="padding:8px 14px;text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</div><div id="chk_ex_'+id+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">&nbsp;</div></div><input type="checkbox" id="ex_'+id+'" style="display:none"/></div>').join('')}
+    <span class="q al-q">Packs</span>
+    <div class="al-exl">
+      ${[['exPackBebe','child-seat','Pack Bebé','34,99€'],['exPackVerano','sun','Pack Verano','44,99€'],['exPackInvierno','snow','Pack Invierno','24,99€'],['exPackOcio','racket','Pack Ocio','4,99€/día'],['exPackCamping','tent','Pack Camping','49,99€'],['exPackMascota','paw','Pack Mascota','19,99€'],['exPackConfort','sparkle','Pack Confort','174,99€']].map(([id,icon,label,price])=>_exR(id,icon,label,price)).join('')}
     </div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px" id="rExKmLbl">KM — ${calcKmInc(durNR,isFurgNR)} km incluidos (${durNR} día)</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
-        ${[['exBolsa200','road','Bolsa +200 km','24,99€'],['exBolsa500','road','Bolsa +500 km','39,99€'],['exBolsa1000','road','Bolsa +1.000 km','59,99€'],['exKmIlimitados','infinity','Km ilimitados','79,99€']].map(([id,icon,label,price])=>'<div class="_exrow _kmrow" data-exid="'+id+'" data-dur="'+durNR+'" id="row_ex_'+id+'" style="display:flex;align-items:center;gap:10px;padding:8px 6px;cursor:pointer;border-radius:8px"><div id="chk_ex_'+id+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">&nbsp;</div><input type="checkbox" id="ex_'+id+'" style="display:none"/><span style="font-size:18px">'+ico(icon)+'</span><span style="flex:1;font-size:13px;font-weight:600">'+label+'</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</span></div>').join('')}
-      </div>
-      <div class="_exrow" data-exid="exKmPrepago" data-dur="${durNR}" id="row_ex_exKmPrepago" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer">
-        <div id="chk_ex_exKmPrepago" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">&nbsp;</div>
+    <span class="q al-q" id="rExKmLbl">KM — ${calcKmInc(durNR,isFurgNR)} km incluidos (${durNR} día)</span>
+    <div class="al-exl">
+      ${[['exBolsa200','road','Bolsa +200 km','24,99€'],['exBolsa500','road','Bolsa +500 km','39,99€'],['exBolsa1000','road','Bolsa +1.000 km','59,99€'],['exKmIlimitados','infinity','Km ilimitados','79,99€']].map(([id,icon,label,price])=>_exR(id,icon,label,price,1)).join('')}
+      <div class="_exrow al-ex" data-exid="exKmPrepago" data-dur="${durNR}" id="row_ex_exKmPrepago">
+        <span class="i">${ico('odometer')}</span>
+        <span class="t">Km sueltos<small>0,15 €/km</small></span>
+        <input id="exKmPrepagoN" class="al-kmn" type="number" min="0" step="50" placeholder="km" inputmode="numeric" onclick="event.stopPropagation()" oninput="_calcExtrasTotal(${durNR},${isFurgNR})"/>
+        <div id="chk_ex_exKmPrepago" class="al-ck">&nbsp;</div>
         <input type="checkbox" id="ex_exKmPrepago" style="display:none"/>
-        <span style="font-size:20px">${ico('odometer')}</span>
-        <span style="flex:1;font-size:13px;font-weight:600">Km sueltos <span style="font-size:10px;color:var(--text3);font-weight:400">(0,15€/km)</span></span>
-        <input id="exKmPrepagoN" type="number" min="0" step="50" placeholder="km" onclick="event.stopPropagation()" oninput="_calcExtrasTotal(${durNR},${isFurgNR})" style="width:70px;font-size:13px;padding:4px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);text-align:right"/>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1.5px solid var(--border);margin-bottom:8px">
-      <span style="font-size:13px;font-weight:700">Total extras:</span>
-      <span id="exTotalAmt" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--amber)">0,00 €</span>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_rwGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_rwGo(3)">Siguiente ›</button></div>
+    <div class="al-ext"><span>Total extras</span><b id="exTotalAmt">0,00 €</b></div>
+    <div class="al-nav"><button class="btn-sec tap44" onclick="_rwGo(1)">‹ Atrás</button><button class="btn-pri tap44" onclick="_rwGo(3)">Siguiente ›</button></div>
     </div>
     <div data-rw="3" style="display:none">
-      <div id="rwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
-      <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_rwGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="submitRental()">${ico('check-circle')} Registrar alquiler</button></div>
+      <div id="rwSummary" class="al-sum"></div>
+      <div class="al-nav"><button class="btn-sec tap44" onclick="_rwGo(2)">‹ Atrás</button><button class="btn-pri tap44" onclick="submitRental()">${ico('check-circle')} Registrar alquiler</button></div>
     </div>`);
 }
 function _rwMark(id,bad){const e=document.getElementById(id);if(!e)return;e.style.borderColor=bad?'var(--red,#ef4444)':'';}
@@ -7679,7 +7715,8 @@ function _rwGo(n){
     const amt=parseFloat(g('rAmt'))||0;
     const ex=parseFloat((document.getElementById('exTotalAmt')?.textContent||'0').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''))||0;
     const f=x=>x.toFixed(2).replace('.',',')+' €';
-    document.getElementById('rwSummary').innerHTML=('<div>'+ico('car')+' <b>')+esc((PLATS[_plat]&&PLATS[_plat].label)||_plat)+('</b></div><div>'+ico('calendar')+' ')+esc(fmtDMY(g('rSD')))+' '+esc(g('rST'))+' → '+esc(fmtDMY(g('rED')))+' '+esc(g('rET'))+'</div>'+(cl?('<div>'+ico('user')+' ')+esc(cl)+'</div>':'')+'<div>Importe: <b>'+f(amt)+'</b></div><div>Extras: <b>'+f(ex)+'</b></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">Total: <b style="color:var(--amber);font-size:16px">'+f(amt+ex)+'</b></div>';
+    const _tS=f(amt+ex).split(','),_kv=(k,val)=>'<div class="d-kv"><span>'+k+'</span><b>'+val+'</b></div>';
+    document.getElementById('rwSummary').innerHTML=_kv('Plataforma',esc((PLATS[_plat]&&PLATS[_plat].label)||_plat))+_kv('Inicio',esc(fmtDMY(g('rSD')))+' '+esc(g('rST')))+_kv('Fin',esc(fmtDMY(g('rED')))+' '+esc(g('rET')))+(cl?_kv('Cliente',esc(cl)):'')+_kv('Importe',f(amt))+_kv('Extras',f(ex))+'<div class="d-tot al-tot"><span class="q">Total</span><div class="d-n n2">'+esc(_tS[0])+'<small>'+esc(','+_tS.slice(1).join(','))+'</small></div><p>IVA incluido</p></div>';
   }
   const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
@@ -9911,8 +9948,6 @@ function renderRentals(el){
   const upcoming=all.filter(b=>b.startDate>hoy&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
-  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-gray">${esc(p.label)}</span>`:'';};
-
   const statusChip=b=>{
     const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
     if(dEnd<=1)return `<span class="chip chip-red">${ico('alert')} Termina hoy</span>`;
@@ -9921,51 +9956,40 @@ function renderRentals(el){
   };
   const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
   const _n2=n=>String(n).padStart(2,'0');
+  const _dm=(d,t)=>esc(fmtDMY(d).slice(0,5))+(t?' '+esc(t):'');
 
-  // Ficha neutra: punto del color del coche, nombre, matrícula en mono, importe; cliente y estado; trayecto de fechas con línea discontinua
-  const bookingCard=(b,isActive)=>{
+  // Fila fina (.d-row, como el FAQ de la web): punto del coche · coche y matrícula / cliente / fechas y horas · importe y estado
+  const bookingRow=(b,chip)=>{
     const v=b._v;
-    const dur=daysBetween(b.startDate,b.endDate);
-    const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);
-    return `<div class="rcard rk" onclick="openV('${escJs(v.id)}')">
-      <div class="rk-h">${_dot(v)}<span class="rk-n">${esc(v.name)}</span><span class="rk-p">${esc(v.plate)}</span><b class="rk-a">${fmtF(b.amount||0)}</b></div>
-      <div class="rk-c"><span class="rk-cl">${esc(b.clientName||'Sin cliente')}</span>${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
-      <div class="rk-t"><span>${esc(fmtDMY(b.startDate))}</span><i aria-hidden="true"></i><span>${esc(fmtDMY(b.endDate))}</span><span class="rk-d">${dur}d</span></div>
-      <div class="rk-f"><span>${b.startTime||b.endTime?`${ico('clock')} ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}`:''}</span>${platBadge(b)}</div>
+    return `<div class="d-row al-r" onclick="openV('${escJs(v.id)}')">
+      ${_dot(v)}
+      <div class="al-b"><div class="t ell">${esc(v.name)} <span class="mono2">${esc(v.plate)}</span></div><div class="al-c">${esc(b.clientName||'Sin cliente')}</div><div class="s">${_dm(b.startDate,b.startTime)} → ${_dm(b.endDate,b.endTime)}</div></div>
+      <div class="r"><b>${fmtF(b.amount||0)}</b>${chip}</div>
     </div>`;
   };
 
   let h=`<div class="anim">`;
 
   // ── En curso
-  h+=`<div class="dh-sh rk-sh"><h2>En curso</h2><span class="q ok">${_n2(active.length)}</span></div>`;
+  h+=`<div class="d-sh al-sh"><h2>En curso</h2><span class="q ok">${_n2(active.length)}</span></div>`;
   if(active.length){
-    h+=active.map(b=>bookingCard(b,true)).join('');
+    h+=`<div class="d-list">${active.map(b=>bookingRow(b,statusChip(b))).join('')}</div>`;
   } else {
-    h+=`<div class="empty rk-e"><div class="ei">${ico('sun')}</div><div class="et">Ningún vehículo en alquiler ahora</div></div>`;
+    h+=`<div class="d-empty al-e">${ico('sun')}<h3>Ningún vehículo en alquiler ahora</h3></div>`;
   }
 
   // ── Próximos (30 días)
-  h+=`<div class="dh-sh rk-sh"><h2>Próximos 30 días</h2><span class="q">${_n2(upcoming.length)}</span></div>`;
+  h+=`<div class="d-sh al-sh"><h2>Próximos</h2><span class="q">30 días · ${_n2(upcoming.length)}</span></div>`;
   if(upcoming.length){
-    h+=upcoming.map(b=>bookingCard(b,false)).join('');
+    h+=`<div class="d-list">${upcoming.map(b=>{const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);return bookingRow(b,`<span class="chip chip-blue">En ${daysUntil}d</span>`);}).join('')}</div>`;
   } else {
-    h+=`<div class="empty rk-e"><div class="ei">${ico('clipboard')}</div><div class="et">Sin alquileres próximos</div><div class="es">Pulsa + para generar un contrato</div></div>`;
+    h+=`<div class="d-empty al-e">${ico('clipboard')}<h3>Sin alquileres próximos</h3><p>Pulsa «Nuevo alquiler» para crear uno</p></div>`;
   }
 
-  // ── Recientes: lista técnica
+  // ── Recientes
   if(recent.length){
-    h+=`<div class="dh-sh rk-sh"><h2>Recientes</h2><span class="q">${_n2(recent.length)}</span></div>`;
-    h+=`<div class="dh-list">`;
-    recent.forEach(b=>{
-      const v=b._v;const dur=daysBetween(b.startDate,b.endDate);
-      h+=`<div class="dh-row" onclick="openV('${escJs(v.id)}')">
-        ${_dot(v)}
-        <div style="min-width:0"><div class="t ell">${esc(v.name)} <span class="mono2">· ${esc(b.clientName||'—')}</span></div><div class="s">${esc(fmtDMY(b.endDate))} · ${dur}d</div></div>
-        <div class="r"><b>${fmtF(b.amount||0)}</b></div>
-      </div>`;
-    });
-    h+=`</div>`;
+    h+=`<div class="d-sh al-sh"><h2>Recientes</h2><span class="q">${_n2(recent.length)}</span></div>`;
+    h+=`<div class="d-list">${recent.map(b=>bookingRow(b,'')).join('')}</div>`;
   }
 
   h+=`</div>`;
