@@ -217,10 +217,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:var(--bg2);border-radius:var(--r-sheet) var(--r-sheet) 0 0;border:1px solid var(--border2);border-bottom:0;padding:0 16px calc(28px + var(--sb));max-height:94dvh;overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);will-change:transform;}
 .sheet.open{transform:translateY(0);}
 .sh{width:36px;height:4px;background:var(--border2);border-radius:var(--r-pill);margin:12px auto 20px;}
-.stitle{font-size:19px;font-weight:var(--fw-title);letter-spacing:var(--ls-title);line-height:1.1;margin-bottom:4px;}
-.ssub{font-size:12px;color:var(--text3);margin-bottom:20px;}
+.stitle{font-size:var(--fs-h3);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-bottom:6px;}
+.ssub{font-size:13px;color:var(--text2);margin-bottom:20px;}
 /* INPUTS */
-input,select{font-family:var(--font);font-size:15px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-in);color:var(--text);padding:12px 14px;width:100%;outline:none;-webkit-appearance:none;appearance:none;color-scheme:dark;}.light input,.light select{color-scheme:light;}
+input,select{font-family:var(--font);font-size:16px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-in);color:var(--text);padding:12px 14px;width:100%;outline:none;-webkit-appearance:none;appearance:none;color-scheme:dark;}.light input,.light select{color-scheme:light;}
 input:focus,select:focus{border-color:var(--amber);}
 input[type=checkbox]{width:24px;height:24px;min-width:24px;padding:0!important;margin:0;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--amber);flex-shrink:0;cursor:pointer;}
 select option{background:var(--bg);}
@@ -228,16 +228,16 @@ select option{background:var(--bg);}
 .fg{margin-bottom:14px;}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 /* BUTTONS */
-.btn{background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--r-pill);padding:14px 20px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;width:100%;min-height:var(--tap);}
+.btn{background:var(--amber);color:var(--on-amber);border:none;border-radius:var(--r-pill);padding:14px 20px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;width:100%;min-height:var(--tap);}
 .btn:active{opacity:0.85;transform:scale(.97);}
-.btn-g{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:var(--r-pill);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;min-height:var(--tap);}
-.btn-d{background:transparent;color:var(--danger-text);border:1px solid var(--err-b);border-radius:var(--r-pill);padding:12px 20px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;width:100%;min-height:var(--tap);}
+.btn-g{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:var(--r-pill);padding:12px 20px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;min-height:var(--tap);}
+.btn-d{background:transparent;color:var(--danger-text);border:1px solid var(--err-b);border-radius:var(--r-pill);padding:12px 20px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;width:100%;min-height:var(--tap);}
 /* Sistema de 3 botones: primario / secundario / peligro (ajustan a su contenedor) */
-.btn-pri,.btn-sec,.btn-dang{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-pill);padding:11px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;min-height:var(--tap);width:100%;box-sizing:border-box;}
+.btn-pri,.btn-sec,.btn-dang{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r-pill);padding:11px 18px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;min-height:var(--tap);width:100%;box-sizing:border-box;}
 .btn-pri{background:var(--amber);color:var(--on-amber);border:1px solid var(--amber);}
 .btn-sec{background:transparent;color:var(--text);border:1px solid var(--border2);}
 .btn-sec.on-green{background:var(--green);color:var(--on-green);border-color:var(--green);}
-.btn-dang{background:transparent;color:var(--danger-text);border:1px solid var(--danger-text);}
+.btn-dang{background:transparent;color:var(--danger-text);border:1px solid var(--err-b);}
 .own-actions{display:flex;flex-direction:column;gap:8px}
 .own-actions>button{width:100%}
 @media(min-width:768px){.own-actions{flex-direction:row}.own-actions>button{flex:1;width:auto}}
@@ -251,16 +251,16 @@ select option{background:var(--bg);}
 .vcard:active{transform:scale(0.98);}
 /* TABS */
 .tabs{display:flex;gap:4px;margin-bottom:16px;background:transparent;border:1px solid var(--border2);padding:4px;border-radius:var(--r-pill);}
-.tab{flex:1;padding:9px 4px;text-align:center;border-radius:var(--r-pill);font-size:12px;font-weight:700;cursor:pointer;color:var(--text2);}
+.tab{flex:1;padding:9px 4px;text-align:center;border-radius:var(--r-pill);font-size:14px;font-weight:600;cursor:pointer;color:var(--text2);}
 .tab.active{background:var(--amber);color:var(--on-amber);}
 /* MISC */
 .back{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;padding:4px 0;margin-bottom:14px;}
 .sec{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text3);margin-bottom:12px;}
 .divider{height:1px;background:var(--border);margin:16px 0;}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;text-align:center;gap:10px;background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);border-radius:var(--r-card);}
-.ei{font-size:48px;opacity:0.35;}
-.et{font-size:17px;font-weight:700;color:var(--text2);}
-.es{font-size:12px;color:var(--text3);}
+.ei{font-size:40px;line-height:1;color:var(--text2);}
+.et{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+.es{font-size:14px;color:var(--text2);}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
 .sbox{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-card);padding:16px;}
 .sv{font-family:var(--mono);font-size:18px;font-weight:600;}
@@ -275,8 +275,8 @@ select option{background:var(--bg);}
 .pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;}
 .pills::-webkit-scrollbar{display:none;}
 .pill{padding:6px 14px;border-radius:var(--r-pill);border:1px solid;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;flex-shrink:0;}
-.tsw{display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-pill);padding:3px;margin-bottom:16px;}
-.to{flex:1;padding:9px;text-align:center;border-radius:var(--r-pill);font-size:13px;font-weight:700;cursor:pointer;color:var(--text3);}
+.tsw{display:flex;gap:2px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-pill);padding:4px;margin-bottom:16px;}
+.to{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;text-align:center;border-radius:var(--r-pill);font-size:14px;font-weight:600;cursor:pointer;color:var(--text2);}
 /* PLATFORM */
 .plat-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;}
 .plat-opt{border-radius:10px;border:2px solid var(--border2);padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.2s;}
@@ -376,7 +376,7 @@ select option{background:var(--bg);}
   :root.light input{color-scheme:light;}
   :root.light select{color-scheme:light;}
 /* ── STATUS CHIPS ── */
-.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--r-pill);font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap;}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:var(--r-pill);border:1px solid var(--border2);color:var(--text2);background:transparent;font-family:var(--mono);font-size:var(--fs-min);font-weight:500;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
 .chip-green{background:transparent;color:var(--green);border:1px solid var(--ok-b);}
 .chip-amber{background:transparent;color:var(--amber);border:1px solid var(--acc-b);}
 .chip-red{background:transparent;color:var(--red);border:1px solid var(--err-b);}
@@ -799,6 +799,95 @@ select option{background:var(--bg);}
 .ck-a button.on{border-color:var(--ok-b);color:var(--green);}
 .ck-a button:active{transform:scale(.97);}
 .ck-l{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text2);}
+/* ══ PR C · Sistema de diseño de deiros.net: escala tipográfica cerrada y componentes genéricos (prefijo d-) ══
+   Escala: 11 · 12 · 13 · 14 · 15 · 16 · 17 · 20 · 22 · 28 · 32 px y Doto 36 · 48 · 64. Nada por debajo de 11 px (excepción: ejes SVG de las gráficas).
+   Alias de las PR A/B: comparten la MISMA regla, definida en su sitio para no alterar la cascada:
+   .d-card.xl=.dh-card · .d-n=.dh-big · .d-acc=.dh-yr · .d-sec=.dh-sec · .d-sh=.dh-sh (.rk-sh .vk-sh) · .d-list=.dh-list (.vr-l) · .d-row=.dh-row (.ag-row)
+   · .d-seg=.dh-seg · .d-bar=.dh-bar · .d-ib=.dh-rb. Las pantallas nuevas usan solo los d-*. */
+:root{--fs-h1:32px;--fs-h2:28px;--fs-h3:22px;--fs-h4:17px;--fs-bar:20px;--fs-body:15px;--fs-meta:13px;--fs-lbl:12px;--fs-min:11px;
+  --fs-n1:64px;--fs-n2:48px;--fs-n3:36px;--sp-sec:40px;--sp-card:24px;--sp-card-s:20px;--gap-card:12px;--row-h:64px;--r-cell:10px;}
+/* Escala · mínimo 11 px: clases de las PR anteriores y estilos en línea (salvo la tabla de la agenda de escritorio) */
+.fl,.kl,.fb2,.pb,.cwd,.wiz-lbl,.fleet-tbl th,.desk-nav-label,.desk-logo-sub,.ni-lbl,.dh-mg span,.dh-now .chip,.ag-row .chip,.ag-wk th,.ag-wk th.ag-vh .q,.ag-vp,.bk-tot span,.bk-tr2 .q,.cal-m .q,.cal-wd,.cal-mp .q,.ck-t .q{font-size:var(--fs-min);}
+.ni-lbl{letter-spacing:.02em;}
+:is([style*="font-size:8px"],[style*="font-size:9px"],[style*="font-size:9.5px"],[style*="font-size:10px"],[style*="font-size:10.5px"]):not(.agenda-table *){font-size:var(--fs-min)!important;}
+/* Campos: cifras, fechas, horas, matrículas y teléfonos en mono; 16 px también con tamaño en línea (móvil); fechas que no desbordan; flecha propia en los select */
+input[type=date],input[type=time],input[type=month],input[type=number],input[type=tel],input[inputmode=decimal],input[inputmode=numeric]{font-family:var(--mono)!important;}
+input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;}
+input::-webkit-date-and-time-value{text-align:left;}
+input::placeholder,textarea::placeholder{color:var(--text2);opacity:.6;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AAAAAA' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px;padding-right:40px;}
+:root.light select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");}
+@media(max-width:767px){input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important;}}
+/* Chip: siempre con punto (o con su icono) */
+.chip:not(:has(.ico))::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.chip.no-dot::before,.dh-cl>.chip::before{display:none;} /* .dh-cl ya lleva el punto del coche al lado */
+/* 01 · Cabecera de pantalla: rótulo + título en frase con punto en acento + resumen mono (portadas de informe) */
+.d-hero{padding:4px 0 24px;}
+.d-hero>.q{display:block;margin-bottom:12px;}
+.d-hero h1{font-size:min(var(--fs-h1),8.2vw);font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--text);}
+.d-hero h1 em{font-style:normal;color:var(--amber);}
+.d-hero p{font-family:var(--mono);font-size:var(--fs-meta);color:var(--text2);margin-top:12px;line-height:1.5;}
+/* 03 · Tarjeta: cabecera (rótulo | número), título Syne 700 22, meta mono 13 */
+.d-ch{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.d-ct{font-size:var(--fs-h3);font-weight:700;letter-spacing:-.02em;line-height:1.1;color:var(--text);}
+.d-meta{font-family:var(--mono);font-size:var(--fs-meta);color:var(--text2);line-height:1.5;}
+.d-card .d-ct+.d-meta{margin-top:-10px;}
+/* 06 · Tira de KPI con líneas de 1 px (técnica de los «pasos» de la web) */
+.d-kpi{display:grid;grid-template-columns:repeat(var(--c,2),1fr);gap:1px;background:var(--border2);border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;margin-bottom:var(--gap-card);}
+.d-kpi>div{background:var(--bg);padding:16px 14px;min-width:0;}
+.d-kpi b{display:block;font-family:var(--mono);font-size:20px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.d-kpi span{display:block;font-family:var(--mono);font-size:var(--fs-min);letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-top:6px;}
+/* 09 · Botón de texto (destructivo al final de la hoja: .err) y grupo de acciones (1 principal + secundarios a 2 columnas) */
+.btn-txt{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 12px;font-family:var(--font);font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;}
+.btn-txt.err{color:var(--danger-text);}
+.btn-txt:active{transform:scale(.97);}
+.d-acts{display:grid;gap:8px;}
+.d-acts .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+/* 10 · Filtros en píldora: borde, sin relleno; activa con borde y punto de acento */
+.d-pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.d-pills::-webkit-scrollbar{display:none;}
+.d-pills button{all:unset;flex:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--border2);border-radius:var(--r-pill);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text2);}
+.d-pills button[aria-pressed=true]{border-color:var(--amber);color:var(--text);}
+.d-pills button[aria-pressed=true]::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--amber);}
+/* 11 · Campo con rótulo corto entre comillas, pista aparte, prefijo «€» y fila de dato de solo lectura */
+.d-f{display:grid;gap:8px;margin-bottom:16px;}
+.d-in{min-height:52px;}
+.d-in.m{font-family:var(--mono);}
+.d-hint{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--text2);line-height:1.45;}
+.d-hint.err{color:var(--red);}
+.d-pre{position:relative;}
+.d-pre>span{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-family:var(--mono);color:var(--text2);pointer-events:none;}
+.d-pre>input{padding-left:38px;}
+.d-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.d-2>*{min-width:0;}
+.d-kv{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;padding:0 16px;border:1px solid var(--border2);border-radius:16px;margin-bottom:8px;}
+.d-kv span{font-family:var(--mono);font-size:var(--fs-lbl);letter-spacing:.04em;text-transform:uppercase;color:var(--text2);}
+.d-kv b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);text-align:right;}
+/* 12 · Paso a paso numérico (días): botones redondos 52 + cifra Doto */
+.d-step{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;gap:12px;}
+.d-step button{all:unset;cursor:pointer;width:52px;height:52px;border:1px solid var(--border2);border-radius:50%;display:grid;place-items:center;font-size:24px;color:var(--text);}
+.d-step button:active{transform:scale(.97);}
+.d-step output{text-align:center;font-family:var(--mono);font-size:14px;color:var(--text2);}
+.d-step output b{display:block;font-family:var(--display);font-weight:900;font-size:56px;line-height:1;color:var(--text);}
+/* 13 · Total tras línea discontinua (cifra Doto en acento + desglose mono) y nota con filete de acento */
+.d-tot{border-top:1px dashed var(--border2);padding-top:20px;display:grid;gap:8px;}
+.d-tot .d-n{color:var(--amber);}
+.d-tot p{font-family:var(--mono);font-size:var(--fs-meta);color:var(--text2);}
+.d-note{font-size:14px;color:var(--text2);border-left:2px solid var(--amber);padding:4px 0 4px 12px;line-height:1.5;}
+.d-note b{color:var(--text);font-weight:600;}
+/* 18 · Vacío (sección final de la web): borde discontinuo, trama, icono 40, título Syne 700 20 */
+.d-empty{display:grid;justify-items:center;gap:10px;text-align:center;padding:44px 20px;border:1px dashed var(--border2);border-radius:var(--r-card);background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);}
+.d-empty .ico{width:40px;height:40px;color:var(--text2);}
+.d-empty h3{font-size:20px;font-weight:700;letter-spacing:-.02em;}
+.d-empty p{font-size:14px;color:var(--text2);max-width:260px;}
+.d-empty .btn-sec{width:auto;margin-top:6px;}
+/* 20 · Trayecto: extremos con hora mono 28, línea discontinua y duración en chip */
+.d-route{display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:12px;}
+.d-route .e{display:grid;gap:4px;}.d-route .e:last-child{text-align:right;}
+.d-route .e b{font-family:var(--mono);font-size:28px;font-weight:500;line-height:1;color:var(--text);}
+.d-route .e small{font-family:var(--mono);font-size:var(--fs-meta);color:var(--text2);}
+.d-route .l{position:relative;height:24px;align-self:center;border-top:1px dashed var(--border2);top:12px;}
+.d-route .l .chip{position:absolute;left:50%;top:-13px;transform:translateX(-50%);background:var(--bg2);}
 </style>
 </head>
 <body>
