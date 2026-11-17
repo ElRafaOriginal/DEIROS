@@ -480,14 +480,23 @@ select option{background:var(--bg);}
 }
 @media(min-width:768px){.ni-new{display:none;}}
 /* ══ Resumen como ficha técnica: tarjetas radio 28 / padding 24 / borde 1 px, sin sombras ══ */
-.dh-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-sheet);padding:24px;margin-bottom:12px;}
-.dh-card.hl{border-color:var(--amber);}
-.dh-card.dotbg{background-color:var(--bg2);background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);}
+/* Tarjeta genérica .d-card (= .dh-card, que es su variante .xl de radio 28) */
+.d-card,.dh-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-card);padding:var(--sp-card);margin-bottom:var(--gap-card);}
+.d-card{display:grid;gap:18px;}
+.d-card.xl,.dh-card{border-radius:var(--r-sheet);}
+.d-card.s{padding:var(--sp-card-s);gap:14px;}
+.d-card.hl,.dh-card.hl{border-color:var(--amber);}
+.d-card.dotbg,.dh-card.dotbg{background-color:var(--bg2);background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);}
 .dh-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
-.dh-big{font-size:64px;color:var(--amber);margin-top:22px;display:flex;align-items:baseline;flex-wrap:wrap;}
-.dh-big.l{font-size:50px;}
-.dh-big.neg{color:var(--red);}
-.dh-big small{font-family:var(--mono);font-size:16px;font-weight:400;color:var(--text2);letter-spacing:0;margin-left:4px;}
+/* Cifra protagonista .d-n (= .dh-big): Doto 900, una por pantalla u hoja; céntimos y unidad en mono 16 */
+.d-n,.dh-big{font-family:var(--display);font-weight:900;letter-spacing:.02em;line-height:.9;color:var(--text);display:flex;align-items:baseline;flex-wrap:wrap;}
+.d-n.n1,.dh-big{font-size:var(--fs-n1);}
+.d-n.n2,.dh-big.l{font-size:var(--fs-n2);}
+.d-n.n3{font-size:var(--fs-n3);}
+.d-n.ac,.dh-big{color:var(--amber);}
+.dh-big{margin-top:22px;}
+.d-n.neg,.dh-big.neg{color:var(--red);}
+.d-n small,.dh-big small{font-family:var(--mono);font-size:16px;font-weight:400;color:var(--text2);letter-spacing:0;margin-left:4px;}
 .dh-note{font-family:var(--mono);font-size:13px;color:var(--text2);margin-top:12px;}
 /* Ficha técnica: línea superior --border2, celdas con línea --border, rótulo mono + valor */
 .spec{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border2);margin-top:20px;}
@@ -512,28 +521,33 @@ select option{background:var(--bg);}
 .dh-act b .ico{color:var(--amber);flex-shrink:0;}
 .dh-act b .u{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--text2);margin:0 auto 0 8px;align-self:flex-end;padding-bottom:4px;}
 /* Acumulado del año: details con línea y «+» que gira 45° */
-.dh-yr{border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);margin:8px 0 8px;}
-.dh-yr summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;}
-.dh-yr summary::-webkit-details-marker{display:none;}
-.dh-yr summary .ico{color:var(--amber);transition:transform .4s var(--ease);}
-.dh-yr[open] summary .ico{transform:rotate(45deg);}
+/* Desplegable .d-acc (= .dh-yr; FAQ de la web): línea arriba y abajo, «+» en acento que gira 45° */
+.d-acc,.dh-yr{border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);margin:8px 0 8px;}
+.d-acc{margin:0;}
+.d-acc+.d-acc{border-top:0;}
+.d-acc summary,.dh-yr summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;}
+.d-acc summary{min-height:var(--row-h);gap:14px;font-size:var(--fs-h4);font-weight:600;color:var(--text);}
+.d-acc summary>.t{flex:1;min-width:0;}
+.d-acc summary::-webkit-details-marker,.dh-yr summary::-webkit-details-marker{display:none;}
+.d-acc summary .ico,.dh-yr summary .ico{color:var(--amber);flex-shrink:0;transition:transform .4s var(--ease);}
+.d-acc[open] summary .ico,.dh-yr[open] summary .ico{transform:rotate(45deg);}
+.d-acc>div{padding:0 0 20px;}
 .dh-yr .spec{margin:0 0 4px;}
 .dh-yr .spec>div:nth-last-child(-n+2){border-bottom:0;}
-/* Secciones y lista técnica (filas con línea, número entre comillas) */
-.dh-sec{margin-top:32px;}
-.dh-sh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px;}
-.dh-sh h2{font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:.95;color:var(--text);}
-.dh-sh .q{white-space:nowrap;}
-.dh-list{border-top:1px solid var(--border2);}
-.dh-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;min-height:68px;padding:12px 0;border-bottom:1px solid var(--border2);cursor:pointer;}
-.dh-row>.q{font-size:11px;}
-.dh-row .t{font-size:16px;font-weight:600;line-height:1.25;color:var(--text);}
-.dh-row .t.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.dh-row .s{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:3px;}
-.dh-row .s .ico{margin-right:2px;}
-.dh-row .r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
-.dh-row .r b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;}
-.dh-row .chip{text-transform:uppercase;letter-spacing:.04em;}
+/* Sección y lista técnica genéricas: .d-sec/.d-sh (= .dh-sec/.dh-sh) y .d-list/.d-row (= .dh-list/.dh-row; FAQ y menú de la web) */
+.d-sec,.dh-sec{margin-top:var(--sp-sec);}
+.d-sh,.dh-sh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 12px;margin-bottom:16px;}
+.d-sh h2,.dh-sh h2{font-size:var(--fs-h2);font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--text);}
+.d-sh .q,.dh-sh .q{white-space:nowrap;}
+.d-list,.dh-list{border-top:1px solid var(--border2);}
+.d-row,.dh-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;min-height:var(--row-h);padding:12px 0;border-bottom:1px solid var(--border2);cursor:pointer;}
+.d-row>.q,.dh-row>.q{font-size:var(--fs-min);}
+.d-row .t,.dh-row .t{font-size:16px;font-weight:600;line-height:1.25;color:var(--text);}
+.d-row .t.ell,.dh-row .t.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.d-row .s,.dh-row .s{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--text2);margin-top:3px;}
+.d-row .s .ico,.dh-row .s .ico{margin-right:2px;}
+.d-row .r,.dh-row .r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.d-row .r b,.dh-row .r b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;}
 /* Alquiler en curso: ficha neutra, punto con el color del coche */
 .dh-rent{padding:20px 20px 6px;border-radius:var(--r-card);cursor:pointer;transition:transform .3s var(--ease);}
 .dh-rent:active{transform:scale(.98);}
@@ -544,22 +558,26 @@ select option{background:var(--bg);}
 .dh-rent .spec{margin-top:16px;}
 .dh-rent .spec>div:nth-last-child(-n+2){border-bottom:0;}
 /* Selector segmentado de periodo y barras por plataforma */
-.dh-seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border2);border-radius:var(--r-pill);padding:4px;margin-bottom:12px;}
-.dh-seg button{all:unset;cursor:pointer;text-align:center;min-height:44px;border-radius:var(--r-pill);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text2);transition:background-color .3s,color .3s;}
-.dh-seg button[aria-pressed=true]{background:var(--amber);color:var(--on-amber);}
+/* Selector segmentado .d-seg (= .dh-seg; .seg de la calculadora de la web): 2–4 opciones, la activa en acento */
+.d-seg,.dh-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;border:1px solid var(--border2);border-radius:var(--r-pill);padding:4px;margin-bottom:12px;}
+.d-seg button,.dh-seg button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;min-height:44px;border-radius:var(--r-pill);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text2);transition:background-color .3s,color .3s;}
+.d-seg button[aria-pressed=true],.dh-seg button[aria-pressed=true]{background:var(--amber);color:var(--on-amber);}
 .dh-pl{padding:14px 0;border-bottom:1px solid var(--border);}
 .dh-pl:first-child{padding-top:0;}.dh-pl:last-child{border-bottom:0;padding-bottom:0;}
 .dh-plh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px;}
 .dh-plh .t{font-size:16px;font-weight:600;}
 .dh-plh .q{font-size:11px;margin-left:6px;}
 .dh-plh b{font-family:var(--mono);font-size:17px;font-weight:500;}
-.dh-bar{height:2px;background:var(--border2);}
-.dh-bar i{display:block;height:100%;background:var(--amber);}
+/* Barra fina .d-bar (= .dh-bar): 2 px, relleno de acento (verde/rojo con .ok/.err) */
+.d-bar,.dh-bar{height:2px;background:var(--border2);}
+.d-bar i,.dh-bar i{display:block;height:100%;background:var(--amber);}
+.d-bar.ok i{background:var(--green);}.d-bar.err i{background:var(--red);}
 /* Gráfica (buildChart: Resumen, Negocio y Finanzas del coche) */
 .dh-chart{padding:20px;}
 .dh-chart .dh-scr{direction:rtl;}.dh-chart .dh-scr svg{direction:ltr;}
-.dh-rb{all:unset;cursor:pointer;box-sizing:border-box;width:44px;height:44px;border:1px solid var(--border2);border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--text);}
-.dh-rb:active{transform:scale(.94);}
+/* Botón redondo .d-ib (= .dh-rb): atrás, cerrar, flechas de mes y de año */
+.d-ib,.dh-rb{all:unset;cursor:pointer;box-sizing:border-box;width:44px;height:44px;flex:none;border:1px solid var(--border2);border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--text);transition:transform .3s var(--ease);}
+.d-ib:active,.dh-rb:active{transform:scale(.94);}
 .dh-yrt{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:.04em;color:var(--text);min-width:48px;text-align:center;}
 .dh-leg{display:flex;gap:16px;margin:14px 0 12px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
 .dh-csum{border-top:1px dashed var(--border2);margin-top:14px;padding-top:16px;}
