@@ -5763,9 +5763,9 @@ function renderDash(el){
   // ── MES EN CURSO: ficha técnica con la cifra protagonista en Doto ──
   const _mpS=fmt(mP).split(','),_mpE=_mpS[0],_mpD=_mpS.length>1?','+_mpS.slice(1).join(','):'';
   h+=`<section class="dh-card hl dotbg">
-    <div class="dh-h"><span class="q ac">Resultado mes</span><span class="q">${MON_LABEL.slice(0,3).toUpperCase()} ${now.getFullYear()}</span></div>
+    <div class="dh-h"><span class="q ac">Resultado flota</span><span class="q">${MON_LABEL.slice(0,3).toUpperCase()} ${now.getFullYear()}</span></div>
     <div class="dh-big mx${mP<0?' neg':''}${_mpE.length>6?' l':''}">${esc(_mpE)}<small>${esc(_mpD)}</small></div>
-    <div class="dh-note">${mI>0?'Margen '+Math.round(mP/mI*100)+' % · ':''}${mBks} alq. este mes</div>
+    <div class="dh-note">Incl. coches en gestión (parte del propietario) · ${mI>0?'Margen '+Math.round(mP/mI*100)+' % · ':''}${mBks} alq. este mes</div>
     <div class="spec">
       <div><i class="dt dt-ok"></i>INGRESOS MES<b class="lg">${fmt(mI)}</b></div>
       <div><i class="dt dt-err"></i>GASTOS MES<b class="lg">${fmt(mE)}</b></div>
