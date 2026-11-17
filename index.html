@@ -8423,82 +8423,78 @@ function openEditV(id){
   window._editVtype=v.vtype||'own';
   window._editVehicleType=v.vehicle_type||'turismo';
 
+  // Tipo de vehículo: rejilla de 4 × 2 opciones (la activa en acento, como el selector segmentado)
   const vtypeGrid=VTYPES.map(t=>{
     const active=t.id===(v.vehicle_type||'turismo');
-    return `<div onclick="selEditVehicleType('${escJs(t.id)}')" id="evt_${t.id}" style="border-radius:8px;border:2px solid ${active?'var(--amber)':'var(--border2)'};background:${active?'var(--acc-s)':'transparent'};padding:10px 6px;text-align:center;cursor:pointer">
-      <div style="font-size:18px">${ico(t.icon)}</div>
-      <div style="font-size:11px;font-weight:700;color:${active?'var(--amber)':'var(--text3)'};margin-top:2px">${t.label}</div>
-    </div>`;
+    return `<button type="button" onclick="selEditVehicleType('${escJs(t.id)}')" id="evt_${t.id}" aria-pressed="${active}">${ico(t.icon)}<span>${t.label}</span></button>`;
   }).join('');
+  const _vtd=(VTYPES.find(t=>t.id===(v.vehicle_type||'turismo'))||{}).desc||'';
 
   const ownerOpts=OW.map(o=>`<option value="${esc(o.id)}"${o.id===v.ownerId?' selected':''}>${esc(o.name)}</option>`).join('');
 
-  openSheet(`<div class="stitle">Editar vehículo</div>
-    <div class="fg"><div class="lbl">PROPIETARIO / GESTIÓN</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
-        <div id="evt_own" onclick="selEditVtype('own')" style="border-radius:10px;border:2px solid ${!isM?'var(--amber)':'var(--border2)'};background:${!isM?'var(--acc-s)':'transparent'};padding:12px 8px;text-align:center;cursor:pointer">
-          <div style="font-size:20px;margin-bottom:4px">${ico('car')}</div><div style="font-size:12px;font-weight:700;color:${!isM?'var(--amber)':'var(--text3)'}">PROPIO</div>
-        </div>
-        <div id="evt_managed" onclick="selEditVtype('managed')" style="border-radius:10px;border:2px solid ${isM?'var(--purple)':'var(--border2)'};background:${isM?'#8B5CF615':'transparent'};padding:12px 8px;text-align:center;cursor:pointer">
-          <div style="font-size:20px;margin-bottom:4px">${ico('handshake')}</div><div style="font-size:12px;font-weight:700;color:${isM?'var(--purple)':'var(--text3)'}">EN GESTIÓN</div>
-        </div>
+  openSheet(`<div class="fl-form"><div class="stitle">Editar vehículo</div>
+    <div class="ssub">${esc(v.name)} · ${esc(v.plate)}</div>
+    <div class="d-f"><span class="q">Propiedad</span>
+      <div class="d-seg fl-seg" role="group" aria-label="Propiedad">
+        <button type="button" id="evt_own" aria-pressed="${!isM}" onclick="selEditVtype('own')">${ico('car')} Propio</button>
+        <button type="button" id="evt_managed" aria-pressed="${isM}" onclick="selEditVtype('managed')">${ico('handshake')} En gestión</button>
       </div>
     </div>
     <div id="editOwnerRow" style="display:${isM?'block':'none'}">
-      <div class="fg"><label class="lbl">PROPIETARIO</label>
+      <div class="d-f"><label class="q" for="evOwner">Propietario</label>
         <select id="evOwner"><option value="">— Sin asignar —</option>${ownerOpts}</select>
       </div>
     </div>
-    <div class="fg"><label class="lbl">TIPO DE VEHÍCULO</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">${vtypeGrid}</div>
+    <div class="d-f"><span class="q">Tipo de vehículo</span>
+      <div class="fl-vt" role="group" aria-label="Tipo de vehículo">${vtypeGrid}</div>
+      <div class="d-hint" id="evt_hint">${esc(_vtd)}</div>
     </div>
-    <div class="fg"><label class="lbl">NOMBRE / ALIAS *</label><input id="evN" value="${esc(v.name)}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">MATRÍCULA *</label><input id="evP" value="${esc(v.plate)}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">MARCA</label><input id="evMake" value="${esc(v.make||'')}" placeholder="Ej: Renault" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">MODELO</label><input id="evM" value="${esc(v.model||'')}" placeholder="Ej: Clio" autocomplete="off"/></div>
+    <div class="d-f"><label class="q" for="evN">Nombre o alias *</label><input id="evN" value="${esc(v.name)}" autocomplete="off"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evP">Matrícula *</label><input id="evP" class="m" value="${esc(v.plate)}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="evY">Año</label><input id="evY" type="number" value="${esc(v.year||'')}"/></div>
     </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">AÑO</label><input id="evY" type="number" value="${esc(v.year||'')}"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evMake">Marca</label><input id="evMake" value="${esc(v.make||'')}" placeholder="Ej: Renault" autocomplete="off"/></div>
+      <div class="d-f"><label class="q" for="evM">Modelo</label><input id="evM" value="${esc(v.model||'')}" placeholder="Ej: Clio" autocomplete="off"/></div>
     </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">COMBUSTIBLE</label>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evFuel">Combustible</label>
         <select id="evFuel">
           <option value="">—</option>
           ${['Gasolina','Diésel','Híbrido','Eléctrico','GLP'].map(f=>`<option${f===(v.fuel||'')?'  selected':''}>${f}</option>`).join('')}
         </select>
       </div>
-      <div class="fg"><label class="lbl">KM ACTUALES</label><input id="evKm" type="number" value="${esc(v.km||'')}" inputmode="numeric"/></div>
+      <div class="d-f"><label class="q" for="evKm">Km actuales</label><input id="evKm" type="number" value="${esc(v.km||'')}" inputmode="numeric"/></div>
     </div>
-    <div class="fg"><label class="lbl">DEPÓSITO (LITROS) <span style="font-size:9px;font-weight:400;color:var(--text3)">para calcular el combustible que falta</span></label><input id="evTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50" value="${esc(Number(v.tankL)>0?v.tankL:'')}"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="evPrice" type="number" value="${esc(v.purchase_price||'')}" inputmode="decimal"/></div>
-      <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="evBuyYear" type="number" value="${esc(v.purchase_year||'')}"/></div>
+    <div class="d-f"><label class="q" for="evTank">Depósito</label><div class="al-suf"><input id="evTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50" value="${esc(Number(v.tankL)>0?v.tankL:'')}"/><span>litros</span></div><div class="d-hint">Para calcular el combustible que falta</div></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evPrice">Precio compra</label><div class="d-pre"><span>€</span><input id="evPrice" type="number" value="${esc(v.purchase_price||'')}" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="evBuyYear">Año compra</label><input id="evBuyYear" type="number" value="${esc(v.purchase_year||'')}"/></div>
     </div>
-    <div class="fg"><label class="lbl">Nº BASTIDOR (VIN)</label><input id="evChassis" value="${esc(v.chassis||'')}" placeholder="VIN / Nº bastidor" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="evNo" value="${esc(v.notes||'')}" autocomplete="off"/></div>
-    <div style="height:1px;background:var(--border);margin:10px 0"></div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">${ico('shield')} SEGURO</div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">ASEGURADORA</label><input id="evInsurer" value="${esc(v.insurer||'')}" placeholder="Ej: Mapfre" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">Nº PÓLIZA</label><input id="evPolicy" value="${esc(v.policy||'')}" placeholder="Nº póliza" autocomplete="off"/></div>
+    <div class="d-f"><label class="q" for="evChassis">Nº bastidor</label><input id="evChassis" class="m" value="${esc(v.chassis||'')}" placeholder="VIN / Nº bastidor" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="d-f"><label class="q" for="evNo">Notas</label><input id="evNo" value="${esc(v.notes||'')}" autocomplete="off"/></div>
+    <div class="al-h"><h3>Seguro</h3>${ico('shield')}</div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="evInsurer">Aseguradora</label><input id="evInsurer" value="${esc(v.insurer||'')}" placeholder="Ej: Mapfre" autocomplete="off"/></div>
+      <div class="d-f"><label class="q" for="evPolicy">Nº póliza</label><input id="evPolicy" class="m" value="${esc(v.policy||'')}" placeholder="Nº póliza" autocomplete="off"/></div>
     </div>
-    <div class="fg"><label class="lbl">TIPO</label>
+    <div class="d-f"><label class="q" for="evInsType">Cobertura</label>
         <select id="evInsType">
           <option value="">—</option>
           ${['A todo riesgo','A terceros','A terceros ampliado'].map(x=>'<option'+(x===(v.insurance_type||'')?' selected':'')+'>'+x+'</option>').join('')}
         </select>
       </div>
-    <button class="btn-pri" onclick="submitEditV()">${ico('save')} Guardar cambios</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitEditV()">${ico('save')} Guardar cambios</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div></div>`);
 }
 
 function selEditVtype(t){
   window._editVtype=t;
   const o=document.getElementById('evt_own'),m=document.getElementById('evt_managed');
-  if(o){o.style.border=t==='own'?'2px solid var(--amber)':'2px solid var(--border2)';o.style.background=t==='own'?'var(--acc-s)':'transparent';o.querySelector('div:last-child').style.color=t==='own'?'var(--amber)':'var(--text3)';}
-  if(m){m.style.border=t==='managed'?'2px solid var(--purple)':'2px solid var(--border2)';m.style.background=t==='managed'?'#8B5CF615':'transparent';m.querySelector('div:last-child').style.color=t==='managed'?'var(--purple)':'var(--text3)';}
+  // Estado del segmentado con aria-pressed (antes bordes y fondos en línea)
+  if(o)o.setAttribute('aria-pressed',String(t==='own'));
+  if(m)m.setAttribute('aria-pressed',String(t==='managed'));
   const ownerRow=document.getElementById('editOwnerRow');
   if(ownerRow)ownerRow.style.display=t==='managed'?'block':'none';
 }
@@ -8508,12 +8504,9 @@ function selEditVehicleType(t){
   VTYPES.forEach(vt=>{
     const el=document.getElementById('evt_'+vt.id);
     if(!el)return;
-    const active=vt.id===t;
-    el.style.border=active?'2px solid var(--amber)':'2px solid var(--border2)';
-    el.style.background=active?'var(--acc-s)':'transparent';
-    const lbl=el.querySelector('div:nth-child(2)');
-    if(lbl)lbl.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String(vt.id===t));
   });
+  const hint=document.getElementById('evt_hint');if(hint)hint.textContent=(VTYPES.find(vt=>vt.id===t)||{}).desc||'';
 }
 
 function submitEditV(){
@@ -10792,72 +10785,52 @@ function confirmDelete(id){V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===
 // ═══════════════════════════════════════════════════════════ ADD VEHICLE
 function openAddV(){
   _vtype='own';window._newVPhoto=null;window._newVehicleType='turismo';
-  openSheet(`<div class="stitle">Nuevo vehículo</div>
-    <div class="fg"><div class="lbl">TIPO</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div id="vt_own" onclick="selVtype('own')" style="border-radius:10px;border:2px solid var(--amber);background:var(--acc-s);padding:12px 8px;text-align:center;cursor:pointer"><div style="font-size:20px;margin-bottom:4px">${ico('car')}</div><div style="font-size:12px;font-weight:700;color:var(--amber)">PROPIO</div></div>
-        <div id="vt_managed" onclick="selVtype('managed')" style="border-radius:10px;border:2px solid var(--border2);padding:12px 8px;text-align:center;cursor:pointer"><div style="font-size:20px;margin-bottom:4px">${ico('handshake')}</div><div style="font-size:12px;font-weight:700;color:var(--text3)">EN GESTIÓN</div></div>
+  openSheet(`<div class="fl-form"><div class="stitle">Nuevo vehículo</div>
+    <div class="ssub">Nombre y matrícula son obligatorios; lo demás puede esperar</div>
+    <div class="d-f"><span class="q">Propiedad</span>
+      <div class="d-seg fl-seg" role="group" aria-label="Propiedad">
+        <button type="button" id="vt_own" aria-pressed="true" onclick="selVtype('own')">${ico('car')} Propio</button>
+        <button type="button" id="vt_managed" aria-pressed="false" onclick="selVtype('managed')">${ico('handshake')} En gestión</button>
       </div>
     </div>
-    <div class="fg"><label class="lbl">NOMBRE / ALIAS *</label><input id="vN" placeholder="Ej: Polo Blanco" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">MATRÍCULA *</label><input id="vP" placeholder="1234 ABC" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="r2">
-      <div class="r2">
-      <div class="fg"><label class="lbl">MARCA</label><input id="vMake" placeholder="Ej: Volkswagen" autocomplete="off"/></div>
-      <div class="fg"><label class="lbl">MODELO</label><input id="vM" placeholder="Ej: Polo" autocomplete="off"/></div>
-    </div>
-      <div class="fg"><label class="lbl">AÑO</label><input id="vY" type="number" placeholder="2020"/></div>
-    </div>
-    <div class="fg"><label class="lbl">TIPO DE VEHÍCULO</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="vtypeGrid">
-        <div onclick="selVehicleType('turismo')" id="vvt_turismo" style="border-radius:8px;border:2px solid var(--amber);background:var(--acc-s);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('car')}</div><div style="font-size:11px;font-weight:700;color:var(--amber);margin-top:2px">Turismo</div>
-        </div>
-        <div onclick="selVehicleType('l1h1')" id="vvt_l1h1" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L1H1</div><div style="font-size:9px;color:var(--text3)">Reparto urbano</div>
-        </div>
-        <div onclick="selVehicleType('l2h1')" id="vvt_l2h1" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L2H1</div><div style="font-size:9px;color:var(--text3)">Polivalente</div>
-        </div>
-        <div onclick="selVehicleType('l2h2')" id="vvt_l2h2" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L2H2</div><div style="font-size:9px;color:var(--text3)">Polivalente</div>
-        </div>
-        <div onclick="selVehicleType('l3h2')" id="vvt_l3h2" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van-xl')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L3H2</div><div style="font-size:9px;color:var(--text3)">Mudanzas/logística</div>
-        </div>
-        <div onclick="selVehicleType('l3h3')" id="vvt_l3h3" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('van-xl')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L3H3</div><div style="font-size:9px;color:var(--text3)">Mudanzas/logística</div>
-        </div>
-        <div onclick="selVehicleType('l4h2')" id="vvt_l4h2" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('truck')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L4H2</div><div style="font-size:9px;color:var(--text3)">Grandes volúmenes</div>
-        </div>
-        <div onclick="selVehicleType('l4h3')" id="vvt_l4h3" style="border-radius:8px;border:2px solid var(--border2);padding:10px 6px;text-align:center;cursor:pointer">
-          <div style="font-size:18px">${ico('truck')}</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:2px">L4H3</div><div style="font-size:9px;color:var(--text3)">Grandes volúmenes</div>
-        </div>
-      </div>
-    </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">COMBUSTIBLE</label><select id="vFuel"><option value="">—</option><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option><option>GLP</option></select></div>
-      <div class="fg"><label class="lbl">KM ACTUALES</label><input id="vKm" type="number" placeholder="45000" inputmode="numeric"/></div>
-    </div>
-    <div class="fg"><label class="lbl">DEPÓSITO (LITROS) <span style="font-size:9px;font-weight:400;color:var(--text3)">para calcular el combustible que falta</span></label><input id="vTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">PRECIO COMPRA (€)</label><input id="vPrice" type="number" placeholder="8500" inputmode="decimal"/></div>
-      <div class="fg"><label class="lbl">AÑO COMPRA</label><input id="vBuyYear" type="number" placeholder="2021"/></div>
-    </div>
-    <div class="fg" id="ownerRow" style="display:none"><label class="lbl">PROPIETARIO</label>
+    <div class="d-f" id="ownerRow" style="display:none"><label class="q" for="vOwner">Propietario</label>
       <select id="vOwner">
         <option value="">— Sin asignar —</option>
       </select>
     </div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="vNo" placeholder="Observaciones..."/></div>
-    <div class="fg"><label class="lbl">FOTO DEL VEHÍCULO (opcional)</label>
-      <button type="button" onclick="pickNewVPhoto()" id="photoLabel" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:1.5px dashed var(--border2);border-radius:var(--rsm);padding:18px;cursor:pointer;font-family:var(--font);min-height:80px">
-        <span id="photoPreview" style="font-size:13px;color:var(--text3)">${ico('camera')} Pulsa para seleccionar foto</span>
-      </button>
+    <div class="d-f"><span class="q">Tipo de vehículo</span>
+      <div class="fl-vt" role="group" aria-label="Tipo de vehículo" id="vtypeGrid">
+        ${VTYPES.map(t=>`<button type="button" onclick="selVehicleType('${escJs(t.id)}')" id="vvt_${t.id}" aria-pressed="${t.id==='turismo'}">${ico(t.icon)}<span>${t.label}</span></button>`).join('')}
+      </div>
+      <div class="d-hint" id="vvt_hint"></div>
     </div>
-    <button class="btn-pri" onclick="submitV()">Crear vehículo</button><div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="vN">Nombre o alias *</label><input id="vN" placeholder="Ej: Polo Blanco" autocomplete="off"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vP">Matrícula *</label><input id="vP" class="m" placeholder="1234 ABC" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="vY">Año</label><input id="vY" type="number" placeholder="2020"/></div>
+    </div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vMake">Marca</label><input id="vMake" placeholder="Ej: Volkswagen" autocomplete="off"/></div>
+      <div class="d-f"><label class="q" for="vM">Modelo</label><input id="vM" placeholder="Ej: Polo" autocomplete="off"/></div>
+    </div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vFuel">Combustible</label><select id="vFuel"><option value="">—</option><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option><option>GLP</option></select></div>
+      <div class="d-f"><label class="q" for="vKm">Km actuales</label><input id="vKm" type="number" placeholder="45000" inputmode="numeric"/></div>
+    </div>
+    <div class="d-f"><label class="q" for="vTank">Depósito</label><div class="al-suf"><input id="vTank" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ej: 50"/><span>litros</span></div><div class="d-hint">Para calcular el combustible que falta</div></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="vPrice">Precio compra</label><div class="d-pre"><span>€</span><input id="vPrice" type="number" placeholder="8500" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="vBuyYear">Año compra</label><input id="vBuyYear" type="number" placeholder="2021"/></div>
+    </div>
+    <div class="d-f"><label class="q" for="vNo">Notas</label><input id="vNo" placeholder="Observaciones..."/></div>
+    <div class="d-f"><span class="q">Foto del vehículo</span>
+      <button type="button" onclick="pickNewVPhoto()" id="photoLabel" class="fl-pha">
+        <span id="photoPreview">${ico('camera')} Pulsa para seleccionar foto</span>
+      </button>
+      <div class="d-hint">Opcional · solo visible en la ficha</div>
+    </div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitV()">${ico('save')} Crear vehículo</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div></div>`);
 }
 // Programmatic file picker — works on mobile where label/input in innerHTML fails
 function _pickFile(accept, cb){
@@ -10900,19 +10873,17 @@ function selVehicleType(t){
   VTYPES.forEach(vt=>{
     const el=document.getElementById('vvt_'+vt.id);
     if(!el)return;
-    const isActive=vt.id===t;
-    el.style.border=isActive?'2px solid var(--amber)':'2px solid var(--border2)';
-    el.style.background=isActive?'var(--acc-s)':'transparent';
-    const lbl=el.querySelector('div:nth-child(2)');
-    if(lbl)lbl.style.color=isActive?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String(vt.id===t));
   });
+  const hint=document.getElementById('vvt_hint');if(hint)hint.textContent=(VTYPES.find(vt=>vt.id===t)||{}).desc||'';
 }
 function selVtype(t){
   _vtype=t;
   const o=document.getElementById('vt_own'),m=document.getElementById('vt_managed');
   if(!o||!m)return;
-  o.style.border=t==='own'?'2px solid var(--amber)':'2px solid var(--border2)';o.style.background=t==='own'?'var(--acc-s)':'transparent';o.querySelector('div:last-child').style.color=t==='own'?'var(--amber)':'var(--text3)';
-  m.style.border=t==='managed'?'2px solid var(--purple)':'2px solid var(--border2)';m.style.background=t==='managed'?'#8B5CF615':'transparent';m.querySelector('div:last-child').style.color=t==='managed'?'var(--purple)':'var(--text3)';
+  // Estado del segmentado con aria-pressed (antes bordes y fondos en línea)
+  o.setAttribute('aria-pressed',String(t==='own'));
+  m.setAttribute('aria-pressed',String(t==='managed'));
   // Show/hide owner selector
   const ownerRow=document.getElementById('ownerRow');
   const ownerSel=document.getElementById('vOwner');
