@@ -607,6 +607,48 @@ select option{background:var(--bg);}
 .dh-now .s span:last-child{white-space:nowrap;flex-shrink:0;}
 .dh-now .r{gap:4px;}
 .dh-now .chip{font-size:10px;padding:1px 8px;}
+/* ══ Agenda (móvil): navegación ‹ semana ›, selector Lista/Semana en píldora, cabeceras de día con línea, filas neutras con punto del coche ══ */
+.ag-nav{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.ag-rng{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ag-rng .q{font-size:11px;}
+.ag-rng b{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--text);white-space:nowrap;}
+.ag-tools{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.ag-tools .dh-seg{flex:1;grid-template-columns:1fr 1fr;margin:0;}
+.ag-day{margin-top:28px;}
+.ag-dh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.ag-dh h3{font-size:24px;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--text);}
+.ag-dh .q{white-space:nowrap;font-size:11px;}
+.ag-row{grid-template-columns:auto minmax(0,1fr) auto;min-height:72px;}
+.ag-row .chip{text-transform:uppercase;letter-spacing:.04em;font-size:10.5px;}
+.ag-b{min-width:0;}
+.ag-b .s.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-free{display:flex;align-items:baseline;gap:12px;padding-top:14px;}
+.ag-free .q{white-space:nowrap;font-size:11px;}
+.ag-free>div{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;font-weight:600;color:var(--text);}
+.ag-free>div>span{display:inline-flex;align-items:center;gap:8px;}
+/* Semana: tabla con líneas finas; barras de estado finas (alquilado acento, mantenimiento azul, bloqueado rojo); hoy con fondo suave */
+.ag-wk{margin-top:16px;}
+.ag-wk table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.ag-wk th{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.06em;color:var(--text2);text-align:center;padding:6px 0 10px;border-bottom:1px solid var(--border2);}
+.ag-wk th b{display:block;font-size:14px;font-weight:500;color:var(--text);margin-top:2px;}
+.ag-wk th.t,.ag-wk th.t b{color:var(--amber);}
+.ag-wk .ag-vh{width:34%;text-align:left;padding:8px 6px 8px 0;}
+.ag-wk th.ag-vh .q{font-size:10px;}
+.ag-wk td{padding:0 1px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.ag-wk th.t,.ag-wk td.t{background:var(--acc-s);}
+.ag-vn{display:flex;align-items:center;gap:6px;min-width:0;font-size:13px;font-weight:600;color:var(--text);}
+.ag-vn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-vp{font-family:var(--mono);font-size:10px;color:var(--text2);margin:3px 0 0 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-c{all:unset;box-sizing:border-box;display:block;position:relative;width:100%;height:48px;cursor:pointer;}
+.ag-c::before{content:'';position:absolute;left:0;right:0;top:50%;height:8px;margin-top:-4px;border-radius:var(--r-pill);background:var(--border2);}
+.ag-c.ag-f{cursor:default;}
+.ag-c.ag-f::before{left:50%;right:auto;width:4px;height:4px;margin:-2px 0 0 -2px;}
+.ag-c.ag-r::before{background:var(--amber);}
+.ag-c.ag-m::before{background:var(--blue);}
+.ag-c.ag-b::before{background:var(--red);}
+.ag-leg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
+.ag-leg span{display:inline-flex;align-items:center;gap:8px;}
+.ag-leg .ag-c{width:18px;height:8px;cursor:default;}
 </style>
 </head>
 <body>
@@ -9371,11 +9413,9 @@ function setAgendaOwnership(id){
     const key=vid===''?'all':vid;
     const el=document.getElementById('agtp-own-'+key);
     if(!el)return;
-    const active=vid===id;
-    el.style.borderColor=active?'var(--amber)':'var(--border2)';
-    el.style.background=active?'var(--acc-m)':'transparent';
-    el.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String(vid===id));
   });
+  _agFbtnSync();
   renderAgendaBody();
 }
 function setAgendaVtype(id){
@@ -9384,13 +9424,13 @@ function setAgendaVtype(id){
   allIds.forEach(vid=>{
     const el=document.getElementById('agtp-'+(vid==='all'?'all':vid));
     if(!el)return;
-    const active=(vid==='all'&&!id)||(vid===id);
-    el.style.borderColor=active?'var(--amber)':'var(--border2)';
-    el.style.background=active?'var(--acc-m)':'transparent';
-    el.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String((vid==='all'&&!id)||(vid===id)));
   });
+  _agFbtnSync();
   renderAgendaBody();
 }
+// Botón «Filtros»: borde de acento y punto cuando hay algún filtro activo (solo aspecto)
+function _agFbtnSync(){const b=document.getElementById('agFbtn');if(b)b.classList.toggle('on',!!(_agFilterVtype||_agFilterOwnership));}
 function _agIsMobile(){return !!(window.matchMedia&&window.matchMedia('(max-width:767px)').matches);}
 function agToday(){agY=new Date().getFullYear();agM=new Date().getMonth();agMobStart='';renderAgendaBody();}
 function agMobShift(n){agMobStart=addDays(agMobStart||todayStr(),n);renderAgendaBody();}
@@ -9401,29 +9441,32 @@ function renderAgendaMobile(res,activeV){
   const hoy=todayStr(),man=addDays(hoy,1);
   const st0=agMobStart||hoy;
   const DOW=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const btn='min-height:44px;min-width:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text);cursor:pointer;font-family:var(--font)';
-  let h=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-    <button class="tap44" onclick="agMobShift(-7)" aria-label="Semana anterior" style="${btn}">‹</button>
-    <button class="tap44" onclick="agToday()" style="${btn};flex:1;font-size:14px;font-weight:800;border-color:var(--amber);color:var(--amber)">Hoy</button>
-    <button class="tap44" onclick="agMobShift(7)" aria-label="Semana siguiente" style="${btn}">›</button>
+  const _dm=k=>esc(fmtDMY(k).slice(0,5));
+  const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
+  let h=`<div class="ag-nav">
+    <button type="button" class="dh-rb" onclick="agMobShift(-7)" aria-label="Semana anterior">‹</button>
+    <div class="ag-rng"><span class="q">Semana</span><b>${_dm(st0)} – ${esc(fmtDMY(addDays(st0,6)))}</b></div>
+    <button type="button" class="dh-rb" onclick="agMobShift(7)" aria-label="Semana siguiente">›</button>
   </div>
-  <div style="display:flex;gap:6px;margin-bottom:10px">${[['list','Lista'],['week','Semana']].map(([m,l])=>`<button class="tap44" onclick="agMobSetMode('${m}')" aria-pressed="${agMobMode===m}" style="flex:1;min-height:44px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid ${agMobMode===m?'var(--amber)':'var(--border2)'};background:${agMobMode===m?'var(--acc-m)':'var(--bg3)'};color:${agMobMode===m?'var(--amber)':'var(--text3)'}">${l}</button>`).join('')}</div>
-  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;text-align:center">${esc(fmtDMY(st0))} – ${esc(fmtDMY(addDays(st0,6)))}</div>`;
+  <div class="ag-tools">
+    <div class="dh-seg" role="group" aria-label="Vista">${[['list','Lista'],['week','Semana']].map(([m,l])=>`<button type="button" onclick="agMobSetMode('${m}')" aria-pressed="${agMobMode===m}">${l}</button>`).join('')}</div>
+    <button type="button" class="fbtn" onclick="agToday()">Hoy</button>
+  </div>`;
   if(agMobMode==='week'){
-    const COL={rented:'#F59E0B',maintenance:'#3B82F6',blocked:'#EF4444'};
+    const ST={rented:['ag-r','Alquilado'],maintenance:['ag-m','Mantenimiento'],blocked:['ag-b','Bloqueado']};
     const D1=['D','L','M','X','J','V','S'];
-    h+=`<table style="width:100%;border-collapse:collapse;table-layout:fixed"><thead><tr><th style="width:34%;text-align:left;font-size:10px;color:var(--text3);padding:2px 4px">VEHÍCULO</th>${Array.from({length:7},(_,i)=>{const k=addDays(st0,i);const isT=k===hoy;return `<th style="text-align:center;font-size:10px;padding:2px 0;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}">${D1[new Date(k+'T12:00:00').getDay()]}<br>${Number(k.slice(8))}</th>`;}).join('')}</tr></thead><tbody>`;
+    h+=`<div class="ag-wk"><table><thead><tr><th class="ag-vh"><span class="q">Vehículo</span></th>${Array.from({length:7},(_,i)=>{const k=addDays(st0,i);return `<th${k===hoy?' class="t"':''}>${D1[new Date(k+'T12:00:00').getDay()]}<b>${Number(k.slice(8))}</b></th>`;}).join('')}</tr></thead><tbody>`;
     activeV.forEach(v=>{
-      h+=`<tr><td style="padding:4px;border-bottom:1px solid var(--border);vertical-align:middle"><div style="font-size:12px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:10px;color:${plateColor(v.color)}">${esc(v.plate)}</div></td>`;
+      h+=`<tr><td class="ag-vh"><div class="ag-vn">${_dot(v)}<span>${esc(v.name)}</span></div><div class="ag-vp">${esc(v.plate)}</div></td>`;
       for(let i=0;i<7;i++){
-        const k=addDays(st0,i),st=dayStatus(v,k),c=COL[st];
+        const k=addDays(st0,i),st=dayStatus(v,k),c=ST[st];
         let bid='';if(st==='rented'){const b=bookingForDay(v,k);if(b)bid=b.id;}
         const isT=k===hoy;
-        h+=`<td style="padding:2px;border-bottom:1px solid var(--border);text-align:center"><div ${c?`class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')"`:''} style="min-height:34px;border-radius:4px;background:${c||'transparent'};${isT?'outline:1.5px solid var(--amber);':''}${c?'cursor:pointer;':''}">&nbsp;</div></td>`;
+        h+=`<td${isT?' class="t"':''}>${c?`<button type="button" class="ag-c ${c[0]}" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')" aria-label="${esc(v.name)} · ${esc(fmtDMY(k))} · ${c[1]}"></button>`:'<span class="ag-c ag-f"></span>'}</td>`;
       }
       h+='</tr>';
     });
-    h+=`</tbody></table><div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">${[['#F59E0B','Alquilado'],['#3B82F6','Mantenimiento'],['#EF4444','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}</div>`;
+    h+=`</tbody></table></div><div class="ag-leg">${[['ag-r','Alquilado'],['ag-m','Mantenimiento'],['ag-b','Bloqueado'],['ag-f','Libre']].map(([c,l])=>`<span><i class="ag-c ${c}"></i>${l}</span>`).join('')}</div>`;
     res.innerHTML=h;return;
   }
   for(let i=0;i<7;i++){
@@ -9436,30 +9479,35 @@ function renderAgendaMobile(res,activeV){
     activeV.forEach(v=>{
       const st=dayStatus(v,k);
       if(st!=='rented'&&st!=='maintenance'&&st!=='blocked'){free.push(v);return;}
-      let color,title,sub='',bid='';
+      let chip,sub='',dts='',bid='';
       if(st==='rented'){
-        color=_uiStatusCol('rented');title='Alquilado';
+        chip=`<span class="chip chip-gray">${ico('key')} Alquilado</span>`;
         const b=bookingForDay(v,k);
         if(b){
           bid=b.id;
           const p=PLATS[b.platform];
-          sub=(b.clientName?esc(b.clientName)+' · ':'')+esc(p?p.label:(b.platform||''))+'<br>'+esc(fmtDMY(b.startDate))+(b.startTime?' '+esc(b.startTime):'')+' → '+esc(fmtDMY(b.endDate))+(b.endTime?' '+esc(b.endTime):'');
+          if(b.startDate===k)chip=`<span class="chip chip-green">${ico('key')} Entrega</span>`;
+          else if(b.endDate===k)chip=`<span class="chip chip-amber">${ico('undo')} Devuelve</span>`;
+          sub=(b.clientName?esc(b.clientName)+' · ':'')+esc(p?p.label:(b.platform||''));
+          dts=_dm(b.startDate)+(b.startTime?' '+esc(b.startTime):'')+' → '+_dm(b.endDate)+(b.endTime?' '+esc(b.endTime):'');
         }
-      }else if(st==='maintenance'){color=_uiStatusCol('maintenance');title='Mantenimiento';}
-      else{color=_uiStatusCol('blocked');title='Bloqueado';}
-      cards+=`<div class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')" style="padding:10px 12px;margin-bottom:6px;background:var(--bg2);border:1px solid var(--border);border-left:5px solid ${color};border-radius:10px;min-height:44px;cursor:pointer">
-        <div style="font-size:14px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)} <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:${plateColor(v.color)}">${esc(v.plate)}</span></div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px;word-break:break-word"><strong style="color:${color}">${title}</strong>${sub?' · '+sub:''}</div>
+      }else if(st==='maintenance'){chip=`<span class="chip chip-blue">${ico('wrench')} Mantenim.</span>`;}
+      else{chip=`<span class="chip chip-red">${ico('ban')} Bloqueado</span>`;}
+      cards+=`<div class="dh-row ag-row" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')">
+        ${_dot(v)}
+        <div class="ag-b">
+          <div class="t ell">${esc(v.name)} <span class="mono2">${esc(v.plate)}</span></div>
+          ${sub?`<div class="s ell">${sub}</div>`:''}
+          ${dts?`<div class="s">${dts}</div>`:''}
+        </div>
+        ${chip}
       </div>`;
     });
-    h+=`<div style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 10px;border-radius:8px;${isT?'background:var(--acc-m);border:1.5px solid var(--amber);':'background:var(--bg3);border:1px solid var(--border);'}">
-        <span style="font-size:15px;font-weight:800;color:${isT?'var(--amber)':'var(--text)'}">${lbl}</span>
-        <span style="font-size:12px;color:var(--text2)">${(isT||k===man)?DOW[dt.getDay()]+' · ':''}${esc(fmtDMY(k))}</span>
-      </div>
-      ${cards}
-      ${free.length?`<div style="font-size:12px;color:var(--text2);padding:2px 4px;word-break:break-word"><strong style="color:var(--green)">Libres (${free.length}):</strong> ${free.map(v=>esc(v.name)).join(', ')}</div>`:''}
-    </div>`;
+    h+=`<section class="ag-day">
+      <div class="ag-dh${isT?' t':''}"><h3>${lbl}</h3><span class="q${isT?' ac':''}">${(isT||k===man)?DOW[dt.getDay()]+' · ':''}${esc(fmtDMY(k))}</span></div>
+      ${cards?`<div class="dh-list">${cards}</div>`:''}
+      ${free.length?`<div class="ag-free"><span class="q ok">Libres · ${String(free.length).padStart(2,'0')}</span><div>${free.map(v=>`<span>${_dot(v)}${esc(v.name)}</span>`).join('')}</div></div>`:''}
+    </section>`;
   }
   res.innerHTML=h;
 }
@@ -9493,7 +9541,7 @@ function renderAgendaBody(){
       ${days.map(d=>{
         const key=agY+'-'+String(agM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
         const st=dayStatus(v,key);
-        const bg=st==='rented'?'#F59E0B':st==='maintenance'?'#3B82F6':st==='blocked'?'#EF4444':'transparent';
+        const bg=st==='rented'?'var(--amber)':st==='maintenance'?'var(--blue)':st==='blocked'?'var(--red)':'transparent';
         const isT=d===today.getDate()&&agM===today.getMonth()&&agY===today.getFullYear();
         return `<td style="padding:2px;border-bottom:1px solid var(--border)"><div style="width:22px;height:18px;border-radius:3px;background:${bg};margin:auto;${isT?'outline:1px solid var(--amber)':''}">&nbsp;</div></td>`;
       }).join('')}
@@ -9501,7 +9549,7 @@ function renderAgendaBody(){
     </tbody>
   </table></div>
   <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
-    ${[['#F59E0B','Alquilado'],['#3B82F6','Mantenimiento'],['#EF4444','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}
+    ${[['var(--amber)','Alquilado'],['var(--blue)','Mantenimiento'],['var(--red)','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}
   </div>`;
   res.innerHTML=h;
   // Scroll to today's column (or start of month if not current month)
@@ -9521,27 +9569,25 @@ function renderAgenda(el){
   if(!allActiveV.length){el.innerHTML=`<div class="anim"><div class="empty"><div class="ei">${ico('calendar')}</div><div class="et">Sin vehículos activos</div></div></div>`;return;}
   if(!document.getElementById('agenda-body')){
     el.innerHTML=`<div class="anim">
-    <div style="margin-bottom:10px">
-      <button class="tap44" onclick="_agFiltersOpen=!_agFiltersOpen;document.getElementById('agFilterPanel').style.display=_agFiltersOpen?'block':'none'" style="background:var(--bg3);border:1.5px solid ${(_agFilterVtype||_agFilterOwnership)?'var(--amber)':'var(--border2)'};border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;color:${(_agFilterVtype||_agFilterOwnership)?'var(--amber)':'var(--text2)'}">
-        ${ico('filter')} Filtros${(_agFilterVtype||_agFilterOwnership)?' ●':''}
+    <div class="fx-f">
+      <button type="button" id="agFbtn" class="fbtn${(_agFilterVtype||_agFilterOwnership)?' on':''}" aria-expanded="${_agFiltersOpen}" onclick="_agFiltersOpen=!_agFiltersOpen;document.getElementById('agFilterPanel').style.display=_agFiltersOpen?'block':'none';this.setAttribute('aria-expanded',String(_agFiltersOpen))">
+        ${ico('filter')} Filtros
       </button>
-      <div id="agFilterPanel" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">PROPIEDAD</div>
-        <div class="pills" style="margin-bottom:12px">
-          <div class="pill" id="agtp-own-all" onclick="setAgendaOwnership('')" style="border-color:${!_agFilterOwnership?'var(--amber)':'var(--border2)'};background:${!_agFilterOwnership?'var(--acc-m)':'transparent'};color:${!_agFilterOwnership?'var(--amber)':'var(--text3)'}">Todos</div>
-          <div class="pill" id="agtp-own-own" onclick="setAgendaOwnership('own')" style="border-color:${_agFilterOwnership==='own'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='own'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='own'?'var(--amber)':'var(--text3)'}">${ico('car')} Propio</div>
-          <div class="pill" id="agtp-own-managed" onclick="setAgendaOwnership('managed')" style="border-color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='managed'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--text3)'}">${ico('handshake')} Gestión</div>
-        </div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TIPO DE VEHÍCULO</div>
+      <div id="agFilterPanel" class="fx-fp" style="display:${_agFiltersOpen?'block':'none'}">
+        <div class="q">Propiedad</div>
         <div class="pills">
-          <div class="pill" id="agtp-all" onclick="setAgendaVtype('')" style="border-color:${!_agFilterVtype?'var(--amber)':'var(--border2)'};background:${!_agFilterVtype?'var(--acc-m)':'transparent'};color:${!_agFilterVtype?'var(--amber)':'var(--text3)'}">Todos</div>
-          ${VTYPES.map(t=>`<div class="pill" id="agtp-${t.id}" onclick="setAgendaVtype('${escJs(t.id)}')" style="border-color:var(--border2);background:transparent;color:var(--text3)">${ico(t.icon)} ${t.label}</div>`).join('')}
+          <div class="pill" id="agtp-own-all" onclick="setAgendaOwnership('')" aria-pressed="${!_agFilterOwnership}">Todos</div>
+          <div class="pill" id="agtp-own-own" onclick="setAgendaOwnership('own')" aria-pressed="${_agFilterOwnership==='own'}">${ico('car')} Propio</div>
+          <div class="pill" id="agtp-own-managed" onclick="setAgendaOwnership('managed')" aria-pressed="${_agFilterOwnership==='managed'}">${ico('handshake')} Gestión</div>
+        </div>
+        <div class="q">Tipo de vehículo</div>
+        <div class="pills">
+          <div class="pill" id="agtp-all" onclick="setAgendaVtype('')" aria-pressed="${!_agFilterVtype}">Todos</div>
+          ${VTYPES.map(t=>`<div class="pill" id="agtp-${t.id}" onclick="setAgendaVtype('${escJs(t.id)}')" aria-pressed="${_agFilterVtype===t.id}">${ico(t.icon)} ${t.label}</div>`).join('')}
         </div>
       </div>
     </div>
     <div id="agenda-body"></div></div>`;
-    // Restore active pill if filter already set
-    if(_agFilterVtype){const el2=document.getElementById('agtp-'+_agFilterVtype);if(el2){el2.style.borderColor='var(--amber)';el2.style.background='var(--acc-m)';el2.style.color='var(--amber)';const allEl=document.getElementById('agtp-all');if(allEl){allEl.style.borderColor='var(--border2)';allEl.style.background='transparent';allEl.style.color='var(--text3)';}}}
   }
   renderAgendaBody();
 }
