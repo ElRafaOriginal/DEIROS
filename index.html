@@ -596,6 +596,17 @@ select option{background:var(--bg);}
 .pk-s .chip{max-width:100%;min-width:0;text-transform:uppercase;letter-spacing:.04em;}
 .pk-s .chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .pk-ar{color:var(--text2);font-size:22px;line-height:1;flex-shrink:0;}
+/* ══ Resumen · «En alquiler ahora» desplegable con filas compactas (punto · coche · cliente · hasta · importe · días) ══ */
+.dh-yr+.dh-now{margin-top:-8px;border-top:0;}
+.dh-nn{display:inline-flex;align-items:center;gap:12px;}
+.dh-now .dh-list{border-top:1px solid var(--border);}
+.dh-now .dh-row{min-height:60px;padding:10px 0;gap:12px;border-bottom-color:var(--border);}
+.dh-now .dh-row:last-child{border-bottom:0;}
+.dh-now .s{display:flex;gap:6px;min-width:0;}
+.dh-now .s span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.dh-now .s span:last-child{white-space:nowrap;flex-shrink:0;}
+.dh-now .r{gap:4px;}
+.dh-now .chip{font-size:10px;padding:1px 8px;}
 </style>
 </head>
 <body>
@@ -5941,20 +5952,17 @@ function renderDash(el){
   } else {
     // ── MOBILE: single column ─────────────────────────────────────────────
     const _n2=n=>String(n).padStart(2,'0');
-    // ── ALQUILERES EN CURSO: fichas neutras, punto con el color del coche ──
+    // ── ALQUILERES EN CURSO: desplegable compacto (abierto por defecto; recuerda si Rafael lo cierra), filas de una o dos líneas ──
     if(activeRentals.length){
-      h+=`<section class="dh-sec">
-        <div class="dh-sh"><h2>En alquiler ahora</h2><span class="q ac">${_n2(activeRentals.length)}</span></div>
-        ${activeRentals.map(b=>{const _d=Math.max(0,Math.ceil((new Date(b.endDate)-new Date(hoy))/864e5));return `<div class="dh-card dh-rent" onclick="openV('${escJs(b.vid)}')">
-          <div class="dh-h"><span class="dh-cl"><i class="dh-dot"${b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':''}></i><span class="q">En curso</span></span><span class="chip ${_d<=2?'chip-amber':'chip-gray'}">Termina en ${_d}d</span></div>
-          <div class="dh-rn">${esc(b.vname)}</div>
-          <div class="spec">
-            ${b.clientName?`<div class="w2">CLIENTE<b>${esc(b.clientName)}</b></div>`:''}
-            <div>HASTA<b>${esc(fmtDMY(b.endDate))}</b></div>
-            <div>IMPORTE<b>${fmt(b.amount)}</b></div>
-          </div>
-        </div>`;}).join('')}
-      </section>`;
+      let _ro=true;try{_ro=localStorage.getItem('deiros_dashRentOpen')!=='0';}catch(e){}
+      h+=`<details class="dh-yr dh-now"${_ro?' open':''} ontoggle="try{localStorage.setItem('deiros_dashRentOpen',this.open?'1':'0')}catch(e){}">
+        <summary><span class="q">En alquiler ahora</span><span class="dh-nn"><span class="q ac">${_n2(activeRentals.length)}</span>${_PLUS}</span></summary>
+        <div class="dh-list">${activeRentals.map(b=>{const _d=Math.max(0,Math.ceil((new Date(b.endDate)-new Date(hoy))/864e5));return `<div class="dh-row" onclick="openV('${escJs(b.vid)}')">
+          <i class="dh-dot"${b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':''}></i>
+          <div style="min-width:0"><div class="t ell">${esc(b.vname)}</div><div class="s">${b.clientName?`<span>${esc(b.clientName)}</span>`:''}<span>${b.clientName?'· ':''}hasta ${esc(fmtDMY(b.endDate).slice(0,5))}</span></div></div>
+          <div class="r"><b>${fmt(b.amount)}</b><span class="chip ${_d<=2?'chip-amber':'chip-gray'}" title="Termina en ${_d} días">${_d}D</span></div>
+        </div>`;}).join('')}</div>
+      </details>`;
     }
     // ── ALERTAS: lista técnica ──
     if(alerts.length){
