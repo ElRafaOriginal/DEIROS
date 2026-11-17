@@ -8156,49 +8156,52 @@ function renderFin(v){
   const avgDur=allBk.length?Math.round(allBk.reduce((s,b)=>s+Math.max(1,Math.ceil((new Date(b.endDate)-new Date(b.startDate))/864e5)+1),0)/allBk.length*10)/10:0;
   const rpd=Math.round(tInc(v)/(tDays(v)||1));
   const isD=window.innerWidth>=768;
-  let h=`<div>${isD?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;height:calc(100vh - 140px)"><div style="overflow-y:auto;height:100%">':''}
+  // Cifra Doto de la pantalla: el beneficio de los movimientos filtrados (mismo tP de siempre)
+  const _pS=fmtF(tP).split(','),_pE=_pS[0].replace(/\./g,''),_pD=_pS.length>1?','+_pS.slice(1).join(','):'';
+  let h=`<div class="fl-fin">${isD?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;height:calc(100vh - 140px)"><div style="overflow-y:auto;height:100%">':''}
+  <div class="d-acts fl-acts">
+    <button class="btn-pri" onclick="openAddEntry()">＋ Añadir movimiento</button>
+    <div class="two">
+      <button class="btn-sec" onclick="openVehicleRecurring('${escJs(v.id)}')">${ico('repeat')} Recurrentes</button>
+      <button class="btn-sec" onclick="openReport('${escJs(v.id)}')">${ico('doc')} Informe</button>
+    </div>
+    <button class="btn-txt" onclick="syncBookingExtensions()">${ico('repeat')} Sincronizar ampliaciones</button>
+  </div>
+  <div class="al-h"><h3>Este mes</h3><span class="q">${MON_ES[now.getMonth()]}</span></div>
+  <div class="d-kpi fl-kpi" style="--c:2">
+    <div><b>${occ}%</b><span>Ocupación</span></div>
+    <div><b>${avgDur}d</b><span>Duración media</span></div>
+    <div><b>${mBk.length}</b><span>Alquileres</span></div>
+    <div><b>${fmt(rpd)}</b><span>€ / día</span></div>
+  </div>
   ${buildMonthlyChart(v)}
-  <div class="f3" style="${isD?'margin-bottom:20px':''}">
-    <div class="fb" style="border-top:2px solid var(--green)"><div class="fv" style="color:var(--green);${isD?'font-size:24px':''}">${fmt(tI)}</div><div class="fl">${finMonth?'MES':'TOTAL'} ING.</div></div>
-    <div class="fb" style="border-top:2px solid var(--red)"><div class="fv" style="color:var(--red)">${fmt(tE)}</div><div class="fl">${finMonth?'MES':'TOTAL'} GST.</div></div>
-    <div class="fb" style="border-top:2px solid ${tP>=0?'var(--green)':'var(--red)'}"><div class="fv" style="color:${tP>=0?'var(--green)':'var(--red)'}">${fmt(tP)}</div><div class="fl">BENEFICIO</div></div>
-  </div>
-  <div class="sec">KPIs — ESTE MES</div>
-  <div class="kpi4" style="${isD?'gap:12px':''}">
-    <div class="kbox"><div class="kv" style="color:var(--amber)">${occ}%</div><div class="kl">OCUPACIÓN</div></div>
-    <div class="kbox"><div class="kv" style="color:var(--blue)">${avgDur}d</div><div class="kl">DURACIÓN</div></div>
-    <div class="kbox"><div class="kv" style="color:var(--green)">${mBk.length}</div><div class="kl">ALQUILERES</div></div>
-    <div class="kbox"><div class="kv" style="color:var(--purple)">${fmt(rpd)}</div><div class="kl">€/DÍA</div></div>
-  </div>
   ${isD?'</div><div style="height:100%;display:flex;flex-direction:column;min-height:0">':''}
-  <button class="btn-pri" onclick="openAddEntry()" style="width:100%;margin-bottom:8px">＋ Añadir movimiento</button>
-  <button class="btn-sec" onclick="syncBookingExtensions()" style="width:100%;margin-bottom:8px;font-size:11px">${ico('repeat')} Sincronizar ampliaciones</button>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-    <button class="btn-sec" onclick="openVehicleRecurring('${escJs(v.id)}')">${ico('repeat')} Recurrentes</button>
-    <button class="btn-sec" onclick="openReport('${escJs(v.id)}')">${ico('doc')} Informe</button>
+  <div class="al-h fl-mh"><h3>Movimientos</h3><span class="q">${String(filtered.length).padStart(2,'0')}</span></div>
+  <div class="d-pills fl-ff" role="group" aria-label="Tipo de movimiento">
+    ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<button type="button" aria-pressed="${a}" onclick="setFF('${escJs(t)}')">${L[t]}</button>`;}).join('')}
   </div>
-  <div class="pills">
-    ${['all','income','expense'].map(t=>{const a=finFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setFF('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'var(--acc-m)':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
-    <input type="month" value="${esc(safeMonth(finMonth))}" onchange="setFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
+  <input type="month" class="fl-fm" aria-label="Mes" value="${esc(safeMonth(finMonth))}" onchange="setFM(this.value)"/>
+  <div class="d-tot fl-tot">
+    <span class="q">Beneficio · ${finMonth?'mes':'total'}</span>
+    <div class="d-n n2${tP<0?' neg':''}">${esc(_pE)}<small>${esc(_pD)}</small></div>
+    <div class="spec fl-ie"><div><i class="dt dt-ok"></i>${finMonth?'MES':'TOTAL'} ING.<b class="ok">${fmt(tI)}</b></div><div><i class="dt dt-err"></i>${finMonth?'MES':'TOTAL'} GST.<b class="err">${fmt(tE)}</b></div></div>
   </div>
   ${isD?'<div style="flex:1;overflow-y:auto;min-height:0;padding-right:4px">':''}`;
-  if(!filtered.length){h+=`<div class="empty" style="padding:36px 0"><div class="ei">${ico('euro')}</div><div class="et">Sin movimientos</div></div>`;}  
-  else filtered.forEach(e=>{
-    const isIn=e.type==='income';const isA=!!e.autoFromBooking;
-    h+=`<div class="fe">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap">
-          <span class="fb2" style="background:${isIn?'#10B98120':'#EF444420'};color:${isIn?'var(--green)':'var(--red)'}">${isIn?'ING':'GST'}</span>
-          ${isA?`<span class="fb2" style="background:var(--acc-s);color:var(--amber)">${ico('car')}</span>`:''}
-          <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${esc(e.category)}</span>
-        </div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(fmtDMY(e.date))}${e.description?' · '+esc(e.description):''}</div>
-        ${e.maint?`<div style="font-size:10px;color:var(--amber);margin-top:2px">${ico('wrench')} ${esc(e.maint.work||'')}${e.maint.km?' · '+esc(Number(e.maint.km).toLocaleString('es-ES'))+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</div>`:''}
-      </div>
-      <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};white-space:nowrap;margin-left:8px">${isIn?'+':'-'}${fmt(e.amount)}</div>
-      ${!isA?`<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer;flex-shrink:0" onclick="delEntry('${escJs(e.id)}')">×</div>`:`<div style="width:28px"></div>`}
-    </div>`;
-  });
+  if(!filtered.length){h+=`<div class="d-empty fl-em">${ico('euro')}<h3>Sin movimientos</h3><p>Prueba con otro filtro o pulsa «Añadir movimiento».</p></div>`;}
+  else{
+    h+='<div class="d-list fl-ml">';
+    filtered.forEach(e=>{
+      const isIn=e.type==='income';const isA=!!e.autoFromBooking;
+      // Fila fina: punto verde/rojo · categoría (icono de coche si viene de un alquiler) / fecha · descripción / mantenimiento · importe con signo · ×
+      h+=`<div class="fl-mv">
+        <i class="dt ${isIn?'dt-ok':'dt-err'}"></i>
+        <div class="t"><span class="c">${isA?ico('car')+' ':''}${esc(e.category)}</span><span class="s">${esc(fmtDMY(e.date))}${e.description?' · '+esc(e.description):''}</span>${e.maint?`<span class="s">${ico('wrench')} ${esc(e.maint.work||'')}${e.maint.km?' · '+esc(Number(e.maint.km).toLocaleString('es-ES'))+'km':''}${e.maint.shop?' · '+esc(e.maint.shop):''}</span>`:''}</div>
+        <b class="${isIn?'ok':'err'}">${isIn?'+':'-'}${fmt(e.amount)}</b>
+        ${!isA?`<span class="al-x" role="button" aria-label="Borrar movimiento" onclick="delEntry('${escJs(e.id)}')">×</span>`:'<span></span>'}
+      </div>`;
+    });
+    h+='</div>';
+  }
   h+=`${isD?'</div></div></div>':''}`;h+='</div>';return h;
 }
 function setFF(f){finFilter=f;renderDetail(document.getElementById('PC'));}
@@ -8208,24 +8211,26 @@ function openAddEntry(){
   _etype='expense';
   const today=todayStr();
   openSheet(`<div class="stitle">Movimiento manual</div>
-    <div class="tsw"><div class="to" id="tInc" onclick="swET('income')" style="color:var(--text3)">${ico('coins')} Ingreso</div><div class="to" id="tExp" onclick="swET('expense')" style="background:var(--bg);color:var(--red)">${ico('trend-down')} Gasto</div></div>
-    <div class="fg"><label class="lbl">FECHA</label><input id="eDate" type="date" value="${esc(safeDate(today))}"/></div>
-    <div class="fg"><label class="lbl">CATEGORÍA</label><select id="eCat" onchange="toggleMaintFields()">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
-    <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="eAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">DESCRIPCIÓN (opcional)</label><input id="eDesc" placeholder="Nota..." autocomplete="off"/></div>
-    <div id="maintFields" style="display:none">
-      <div class="divider"></div>
-      <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:12px">${ico('wrench')} DETALLES DEL MANTENIMIENTO</div>
-      <div class="fg"><label class="lbl">¿QUÉ SE HA HECHO?</label><input id="eMaintWork" placeholder="Ej: Cambio de aceite, filtros, pastillas..." autocomplete="off"/></div>
-      <div class="r2">
-        <div class="fg"><label class="lbl">KM EN ESTE MANT.</label><input id="eMaintKm" type="number" inputmode="numeric" placeholder="Km actuales"/></div>
-        <div class="fg"><label class="lbl">PRÓXIMO MANT. (KM)</label><input id="eMaintNextKm" type="number" inputmode="numeric" placeholder="Ej: 55000"/></div>
-      </div>
-      <div class="fg"><label class="lbl">PRÓXIMA FECHA (opcional)</label><input id="eMaintNextDate" type="date"/></div>
-      <div class="fg"><label class="lbl">TALLER / PROVEEDOR</label><input id="eMaintShop" placeholder="Nombre del taller..." autocomplete="off"/></div>
+    <div class="ssub">Ingreso o gasto de este vehículo</div>
+    <div class="d-seg fl-et" role="group" aria-label="Tipo de movimiento"><button type="button" id="tInc" aria-pressed="false" onclick="swET('income')">${ico('coins')} Ingreso</button><button type="button" id="tExp" aria-pressed="true" onclick="swET('expense')">${ico('trend-down')} Gasto</button></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="eAmt">Importe</label><div class="d-pre"><span>€</span><input id="eAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="eDate">Fecha</label><input id="eDate" type="date" value="${esc(safeDate(today))}"/></div>
     </div>
-    <button class="btn-pri" onclick="submitEntry()">Añadir</button><div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="eCat">Categoría</label><select id="eCat" onchange="toggleMaintFields()">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    <div class="d-f"><label class="q" for="eDesc">Descripción</label><input id="eDesc" placeholder="Opcional" autocomplete="off"/></div>
+    <div id="maintFields" style="display:none">
+      <div class="al-h"><h3>Mantenimiento</h3>${ico('wrench')}</div>
+      <div class="d-f"><label class="q" for="eMaintWork">Trabajo</label><input id="eMaintWork" placeholder="Ej: Cambio de aceite, filtros, pastillas..." autocomplete="off"/></div>
+      <div class="d-2">
+        <div class="d-f"><label class="q" for="eMaintKm">Km ahora</label><input id="eMaintKm" type="number" inputmode="numeric" placeholder="Km actuales"/></div>
+        <div class="d-f"><label class="q" for="eMaintNextKm">Próximo (km)</label><input id="eMaintNextKm" type="number" inputmode="numeric" placeholder="Ej: 55000"/></div>
+      </div>
+      <div class="d-f"><label class="q" for="eMaintNextDate">Próxima fecha</label><input id="eMaintNextDate" type="date"/><div class="d-hint">Opcional</div></div>
+      <div class="d-f"><label class="q" for="eMaintShop">Taller</label><input id="eMaintShop" placeholder="Nombre del taller o proveedor..." autocomplete="off"/></div>
+    </div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitEntry()">${ico('save')} Añadir</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function toggleMaintFields(){
   const cat=document.getElementById('eCat');
@@ -8237,8 +8242,10 @@ function swET(t){
   _etype=t;
   const inc=document.getElementById('tInc'),exp=document.getElementById('tExp'),cat=document.getElementById('eCat');
   if(!inc||!exp||!cat)return;
-  if(t==='income'){inc.style.background='var(--bg)';inc.style.color='var(--green)';exp.style.background='transparent';exp.style.color='var(--text3)';cat.innerHTML=INC_CATS.map(c=>`<option>${c}</option>`).join('');}
-  else{exp.style.background='var(--bg)';exp.style.color='var(--red)';inc.style.background='transparent';inc.style.color='var(--text3)';cat.innerHTML=EXP_CATS.map(c=>`<option>${c}</option>`).join('');}
+  // Estado del segmentado con aria-pressed (antes colores en línea); mismas categorías
+  inc.setAttribute('aria-pressed',String(t==='income'));exp.setAttribute('aria-pressed',String(t!=='income'));
+  if(t==='income'){cat.innerHTML=INC_CATS.map(c=>`<option>${c}</option>`).join('');}
+  else{cat.innerHTML=EXP_CATS.map(c=>`<option>${c}</option>`).join('');}
 }
 function submitEntry(){
   const v=gV();if(!v)return;
@@ -11033,28 +11040,20 @@ function buildMonthlyChart(v){
     const mOwner=_ownerSettle(v,mF).toOwner; // mínimo 0 si tiene propietario
     const [sy,sm]=sk.split('-');
     const mLabel=(MON_S[parseInt(sm)-1]||'')+' '+sy;
-    commRow=`<div style="margin-top:10px;background:#8B5CF610;border:1px solid #8B5CF630;border-radius:10px;padding:12px 14px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:10px">COMISIÓN — ${mLabel.toUpperCase()}</div>
-      <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:4px;align-items:center">
-        <div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmtF(mInc)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">Facturado mes</div></div>
-        <div style="text-align:center;color:var(--text3);font-size:13px;padding:0 2px">×</div>
-        <div style="text-align:center;background:#8B5CF625;border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--purple)">${comm}%</div><div style="font-size:9px;color:var(--purple);margin-top:3px">Comisión</div></div>
-        <div style="text-align:center;color:var(--text3);font-size:13px;padding:0 2px">=</div>
-        <div style="text-align:center;background:var(--bg);border-radius:8px;padding:10px 6px"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--purple)">${fmtF(mComm)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">Al negocio</div></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid #8B5CF630;padding-top:8px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:10px;color:var(--text3)">Queda para el propietario</span>
-        <span style="font-family:var(--mono);font-size:14px;font-weight:700;color:${mOwner>=0?'var(--green)':'var(--red)'}">${fmtF(mOwner)}</span>
-      </div>
+    // Comisión del mes como ficha técnica (sin rellenos morados): facturado × % = al negocio; queda para el propietario
+    commRow=`<div class="d-card s fl-cm">
+      <span class="q">Comisión · ${esc(mLabel)}</span>
+      <div class="spec c3 fl-c3"><div>Facturado<b class="ok">${fmtF(mInc)}</b></div><div>Comisión<b>${comm}%</b></div><div>Al negocio<b>${fmtF(mComm)}</b></div></div>
+      <div class="fl-own"><span>Queda para el propietario</span><b style="color:${mOwner>=0?'var(--green)':'var(--red)'}">${fmtF(mOwner)}</b></div>
     </div>`;
   }
   // Pending: unpaid bookings for THIS vehicle only
   const pendingBks=(v.bookings||[]).filter(b=>!b.paid&&Number(b.amount)>0);
   const totalPending=pendingBks.reduce((s,b)=>s+(Number(b.amount)||0),0);
   const pendingRow=totalPending>0
-    ?`<div style="margin-top:8px;background:var(--acc-s);border:1px solid var(--acc-b);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:10px;font-weight:700;color:var(--amber)">${ico('hourglass')} PENDIENTE DE COBRO</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${pendingBks.length} alquiler${pendingBks.length!==1?'es':''} sin cobrar</div></div>
-        <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--amber)">${fmtF(totalPending)}</div>
+    ?`<div class="d-card s hl fl-pd">
+        <div><span class="q ac">Pendiente de cobro</span><div class="d-meta">${pendingBks.length} alquiler${pendingBks.length!==1?'es':''} sin cobrar</div></div>
+        <b>${fmtF(totalPending)}</b>
       </div>`:''
   return buildChart(fins,chartYear,selKey,'setFM','prevChartYr','nextChartYr','')+pendingRow+commRow;
 }
