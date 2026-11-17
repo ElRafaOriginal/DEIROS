@@ -3414,27 +3414,24 @@ function openExtendBooking(bookingId){
   const _curTotal=_bookingClientTotal(_bb);
   const _fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
 
-  openSheet(('<div class="stitle">'+ico('calendar')+' Ampliar alquiler</div>')
-    +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
-    +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:4px">Periodo actual: <strong>'+esc(fmtDMY(_bb.startDate))+'</strong> → <strong>'+esc(fmtDMY(origEnd))+'</strong>'
-    +(_bb.endTime?' · hasta las <strong>'+esc(_bb.endTime)+'</strong>':'')+'</div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--text3)">Total actual del alquiler</span>'
-    +'<span style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+_fmtE(_curTotal)+'</span></div>'
+  openSheet('<div class="stitle">Ampliar alquiler</div>'
+    +'<div class="d-meta">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
+    +'<div class="spec al-sp al-mb">'
+    +'<div class="w2">Periodo actual<b>'+esc(fmtDMY(_bb.startDate))+' → '+esc(fmtDMY(origEnd))+'</b>'+(_bb.endTime?'<span class="dh-sub">hasta las '+esc(_bb.endTime)+'</span>':'')+'</div>'
+    +'<div class="w2">Total actual del alquiler<b>'+_fmtE(_curTotal)+'</b></div>'
     +'</div>'
-    +'<div class="r2">'
-    +'<div class="fg"><label class="lbl">NUEVA FECHA FIN *</label><input id="extNewEnd" type="date" value="'+esc(safeDate(origEnd))+'" min="'+esc(safeDate(origEnd))+'"/></div>'
-    +'<div class="fg"><label class="lbl">HORA FIN</label><input id="extNewTime" type="time" value="'+esc(safeTime(_bb.endTime)||'20:00')+'"/></div>'
+    +'<div class="d-2">'
+    +'<div class="d-f"><label class="q" for="extNewEnd">Nueva fecha fin *</label><input id="extNewEnd" type="date" value="'+esc(safeDate(origEnd))+'" min="'+esc(safeDate(origEnd))+'"/></div>'
+    +'<div class="d-f"><label class="q" for="extNewTime">Hora fin</label><input id="extNewTime" type="time" value="'+esc(safeTime(_bb.endTime)||'20:00')+'"/></div>'
     +'</div>'
-    +'<div class="fg"><label class="lbl">NUEVO IMPORTE TOTAL DEL ALQUILER (€)</label>'
-    +'<input id="extNewTotal" type="number" step="0.01" inputmode="decimal" placeholder="'+_curTotal.toFixed(2)+'" oninput="_extUpdateCalc('+_curTotal+')"/></div>'
-    +'<div id="extCalcBox" style="border-radius:8px;padding:12px;margin-bottom:12px;text-align:center;background:var(--bg3);border:1px solid var(--border2)">'
-    +'<span style="font-size:12px;color:var(--text3)">Introduce el nuevo total para ver la diferencia</span>'
+    +'<div class="d-f"><label class="q" for="extNewTotal">Nuevo importe total</label>'
+    +'<div class="d-pre"><span>€</span><input id="extNewTotal" type="number" step="0.01" inputmode="decimal" placeholder="'+_curTotal.toFixed(2)+'" oninput="_extUpdateCalc('+_curTotal+')"/></div></div>'
+    +'<div id="extCalcBox" class="d-tot al-tot">'
+    +'<p>Introduce el nuevo total para ver la diferencia</p>'
     +'</div>'
-    +('<button class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
-    +'<div style="height:8px"></div>'
-    +('<button onclick="generateExtensionPDF(window._extBookingId)" class="btn-pri" style="margin-bottom:8px">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
-    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+    +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
+    +('<button onclick="generateExtensionPDF(window._extBookingId)" class="btn-sec">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
+    +'<button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
 }
 
 function _extUpdateCalc(curTotal){
@@ -3444,16 +3441,16 @@ function _extUpdateCalc(curTotal){
   const newTotal=parseFloat(inp.value)||0;
   const diff=Math.round((newTotal-curTotal)*100)/100;
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
-  if(!inp.value){box.innerHTML='<span style="font-size:12px;color:var(--text3)">Introduce el nuevo total para ver la diferencia</span>';return;}
+  if(!inp.value){box.innerHTML='<p>Introduce el nuevo total para ver la diferencia</p>';return;}
   if(diff<=0){
-    box.style.background='#EF444415';box.style.borderColor='#EF444440';
-    box.innerHTML=('<span style="color:var(--red);font-weight:700">'+ico('alert')+' El nuevo total debe ser mayor que el actual (')+fE(curTotal)+')</span>';
+    box.innerHTML=('<p class="d-hint err">'+ico('alert')+' El nuevo total debe ser mayor que el actual (')+fE(curTotal)+')</p>';
   } else {
-    box.style.background='#10B98115';box.style.borderColor='#10B98140';
-    box.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:4px">Desglose de la ampliación</div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Total anterior</span><span style="font-family:var(--mono);color:var(--text2)">'+fE(curTotal)+'</span></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px"><span style="color:var(--green)">+ Importe ampliación</span><span style="font-family:var(--mono);color:var(--green);font-weight:700">'+fE(diff)+'</span></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-top:8px;padding-top:8px;border-top:1px solid #10B98130"><span>Nuevo total</span><span style="font-family:var(--mono);color:var(--green)">'+fE(newTotal)+'</span></div>';
+    const _dS=fE(diff).split(',');
+    box.innerHTML='<span class="q">Importe de la ampliación</span>'
+      +'<div class="d-n n2">+'+esc(_dS[0].replace(/\./g,''))+'<small>'+esc(_dS.length>1?','+_dS.slice(1).join(','):'')+'</small></div>'
+      +'<div class="al-l"><div class="al-li"><span>Total anterior</span><b>'+fE(curTotal)+'</b></div>'
+      +'<div class="al-li"><span>+ Importe ampliación</span><b class="ok">'+fE(diff)+'</b></div>'
+      +'<div class="al-li"><span>Nuevo total</span><b>'+fE(newTotal)+'</b></div></div>';
   }
   window._extDiff=diff>0?diff:0;
 }
