@@ -568,6 +568,34 @@ select option{background:var(--bg);}
 .dh-mg{display:flex;align-items:baseline;gap:8px;border:1px solid var(--border2);border-radius:var(--r-pill);padding:6px 14px;text-align:center;flex-shrink:0;}
 .dh-mg b{display:block;font-family:var(--mono);font-size:17px;font-weight:500;}
 .dh-mg span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--text2);}
+/* ══ PR B · utilidades compartidas: rótulo en verde, texto mono secundario, botón píldora con borde (Filtros/Hoy), panel de filtros ══ */
+.q.ok{color:var(--green);}
+.mono2{font-family:var(--mono);font-size:12px;font-weight:400;letter-spacing:0;color:var(--text2);}
+.fbtn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 20px;border:1px solid var(--border2);border-radius:var(--r-pill);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);flex-shrink:0;transition:transform .3s var(--ease),border-color .3s;}
+.fbtn:active{transform:scale(.97);}
+.fbtn.on{border-color:var(--amber);}
+.fbtn.on::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.fx-f{margin-bottom:14px;}
+.fx-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.fx-fp{border:1px solid var(--border2);border-radius:var(--r-card);padding:18px 16px 4px;margin:0 0 16px;}
+.fx-fp .q{display:block;margin-bottom:10px;}
+.fx-fp .pills{margin-bottom:14px;}
+.fx-fp .pill{background:transparent;border-color:var(--border2);color:var(--text2);font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;}
+.fx-fp .pill[aria-pressed=true]{border-color:var(--amber);color:var(--amber);}
+/* Píldora inferior: sin punto bajo la pestaña activa (ya se distingue por el fondo) */
+.ni-dot{display:none!important;}
+/* Hojas «¿Para qué vehículo?» (Nuevo alquiler y contrato): ficha limpia, estado debajo, nombre de cliente truncado */
+.pk{display:flex;align-items:center;gap:14px;min-height:72px;padding:14px 18px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-card);cursor:pointer;transition:transform .3s var(--ease),border-color .3s;}
+.pk:active{transform:scale(.98);}
+@media(hover:hover){.pk:hover{border-color:var(--amber);}}
+.pk .dh-dot{align-self:flex-start;margin-top:8px;}
+.pk-b{flex:1;min-width:0;}
+.pk-n{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.15;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pk-p{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pk-s{display:flex;min-width:0;margin-top:10px;}
+.pk-s .chip{max-width:100%;min-width:0;text-transform:uppercase;letter-spacing:.04em;}
+.pk-s .chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.pk-ar{color:var(--text2);font-size:22px;line-height:1;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -7160,16 +7188,16 @@ function openNewRentalPicker(){
   if(act.length>6)h+=`<input type="search" id="nrPickSearch" placeholder="Buscar por nombre o matrícula" autocomplete="off" oninput="_filterNewRentalPicker(this.value)" style="margin-bottom:10px"/>`;
   h+=`<div id="nrPickList" style="display:flex;flex-direction:column;gap:8px">`;
   info.forEach(({v,activeB,nextB})=>{
-    const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Libre hoy · próx. ${esc(nextB.startDate)}</span>`:`<span class="chip chip-gray">Libre</span>`;
+    const statusTxt=activeB?`<span class="chip chip-amber">${ico('key')}<span>En alquiler · ${esc(activeB.clientName||'cliente')}</span></span>`:nextB?`<span class="chip chip-blue"><span>Libre hoy · próx. ${esc(fmtDMY(nextB.startDate))}</span></span>`:`<span class="chip chip-green">${ico('check')}<span>Libre</span></span>`;
     const q=((v.name||'')+' '+(v.plate||'')).toLowerCase();
-    h+=`<div class="nr-pick" data-q="${esc(q)}" onclick="_newRentalFor('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
-      <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+    h+=`<div class="nr-pick pk" data-q="${esc(q)}" onclick="_newRentalFor('${escJs(v.id)}')">
+      <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+      <div class="pk-b">
+        <div class="pk-n">${esc(v.name)}</div>
+        <div class="pk-p">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+        <div class="pk-s">${statusTxt}</div>
       </div>
-      <div>${statusTxt}</div>
-      <div style="color:var(--text3);font-size:18px">›</div>
+      <span class="pk-ar" aria-hidden="true">›</span>
     </div>`;
   });
   h+=`</div>`;
@@ -9742,15 +9770,15 @@ function _renderWizardStep(){
       const today=todayStr();
       const activeB=(v.bookings||[]).find(b=>b.startDate<=today&&b.endDate>=today);
       const nextB=(v.bookings||[]).filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-      const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Próx. ${esc(fmtDMY(nextB.startDate))}</span>`:`<span class="chip chip-gray">Disponible</span>`;
-      h+=`<div onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
-        <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+      const statusTxt=activeB?`<span class="chip chip-amber">${ico('key')}<span>En alquiler · ${esc(activeB.clientName||'cliente')}</span></span>`:nextB?`<span class="chip chip-blue"><span>Próx. ${esc(fmtDMY(nextB.startDate))}</span></span>`:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`;
+      h+=`<div class="pk" onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()">
+        <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+        <div class="pk-b">
+          <div class="pk-n">${esc(v.name)}</div>
+          <div class="pk-p">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+          <div class="pk-s">${statusTxt}</div>
         </div>
-        <div>${statusTxt}</div>
-        <div style="color:var(--text3);font-size:18px">›</div>
+        <span class="pk-ar" aria-hidden="true">›</span>
       </div>`;
     });
     if(!activeV.length)h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div></div>`;
