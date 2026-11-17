@@ -568,6 +568,237 @@ select option{background:var(--bg);}
 .dh-mg{display:flex;align-items:baseline;gap:8px;border:1px solid var(--border2);border-radius:var(--r-pill);padding:6px 14px;text-align:center;flex-shrink:0;}
 .dh-mg b{display:block;font-family:var(--mono);font-size:17px;font-weight:500;}
 .dh-mg span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--text2);}
+/* ══ PR B · utilidades compartidas: rótulo en verde, texto mono secundario, botón píldora con borde (Filtros/Hoy), panel de filtros ══ */
+.q.ok{color:var(--green);}
+.mono2{font-family:var(--mono);font-size:12px;font-weight:400;letter-spacing:0;color:var(--text2);}
+.fbtn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 20px;border:1px solid var(--border2);border-radius:var(--r-pill);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);flex-shrink:0;transition:transform .3s var(--ease),border-color .3s;}
+.fbtn:active{transform:scale(.97);}
+.fbtn.on{border-color:var(--amber);}
+.fbtn.on::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.fx-f{margin-bottom:14px;}
+.fx-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.fx-fp{border:1px solid var(--border2);border-radius:var(--r-card);padding:18px 16px 4px;margin:0 0 16px;}
+.fx-fp .q{display:block;margin-bottom:10px;}
+.fx-fp .pills{margin-bottom:14px;}
+.fx-fp .pill{background:transparent;border-color:var(--border2);color:var(--text2);font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;}
+.fx-fp .pill[aria-pressed=true]{border-color:var(--amber);color:var(--amber);}
+/* Píldora inferior: sin punto bajo la pestaña activa (ya se distingue por el fondo) */
+.ni-dot{display:none!important;}
+/* Hojas «¿Para qué vehículo?» (Nuevo alquiler y contrato): ficha limpia, estado debajo, nombre de cliente truncado */
+.pk{display:flex;align-items:center;gap:14px;min-height:72px;padding:14px 18px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-card);cursor:pointer;transition:transform .3s var(--ease),border-color .3s;}
+.pk:active{transform:scale(.98);}
+@media(hover:hover){.pk:hover{border-color:var(--amber);}}
+.pk .dh-dot{align-self:flex-start;margin-top:8px;}
+.pk-b{flex:1;min-width:0;}
+.pk-n{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.15;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pk-p{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pk-s{display:flex;min-width:0;margin-top:10px;}
+.pk-s .chip{max-width:100%;min-width:0;text-transform:uppercase;letter-spacing:.04em;}
+.pk-s .chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.pk-ar{color:var(--text2);font-size:22px;line-height:1;flex-shrink:0;}
+/* ══ Resumen · «En alquiler ahora» desplegable con filas compactas (punto · coche · cliente · hasta · importe · días) ══ */
+.dh-yr+.dh-now{margin-top:-8px;border-top:0;}
+.dh-nn{display:inline-flex;align-items:center;gap:12px;}
+.dh-now .dh-list{border-top:1px solid var(--border);}
+.dh-now .dh-row{min-height:60px;padding:10px 0;gap:12px;border-bottom-color:var(--border);}
+.dh-now .dh-row:last-child{border-bottom:0;}
+.dh-now .s{display:flex;gap:6px;min-width:0;}
+.dh-now .s span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.dh-now .s span:last-child{white-space:nowrap;flex-shrink:0;}
+.dh-now .r{gap:4px;}
+.dh-now .chip{font-size:10px;padding:1px 8px;}
+/* ══ Agenda (móvil): navegación ‹ semana ›, selector Lista/Semana en píldora, cabeceras de día con línea, filas neutras con punto del coche ══ */
+.ag-nav{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.ag-rng{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ag-rng .q{font-size:11px;}
+.ag-rng b{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--text);white-space:nowrap;}
+.ag-tools{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.ag-tools .dh-seg{flex:1;grid-template-columns:1fr 1fr;margin:0;}
+.ag-day{margin-top:28px;}
+.ag-dh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.ag-dh h3{font-size:24px;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--text);}
+.ag-dh .q{white-space:nowrap;font-size:11px;}
+.ag-row{grid-template-columns:auto minmax(0,1fr) auto;min-height:72px;}
+.ag-row .chip{text-transform:uppercase;letter-spacing:.04em;font-size:10.5px;}
+.ag-b{min-width:0;}
+.ag-b .s.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-free{display:flex;align-items:baseline;gap:12px;padding-top:14px;}
+.ag-free .q{white-space:nowrap;font-size:11px;}
+.ag-free>div{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;font-weight:600;color:var(--text);}
+.ag-free>div>span{display:inline-flex;align-items:center;gap:8px;}
+/* Semana: tabla con líneas finas; barras de estado finas (alquilado acento, mantenimiento azul, bloqueado rojo); hoy con fondo suave */
+.ag-wk{margin-top:16px;}
+.ag-wk table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.ag-wk th{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.06em;color:var(--text2);text-align:center;padding:6px 0 10px;border-bottom:1px solid var(--border2);}
+.ag-wk th b{display:block;font-size:14px;font-weight:500;color:var(--text);margin-top:2px;}
+.ag-wk th.t,.ag-wk th.t b{color:var(--amber);}
+.ag-wk .ag-vh{width:34%;text-align:left;padding:8px 6px 8px 0;}
+.ag-wk th.ag-vh .q{font-size:10px;}
+.ag-wk td{padding:0 1px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.ag-wk th.t,.ag-wk td.t{background:var(--acc-s);}
+.ag-vn{display:flex;align-items:center;gap:6px;min-width:0;font-size:13px;font-weight:600;color:var(--text);}
+.ag-vn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-vp{font-family:var(--mono);font-size:10px;color:var(--text2);margin:3px 0 0 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-c{all:unset;box-sizing:border-box;display:block;position:relative;width:100%;height:48px;cursor:pointer;}
+.ag-c::before{content:'';position:absolute;left:0;right:0;top:50%;height:8px;margin-top:-4px;border-radius:var(--r-pill);background:var(--border2);}
+.ag-c.ag-f{cursor:default;}
+.ag-c.ag-f::before{left:50%;right:auto;width:4px;height:4px;margin:-2px 0 0 -2px;}
+.ag-c.ag-r::before{background:var(--amber);}
+.ag-c.ag-m::before{background:var(--blue);}
+.ag-c.ag-b::before{background:var(--red);}
+.ag-leg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
+.ag-leg span{display:inline-flex;align-items:center;gap:8px;}
+.ag-leg .ag-c{width:18px;height:8px;cursor:default;}
+/* ══ Alquileres: fichas neutras (punto del coche, matrícula e importe en mono, trayecto con línea discontinua) ══ */
+.rk-sh{margin-top:32px;}
+.anim>.rk-sh:first-child{margin-top:4px;}
+.rk-e{padding:32px 20px;margin-bottom:4px;}
+.rk{padding:18px 20px;margin-bottom:12px;transition:transform .3s var(--ease),border-color .3s;}
+.rk:active{transform:scale(.98);}
+.rk-h{display:flex;align-items:center;gap:8px;min-width:0;}
+.rk-n{font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.rk-p{font-family:var(--mono);font-size:12px;color:var(--text2);white-space:nowrap;}
+.rk-a{margin-left:auto;padding-left:8px;font-family:var(--mono);font-size:17px;font-weight:500;color:var(--text);white-space:nowrap;}
+.rk-c{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;}
+.rk-cl{min-width:0;font-size:14px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rk .chip{flex-shrink:0;text-transform:uppercase;letter-spacing:.04em;}
+.rk-t{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:13px;color:var(--text);white-space:nowrap;}
+.rk-t i{flex:1;min-width:12px;border-top:1px dashed var(--border2);}
+.rk-d{color:var(--text2);font-size:12px;}
+.rk-f{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;min-height:22px;font-family:var(--mono);font-size:12px;color:var(--text2);}
+/* Ficha del alquiler (hoja): bloques con borde y líneas finas, sin rellenos de color */
+.bk-card{border:1px solid var(--border2);border-radius:var(--r-card);padding:18px;margin-bottom:16px;}
+.bk-tr{display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:12px;margin-bottom:16px;}
+.bk-tr .r{text-align:right;}
+.bk-hm{font-family:var(--mono);font-size:28px;font-weight:500;line-height:1.1;color:var(--text);margin-top:6px;}
+.bk-d{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:4px;}
+.bk-ln{align-self:center;border-top:1px dashed var(--border2);margin-top:18px;}
+.bk-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border);}
+.bk-dur{font-family:var(--mono);font-size:12px;color:var(--text2);}
+.bk-tot{margin-left:auto;text-align:right;}
+.bk-tot b{display:block;font-family:var(--mono);font-size:22px;font-weight:500;color:var(--text);}
+.bk-tot span{display:block;font-family:var(--mono);font-size:10px;color:var(--text2);margin-top:2px;}
+.bk-km{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text2);}
+.bk-km .q{font-size:11px;}
+.bk-km b{font-size:13px;font-weight:500;color:var(--text);}
+.bk-cli{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--text2);}
+.bk-note{margin-top:8px;font-size:13px;color:var(--text2);}
+.bk-fh{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0 8px;margin-bottom:4px;}
+.bk-fh .q{white-space:nowrap;}
+.bk-v{margin-left:auto;font-family:var(--mono);font-size:16px;font-weight:500;color:var(--text);white-space:nowrap;}
+.bk-sync{cursor:pointer;color:var(--text2);line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;}
+.bk-li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);}
+.bk-li b{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text);}
+.bk-fz{border-top:1px solid var(--border);margin-bottom:12px;}
+.bk-q{display:block;margin:12px 0 4px;font-size:11px;}
+.bk-qh{display:block;margin-bottom:12px;}
+.bk-res{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border2);}
+.bk-res b{font-family:var(--mono);font-size:18px;font-weight:500;}
+.bk-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.bk-fzr{display:flex;flex-wrap:wrap;gap:6px;}
+.bk-fzr .btn-dang{flex:1 1 auto;}
+.bk-sm{font-size:11px;color:var(--text2);}
+.bk-tb{border-top:1px solid var(--border2);}
+.bk-tr2{display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--border);}
+.bk-tr2.c2{grid-template-columns:1fr 1fr;}
+.bk-tr2>div{min-width:0;padding:12px 0;}
+.bk-tr2.c2>div:first-child{padding-right:12px;border-right:1px solid var(--border);}
+.bk-tr2.c2>div+div{padding-left:12px;}
+.bk-tr2 .q{display:block;font-size:10px;letter-spacing:.06em;}
+.bk-vv{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:6px;font-family:var(--mono);font-size:11px;}
+.bk-vv b{font-size:14px;font-weight:500;color:var(--text);}
+.bk-cn{padding:10px 0 0;font-size:12px;color:var(--amber);}
+.bk-cn.n{color:var(--text2);}
+.bk-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.btn-sec.on-green{background:transparent;color:var(--green);border-color:var(--ok-b);}
+/* Asistentes (nuevo alquiler, contrato, presupuesto): pasos unidos por línea discontinua, número en mono */
+.wiz-stp:not(:last-child)::after{top:14px;height:0;background:none;border-top:1px dashed var(--border2);}
+.wiz-stp.done::after{background:none;border-top-color:var(--amber);}
+.wiz-dot{width:28px;height:28px;border:1px solid var(--border2);font-family:var(--mono);font-size:12px;font-weight:500;}
+.wiz-lbl{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-top:8px;}
+.wiz-stp.active .wiz-lbl{color:var(--amber);}
+/* ══ Flota: buscador, Filtros + selector de vista en píldora; tarjetas neutras apiladas al hacer scroll (sticky con desfase, solo móvil) ══ */
+.fx-s{margin-bottom:12px;}
+.vtog{display:flex;gap:4px;padding:4px;border:1px solid var(--border2);border-radius:var(--r-pill);flex-shrink:0;}
+.vtog button{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:40px;border-radius:var(--r-pill);display:grid;place-items:center;font-size:17px;color:var(--text2);transition:background-color .3s,color .3s;}
+.vtog button[aria-pressed=true]{background:var(--amber);color:var(--on-amber);}
+.vk-sh{margin-top:28px;}
+.vk-sh:first-child{margin-top:16px;}
+.vk{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-sheet);padding:20px 20px 16px;margin-bottom:12px;}
+.vk-h{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.vk .chip{text-transform:uppercase;letter-spacing:.04em;}
+.vk-n{font-size:28px;font-weight:800;letter-spacing:-.035em;line-height:1;margin-top:16px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vk-p{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.spec.vk-s{grid-template-columns:1fr 1fr 1fr;margin-top:16px;}
+.spec.vk-s>div{padding-right:8px;border-bottom:0;}
+.spec.vk-s b{font-size:15px;}
+.vk-ln{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;margin-top:12px;border-top:1px solid var(--border);}
+.vk-ln .q{font-size:11px;}
+.vk-ln b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.vk-bar{display:flex;gap:2px;height:2px;margin-top:4px;}
+.vk-bar i:first-child{background:var(--green);}
+.vk-bar i:last-child{background:var(--red);}
+@media(max-width:767px){
+  .vstack .vk{position:sticky;top:calc(60px + var(--st) + 10px);}
+  .vstack .vk:nth-child(2){top:calc(60px + var(--st) + 20px);}
+  .vstack .vk:nth-child(3){top:calc(60px + var(--st) + 30px);}
+  .vstack .vk:nth-child(4){top:calc(60px + var(--st) + 40px);}
+  .vstack .vk:nth-child(n+5){top:calc(60px + var(--st) + 50px);}
+}
+/* Lista (vista compacta en móvil) y cuadrícula */
+.vr-l .dh-row{align-items:start;}
+.vr-l .dh-dot{margin-top:7px;}
+.vr-c{display:flex;min-width:0;margin-top:8px;}
+.vr-c .chip{max-width:100%;min-width:0;text-transform:uppercase;letter-spacing:.04em;}
+.vr-c .chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.vr-b{font-family:var(--mono);font-size:12px;}
+.vg-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.vg{min-width:0;padding:16px;border:1px solid var(--border2);border-radius:var(--r-card);background:var(--bg2);cursor:pointer;transition:transform .3s var(--ease);}
+.vg:active{transform:scale(.97);}
+.vg-n{display:flex;align-items:center;gap:8px;min-width:0;font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+.vg-n span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vg .spec{margin-top:12px;}
+.vg .spec>div{padding:10px 6px 0 0;border-bottom:0;}
+.vg .spec b{font-size:13px;}
+/* Ficha del coche: cabecera (volver · punto · chip) y calendario como ficha técnica (exento del mínimo de 48 px) */
+.vd-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.vd-top .back{margin-bottom:0;}
+.vd-top .chip{text-transform:uppercase;letter-spacing:.04em;}
+.cal-card{padding:18px 16px;margin:0;}
+.cal-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.cal-m{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;}
+.cal-m b{white-space:nowrap;font-size:17px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--text);}
+.cal-m .q{font-size:10px;}
+.cal-wd{text-align:center;font-family:var(--mono);font-size:10px;font-weight:500;color:var(--text2);padding:4px 0;}
+.calcell{position:relative;aspect-ratio:1;border-radius:10px;border:1px solid var(--border);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cal-d{position:relative;z-index:1;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.calcell.t .cal-d{color:var(--amber);font-weight:700;}
+.cal-mp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.cal-mp .q{font-size:10px;margin-right:auto;}
+.manpill{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--border2);border-radius:var(--r-pill);font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);}
+.manpill.mp-m[aria-pressed=true]{border-color:var(--blue);color:var(--blue);}
+.manpill.mp-b[aria-pressed=true]{border-color:var(--red);color:var(--red);}
+.cal-lt{display:block;margin:6px 0 12px;}
+/* Alquileres del mes en la ficha del coche: ficha neutra con trayecto discontinuo y botones con borde */
+.ck{border:1px solid var(--border2);border-radius:var(--r-card);background:var(--bg2);padding:16px 18px;margin-bottom:12px;cursor:pointer;}
+.ck-h{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.ck-h .chip{border:1px solid currentColor;text-transform:uppercase;letter-spacing:.04em;}
+.ck-h b{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text);white-space:nowrap;}
+.ck-c{display:flex;align-items:center;gap:8px;min-width:0;margin-top:12px;font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+.ck-c span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ck-s{font-family:var(--mono);font-size:12px;color:var(--text2);margin:4px 0 0 16px;}
+.ck-t{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.ck-t .q{display:block;font-size:10px;}
+.ck-t b{display:block;font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text);margin-top:4px;}
+.ck-t em{display:block;font-family:var(--mono);font-style:normal;font-size:12px;color:var(--text2);margin-top:2px;}
+.ck-t .r{text-align:right;}
+.ck-t i{position:relative;border-top:1px dashed var(--border2);}
+.ck-t i span{position:absolute;left:50%;top:-11px;transform:translateX(-50%);padding:2px 8px;border:1px solid var(--border2);border-radius:var(--r-pill);background:var(--bg2);font-family:var(--mono);font-style:normal;font-size:11px;color:var(--text);}
+.ck-a{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:14px;}
+.ck-a button{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:var(--tap);padding:0 6px;border:1px solid var(--border2);border-radius:var(--r-pill);font-family:var(--font);font-size:12px;font-weight:600;color:var(--text2);text-align:center;}
+.ck-a button.on{border-color:var(--ok-b);color:var(--green);}
+.ck-a button:active{transform:scale(.97);}
+.ck-l{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text2);}
 </style>
 </head>
 <body>
@@ -5913,20 +6144,17 @@ function renderDash(el){
   } else {
     // ── MOBILE: single column ─────────────────────────────────────────────
     const _n2=n=>String(n).padStart(2,'0');
-    // ── ALQUILERES EN CURSO: fichas neutras, punto con el color del coche ──
+    // ── ALQUILERES EN CURSO: desplegable compacto (abierto por defecto; recuerda si Rafael lo cierra), filas de una o dos líneas ──
     if(activeRentals.length){
-      h+=`<section class="dh-sec">
-        <div class="dh-sh"><h2>En alquiler ahora</h2><span class="q ac">${_n2(activeRentals.length)}</span></div>
-        ${activeRentals.map(b=>{const _d=Math.max(0,Math.ceil((new Date(b.endDate)-new Date(hoy))/864e5));return `<div class="dh-card dh-rent" onclick="openV('${escJs(b.vid)}')">
-          <div class="dh-h"><span class="dh-cl"><i class="dh-dot"${b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':''}></i><span class="q">En curso</span></span><span class="chip ${_d<=2?'chip-amber':'chip-gray'}">Termina en ${_d}d</span></div>
-          <div class="dh-rn">${esc(b.vname)}</div>
-          <div class="spec">
-            ${b.clientName?`<div class="w2">CLIENTE<b>${esc(b.clientName)}</b></div>`:''}
-            <div>HASTA<b>${esc(fmtDMY(b.endDate))}</b></div>
-            <div>IMPORTE<b>${fmt(b.amount)}</b></div>
-          </div>
-        </div>`;}).join('')}
-      </section>`;
+      let _ro=true;try{_ro=localStorage.getItem('deiros_dashRentOpen')!=='0';}catch(e){}
+      h+=`<details class="dh-yr dh-now"${_ro?' open':''} ontoggle="try{localStorage.setItem('deiros_dashRentOpen',this.open?'1':'0')}catch(e){}">
+        <summary><span class="q">En alquiler ahora</span><span class="dh-nn"><span class="q ac">${_n2(activeRentals.length)}</span>${_PLUS}</span></summary>
+        <div class="dh-list">${activeRentals.map(b=>{const _d=Math.max(0,Math.ceil((new Date(b.endDate)-new Date(hoy))/864e5));return `<div class="dh-row" onclick="openV('${escJs(b.vid)}')">
+          <i class="dh-dot"${b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':''}></i>
+          <div style="min-width:0"><div class="t ell">${esc(b.vname)}</div><div class="s">${b.clientName?`<span>${esc(b.clientName)}</span>`:''}<span>${b.clientName?'· ':''}hasta ${esc(fmtDMY(b.endDate).slice(0,5))}</span></div></div>
+          <div class="r"><b>${fmt(b.amount)}</b><span class="chip ${_d<=2?'chip-amber':'chip-gray'}" title="Termina en ${_d} días">${_d}D</span></div>
+        </div>`;}).join('')}</div>
+      </details>`;
     }
     // ── ALERTAS: lista técnica ──
     if(alerts.length){
@@ -6003,32 +6231,18 @@ function vcardH(v){
   const isM=v.vtype==='managed';
   const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
   const share=isM?_settleTotals(v,_getVehicleAllFinances(v)).mgr:null;
-  return `<div class="vcard" style="background:${safeColor(v.color)}0d;border-color:${safeColor(v.color)}44" onclick="openV('${escJs(v.id)}')">
-    <div style="position:absolute;top:0;right:0;width:60px;height:60px;background:${safeColor(v.color)}10;border-radius:0 14px 0 60px"></div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <div>
-        <div style="font-size:22px;font-weight:800">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
-        ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
-        <div style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;background:var(--bg4);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text3)">${vtypeIcon(v.vehicle_type||'turismo')}${vtypeLabel(v.vehicle_type||'turismo')}</div>
-      </div>
-      <span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;${isM?'background:#8B5CF620;color:var(--purple);border:1px solid #8B5CF640':'background:var(--acc-s);color:var(--amber);border:1px solid var(--acc-b)'}">${isM?'EN GESTIÓN':'PROPIO'}</span>
+  return `<div class="vcard vk" onclick="openV('${escJs(v.id)}')">
+    <div class="vk-h"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span><span class="chip ${isM?'chip-amber':'chip-gray'}">${isM?ico('handshake')+' GESTIÓN':'PROPIO'}</span></div>
+    <div class="vk-n">${esc(v.name)}</div>
+    <div class="vk-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}${v.year?' · '+esc(v.year):''}</div>
+    <div class="spec vk-s">
+      <div><i class="dt dt-ok"></i>INGRESOS<b>${fmt(vI)}</b></div>
+      <div><i class="dt dt-err"></i>GASTOS<b>${fmt(vE)}</b></div>
+      <div>DÍAS<b>${vD}d</b></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
-      <div style="background:#0a0f1a80;border-radius:8px;padding:10px 8px"><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">INGRESOS</div></div>
-      <div style="background:#0a0f1a80;border-radius:8px;padding:10px 8px"><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--red)">${fmt(vE)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">GASTOS</div></div>
-      <div style="background:#0a0f1a80;border-radius:8px;padding:10px 8px"><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--amber)">${vD}d</div><div style="font-size:9px;color:var(--text3);margin-top:2px">DÍAS</div></div>
-    </div>
-    ${isM?`<div style="margin-top:10px;background:#8B5CF610;border:1px solid #8B5CF630;border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;color:var(--purple);font-weight:700">COMISIÓN DEIROS (${comm}%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${share>=0?'var(--green)':'var(--red)'}">${fmtF(share)}</span></div>`:''}
-    <div class="pb-bg" style="display:flex;height:5px;border-radius:2px;overflow:hidden;margin-top:12px">
-      <div style="width:${Number(iPct)}%;background:var(--green);border-radius:2px 0 0 2px;transition:width 0.4s"></div>
-      <div style="width:${Number(ePct)}%;background:var(--red);border-radius:0 2px 2px 0;transition:width 0.4s"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:5px">
-      <span style="font-family:var(--mono);font-size:11px;color:var(--green)">${fmt(vI)}</span>
-      <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${vP>=0?'var(--green)':'var(--red)'}">${vP>=0?'+':''}${fmtF(vP)}</span>
-      <span style="font-family:var(--mono);font-size:11px;color:var(--red)">${fmt(vE)}</span>
-    </div>
+    ${isM?`<div class="vk-ln"><span class="q">Comisión Deiros · ${comm}%</span><b style="color:${share>=0?'var(--text)':'var(--red)'}">${fmtF(share)}</b></div>`:''}
+    <div class="vk-bar"><i style="width:${Number(iPct)}%"></i><i style="width:${Number(ePct)}%"></i></div>
+    <div class="vk-ln"><span class="q">Balance</span><b style="color:${vP>=0?'var(--text)':'var(--red)'}">${vP>=0?'+':''}${fmtF(vP)}</b></div>
   </div>`;
 }
 
@@ -6039,11 +6253,9 @@ function setFlotaOwnership(id){
     const key=vid===''?'all':vid;
     const el=document.getElementById('vtp-own-'+key);
     if(!el)return;
-    const active=vid===id;
-    el.style.borderColor=active?'var(--amber)':'var(--border2)';
-    el.style.background=active?'var(--acc-m)':'transparent';
-    el.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String(vid===id));
   });
+  _flFbtnSync();
   renderListBody();
 }
 function setFlotaVtype(id){
@@ -6053,13 +6265,13 @@ function setFlotaVtype(id){
   allIds.forEach(vid=>{
     const el=document.getElementById('vtp-'+(vid==='all'?'all':vid));
     if(!el)return;
-    const active=(vid==='all'&&!id)||(vid===id);
-    el.style.borderColor=active?'var(--amber)':'var(--border2)';
-    el.style.background=active?'var(--acc-m)':'transparent';
-    el.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String((vid==='all'&&!id)||(vid===id)));
   });
+  _flFbtnSync();
   renderListBody();
 }
+// Botón «Filtros» de Flota: borde de acento y punto cuando hay algún filtro activo (solo aspecto)
+function _flFbtnSync(){const b=document.getElementById('flFbtn');if(b)b.classList.toggle('on',!!(_filterVtype||_filterOwnership));}
 function renderListBody(){
   const res=document.getElementById('flota-results'); if(!res)return;
   const activeV=V.filter(v=>!v.archived);
@@ -6071,65 +6283,60 @@ function renderListBody(){
   // update toggle highlight without re-rendering it
   ['extended','compact','grid'].forEach(m=>{
     const d=document.getElementById('vtog-'+m);
-    if(d){d.style.background=m===mode?'var(--bg)':'transparent';d.style.color=m===mode?'var(--amber)':'var(--text3)';}
+    if(d)d.setAttribute('aria-pressed',String(m===mode));
   });
   let h='';
   if(!activeV.length){h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div><div class="es">Pulsa + para añadir</div></div>`;}
   else if(!filtered.length){h+=`<div class="empty"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;}
   else{
+    const _n2=n=>String(n).padStart(2,'0');
+    const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
+    const _sh=(t,n)=>`<div class="dh-sh vk-sh"><h2>${t}</h2><span class="q">${_n2(n)}</span></div>`;
     if(mode==='grid'){
-      // Grid: 2 cols compact cards with section headers
-      if(own.length){
-        h+=`<div class="sec" style="color:var(--amber);margin-bottom:8px">${ico('car')} FLOTA PROPIA (${own.length})</div>`;
-        h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">`;
-        own.forEach(v=>{
-        const vI=tInc(v),vE=tExp(v),vP=vI-vE;
-        const isM=v.vtype==='managed';
-        h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${safeColor(v.color)}0d;border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
-          <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
-          ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
-          <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
-            <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">BEN</div></div>
-          </div>
-        </div>`;
-        });
-        h+=`</div>`;
-      }
-      if(managed.length){
-        h+=`<div class="sec" style="color:var(--purple);margin-bottom:8px">${ico('handshake')} EN GESTIÓN (${managed.length})</div>`;
-        h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
-        managed.forEach(v=>{
+      // Grid: 2 columnas de fichas neutras con el punto del color del coche
+      const drawGrid=(list,t)=>{
+        if(!list.length)return;
+        h+=_sh(t,list.length)+`<div class="vg-g">`;
+        list.forEach(v=>{
           const vI=tInc(v),vE=tExp(v),vP=vI-vE;
-          const isM=v.vtype==='managed';
-          h+=`<div onclick="openV('${escJs(v.id)}')" style="background:${safeColor(v.color)}0d;border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;cursor:pointer;transition:transform 0.15s" ontouchstart="" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">
-            <div style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
-            ${v.model?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.model)}</div>`:''}
-            <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-              <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ING</div></div>
-              <div style="text-align:center;background:#0a0f1a80;border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">BEN</div></div>
-            </div>
+          h+=`<div class="vg" onclick="openV('${escJs(v.id)}')">
+            <div class="vg-n">${_dot(v)}<span>${esc(v.name)}</span></div>
+            <div class="vk-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
+            <div class="spec"><div>ING<b>${fmt(vI)}</b></div><div>BEN<b style="color:${vP>=0?'var(--text)':'var(--red)'}">${fmt(vP)}</b></div></div>
           </div>`;
         });
         h+=`</div>`;
-      }
+      };
+      drawGrid(own,'Flota propia');
+      drawGrid(managed,'En gestión');
     } else if(mode==='compact'){
-      // Compact: table-like rows with status chip
+      // Compact: en móvil, lista técnica (filas con línea); en escritorio, tabla
       const hoy=todayStr();
       const getVStatus=v=>{
         const bks=v.bookings||[];
         const inProgress=bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
-        if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')} ${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
+        if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')}<span>${esc(inProgress.clientName||'En alquiler')}</span></span>`,sort:1};
         const nextB=bks.filter(b=>b.startDate>hoy).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')} En ${dUntil}d</span>`,sort:2};}
-        return{chip:`<span class="chip chip-green">${ico('check')} Disponible</span>`,sort:3};
+        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')}<span>En ${dUntil}d</span></span>`,sort:2};}
+        return{chip:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`,sort:3};
       };
-      const drawCompactSection=(list,label,clr)=>{
+      const drawCompactSection=(list,t)=>{
         if(!list.length)return;
-        h+=`<div class="sec" style="color:${safeColor(clr)};margin-bottom:8px">${label}</div>`;
-        h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
+        if(window.innerWidth<768){
+          h+=_sh(t,list.length)+`<div class="dh-list vr-l">`;
+          list.forEach(v=>{
+            const vI=tInc(v),vP=vI-tExp(v);
+            h+=`<div class="dh-row" onclick="openV('${escJs(v.id)}')">
+              ${_dot(v)}
+              <div style="min-width:0"><div class="t ell">${esc(v.name)}</div><div class="s ell">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div><div class="vr-c">${getVStatus(v).chip}</div></div>
+              <div class="r"><b>${fmt(vI)}</b><span class="vr-b" style="color:${vP>=0?'var(--text2)':'var(--red)'}">${vP>=0?'+':''}${fmt(vP)}</span></div>
+            </div>`;
+          });
+          h+=`</div>`;
+          return;
+        }
+        h+=_sh(t,list.length);
+        h+=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;margin-bottom:16px">
           <table class="fleet-tbl" style="width:100%">
             <thead><tr>
               <th>VEHÍCULO</th>
@@ -6145,27 +6352,27 @@ function renderListBody(){
           h+=`<tr class="ftr" onclick="openV('${escJs(v.id)}')">
             <td>
               <div style="display:flex;align-items:center;gap:10px">
-                <div style="width:5px;height:32px;border-radius:2px;background:${safeColor(v.color)};flex-shrink:0"></div>
+                ${_dot(v)}
                 <div>
                   <div style="font-weight:700;font-size:13px">${esc(v.name)}</div>
-                  <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--text2)">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
                 </div>
               </div>
             </td>
             <td>${chip}</td>
-            <td style="text-align:right;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(vI)}</td>
-            <td style="text-align:right;font-family:var(--mono);font-size:13px;font-weight:700;color:${vP>=0?'var(--green)':'var(--red)'}">${vP>=0?'+':''}${fmt(vP)}</td>
-            <td style="color:var(--text3);font-size:14px;padding-right:14px">›</td>
+            <td style="text-align:right;font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text)">${fmt(vI)}</td>
+            <td style="text-align:right;font-family:var(--mono);font-size:13px;font-weight:500;color:${vP>=0?'var(--text)':'var(--red)'}">${vP>=0?'+':''}${fmt(vP)}</td>
+            <td style="color:var(--text2);font-size:14px;padding-right:14px">›</td>
           </tr>`;
         });
         h+=`</tbody></table></div>`;
       };
-      drawCompactSection(own,(ico('car')+' FLOTA PROPIA (')+own.length+')','var(--amber)');
-      drawCompactSection(managed,(ico('handshake')+' EN GESTIÓN (')+managed.length+')','var(--purple)');
+      drawCompactSection(own,'Flota propia');
+      drawCompactSection(managed,'En gestión');
     } else {
-      // Extended (default)
-      if(own.length){h+=`<div class="sec" style="color:var(--amber)">FLOTA PROPIA (${own.length})</div>`;own.forEach(v=>{h+=vcardH(v);});}
-      if(managed.length){h+=`<div class="sec" style="color:var(--purple);margin-top:4px">EN GESTIÓN (${managed.length})</div>`;managed.forEach(v=>{h+=vcardH(v);});}
+      // Extended (default): tarjetas apiladas al hacer scroll (sticky con desfase, solo en móvil)
+      if(own.length){h+=_sh('Flota propia',own.length)+'<div class="vstack">';own.forEach(v=>{h+=vcardH(v);});h+='</div>';}
+      if(managed.length){h+=_sh('En gestión',managed.length)+'<div class="vstack">';managed.forEach(v=>{h+=vcardH(v);});h+='</div>';}
     }
   }
   res.innerHTML=h;
@@ -6174,34 +6381,29 @@ function renderList(el){
   if(!document.getElementById('flota-results')){
     const mode=_vListMode;
     el.innerHTML=`<div class="anim">
-  <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
-    <div style="flex:1;position:relative">
-      <input type="text" id="searchFlotaInput" placeholder="Buscar vehículo..." value="${esc(_searchFlota)}"
-        oninput="_searchFlota=this.value;renderListBody()"
-        style="padding-left:14px;font-size:14px"/>
-    </div>
-    <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-      <div class="tap44" id="vtog-extended" onclick="_vListMode='extended';renderListBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">${ico('menu')}</div>
-      <div class="tap44" id="vtog-compact" onclick="_vListMode='compact';renderListBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
-      <div class="tap44" id="vtog-grid" onclick="_vListMode='grid';renderListBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
+  <input type="text" id="searchFlotaInput" class="fx-s" placeholder="Buscar vehículo..." value="${esc(_searchFlota)}"
+    oninput="_searchFlota=this.value;renderListBody()"/>
+  <div class="fx-f fx-row">
+    <button type="button" id="flFbtn" class="fbtn${(_filterVtype||_filterOwnership)?' on':''}" aria-expanded="${_flotaFiltersOpen}" onclick="_flotaFiltersOpen=!_flotaFiltersOpen;document.getElementById('flotaFilterPanel').style.display=_flotaFiltersOpen?'block':'none';this.setAttribute('aria-expanded',String(_flotaFiltersOpen))">
+      ${ico('filter')} Filtros
+    </button>
+    <div class="vtog" role="group" aria-label="Vista">
+      <button type="button" id="vtog-extended" onclick="_vListMode='extended';renderListBody()" aria-pressed="${mode==='extended'}" aria-label="Tarjetas">${ico('menu')}</button>
+      <button type="button" id="vtog-compact" onclick="_vListMode='compact';renderListBody()" aria-pressed="${mode==='compact'}" aria-label="Lista">≡</button>
+      <button type="button" id="vtog-grid" onclick="_vListMode='grid';renderListBody()" aria-pressed="${mode==='grid'}" aria-label="Cuadrícula">⊞</button>
     </div>
   </div>
-  <div style="margin-bottom:12px">
-    <button class="tap44" onclick="_flotaFiltersOpen=!_flotaFiltersOpen;document.getElementById('flotaFilterPanel').style.display=_flotaFiltersOpen?'block':'none';this.style.color=_flotaFiltersOpen?'var(--amber)':'var(--text2)'" style="background:var(--bg3);border:1.5px solid ${(_filterVtype||_filterOwnership)?'var(--amber)':'var(--border2)'};border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;color:${(_filterVtype||_filterOwnership)?'var(--amber)':'var(--text2)'}">
-      ${ico('filter')} Filtros${(_filterVtype||_filterOwnership)?' ●':''}
-    </button>
-    <div id="flotaFilterPanel" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">PROPIEDAD</div>
-      <div class="pills" style="margin-bottom:12px">
-        <div class="pill" id="vtp-own-all" onclick="setFlotaOwnership('')" style="border-color:${!_filterOwnership?'var(--amber)':'var(--border2)'};background:${!_filterOwnership?'var(--acc-m)':'transparent'};color:${!_filterOwnership?'var(--amber)':'var(--text3)'}">Todos</div>
-        <div class="pill" id="vtp-own-own" onclick="setFlotaOwnership('own')" style="border-color:${_filterOwnership==='own'?'var(--amber)':'var(--border2)'};background:${_filterOwnership==='own'?'var(--acc-m)':'transparent'};color:${_filterOwnership==='own'?'var(--amber)':'var(--text3)'}">${ico('car')} Propio</div>
-        <div class="pill" id="vtp-own-managed" onclick="setFlotaOwnership('managed')" style="border-color:${_filterOwnership==='managed'?'var(--amber)':'var(--border2)'};background:${_filterOwnership==='managed'?'var(--acc-m)':'transparent'};color:${_filterOwnership==='managed'?'var(--amber)':'var(--text3)'}">${ico('handshake')} Gestión</div>
-      </div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TIPO DE VEHÍCULO</div>
-      <div class="pills">
-        <div class="pill" id="vtp-all" onclick="setFlotaVtype('')" style="border-color:${!_filterVtype?'var(--amber)':'var(--border2)'};background:${!_filterVtype?'var(--acc-m)':'transparent'};color:${!_filterVtype?'var(--amber)':'var(--text3)'}">Todos</div>
-        ${VTYPES.map(t=>`<div class="pill" id="vtp-${t.id}" onclick="setFlotaVtype('${escJs(t.id)}')" style="border-color:${_filterVtype===t.id?'var(--amber)':'var(--border2)'};background:${_filterVtype===t.id?'var(--acc-m)':'transparent'};color:${_filterVtype===t.id?'var(--amber)':'var(--text3)'}">${ico(t.icon)} ${t.label}</div>`).join('')}
-      </div>
+  <div id="flotaFilterPanel" class="fx-fp" style="display:${_flotaFiltersOpen?'block':'none'}">
+    <div class="q">Propiedad</div>
+    <div class="pills">
+      <div class="pill" id="vtp-own-all" onclick="setFlotaOwnership('')" aria-pressed="${!_filterOwnership}">Todos</div>
+      <div class="pill" id="vtp-own-own" onclick="setFlotaOwnership('own')" aria-pressed="${_filterOwnership==='own'}">${ico('car')} Propio</div>
+      <div class="pill" id="vtp-own-managed" onclick="setFlotaOwnership('managed')" aria-pressed="${_filterOwnership==='managed'}">${ico('handshake')} Gestión</div>
+    </div>
+    <div class="q">Tipo de vehículo</div>
+    <div class="pills">
+      <div class="pill" id="vtp-all" onclick="setFlotaVtype('')" aria-pressed="${!_filterVtype}">Todos</div>
+      ${VTYPES.map(t=>`<div class="pill" id="vtp-${t.id}" onclick="setFlotaVtype('${escJs(t.id)}')" aria-pressed="${_filterVtype===t.id}">${ico(t.icon)} ${t.label}</div>`).join('')}
     </div>
   </div>
   <div id="flota-results"></div></div>${window.innerWidth>=768?'</div><div id="flota-right-panel">'+buildFlotaRightPanel()+'</div></div>':''}`;
@@ -6212,7 +6414,7 @@ function renderList(el){
 // ═══════════════════════════════════════════════════════════ DETAIL
 function renderDetail(el){
   const v=gV();if(!v){nav('vehicles');return;}
-  let h=`<div class="anim"><div class="back" onclick="goBack()"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div>
+  let h=`<div class="anim"><div class="vd-top"><div class="back" onclick="goBack()"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="chip ${v.vtype==='managed'?'chip-amber':'chip-gray'}">${v.vtype==='managed'?'GESTIÓN':'PROPIO'}</span></span></div>
   <div class="tabs">
     <div class="tab ${AT==='calendar'?'active':''}" onclick="switchTab('calendar')">${ico('calendar')} Alquileres</div>
     <div class="tab ${AT==='finances'?'active':''}" onclick="switchTab('finances')">${ico('euro')} Finanzas</div>
@@ -6237,10 +6439,10 @@ function renderCal(v){
   let rC=0;
   for(let d=1;d<=dim;d++){const k=dKey(d);if(dayStatus(v,k)==='rented')rC++;}
 
-  const PLAT_COLORS={amovens:'#FB7AAC',getaround:'#8B5CF6',sinapp:'#10B981'};
+  const PLAT_COLORS={amovens:'var(--blue)',getaround:'var(--amber)',sinapp:'var(--green)'};
   const dayBars={};
   (v.bookings||[]).forEach(b=>{
-    const col=safeColor(b.cancelled?'#6B728060':(PLAT_COLORS[b.platform]||'#3B82F6'));
+    const col=safeColor(b.cancelled?'var(--border2)':(PLAT_COLORS[b.platform]||'var(--text2)'));
     _eachDate(b.startDate,b.endDate).forEach(k=>{
       if(!dayBars[k])dayBars[k]=[];
       dayBars[k].push({col,isStart:k===b.startDate,isEnd:k===b.endDate,id:b.id,startDate:b.startDate,startTime:b.startTime||'09:00',endTime:b.endTime||'09:00',client:b.clientName||'',cancelled:b.cancelled});
@@ -6249,16 +6451,16 @@ function renderCal(v){
 
   // ── Mini calendar ─────────────────────────────────────────────────────
   const miniCal=`<div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div class="tap44" onclick="calPrev()" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0">‹</div>
-      <div style="text-align:center">
-        <div style="font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--text)">${MON_ES[calM]} ${calY}</div>
-        <div style="font-size:9px;color:var(--amber);font-family:var(--mono)">${rC} días alquilados</div>
+    <div class="cal-hd">
+      <button type="button" class="dh-rb" onclick="calPrev()" aria-label="Mes anterior">‹</button>
+      <div class="cal-m">
+        <b>${MON_ES[calM]} ${calY}</b>
+        <span class="q ac">${rC} días alquilados</span>
       </div>
-      <div class="tap44" onclick="calNext()" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0">›</div>
+      <button type="button" class="dh-rb" onclick="calNext()" aria-label="Mes siguiente">›</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">
-      ${['L','M','X','J','V','S','D'].map(d=>`<div style="text-align:center;font-size:8px;font-weight:700;color:var(--text3);padding:2px 0">${d}</div>`).join('')}
+      ${['L','M','X','J','V','S','D'].map(d=>`<div class="cal-wd">${d}</div>`).join('')}
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
       ${'<div></div>'.repeat(offset)}
@@ -6267,25 +6469,26 @@ function renderCal(v){
         const isT=d===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();
         const bars=dayBars[k]||[];
         let bg='transparent',bd='var(--border)';
-        if(s==='maintenance'){bg='rgba(59,130,246,0.08)';bd='rgba(59,130,246,0.4)';}
-        else if(s==='blocked'){bg='rgba(239,68,68,0.08)';bd='rgba(239,68,68,0.4)';}
+        if(s==='maintenance'){bg='var(--info-s)';bd='var(--info-b)';}
+        else if(s==='blocked'){bg='var(--err-s)';bd='var(--err-b)';}
         const fn=s==='rented'?`showBooking('${escJs(k)}')`:`toggleDay('${escJs(k)}')`;
         const lineHtml=bars.slice(0,3).map((b,i)=>{
           let lp=0,rp=0;
           if(b.isStart){const t=b.startTime.split(':');lp=Math.round((parseInt(t[0])*60+parseInt(t[1]||0))/(24*60)*100);}
           if(b.isEnd){const t=b.endTime.split(':');rp=100-Math.round((parseInt(t[0])*60+parseInt(t[1]||0))/(24*60)*100);}
-          const rL=b.isStart?'2px':'0';const rR=b.isEnd?'2px':'0';
+          const rL=b.isStart?'3px':'0';const rR=b.isEnd?'3px':'0';
           const top=50-(bars.length-1)*3+i*6;
           return `<div style="position:absolute;top:calc(${top}% - 2px);left:${lp}%;right:${rp}%;height:3px;background:${safeColor(b.col)};border-radius:${rL} ${rR} ${rR} ${rL}"></div>`;
         }).join('');
-        return `<div class="tap44 calcell" onclick="${fn}" style="position:relative;aspect-ratio:1;border-radius:3px;border:1px solid ${isT?'var(--amber)':bd};background:${isT?'rgba(245,158,11,0.1)':bg};cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:11px;font-weight:${isT?800:400};color:${isT?'var(--amber)':'var(--text2)'};position:relative;z-index:1">${d}</span>
+        return `<div class="tap44 calcell${isT?' t':''}" onclick="${fn}" style="border-color:${isT?'var(--amber)':bd};background:${isT?'var(--acc-s)':bg}">
+          <span class="cal-d">${d}</span>
           ${lineHtml}
         </div>`;
       }).join('')}
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
-      ${Object.entries(MAN_ST).map(([k,cv])=>{const _lt=_uiLight();const _tx=_lt?_uiStatusCol(k):(k==='maintenance'&&calSel===k?'#60A5FA':cv.text);const _bd=_lt?_uiStatusCol(k):cv.border;const _bg=_lt?(k==='blocked'?'#FEE2E2':'#DBEAFE'):cv.color;return `<div class="tap44 manpill" onclick="setManSel('${escJs(k)}')" style="font-size:9px;padding:3px 7px;border-radius:10px;border:1.5px solid ${safeColor(calSel===k?_bd:_bd+'40')};background:${safeColor(calSel===k?_bg:'transparent')};color:${safeColor(_tx)};cursor:pointer;font-weight:700">${cv.label}</div>`;}).join('')}
+    <div class="cal-mp">
+      <span class="q">Marcar días</span>
+      ${Object.entries(MAN_ST).map(([k,cv])=>`<button type="button" class="manpill mp-${k==='blocked'?'b':'m'}" onclick="setManSel('${escJs(k)}')" aria-pressed="${calSel===k}">${cv.label}</button>`).join('')}
     </div>
   </div>`;
 
@@ -6304,7 +6507,7 @@ function renderCal(v){
       const dur=daysBetween(b.startDate,b.endDate);
       if(b.paid&&!b.cobrado)b.cobrado=true; // normalize legacy field
       const p=PLATS[b.platform]||{label:b.platform||'Sin app',icon:ico('handshake')};
-      const platDot=safeColor(PLAT_COLORS[b.platform]||'#6B7280');
+      const platDot=safeColor(PLAT_COLORS[b.platform]||'var(--text2)');
       // ── Estado basado en toggles reales ──────────────────────────────────
       const _todayS=todayStr();
       const _tomorrowS=addDays(_todayS,1);
@@ -6327,83 +6530,48 @@ function renderCal(v){
       const multiMonth=b.startDate.slice(0,7)!==b.endDate.slice(0,7);
       const bId=b.id, bSd=b.startDate;
       listHtml+=
-        '<div style="border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:1px solid '+safeColor(platDot)+'44">'+
-        // Header
-        '<div style="background:linear-gradient(135deg,'+(_uiLight()?safeColor(platDot)+'cc,'+safeColor(platDot)+'55':_uiDarkMix(platDot,.32)+','+_uiDarkMix(platDot,.2))+');padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
-          '<div style="display:flex;align-items:center;gap:8px">'+
-            '<span style="font-size:20px;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+(p.icon||ico('car'))+'</span>'+
-            '<div>'+
-              '<div style="font-size:13px;font-weight:800;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+esc(b.clientName||'Sin nombre')+'</div>'+
-              '<div style="font-size:10px;color:'+(_uiLight()?'rgba(13,13,13,.9)':'rgba(255,255,255,0.92)')+'">'+esc(b.clientPhone||p.label)+
-                (multiMonth?'<span style="margin-left:6px;background:rgba(255,255,255,0.2);padding:1px 5px;border-radius:4px">+2 meses</span>':'')+
-              '</div>'+
-            '</div>'+
-          '</div>'+
-          '<div style="text-align:right">'+
-            '<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:'+(_uiLight()?'#0D0D0D':'#fff')+'">'+fmtF(total)+'</div>'+
-            (total>Number(b.amount||0)?'<div style="font-size:9px;color:'+(_uiLight()?'rgba(13,13,13,.9)':'rgba(255,255,255,0.92)')+'">'+fmtF(b.amount)+' base</div>':'')+
-          '</div>'+
+        '<div class="ck" onclick="showBookingById(\''+escJs(bId)+'\')">'+
+        // Cabecera: estado (chip con icono) e importe
+        '<div class="ck-h"><span class="chip" style="color:'+safeColor(col)+'">'+lbl+'</span><b>'+fmtF(total)+'</b></div>'+
+        '<div class="ck-c"><span class="dh-dot" style="background:'+safeColor(platDot)+'"></span><span>'+esc(b.clientName||'Sin nombre')+'</span></div>'+
+        '<div class="ck-s">'+esc(b.clientPhone||p.label)+(multiMonth?' · +2 meses':'')+(total>Number(b.amount||0)?' · '+fmtF(b.amount)+' base':'')+'</div>'+
+        // Trayecto recogida → devolución (línea discontinua con la duración)
+        '<div class="ck-t">'+
+          '<div><span class="q">Recogida</span><b>'+esc(fmtDMY(b.startDate))+'</b>'+(b.startTime?'<em>'+esc(b.startTime)+'</em>':'')+'</div>'+
+          '<i><span>'+dur+'d</span></i>'+
+          '<div class="r"><span class="q">Devolución</span><b>'+esc(fmtDMY(b.endDate))+'</b>'+(b.endTime?'<em>'+esc(b.endTime)+'</em>':'')+'</div>'+
         '</div>'+
-        // Date/time row
-        '<div style="background:var(--bg2);padding:10px 14px;cursor:pointer" onclick="showBookingById(\''+escJs(bId)+'\')">'+
-          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'+
-            '<div style="display:flex;align-items:center;gap:8px">'+
-              // Start
-              '<div style="background:var(--bg3);border-radius:8px;padding:6px 10px;text-align:center;min-width:60px">'+
-                '<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:1px">RECOGIDA</div>'+
-                '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(fmtDMY(b.startDate))+'</div>'+
-                (b.startTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+safeColor(_uiPlatTxt(b.platform,platDot))+'">'+esc(b.startTime)+'</div>':'')+
-              '</div>'+
-              // Duration
-              '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'+
-                '<div style="width:20px;height:1px;background:var(--border2)"></div>'+
-                '<span style="font-size:11px;font-family:var(--mono);color:'+safeColor(_uiPlatTxt(b.platform,platDot))+';font-weight:800;padding:2px 7px;background:'+safeColor(platDot)+'18;border-radius:5px">'+dur+'d</span>'+
-                '<div style="width:20px;height:1px;background:var(--border2)"></div>'+
-              '</div>'+
-              // End
-              '<div style="background:var(--bg3);border-radius:8px;padding:6px 10px;text-align:center;min-width:60px">'+
-                '<div style="font-size:8px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:1px">DEVOLUCIÓN</div>'+
-                '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)">'+esc(fmtDMY(b.endDate))+'</div>'+
-                (b.endTime?'<div style="font-family:var(--mono);font-size:14px;font-weight:800;color:'+safeColor(_uiPlatTxt(b.platform,platDot))+'">'+esc(b.endTime)+'</div>':'')+
-              '</div>'+
-            '</div>'+
-            // Status badge (single)
-            '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">'+
-              '<span style="font-size:9px;color:'+safeColor(col)+';font-weight:700;background:'+safeColor(col)+'20;border-radius:5px;padding:2px 7px">'+lbl+'</span>'+
-            '</div>'+
-          '</div>'+
-          // Action buttons
-          '<div class="g8" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+
-            '<button class="tap44" onclick="event.stopPropagation();toggleDelivery(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))" style="min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.delivered?'#10B98160':'var(--border2)')+';background:'+(b.delivered?'#10B98115':'var(--bg3)')+';color:'+(b.delivered?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
-              (b.delivered?(ico('car')+' Entregado'):(ico('car')+' Entregar'))+'</button>'+
-            '<button class="tap44" onclick="event.stopPropagation();toggleReturn(\''+escJs(bId)+'\')" style="min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.returned?'#10B98160':'var(--border2)')+';background:'+(b.returned?'#10B98115':'var(--bg3)')+';color:'+(b.returned?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
-              (b.returned?(ico('check-circle')+' Devuelto'):(ico('key')+' Devolver'))+'</button>'+
-            '<button class="tap44" onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))" style="min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:7px 4px;border-radius:8px;border:1.5px solid '+(b.cobrado?'#10B98160':'var(--border2)')+';background:'+(b.cobrado?'#10B98115':'var(--bg3)')+';color:'+(b.cobrado?'var(--green)':'var(--text2)')+';font-size:10px;font-weight:700;cursor:pointer">'+
-              (b.cobrado?(ico('coins')+' Cobrado'):(ico('coins')+' Cobrar'))+'</button>'+
-          '</div>'+
-          // Km row
-          (kmInfo?('<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px;display:flex;align-items:center;gap:5px"><span style="font-size:10px">'+ico('odometer')+'</span><span style="font-family:var(--mono);font-size:10px;color:var(--text3)">')+kmInfo+' recorridos</span></div>':'')+
-          // Fianza + Abono / Pendiente row
-          (()=>{
-            const _ab=Number(b.abonoReserva||0);
-            const _fi=Number(b.fianza||0);
-            if(!_ab&&!_fi)return '';
-            const _tt=_bookingClientTotal(b)+_fi;
-            const _pd=Math.max(0,_tt-_ab);
-            let row='<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px">';
-            if(_fi>0)row+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-              +('<span style="font-size:10px;color:var(--blue);font-weight:700">'+ico('lock')+' Fianza: ')+fmtF(_fi)+'</span>'
-              +'<span style="font-size:10px;color:var(--text3)">Total c/fianza: '+fmtF(_tt)+'</span>'
-              +'</div>';
-            if(_ab>0)row+='<div style="display:flex;justify-content:space-between;align-items:center">'
-              +('<span style="font-size:10px;color:var(--green);font-weight:700">'+ico('card')+' Recibido: ')+fmtF(_ab)+'</span>'
-              +(_pd>0
-                ?'<span style="font-size:10px;color:var(--amber);font-weight:800">Pendiente: '+fmtF(_pd)+'</span>'
-                :('<span style="font-size:10px;color:var(--green);font-weight:700">'+ico('check')+' Liquidado</span>'))
-              +'</div>';
-            return row+'</div>';
-          })()+
+        // Action buttons
+        '<div class="g8 ck-a">'+
+          '<button class="tap44'+(b.delivered?' on':'')+'" onclick="event.stopPropagation();toggleDelivery(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
+            (b.delivered?(ico('car')+' Entregado'):(ico('car')+' Entregar'))+'</button>'+
+          '<button class="tap44'+(b.returned?' on':'')+'" onclick="event.stopPropagation();toggleReturn(\''+escJs(bId)+'\')">'+
+            (b.returned?(ico('check-circle')+' Devuelto'):(ico('key')+' Devolver'))+'</button>'+
+          '<button class="tap44'+(b.cobrado?' on':'')+'" onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
+            (b.cobrado?(ico('coins')+' Cobrado'):(ico('coins')+' Cobrar'))+'</button>'+
         '</div>'+
+        // Km row
+        (kmInfo?('<div class="ck-l"><span>'+ico('odometer')+' ')+kmInfo+' recorridos</span></div>':'')+
+        // Fianza + Abono / Pendiente row
+        (()=>{
+          const _ab=Number(b.abonoReserva||0);
+          const _fi=Number(b.fianza||0);
+          if(!_ab&&!_fi)return '';
+          const _tt=_bookingClientTotal(b)+_fi;
+          const _pd=Math.max(0,_tt-_ab);
+          let row='';
+          if(_fi>0)row+='<div class="ck-l">'
+            +('<span>'+ico('lock')+' Fianza: ')+fmtF(_fi)+'</span>'
+            +'<span>Total c/fianza: '+fmtF(_tt)+'</span>'
+            +'</div>';
+          if(_ab>0)row+='<div class="ck-l">'
+            +('<span style="color:var(--green)">'+ico('card')+' Recibido: ')+fmtF(_ab)+'</span>'
+            +(_pd>0
+              ?'<span style="color:var(--amber)">Pendiente: '+fmtF(_pd)+'</span>'
+              :('<span style="color:var(--green)">'+ico('check')+' Liquidado</span>'))
+            +'</div>';
+          return row;
+        })()+
         '</div>';
     });
   }
@@ -6420,9 +6588,9 @@ function renderCal(v){
         </div>
       </div>`
     : `<div style="display:flex;flex-direction:column;gap:12px">
-        <div style="background:var(--bg2);border-radius:12px;padding:12px">${miniCal}</div>
+        <div class="dh-card cal-card">${miniCal}</div>
         <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:8px">${MON_ES[calM].toUpperCase()} ${calY} — ALQUILERES</div>
+          <div class="q cal-lt">${MON_ES[calM]} ${calY} · alquileres</div>
           ${listHtml}
         </div>
       </div>`
@@ -6461,7 +6629,7 @@ function showBooking(k,_overrideId){
   if(!b)return;
   const p=PLATS[b.platform];const dur=daysBetween(b.startDate,b.endDate);
   openSheet(`<div class="stitle">Detalle del alquiler</div>
-    ${b.cancelled?`<div style="background:#EF444415;border:1.5px solid #EF444440;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
+    ${b.cancelled?`<div style="background:var(--err-s);border:1px solid var(--err-b);border-radius:var(--r-in);padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
       <span style="font-size:20px;line-height:1;margin-top:1px">${ico('ban')}</span>
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:14px;color:var(--red);letter-spacing:.5px;margin-bottom:3px">ALQUILER CANCELADO</div>
@@ -6476,14 +6644,15 @@ function showBooking(k,_overrideId){
       <button class="btn-dang" onclick="restoreBooking('${escJs(b.id)}')" style="width:auto;flex-shrink:0;white-space:nowrap">${ico('undo')} Restablecer</button>
     </div>`:''}
     <div class="bk-sec">${ico('clipboard')} INFORMACIÓN</div>
-    <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div><div class="lbl">INICIO</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.startTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.startDate))}</div></div>
-        <div><div class="lbl">FIN</div><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--amber)">${esc(b.endTime)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:2px">${esc(fmtDMY(b.endDate))}</div></div>
+    <div class="bk-card">
+      <div class="bk-tr">
+        <div><div class="lbl">INICIO</div><div class="bk-hm">${esc(b.startTime)}</div><div class="bk-d">${esc(fmtDMY(b.startDate))}</div></div>
+        <i class="bk-ln" aria-hidden="true"></i>
+        <div class="r"><div class="lbl">FIN</div><div class="bk-hm">${esc(b.endTime)}</div><div class="bk-d">${esc(fmtDMY(b.endDate))}</div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span class="pb ${p?.cls||''}">${p?.icon||''} ${esc(p?.label||b.platform)}</span>
-        <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">${dur} día${dur!==1?'s':''}</span>
+      <div class="bk-row">
+        <span class="chip chip-gray">${esc(p?.label||b.platform)}</span>
+        <span class="bk-dur">${dur} día${dur!==1?'s':''}</span>
         ${(()=>{
           const _fi=b.finance||[];
           const _ext=_fi.filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
@@ -6494,57 +6663,57 @@ function showBooking(k,_overrideId){
           const _hasExtras=_ext>0||_extrasArr>0;
           if(_inc>0||_exp>0||_hasExtras){
             const _extShow=_ext>0?_ext:_extrasArr;
-            return '<div style="margin-left:auto;text-align:right">'
-              +'<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green)">'+fmtF(_realTotal)+'</div>'
-              +'<div style="font-size:10px;color:var(--text3);margin-top:2px">base '+fmtF(b.amount)+(_hasExtras?' + extras '+fmtF(_extShow):'')
+            return '<div class="bk-tot">'
+              +'<b>'+fmtF(_realTotal)+'</b>'
+              +'<span>base '+fmtF(b.amount)+(_hasExtras?' + extras '+fmtF(_extShow):'')
               +(_inc>0?' + ingresos '+fmtF(_inc):'')
-              +(_exp>0?' − gastos '+fmtF(_exp):'')+'</div>'
+              +(_exp>0?' − gastos '+fmtF(_exp):'')+'</span>'
               +'</div>';
           }
-          return '<span style="margin-left:auto;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">'+fmtF(_realTotal)+'</span>';
+          return '<div class="bk-tot"><b>'+fmtF(_realTotal)+'</b></div>';
         })()}
       </div>
-      ${(b.kmStart||b.kmEnd)?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">
-        <span style="font-size:11px;color:var(--text3)">${ico('odometer')} Kilómetros</span>
-        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'} → ${b.kmEnd?esc(Number(b.kmEnd).toLocaleString('es-ES')+' km'):'—'}</span>
-        ${(b.kmStart&&b.kmEnd)?`<span style="font-family:var(--mono);font-size:11px;color:var(--text3)">(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
+      ${(b.kmStart||b.kmEnd)?`<div class="bk-km">
+        <span class="q">Kilómetros</span>
+        <b>${b.kmStart?esc(Number(b.kmStart).toLocaleString('es-ES')+' km'):'—'} → ${b.kmEnd?esc(Number(b.kmEnd).toLocaleString('es-ES')+' km'):'—'}</b>
+        ${(b.kmStart&&b.kmEnd)?`<span>(${(b.kmEnd-b.kmStart).toLocaleString('es-ES')} km recorridos)</span>`:''}
       </div>`:''}
-      ${b.clientName?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">${ico('user')} ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
-      ${b.notes?`<div style="margin-top:6px;font-size:13px;color:var(--text2)">${ico('quote')} ${esc(b.notes)}</div>`:''}
+      ${b.clientName?`<div class="bk-cli"><div>${ico('user')} ${esc(b.clientName)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div></div>`:''}
+      ${b.notes?`<div class="bk-note">${ico('quote')} ${esc(b.notes)}</div>`:''}
     </div>
     <div class="bk-sec">${ico('coins')} INGRESOS, COBROS Y FIANZA</div>
     ${(()=>{
       const fi=b.finance||[];const fI=fi.filter(f=>f.type==='income'&&!f._autoExtra);const fE=fi.filter(f=>f.type==='expense');
       const tI=fI.reduce((s,f)=>s+Number(f.amount),0);const tE=fE.reduce((s,f)=>s+Number(f.amount),0);
       const fmt2=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
-      let h='<div style="margin-top:12px;background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
-        +('<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3)">'+ico('briefcase')+' INGRESOS Y GASTOS</div>')
-        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" style="cursor:pointer;font-size:14px;color:var(--text3);line-height:1">'+ico('repeat')+'</span></div>')
+      let h='<div class="bk-card">';
+      h+='<div class="bk-fh">'
+        +('<div style="display:flex;align-items:center;gap:8px"><div class="q">Ingresos y gastos</div>')
+        +'<span onclick="repairBookingFinances(\''+escJs(b.id)+('\')" title="Sincronizar finanzas del vehículo" class="bk-sync">'+ico('repeat')+'</span></div>')
         +(()=>{
-          return '<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">'+fmt2(_bookingClientTotal(b))+' total</div>';
+          return '<div class="bk-v">'+fmt2(_bookingClientTotal(b))+' total</div>';
         })()
         +'</div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:6px 8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">'
-        +'<span>Base alquiler</span><span style="font-family:var(--mono);font-weight:700;color:var(--text2)">+'+fmt2(b.amount)+'</span>'
+        +'<div class="bk-li">'
+        +'<span>Base alquiler</span><b>+'+fmt2(b.amount)+'</b>'
         +'</div>'
         +(()=>{
           const _autoExtraSum=(b.finance||[]).filter(f=>f._autoExtra).reduce((s,f)=>s+Number(f.amount),0);
           const _extrasArrSum=(b.extras||[]).reduce((s,e)=>s+Number(e.amount||0),0);
           const _extTotal=_autoExtraSum>0?_autoExtraSum:_extrasArrSum;
-          return _extTotal>0?'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:4px 8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">'
-          +'<span>Extras contrato</span><span style="font-family:var(--mono);font-weight:700;color:var(--amber)">+'+fmt2(_extTotal)+'</span></div>':'';
+          return _extTotal>0?'<div class="bk-li">'
+          +'<span>Extras contrato</span><b>+'+fmt2(_extTotal)+'</b></div>':'';
         })()
-      if(fI.length){h+='<div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px">INGRESOS ADICIONALES</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
-      if(fE.length){h+='<div style="font-size:10px;font-weight:700;color:var(--red);margin:6px 0 4px">GASTOS</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
-      h+='<div style="border-top:2px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">'
-        +'<span style="font-size:11px;font-weight:700;color:var(--text3)">RESULTADO DEL ALQUILER</span>'
+      if(fI.length){h+='<div class="q ok bk-q">Ingresos adicionales</div>';fI.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">+'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:3px 0">Total: +'+fmt2(tI)+'</div>';}
+      if(fE.length){h+='<div class="q err bk-q">Gastos</div>';fE.forEach(f=>{h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:600">'+esc(f.concept)+'</div><div style="font-size:10px;color:var(--text3)">'+esc(fmtDMY(f.date))+(f.notes?' · '+esc(f.notes):'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">-'+fmt2(f.amount)+'</span><span onclick="delBookingFinance(\''+escJs(b.id)+'\',\''+escJs(f.id)+'\')" role="button" aria-label="Borrar movimiento" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">×</span></div></div>';});h+='<div style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:3px 0">Total: -'+fmt2(tE)+'</div>';}
+      h+='<div class="bk-res">'
+        +'<span class="q">Resultado del alquiler</span>'
         +(()=>{
           const _t=_bookingRealTotal(b);
-          return '<span style="font-family:var(--mono);font-size:18px;font-weight:800;color:'+(_t>=0?'var(--green)':'var(--red)')+'">'+fmt2(_t)+'</span>';
+          return '<b style="color:'+(_t>=0?'var(--text)':'var(--red)')+'">'+fmt2(_t)+'</b>';
         })()
         +'</div>';
-      h+='<div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">';
+      h+='<div class="g8 bk-2">';
       h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="income">+ Ingreso adicional</button>';
       h+='<button class="_bfbtn btn-dang" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
       h+='</div></div>';return h;
@@ -6558,38 +6727,38 @@ function showBooking(k,_overrideId){
       const _pend=Math.max(0,_totTotal-_abono);
       const _hasFianza=_fianza>0;
       const _hasAbono=_abono>0||_hasFianza||_cobSinImp;
-      return `<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">${ico('card')} COBROS Y FIANZA</div>
-        ${_hasFianza?`<div style="display:flex;justify-content:space-between;align-items:center;background:#3B82F610;border:1px solid #3B82F630;border-radius:8px;padding:8px 12px;margin-bottom:8px">
-          <span style="font-size:12px;color:var(--blue);font-weight:700">${ico('lock')} Fianza reembolsable</span>
-          <span style="font-family:var(--mono);font-size:14px;font-weight:800;color:var(--blue)">${fmtF(_fianza)}</span>
+      return `<div class="bk-card">
+        <div class="q bk-qh">Cobros y fianza</div>
+        ${_hasFianza?`<div class="bk-li bk-fz">
+          <span>${ico('lock')} Fianza reembolsable</span>
+          <b>${fmtF(_fianza)}</b>
         </div>
         ${(()=>{
           const _st=_fianzaStatus(b);
           const _L={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'}[_st];
-          const _C={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:(_uiLight()?'#9A3412':'#F97316')}[_st];
-          const _is='background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;min-width:0';
+          const _C={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-amber'}[_st];
+          const _is='min-width:0';
           const _id=escJs(b.id);
           return `<div style="margin-bottom:10px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <span style="font-size:11px;font-weight:700;color:${_C};border:1px solid ${_C};border-radius:99px;padding:2px 10px">${_L}</span>
-              ${_st==='retained'||_st==='partial'?`<span style="font-size:11px;color:var(--text3)">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
+              <span class="chip ${_C}">${_L}</span>
+              ${_st==='retained'||_st==='partial'?`<span class="bk-sm">Retenido ${fmtF(b.fianzaRetainedAmount)}${b.fianzaRetainedReason?' · '+esc(b.fianzaRetainedReason):''}</span>`:''}
             </div>
             <div class="g8" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
               ${_st!=='returned'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','returned')">${ico('check-circle')} Marcar devuelta</button>`:''}
               ${_st!=='retained'?`<button class="tap44 btn-dang" onclick="retainFianzaFull('${_id}')">${ico('ban')} Retener toda</button>`:''}
               ${_st!=='pending'?`<button class="tap44 btn-sec" onclick="setBookingFianzaStatus('${_id}','pending')">${ico('undo')} Volver a pendiente</button>`:''}
             </div>
-            <div class="g8" style="display:flex;gap:6px">
-              <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:90px;font-family:var(--mono)"/>
-              <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1"/>
+            <div class="g8 bk-fzr">
+              <input id="fzAmt_${esc(b.id)}" type="number" min="0" step="0.01" value="${_st==='partial'?esc(b.fianzaRetainedAmount):''}" placeholder="Importe €" style="${_is};width:112px;font-family:var(--mono)"/>
+              <input id="fzRsn_${esc(b.id)}" type="text" maxlength="300" value="${_st==='partial'?esc(b.fianzaRetainedReason||''):''}" placeholder="Motivo" style="${_is};flex:1 1 120px"/>
               <button class="tap44 btn-dang" onclick="retainFianzaPart('${_id}')" style="width:auto;white-space:nowrap">Retener parte</button>
             </div>
           </div>`;
         })()}`:''}
         <div class="g8" style="display:flex;gap:8px;align-items:center;margin-bottom:${_hasAbono?'10px':'0'}">
-          <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px"/>
-          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="color:var(--on-amber);white-space:nowrap;width:auto">Guardar</button>
+          <input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" value="${esc(_abono||'')}" placeholder="Cantidad recibida (€)" style="flex:1;font-family:var(--mono)"/>
+          <button class="tap44 btn-pri" onclick="setBookingAbono('${escJs(b.id)}')" style="white-space:nowrap;width:auto">Guardar</button>
         </div>
         ${_hasAbono?`${(()=>{
           // Distribución: primero cubre alquiler, luego fianza
@@ -6601,50 +6770,50 @@ function showBooking(k,_overrideId){
           if(_alqPend>0&&_fiaPend>0)_concepto='alquiler y fianza';
           else if(_alqPend>0)_concepto='alquiler';
           else if(_fiaPend>0)_concepto='fianza';
-          return `<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden">
-            <div style="display:grid;grid-template-columns:${_hasFianza?'1fr 1fr':'1fr'};border-bottom:1px solid var(--border)">
-              <div style="padding:8px 10px;${_hasFianza?'border-right:1px solid var(--border)':''}">
-                <div style="font-size:7px;color:var(--text3);font-weight:700;margin-bottom:2px">ALQUILER</div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline">
-                  <span style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--text)">${fmtF(_totAlq)}</span>
-                  <span style="font-size:9px;font-weight:700;color:${_alqPend===0?'var(--green)':'var(--amber)'}">
+          return `<div class="bk-tb">
+            <div class="bk-tr2${_hasFianza?' c2':''}">
+              <div>
+                <div class="q">Alquiler</div>
+                <div class="bk-vv">
+                  <b>${fmtF(_totAlq)}</b>
+                  <span style="color:${_alqPend===0?'var(--green)':'var(--amber)'}">
                     ${_cobSinImp?'sin importe':_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}
                   </span>
                 </div>
               </div>
-              ${_hasFianza?`<div style="padding:8px 10px">
-                <div style="font-size:7px;color:var(--blue);font-weight:700;margin-bottom:2px">FIANZA</div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline">
-                  <span style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--blue)">${fmtF(_fianza)}</span>
-                  <span style="font-size:9px;font-weight:700;color:${_fiaPend===0?'var(--green)':'var(--amber)'}">
+              ${_hasFianza?`<div>
+                <div class="q">Fianza</div>
+                <div class="bk-vv">
+                  <b>${fmtF(_fianza)}</b>
+                  <span style="color:${_fiaPend===0?'var(--green)':'var(--amber)'}">
                     ${_cobSinImp?'sin importe':_fiaPend===0?(ico('check')+' cubierta'):'falta '+fmtF(_fiaPend)}
                   </span>
                 </div>
               </div>`:''}
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:${_pend>0&&!_cobSinImp?'1px solid var(--border)':'none'}">
-              <div style="padding:8px 10px;border-right:1px solid var(--border)">
-                <div style="font-size:7px;color:var(--text3);font-weight:700;margin-bottom:2px">RECIBIDO</div>
-                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</div>
+            <div class="bk-tr2 c2">
+              <div>
+                <div class="q">Recibido</div>
+                <div class="bk-vv"><b style="color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</b></div>
               </div>
-              <div style="padding:8px 10px">
-                <div style="font-size:7px;color:${_cobSinImp?'var(--text3)':_pend>0?'var(--amber)':'var(--green)'};font-weight:700;margin-bottom:2px">PENDIENTE</div>
-                <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:${_cobSinImp?'var(--text3)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</div>
+              <div>
+                <div class="q">Pendiente</div>
+                <div class="bk-vv"><b style="color:${_cobSinImp?'var(--text2)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</b></div>
               </div>
             </div>
-            ${_pend>0&&_concepto&&!_cobSinImp?`<div style="padding:5px 10px;background:var(--acc-s);font-size:10px;color:var(--amber)">En concepto de: <strong>${_concepto}</strong></div>`:''}
-            ${_cobSinImp?`<div style="padding:5px 10px;font-size:10px;color:var(--text3)">Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</div>`:''}
+            ${_pend>0&&_concepto&&!_cobSinImp?`<div class="bk-cn">En concepto de: <strong>${_concepto}</strong></div>`:''}
+            ${_cobSinImp?`<div class="bk-cn n">Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</div>`:''}
           </div>`;
         })()}`:''}
       </div>`;
     })()}
     <div class="bk-sec">${ico('bolt')} ACCIONES</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <div class="bk-acts">
       <button class="btn-pri" onclick="editBooking('${escJs(b.id)}')">${ico('edit')} Editar</button>
-      <button class="btn-pri" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
-      <button class="btn-pri" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>
-      <button class="btn-pri" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>
-      ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-pri" onclick="generateExtensionPDF('${escJs(b.id)}')" style="grid-column:1/-1">${ico('clipboard')} Anexo de ampliación</button>`:''}
+      <button class="btn-sec" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
+      <button class="btn-sec" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>
+      <button class="btn-sec" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>
+      ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec" onclick="generateExtensionPDF('${escJs(b.id)}')" style="grid-column:1/-1">${ico('clipboard')} Anexo de ampliación</button>`:''}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
       <button class="btn-sec${b.delivered?' on-green':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
@@ -7160,16 +7329,16 @@ function openNewRentalPicker(){
   if(act.length>6)h+=`<input type="search" id="nrPickSearch" placeholder="Buscar por nombre o matrícula" autocomplete="off" oninput="_filterNewRentalPicker(this.value)" style="margin-bottom:10px"/>`;
   h+=`<div id="nrPickList" style="display:flex;flex-direction:column;gap:8px">`;
   info.forEach(({v,activeB,nextB})=>{
-    const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Libre hoy · próx. ${esc(nextB.startDate)}</span>`:`<span class="chip chip-gray">Libre</span>`;
+    const statusTxt=activeB?`<span class="chip chip-amber">${ico('key')}<span>En alquiler · ${esc(activeB.clientName||'cliente')}</span></span>`:nextB?`<span class="chip chip-blue"><span>Libre hoy · próx. ${esc(fmtDMY(nextB.startDate))}</span></span>`:`<span class="chip chip-green">${ico('check')}<span>Libre</span></span>`;
     const q=((v.name||'')+' '+(v.plate||'')).toLowerCase();
-    h+=`<div class="nr-pick" data-q="${esc(q)}" onclick="_newRentalFor('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
-      <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+    h+=`<div class="nr-pick pk" data-q="${esc(q)}" onclick="_newRentalFor('${escJs(v.id)}')">
+      <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+      <div class="pk-b">
+        <div class="pk-n">${esc(v.name)}</div>
+        <div class="pk-p">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+        <div class="pk-s">${statusTxt}</div>
       </div>
-      <div>${statusTxt}</div>
-      <div style="color:var(--text3);font-size:18px">›</div>
+      <span class="pk-ar" aria-hidden="true">›</span>
     </div>`;
   });
   h+=`</div>`;
@@ -9335,11 +9504,9 @@ function setAgendaOwnership(id){
     const key=vid===''?'all':vid;
     const el=document.getElementById('agtp-own-'+key);
     if(!el)return;
-    const active=vid===id;
-    el.style.borderColor=active?'var(--amber)':'var(--border2)';
-    el.style.background=active?'var(--acc-m)':'transparent';
-    el.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String(vid===id));
   });
+  _agFbtnSync();
   renderAgendaBody();
 }
 function setAgendaVtype(id){
@@ -9348,13 +9515,13 @@ function setAgendaVtype(id){
   allIds.forEach(vid=>{
     const el=document.getElementById('agtp-'+(vid==='all'?'all':vid));
     if(!el)return;
-    const active=(vid==='all'&&!id)||(vid===id);
-    el.style.borderColor=active?'var(--amber)':'var(--border2)';
-    el.style.background=active?'var(--acc-m)':'transparent';
-    el.style.color=active?'var(--amber)':'var(--text3)';
+    el.setAttribute('aria-pressed',String((vid==='all'&&!id)||(vid===id)));
   });
+  _agFbtnSync();
   renderAgendaBody();
 }
+// Botón «Filtros»: borde de acento y punto cuando hay algún filtro activo (solo aspecto)
+function _agFbtnSync(){const b=document.getElementById('agFbtn');if(b)b.classList.toggle('on',!!(_agFilterVtype||_agFilterOwnership));}
 function _agIsMobile(){return !!(window.matchMedia&&window.matchMedia('(max-width:767px)').matches);}
 function agToday(){agY=new Date().getFullYear();agM=new Date().getMonth();agMobStart='';renderAgendaBody();}
 function agMobShift(n){agMobStart=addDays(agMobStart||todayStr(),n);renderAgendaBody();}
@@ -9365,29 +9532,32 @@ function renderAgendaMobile(res,activeV){
   const hoy=todayStr(),man=addDays(hoy,1);
   const st0=agMobStart||hoy;
   const DOW=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const btn='min-height:44px;min-width:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text);cursor:pointer;font-family:var(--font)';
-  let h=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-    <button class="tap44" onclick="agMobShift(-7)" aria-label="Semana anterior" style="${btn}">‹</button>
-    <button class="tap44" onclick="agToday()" style="${btn};flex:1;font-size:14px;font-weight:800;border-color:var(--amber);color:var(--amber)">Hoy</button>
-    <button class="tap44" onclick="agMobShift(7)" aria-label="Semana siguiente" style="${btn}">›</button>
+  const _dm=k=>esc(fmtDMY(k).slice(0,5));
+  const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
+  let h=`<div class="ag-nav">
+    <button type="button" class="dh-rb" onclick="agMobShift(-7)" aria-label="Semana anterior">‹</button>
+    <div class="ag-rng"><span class="q">Semana</span><b>${_dm(st0)} – ${esc(fmtDMY(addDays(st0,6)))}</b></div>
+    <button type="button" class="dh-rb" onclick="agMobShift(7)" aria-label="Semana siguiente">›</button>
   </div>
-  <div style="display:flex;gap:6px;margin-bottom:10px">${[['list','Lista'],['week','Semana']].map(([m,l])=>`<button class="tap44" onclick="agMobSetMode('${m}')" aria-pressed="${agMobMode===m}" style="flex:1;min-height:44px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid ${agMobMode===m?'var(--amber)':'var(--border2)'};background:${agMobMode===m?'var(--acc-m)':'var(--bg3)'};color:${agMobMode===m?'var(--amber)':'var(--text3)'}">${l}</button>`).join('')}</div>
-  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;text-align:center">${esc(fmtDMY(st0))} – ${esc(fmtDMY(addDays(st0,6)))}</div>`;
+  <div class="ag-tools">
+    <div class="dh-seg" role="group" aria-label="Vista">${[['list','Lista'],['week','Semana']].map(([m,l])=>`<button type="button" onclick="agMobSetMode('${m}')" aria-pressed="${agMobMode===m}">${l}</button>`).join('')}</div>
+    <button type="button" class="fbtn" onclick="agToday()">Hoy</button>
+  </div>`;
   if(agMobMode==='week'){
-    const COL={rented:'#F59E0B',maintenance:'#3B82F6',blocked:'#EF4444'};
+    const ST={rented:['ag-r','Alquilado'],maintenance:['ag-m','Mantenimiento'],blocked:['ag-b','Bloqueado']};
     const D1=['D','L','M','X','J','V','S'];
-    h+=`<table style="width:100%;border-collapse:collapse;table-layout:fixed"><thead><tr><th style="width:34%;text-align:left;font-size:10px;color:var(--text3);padding:2px 4px">VEHÍCULO</th>${Array.from({length:7},(_,i)=>{const k=addDays(st0,i);const isT=k===hoy;return `<th style="text-align:center;font-size:10px;padding:2px 0;${isT?'color:var(--amber);font-weight:800;':'color:var(--text3);'}">${D1[new Date(k+'T12:00:00').getDay()]}<br>${Number(k.slice(8))}</th>`;}).join('')}</tr></thead><tbody>`;
+    h+=`<div class="ag-wk"><table><thead><tr><th class="ag-vh"><span class="q">Vehículo</span></th>${Array.from({length:7},(_,i)=>{const k=addDays(st0,i);return `<th${k===hoy?' class="t"':''}>${D1[new Date(k+'T12:00:00').getDay()]}<b>${Number(k.slice(8))}</b></th>`;}).join('')}</tr></thead><tbody>`;
     activeV.forEach(v=>{
-      h+=`<tr><td style="padding:4px;border-bottom:1px solid var(--border);vertical-align:middle"><div style="font-size:12px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:10px;color:${plateColor(v.color)}">${esc(v.plate)}</div></td>`;
+      h+=`<tr><td class="ag-vh"><div class="ag-vn">${_dot(v)}<span>${esc(v.name)}</span></div><div class="ag-vp">${esc(v.plate)}</div></td>`;
       for(let i=0;i<7;i++){
-        const k=addDays(st0,i),st=dayStatus(v,k),c=COL[st];
+        const k=addDays(st0,i),st=dayStatus(v,k),c=ST[st];
         let bid='';if(st==='rented'){const b=bookingForDay(v,k);if(b)bid=b.id;}
         const isT=k===hoy;
-        h+=`<td style="padding:2px;border-bottom:1px solid var(--border);text-align:center"><div ${c?`class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')"`:''} style="min-height:34px;border-radius:4px;background:${c||'transparent'};${isT?'outline:1.5px solid var(--amber);':''}${c?'cursor:pointer;':''}">&nbsp;</div></td>`;
+        h+=`<td${isT?' class="t"':''}>${c?`<button type="button" class="ag-c ${c[0]}" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')" aria-label="${esc(v.name)} · ${esc(fmtDMY(k))} · ${c[1]}"></button>`:'<span class="ag-c ag-f"></span>'}</td>`;
       }
       h+='</tr>';
     });
-    h+=`</tbody></table><div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">${[['#F59E0B','Alquilado'],['#3B82F6','Mantenimiento'],['#EF4444','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}</div>`;
+    h+=`</tbody></table></div><div class="ag-leg">${[['ag-r','Alquilado'],['ag-m','Mantenimiento'],['ag-b','Bloqueado'],['ag-f','Libre']].map(([c,l])=>`<span><i class="ag-c ${c}"></i>${l}</span>`).join('')}</div>`;
     res.innerHTML=h;return;
   }
   for(let i=0;i<7;i++){
@@ -9400,30 +9570,35 @@ function renderAgendaMobile(res,activeV){
     activeV.forEach(v=>{
       const st=dayStatus(v,k);
       if(st!=='rented'&&st!=='maintenance'&&st!=='blocked'){free.push(v);return;}
-      let color,title,sub='',bid='';
+      let chip,sub='',dts='',bid='';
       if(st==='rented'){
-        color=_uiStatusCol('rented');title='Alquilado';
+        chip=`<span class="chip chip-gray">${ico('key')} Alquilado</span>`;
         const b=bookingForDay(v,k);
         if(b){
           bid=b.id;
           const p=PLATS[b.platform];
-          sub=(b.clientName?esc(b.clientName)+' · ':'')+esc(p?p.label:(b.platform||''))+'<br>'+esc(fmtDMY(b.startDate))+(b.startTime?' '+esc(b.startTime):'')+' → '+esc(fmtDMY(b.endDate))+(b.endTime?' '+esc(b.endTime):'');
+          if(b.startDate===k)chip=`<span class="chip chip-green">${ico('key')} Entrega</span>`;
+          else if(b.endDate===k)chip=`<span class="chip chip-amber">${ico('undo')} Devuelve</span>`;
+          sub=(b.clientName?esc(b.clientName)+' · ':'')+esc(p?p.label:(b.platform||''));
+          dts=_dm(b.startDate)+(b.startTime?' '+esc(b.startTime):'')+' → '+_dm(b.endDate)+(b.endTime?' '+esc(b.endTime):'');
         }
-      }else if(st==='maintenance'){color=_uiStatusCol('maintenance');title='Mantenimiento';}
-      else{color=_uiStatusCol('blocked');title='Bloqueado';}
-      cards+=`<div class="tap44" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')" style="padding:10px 12px;margin-bottom:6px;background:var(--bg2);border:1px solid var(--border);border-left:5px solid ${color};border-radius:10px;min-height:44px;cursor:pointer">
-        <div style="font-size:14px;font-weight:700;word-break:break-word;color:var(--text)">${esc(v.name)} <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:${plateColor(v.color)}">${esc(v.plate)}</span></div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px;word-break:break-word"><strong style="color:${color}">${title}</strong>${sub?' · '+sub:''}</div>
+      }else if(st==='maintenance'){chip=`<span class="chip chip-blue">${ico('wrench')} Mantenim.</span>`;}
+      else{chip=`<span class="chip chip-red">${ico('ban')} Bloqueado</span>`;}
+      cards+=`<div class="dh-row ag-row" onclick="_agMobOpen('${escJs(v.id)}','${escJs(bid)}')">
+        ${_dot(v)}
+        <div class="ag-b">
+          <div class="t ell">${esc(v.name)} <span class="mono2">${esc(v.plate)}</span></div>
+          ${sub?`<div class="s ell">${sub}</div>`:''}
+          ${dts?`<div class="s">${dts}</div>`:''}
+        </div>
+        ${chip}
       </div>`;
     });
-    h+=`<div style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 10px;border-radius:8px;${isT?'background:var(--acc-m);border:1.5px solid var(--amber);':'background:var(--bg3);border:1px solid var(--border);'}">
-        <span style="font-size:15px;font-weight:800;color:${isT?'var(--amber)':'var(--text)'}">${lbl}</span>
-        <span style="font-size:12px;color:var(--text2)">${(isT||k===man)?DOW[dt.getDay()]+' · ':''}${esc(fmtDMY(k))}</span>
-      </div>
-      ${cards}
-      ${free.length?`<div style="font-size:12px;color:var(--text2);padding:2px 4px;word-break:break-word"><strong style="color:var(--green)">Libres (${free.length}):</strong> ${free.map(v=>esc(v.name)).join(', ')}</div>`:''}
-    </div>`;
+    h+=`<section class="ag-day">
+      <div class="ag-dh${isT?' t':''}"><h3>${lbl}</h3><span class="q${isT?' ac':''}">${(isT||k===man)?DOW[dt.getDay()]+' · ':''}${esc(fmtDMY(k))}</span></div>
+      ${cards?`<div class="dh-list">${cards}</div>`:''}
+      ${free.length?`<div class="ag-free"><span class="q ok">Libres · ${String(free.length).padStart(2,'0')}</span><div>${free.map(v=>`<span>${_dot(v)}${esc(v.name)}</span>`).join('')}</div></div>`:''}
+    </section>`;
   }
   res.innerHTML=h;
 }
@@ -9457,7 +9632,7 @@ function renderAgendaBody(){
       ${days.map(d=>{
         const key=agY+'-'+String(agM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
         const st=dayStatus(v,key);
-        const bg=st==='rented'?'#F59E0B':st==='maintenance'?'#3B82F6':st==='blocked'?'#EF4444':'transparent';
+        const bg=st==='rented'?'var(--amber)':st==='maintenance'?'var(--blue)':st==='blocked'?'var(--red)':'transparent';
         const isT=d===today.getDate()&&agM===today.getMonth()&&agY===today.getFullYear();
         return `<td style="padding:2px;border-bottom:1px solid var(--border)"><div style="width:22px;height:18px;border-radius:3px;background:${bg};margin:auto;${isT?'outline:1px solid var(--amber)':''}">&nbsp;</div></td>`;
       }).join('')}
@@ -9465,7 +9640,7 @@ function renderAgendaBody(){
     </tbody>
   </table></div>
   <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
-    ${[['#F59E0B','Alquilado'],['#3B82F6','Mantenimiento'],['#EF4444','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}
+    ${[['var(--amber)','Alquilado'],['var(--blue)','Mantenimiento'],['var(--red)','Bloqueado'],['var(--bg3)','Libre']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block;border:1px solid var(--border)"></span>${l}</span>`).join('')}
   </div>`;
   res.innerHTML=h;
   // Scroll to today's column (or start of month if not current month)
@@ -9485,27 +9660,25 @@ function renderAgenda(el){
   if(!allActiveV.length){el.innerHTML=`<div class="anim"><div class="empty"><div class="ei">${ico('calendar')}</div><div class="et">Sin vehículos activos</div></div></div>`;return;}
   if(!document.getElementById('agenda-body')){
     el.innerHTML=`<div class="anim">
-    <div style="margin-bottom:10px">
-      <button class="tap44" onclick="_agFiltersOpen=!_agFiltersOpen;document.getElementById('agFilterPanel').style.display=_agFiltersOpen?'block':'none'" style="background:var(--bg3);border:1.5px solid ${(_agFilterVtype||_agFilterOwnership)?'var(--amber)':'var(--border2)'};border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;color:${(_agFilterVtype||_agFilterOwnership)?'var(--amber)':'var(--text2)'}">
-        ${ico('filter')} Filtros${(_agFilterVtype||_agFilterOwnership)?' ●':''}
+    <div class="fx-f">
+      <button type="button" id="agFbtn" class="fbtn${(_agFilterVtype||_agFilterOwnership)?' on':''}" aria-expanded="${_agFiltersOpen}" onclick="_agFiltersOpen=!_agFiltersOpen;document.getElementById('agFilterPanel').style.display=_agFiltersOpen?'block':'none';this.setAttribute('aria-expanded',String(_agFiltersOpen))">
+        ${ico('filter')} Filtros
       </button>
-      <div id="agFilterPanel" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">PROPIEDAD</div>
-        <div class="pills" style="margin-bottom:12px">
-          <div class="pill" id="agtp-own-all" onclick="setAgendaOwnership('')" style="border-color:${!_agFilterOwnership?'var(--amber)':'var(--border2)'};background:${!_agFilterOwnership?'var(--acc-m)':'transparent'};color:${!_agFilterOwnership?'var(--amber)':'var(--text3)'}">Todos</div>
-          <div class="pill" id="agtp-own-own" onclick="setAgendaOwnership('own')" style="border-color:${_agFilterOwnership==='own'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='own'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='own'?'var(--amber)':'var(--text3)'}">${ico('car')} Propio</div>
-          <div class="pill" id="agtp-own-managed" onclick="setAgendaOwnership('managed')" style="border-color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--border2)'};background:${_agFilterOwnership==='managed'?'var(--acc-m)':'transparent'};color:${_agFilterOwnership==='managed'?'var(--amber)':'var(--text3)'}">${ico('handshake')} Gestión</div>
-        </div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TIPO DE VEHÍCULO</div>
+      <div id="agFilterPanel" class="fx-fp" style="display:${_agFiltersOpen?'block':'none'}">
+        <div class="q">Propiedad</div>
         <div class="pills">
-          <div class="pill" id="agtp-all" onclick="setAgendaVtype('')" style="border-color:${!_agFilterVtype?'var(--amber)':'var(--border2)'};background:${!_agFilterVtype?'var(--acc-m)':'transparent'};color:${!_agFilterVtype?'var(--amber)':'var(--text3)'}">Todos</div>
-          ${VTYPES.map(t=>`<div class="pill" id="agtp-${t.id}" onclick="setAgendaVtype('${escJs(t.id)}')" style="border-color:var(--border2);background:transparent;color:var(--text3)">${ico(t.icon)} ${t.label}</div>`).join('')}
+          <div class="pill" id="agtp-own-all" onclick="setAgendaOwnership('')" aria-pressed="${!_agFilterOwnership}">Todos</div>
+          <div class="pill" id="agtp-own-own" onclick="setAgendaOwnership('own')" aria-pressed="${_agFilterOwnership==='own'}">${ico('car')} Propio</div>
+          <div class="pill" id="agtp-own-managed" onclick="setAgendaOwnership('managed')" aria-pressed="${_agFilterOwnership==='managed'}">${ico('handshake')} Gestión</div>
+        </div>
+        <div class="q">Tipo de vehículo</div>
+        <div class="pills">
+          <div class="pill" id="agtp-all" onclick="setAgendaVtype('')" aria-pressed="${!_agFilterVtype}">Todos</div>
+          ${VTYPES.map(t=>`<div class="pill" id="agtp-${t.id}" onclick="setAgendaVtype('${escJs(t.id)}')" aria-pressed="${_agFilterVtype===t.id}">${ico(t.icon)} ${t.label}</div>`).join('')}
         </div>
       </div>
     </div>
     <div id="agenda-body"></div></div>`;
-    // Restore active pill if filter already set
-    if(_agFilterVtype){const el2=document.getElementById('agtp-'+_agFilterVtype);if(el2){el2.style.borderColor='var(--amber)';el2.style.background='var(--acc-m)';el2.style.color='var(--amber)';const allEl=document.getElementById('agtp-all');if(allEl){allEl.style.borderColor='var(--border2)';allEl.style.background='transparent';allEl.style.color='var(--text3)';}}}
   }
   renderAgendaBody();
 }
@@ -9539,7 +9712,7 @@ function renderRentals(el){
   const upcoming=all.filter(b=>b.startDate>hoy&&b.startDate<=in30).sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
-  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip plat-${esc(b.platform)}">${esc(p.label)}</span>`:'';};
+  const platBadge=b=>{const p=PLAT[b.platform];return p?`<span class="chip chip-gray">${esc(p.label)}</span>`:'';};
 
   const statusChip=b=>{
     const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
@@ -9547,71 +9720,50 @@ function renderRentals(el){
     if(dEnd<=2)return `<span class="chip chip-amber">Termina en ${dEnd}d</span>`;
     return `<span class="chip chip-green">${ico('check')} En curso · ${dEnd}d</span>`;
   };
+  const _dot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
+  const _n2=n=>String(n).padStart(2,'0');
 
+  // Ficha neutra: punto del color del coche, nombre, matrícula en mono, importe; cliente y estado; trayecto de fechas con línea discontinua
   const bookingCard=(b,isActive)=>{
     const v=b._v;
     const dur=daysBetween(b.startDate,b.endDate);
     const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);
-    return `<div class="rcard" onclick="openV('${escJs(v.id)}')">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
-            <span style="font-weight:800;font-size:14px">${esc(v.name)}</span>
-            <span style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}</span>
-            ${platBadge(b)}
-          </div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600">${esc(b.clientName||'Sin cliente')}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))} · ${dur}d</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:var(--mono);font-size:17px;font-weight:800;color:var(--green)">${fmtF(b.amount||0)}</div>
-          <div style="margin-top:5px">${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
-        </div>
-      </div>
-      ${b.startTime||b.endTime?`<div style="font-size:11px;color:var(--text3)">${ico('clock')} ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}</div>`:''}
+    return `<div class="rcard rk" onclick="openV('${escJs(v.id)}')">
+      <div class="rk-h">${_dot(v)}<span class="rk-n">${esc(v.name)}</span><span class="rk-p">${esc(v.plate)}</span><b class="rk-a">${fmtF(b.amount||0)}</b></div>
+      <div class="rk-c"><span class="rk-cl">${esc(b.clientName||'Sin cliente')}</span>${isActive?statusChip(b):`<span class="chip chip-blue">En ${daysUntil}d</span>`}</div>
+      <div class="rk-t"><span>${esc(fmtDMY(b.startDate))}</span><i aria-hidden="true"></i><span>${esc(fmtDMY(b.endDate))}</span><span class="rk-d">${dur}d</span></div>
+      <div class="rk-f"><span>${b.startTime||b.endTime?`${ico('clock')} ${esc(b.startTime||'–')} → ${esc(b.endTime||'–')}`:''}</span>${platBadge(b)}</div>
     </div>`;
   };
 
   let h=`<div class="anim">`;
 
   // ── En curso
-  h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--green)">${ico('key')} EN CURSO (${active.length})</div>
-  </div>`;
+  h+=`<div class="dh-sh rk-sh"><h2>En curso</h2><span class="q ok">${_n2(active.length)}</span></div>`;
   if(active.length){
     h+=active.map(b=>bookingCard(b,true)).join('');
   } else {
-    h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px">
-      <div style="font-size:28px;margin-bottom:6px">${ico('sun')}</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text2)">Ningún vehículo en alquiler ahora</div>
-    </div>`;
+    h+=`<div class="empty rk-e"><div class="ei">${ico('sun')}</div><div class="et">Ningún vehículo en alquiler ahora</div></div>`;
   }
 
   // ── Próximos (30 días)
-  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--amber);margin:16px 0 10px">${ico('calendar')} PRÓXIMOS 30 DÍAS (${upcoming.length})</div>`;
+  h+=`<div class="dh-sh rk-sh"><h2>Próximos 30 días</h2><span class="q">${_n2(upcoming.length)}</span></div>`;
   if(upcoming.length){
     h+=upcoming.map(b=>bookingCard(b,false)).join('');
   } else {
-    h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px">
-      <div style="font-size:28px;margin-bottom:6px">${ico('clipboard')}</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text2)">Sin alquileres próximos</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:4px">Pulsa + para generar un contrato</div>
-    </div>`;
+    h+=`<div class="empty rk-e"><div class="ei">${ico('clipboard')}</div><div class="et">Sin alquileres próximos</div><div class="es">Pulsa + para generar un contrato</div></div>`;
   }
 
-  // ── Recientes
+  // ── Recientes: lista técnica
   if(recent.length){
-    h+=`<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text3);margin:16px 0 10px">${ico('clock')} RECIENTES</div>`;
-    h+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px">`;
-    recent.forEach((b,i)=>{
+    h+=`<div class="dh-sh rk-sh"><h2>Recientes</h2><span class="q">${_n2(recent.length)}</span></div>`;
+    h+=`<div class="dh-list">`;
+    recent.forEach(b=>{
       const v=b._v;const dur=daysBetween(b.startDate,b.endDate);
-      h+=`<div onclick="openV('${escJs(v.id)}')" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<recent.length-1?'1px solid var(--border)':'none'};transition:background 0.12s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <div style="width:4px;height:30px;border-radius:2px;background:${safeColor(v.color)};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)} <span style="font-weight:500;color:var(--text3)">· ${esc(b.clientName||'—')}</span></div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(fmtDMY(b.endDate))} · ${dur}d</div>
-        </div>
-        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text2);flex-shrink:0">${fmtF(b.amount||0)}</div>
+      h+=`<div class="dh-row" onclick="openV('${escJs(v.id)}')">
+        ${_dot(v)}
+        <div style="min-width:0"><div class="t ell">${esc(v.name)} <span class="mono2">· ${esc(b.clientName||'—')}</span></div><div class="s">${esc(fmtDMY(b.endDate))} · ${dur}d</div></div>
+        <div class="r"><b>${fmtF(b.amount||0)}</b></div>
       </div>`;
     });
     h+=`</div>`;
@@ -9742,15 +9894,15 @@ function _renderWizardStep(){
       const today=todayStr();
       const activeB=(v.bookings||[]).find(b=>b.startDate<=today&&b.endDate>=today);
       const nextB=(v.bookings||[]).filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-      const statusTxt=activeB?`<span class="chip chip-amber">En alquiler · ${esc(activeB.clientName||'cliente')}</span>`:nextB?`<span class="chip chip-blue">Próx. ${esc(fmtDMY(nextB.startDate))}</span>`:`<span class="chip chip-gray">Disponible</span>`;
-      h+=`<div onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.12s" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">
-        <div style="width:5px;height:40px;border-radius:3px;background:${safeColor(v.color)};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:800;font-size:14px">${esc(v.name)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:${plateColor(v.color)}">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+      const statusTxt=activeB?`<span class="chip chip-amber">${ico('key')}<span>En alquiler · ${esc(activeB.clientName||'cliente')}</span></span>`:nextB?`<span class="chip chip-blue"><span>Próx. ${esc(fmtDMY(nextB.startDate))}</span></span>`:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`;
+      h+=`<div class="pk" onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()">
+        <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+        <div class="pk-b">
+          <div class="pk-n">${esc(v.name)}</div>
+          <div class="pk-p">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div>
+          <div class="pk-s">${statusTxt}</div>
         </div>
-        <div>${statusTxt}</div>
-        <div style="color:var(--text3);font-size:18px">›</div>
+        <span class="pk-ar" aria-hidden="true">›</span>
       </div>`;
     });
     if(!activeV.length)h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div></div>`;
