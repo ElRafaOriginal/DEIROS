@@ -3617,38 +3617,45 @@ function openReturnModal(bookingId){
   window._retKmRate=kmRate;
   window._retDelivFuel=delivFuel;
   window._retFuelProd=fuelProd;window._retTankL=tankL;window._retRecargo=recargo;
-  openSheet(('<div class="stitle">'+ico('key')+' Registrar devoluci\u00f3n</div>')
-    +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">'
-    +'<div style="font-size:13px;font-weight:700">'+esc(_bv.name)+' \u00b7 '+esc(_bv.plate)+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:3px">Km entrega: <strong>'+(kmStart?kmStart.toLocaleString('es-ES')+' km':'no registrado')+'</strong> \u00b7 Combustible entrega: <strong>'+(delivFuel?esc(delivFuel):'no registrado')+'</strong></div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:2px">Km incluidos: <strong>'+(isIlim?'Ilimitados':kmLimit.toLocaleString('es-ES')+' km')+'</strong></div>'
+  // Nivel de combustible (D9): selector segmentado que escribe en el mismo <select> (oculto) que leen _calcReturnSummary y _confirmReturn
+  const _fuSeg=(id,sel)=>'<div class="d-seg al-fu" role="group" data-for="'+id+'">'+['Reserva','1/4','1/2','3/4','Lleno (100%)'].map(f=>'<button type="button" aria-pressed="'+(f===sel)+'" data-v="'+f+'" onclick="_retSeg(this)">'+({'1/4':'¼','1/2':'½','3/4':'¾','Lleno (100%)':'Lleno'}[f]||f)+'</button>').join('')+'</div>';
+  openSheet('<div class="stitle">Registrar devolución</div>'
+    +'<div class="d-meta">'+esc(_bv.name)+' · '+esc(_bv.plate)+'</div>'
+    +'<div class="spec al-sp">'
+    +'<div>Km entrega<b>'+(kmStart?kmStart.toLocaleString('es-ES')+' km':'no registrado')+'</b></div>'
+    +'<div>Combustible entrega<b>'+(delivFuel?esc(delivFuel):'no registrado')+'</b></div>'
+    +'<div class="w2">Km incluidos<b>'+(isIlim?'Ilimitados':kmLimit.toLocaleString('es-ES')+' km')+'</b></div>'
     +'</div>'
-    +'<div class="fg"><label class="lbl">KM ACTUALES EN DEVOLUCIÓN *</label>'
+    +'<div class="al-h"><span class="q ac">01</span><h3>Kilómetros</h3></div>'
+    +'<div class="d-f"><label class="q" for="retKm">Km actuales *</label>'
     +'<input id="retKm" type="number" inputmode="numeric" placeholder="Ej: 141200" oninput="_calcReturnSummary()"/></div>'
-    +(delivFuel?'':'<div class="fg"><label class="lbl">NIVEL EN ENTREGA (sin dato guardado: se propone Lleno)</label>'
-    +'<select id="retDeliv" onchange="_calcReturnSummary()">'
-    +fuelOpts.map(f=>'<option'+(f==='Lleno (100%)'?' selected':'')+'>'+f+'</option>').join('')+'</select></div>')
-    +'<div class="fg"><label class="lbl">NIVEL COMBUSTIBLE EN DEVOLUCIÓN *</label>'
-    +'<select id="retFuel" onchange="_calcReturnSummary()">'
+    +'<div class="al-h"><span class="q ac">02</span><h3>Combustible</h3></div>'
+    +(delivFuel?'':'<div class="d-f"><span class="q">Nivel en entrega</span>'+_fuSeg('retDeliv','Lleno (100%)')
+    +'<select id="retDeliv" class="al-hid" onchange="_calcReturnSummary()">'
+    +fuelOpts.map(f=>'<option'+(f==='Lleno (100%)'?' selected':'')+'>'+f+'</option>').join('')+'</select>'
+    +'<span class="d-hint">Sin dato guardado: se propone Lleno</span></div>')
+    +'<div class="d-f"><span class="q">Nivel en devolución *</span>'+_fuSeg('retFuel','')
+    +'<select id="retFuel" class="al-hid" onchange="_calcReturnSummary()">'
     +'<option value="">— Seleccionar —</option>'
     +fuelOpts.map(f=>'<option>'+f+'</option>').join('')
     +'</select></div>'
-    +'<div id="retSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px;display:none"></div>'
-    +'<div class="r2"><div class="fg"><label class="lbl">KM EXTRA</label><input id="retKmExtra" type="number" min="0" inputmode="numeric" value="0" oninput="_retKmAmtSync()"/></div>'
-    +'<div class="fg"><label class="lbl">IMPORTE KM (€)</label><input id="retKmAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div></div>'
+    +'<div id="retSummary" class="al-rs" style="display:none"></div>'
+    +'<div class="al-h"><span class="q ac">03</span><h3>Cargos</h3></div>'
+    +'<div class="d-2"><div class="d-f"><label class="q" for="retKmExtra">Km extra</label><input id="retKmExtra" type="number" min="0" inputmode="numeric" value="0" oninput="_retKmAmtSync()"/></div>'
+    +'<div class="d-f"><label class="q" for="retKmAmt">Importe km</label><div class="d-pre"><span>€</span><input id="retKmAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0" oninput="_retTotUpd()"/></div></div></div>'
     +(fuelProd==='elec'
-      ?('<div style="font-size:12px;color:var(--text3);margin-bottom:12px">'+ico('bolt')+' Vehículo eléctrico: sin cargo de combustible.</div>')
+      ?('<p class="d-hint al-mb">'+ico('bolt')+' Vehículo eléctrico: sin cargo de combustible.</p>')
         +'<input id="retFuelL" type="hidden" value="0"/><input id="retFuelPrice" type="hidden" value=""/><input id="retFuelAmt" type="hidden" value="0"/>'
-      :'<div class="r2"><div class="fg"><label class="lbl">LITROS QUE FALTAN</label><input id="retFuelL" type="number" min="0" step="0.1" inputmode="decimal" value="0" oninput="_retFuelAmtSync()"/></div>'
-        +'<div class="fg"><label class="lbl">PRECIO MEDIO (€/L)</label><input id="retFuelPrice" type="number" min="0" step="0.001" inputmode="decimal" placeholder="Escríbelo" oninput="_retFuelAmtSync()"/></div></div>'
-        +('<div style="display:flex;gap:8px;margin-bottom:6px"><button type="button" class="btn-sec" onclick="_retPriceHere()" style="flex:1;width:auto">'+ico('pin')+' Precio de aquí</button>')
-        +'<input id="retMuni" list="retMuniList" placeholder="o busca el municipio" autocomplete="off" onchange="_retPriceMuni(this.value)" style="flex:1.4;min-width:0;min-height:44px"/><datalist id="retMuniList"></datalist></div>'
-        +'<div id="retPriceInfo" style="font-size:10px;color:var(--text3);margin-bottom:10px">'+(tankL?esc(FUEL_PROD_LBL[fuelProd])+' · depósito de '+tankL+' L':'Sin capacidad del depósito en la ficha del coche: escribe los litros a mano.')+'</div>'
-        +'<div class="fg"><label class="lbl">IMPORTE COMBUSTIBLE (€) · litros × (precio + '+esc(String(recargo).replace('.',','))+' €/L)</label><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0"/></div>')
-    +'<div style="font-size:10px;color:var(--text3);margin:-6px 0 12px">Importes sugeridos y editables. Con 0 no se crea cobro.</div>'
-    +('<button class="btn-pri" onclick="_confirmReturn()">'+ico('check-circle')+' Confirmar devoluci\u00f3n</button>')
-    +'<div style="height:8px"></div>'
-    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+      :'<div class="d-2"><div class="d-f"><label class="q" for="retFuelL">LITROS QUE FALTAN</label><input id="retFuelL" type="number" min="0" step="0.1" inputmode="decimal" value="0" oninput="_retFuelAmtSync()"/></div>'
+        +'<div class="d-f"><label class="q" for="retFuelPrice">Precio medio €/L</label><input id="retFuelPrice" type="number" min="0" step="0.001" inputmode="decimal" placeholder="Escríbelo" oninput="_retFuelAmtSync()"/></div></div>'
+        +('<div class="al-pr"><button type="button" class="btn-sec" onclick="_retPriceHere()">'+ico('pin')+' Precio de aquí</button>')
+        +'<input id="retMuni" list="retMuniList" placeholder="o busca el municipio" autocomplete="off" onchange="_retPriceMuni(this.value)"/><datalist id="retMuniList"></datalist></div>'
+        +'<div id="retPriceInfo" class="d-hint al-mb">'+(tankL?esc(FUEL_PROD_LBL[fuelProd])+' · depósito de '+tankL+' L':'Sin capacidad del depósito en la ficha del coche: escribe los litros a mano.')+'</div>'
+        +'<div class="d-f"><label class="q" for="retFuelAmt">Importe combustible</label><div class="d-pre"><span>€</span><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0" oninput="_retTotUpd()"/></div>'
+        +'<span class="d-hint">Litros × (precio + '+esc(String(recargo).replace('.',','))+' €/L)</span></div>')
+    +'<div class="d-tot al-tot"><span class="q">A cobrar</span><div class="d-n n2" id="retTot">0<small>,00 €</small></div><p>Importes sugeridos y editables. Con 0 no se crea cobro.</p></div>'
+    +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmReturn()">'+ico('check-circle')+' Confirmar devolución</button>')
+    +'<button class="btn-sec" onclick="closeSheet()">Cancelar</button></div>');
   if(fuelProd!=='elec')_retLoadMunis();
 }
 
@@ -3657,6 +3664,7 @@ function _fuelFrac(s){if(!s)return 1;s=s.toLowerCase();if(s.includes('100')||s.i
 function _retKmAmtSync(){
   const ex=parseInt(document.getElementById('retKmExtra')?.value)||0;
   const i=document.getElementById('retKmAmt');if(i)i.value=Math.round(Math.max(0,ex)*(window._retKmRate||0.19)*100)/100;
+  if(typeof _retTotUpd==='function')_retTotUpd(); // solo pinta «A cobrar»
 }
 // Importe = litros × (precio medio + recargo/L). Sin precio, no se pisa un importe escrito a mano.
 function _retFuelAmtSync(){
@@ -3665,6 +3673,21 @@ function _retFuelAmtSync(){
   const i=document.getElementById('retFuelAmt');if(!i)return;
   if(L>0&&p>0)i.value=Math.round(L*(p+(window._retRecargo??2))*100)/100;
   else if(L<=0)i.value=0;
+  if(typeof _retTotUpd==='function')_retTotUpd(); // solo pinta «A cobrar»
+}
+// Solo presentación: «A cobrar» en Doto = importe km + importe combustible tal como están escritos (lo mismo que _confirmReturn convierte en cobros)
+function _retTotUpd(){
+  const e=document.getElementById('retTot');if(!e)return;
+  const n=['retKmAmt','retFuelAmt'].reduce((s,id)=>s+Math.max(0,parseFloat(document.getElementById(id)?.value)||0),0);
+  const t=fmtF(Math.round(n*100)/100).split(',');
+  e.innerHTML=esc(t[0].replace(/\./g,''))+'<small>'+esc(t.length>1?','+t.slice(1).join(','):'')+'</small>';
+}
+// Selector segmentado del nivel de combustible: escribe en su <select> oculto y recalcula como su onchange
+function _retSeg(btn){
+  const g=btn.parentNode,s=document.getElementById(g.getAttribute('data-for'));if(!s)return;
+  s.value=btn.getAttribute('data-v');
+  g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
+  _calcReturnSummary();
 }
 function _calcReturnSummary(){
   const kmStart=window._retKmStart||0,kmLimit=window._retKmLimit||9999999,kmRate=window._retKmRate||0.19;
@@ -3684,7 +3707,7 @@ function _calcReturnSummary(){
   setV('retKmExtra',kmExcess);setV('retKmAmt',kmCharge);
   if(!isElec&&(tankL>0||fuelDiff<=0))setV('retFuelL',fuelL); // sin depósito en la ficha: los litros se escriben a mano
   _retFuelAmtSync();
-  let html='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">RESUMEN DEVOLUCIÓN</div>';
+  let html='<span class="q al-q0">Resumen devolución</span>';
   if(kmStart>0){html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>Km recorridos</span><span style="font-family:var(--mono);font-weight:700">'+kmUsed.toLocaleString('es-ES')+' km</span></div>';}
   if(kmExcess>0){html+=('<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--red)">'+ico('alert')+' Exceso km: ')+kmExcess.toLocaleString('es-ES')+' km \u00d7 '+kmRate+'\u20ac</span><span style="font-family:var(--mono);font-weight:700;color:var(--red)">'+fmtE(kmCharge)+'</span></div>';}
   else if(kmStart>0)html+=('<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--green)">'+ico('check-circle')+' Sin exceso de km</div>');
