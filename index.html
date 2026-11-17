@@ -479,6 +479,95 @@ select option{background:var(--bg);}
   .page{padding-bottom:calc(96px + var(--sb));}
 }
 @media(min-width:768px){.ni-new{display:none;}}
+/* ══ Resumen como ficha técnica: tarjetas radio 28 / padding 24 / borde 1 px, sin sombras ══ */
+.dh-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-sheet);padding:24px;margin-bottom:12px;}
+.dh-card.hl{border-color:var(--amber);}
+.dh-card.dotbg{background-color:var(--bg2);background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);}
+.dh-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.dh-big{font-size:64px;color:var(--amber);margin-top:22px;display:flex;align-items:baseline;flex-wrap:wrap;}
+.dh-big.l{font-size:50px;}
+.dh-big.neg{color:var(--red);}
+.dh-big small{font-family:var(--mono);font-size:16px;font-weight:400;color:var(--text2);letter-spacing:0;margin-left:4px;}
+.dh-note{font-family:var(--mono);font-size:13px;color:var(--text2);margin-top:12px;}
+/* Ficha técnica: línea superior --border2, celdas con línea --border, rótulo mono + valor */
+.spec{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border2);margin-top:20px;}
+.spec>div{min-width:0;padding:14px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--text2);}
+.spec>div:nth-child(odd):not(.w2){padding-right:12px;}
+.spec>.w2{grid-column:1/-1;}
+.spec b{display:block;margin-top:4px;color:var(--text);font-size:17px;font-weight:500;letter-spacing:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.spec b.lg{font-size:22px;}
+.spec .dh-sub{display:block;font-size:11px;margin-top:2px;}
+.spec.c3{grid-template-columns:1fr 1fr 1fr;margin-top:0;border-top:0;}
+.spec.c3>div{padding:0 8px 0 0;border:0;}
+.spec.c3 b{font-size:15px;}
+/* Accesos: Coches libres y Fianzas */
+.dh-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.dh-act{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:104px;padding:16px 18px;border:1px solid var(--border2);border-radius:var(--r-card);background:var(--bg2);transition:transform .3s var(--ease),border-color .3s;}
+.dh-act:active{transform:scale(.97);}
+.dh-act.on{border-color:var(--acc-b);}
+.dh-act .q{font-size:11px;}
+.dh-act b{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font);font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.1;color:var(--text);}
+.dh-act b .n{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:0;}
+.dh-act.on b .n{color:var(--amber);}
+.dh-act b .ico{color:var(--amber);flex-shrink:0;}
+.dh-act b .u{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--text2);margin:0 auto 0 8px;align-self:flex-end;padding-bottom:4px;}
+/* Acumulado del año: details con línea y «+» que gira 45° */
+.dh-yr{border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);margin:8px 0 8px;}
+.dh-yr summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;}
+.dh-yr summary::-webkit-details-marker{display:none;}
+.dh-yr summary .ico{color:var(--amber);transition:transform .4s var(--ease);}
+.dh-yr[open] summary .ico{transform:rotate(45deg);}
+.dh-yr .spec{margin:0 0 4px;}
+.dh-yr .spec>div:nth-last-child(-n+2){border-bottom:0;}
+/* Secciones y lista técnica (filas con línea, número entre comillas) */
+.dh-sec{margin-top:32px;}
+.dh-sh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px;}
+.dh-sh h2{font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:.95;color:var(--text);}
+.dh-sh .q{white-space:nowrap;}
+.dh-list{border-top:1px solid var(--border2);}
+.dh-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;min-height:68px;padding:12px 0;border-bottom:1px solid var(--border2);cursor:pointer;}
+.dh-row>.q{font-size:11px;}
+.dh-row .t{font-size:16px;font-weight:600;line-height:1.25;color:var(--text);}
+.dh-row .t.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dh-row .s{font-family:var(--mono);font-size:12px;color:var(--text2);margin-top:3px;}
+.dh-row .s .ico{margin-right:2px;}
+.dh-row .r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.dh-row .r b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;}
+.dh-row .chip{text-transform:uppercase;letter-spacing:.04em;}
+/* Alquiler en curso: ficha neutra, punto con el color del coche */
+.dh-rent{padding:20px 20px 6px;border-radius:var(--r-card);cursor:pointer;transition:transform .3s var(--ease);}
+.dh-rent:active{transform:scale(.98);}
+.dh-rent .chip{text-transform:uppercase;letter-spacing:.04em;}
+.dh-cl{display:inline-flex;align-items:center;gap:8px;}
+.dh-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--text2);flex-shrink:0;}
+.dh-rn{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-top:18px;color:var(--text);}
+.dh-rent .spec{margin-top:16px;}
+.dh-rent .spec>div:nth-last-child(-n+2){border-bottom:0;}
+/* Selector segmentado de periodo y barras por plataforma */
+.dh-seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border2);border-radius:var(--r-pill);padding:4px;margin-bottom:12px;}
+.dh-seg button{all:unset;cursor:pointer;text-align:center;min-height:44px;border-radius:var(--r-pill);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text2);transition:background-color .3s,color .3s;}
+.dh-seg button[aria-pressed=true]{background:var(--amber);color:var(--on-amber);}
+.dh-pl{padding:14px 0;border-bottom:1px solid var(--border);}
+.dh-pl:first-child{padding-top:0;}.dh-pl:last-child{border-bottom:0;padding-bottom:0;}
+.dh-plh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px;}
+.dh-plh .t{font-size:16px;font-weight:600;}
+.dh-plh .q{font-size:11px;margin-left:6px;}
+.dh-plh b{font-family:var(--mono);font-size:17px;font-weight:500;}
+.dh-bar{height:2px;background:var(--border2);}
+.dh-bar i{display:block;height:100%;background:var(--amber);}
+/* Gráfica (buildChart: Resumen, Negocio y Finanzas del coche) */
+.dh-chart{padding:20px;}
+.dh-chart .dh-scr{direction:rtl;}.dh-chart .dh-scr svg{direction:ltr;}
+.dh-rb{all:unset;cursor:pointer;box-sizing:border-box;width:44px;height:44px;border:1px solid var(--border2);border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--text);}
+.dh-rb:active{transform:scale(.94);}
+.dh-yrt{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:.04em;color:var(--text);min-width:48px;text-align:center;}
+.dh-leg{display:flex;gap:16px;margin:14px 0 12px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
+.dh-csum{border-top:1px dashed var(--border2);margin-top:14px;padding-top:16px;}
+.dh-csum .dh-h{align-items:center;}
+.dh-csr{display:block;margin-top:14px;}
+.dh-mg{display:flex;align-items:baseline;gap:8px;border:1px solid var(--border2);border-radius:var(--r-pill);padding:6px 14px;text-align:center;flex-shrink:0;}
+.dh-mg b{display:block;font-family:var(--mono);font-size:17px;font-weight:500;}
+.dh-mg span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--text2);}
 </style>
 </head>
 <body>
@@ -5668,34 +5757,29 @@ function renderDash(el){
   const platTotal=Object.values(pd).reduce((s,p)=>s+p.inc,0)||1;
 
   let h='<div class="anim">';
+  const _PLUS='<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>';
+  const _ARR='<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
-  // ── KPI ROW: Current month first ─────────────────────────────────────
-  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">${ico('calendar')} ${MON_LABEL.toUpperCase()} ${now.getFullYear()}</div>
-  <div class="grid2" style="margin-bottom:4px">
-    <div class="sbox" style="border-color:#10B98133;border-left:4px solid var(--green)">
-      <div class="sv" style="color:var(--green)">${fmt(mI)}</div>
-      <div class="sl">INGRESOS MES</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:3px">${mBks} alq. este mes</div>
+  // ── MES EN CURSO: ficha técnica con la cifra protagonista en Doto ──
+  const _mpS=fmt(mP).split(','),_mpE=_mpS[0],_mpD=_mpS.length>1?','+_mpS.slice(1).join(','):'';
+  h+=`<section class="dh-card hl dotbg">
+    <div class="dh-h"><span class="q ac">Resultado mes</span><span class="q">${MON_LABEL.slice(0,3).toUpperCase()} ${now.getFullYear()}</span></div>
+    <div class="dh-big mx${mP<0?' neg':''}${_mpE.length>6?' l':''}">${esc(_mpE)}<small>${esc(_mpD)}</small></div>
+    <div class="dh-note">${mI>0?'Margen '+Math.round(mP/mI*100)+' % · ':''}${mBks} alq. este mes</div>
+    <div class="spec">
+      <div><i class="dt dt-ok"></i>INGRESOS MES<b class="lg">${fmt(mI)}</b></div>
+      <div><i class="dt dt-err"></i>GASTOS MES<b class="lg">${fmt(mE)}</b></div>
+      <div>VEHÍCULOS ACTIVOS<b>${activeV.length}</b></div>
+      <div>ALQ. TOTALES<b>${totalBk}</b></div>
     </div>
-    <div class="sbox" style="border-color:#EF444433;border-left:4px solid var(--red)">
-      <div class="sv" style="color:var(--red)">${fmt(mE)}</div>
-      <div class="sl">GASTOS MES</div>
-    </div>
-    <div class="sbox" style="border-color:${mP>=0?'#10B98133':'#EF444433'};border-left:4px solid ${mP>=0?'var(--green)':'var(--red)'}">
-      <div class="sv" style="color:${mP>=0?'var(--green)':'var(--red)'}">${fmt(mP)}</div>
-      <div class="sl">RESULTADO MES</div>
-      ${mI>0?`<div style="font-size:10px;color:var(--text3);margin-top:3px">Margen: ${Math.round(mP/mI*100)}%</div>`:''}
-    </div>
-    <div class="sbox" style="border-color:var(--acc-b);border-left:4px solid var(--amber)">
-      <div class="sv" style="color:var(--amber)">${activeV.length}</div>
-      <div class="sl">VEHÍCULOS ACTIVOS</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:3px">${totalBk} alq. totales</div>
-    </div>
-  </div>
+  </section>
   ${(()=>{let n=0;activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&_fianzaStatus(b)==='pending')n++;}));
-    return `<div class="tap44" onclick="openPendingDeposits()" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid ${n?'var(--acc-b)':'var(--border2)'};border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer"><span style="font-size:12px;font-weight:700;color:${n?'var(--amber)':'var(--text2)'}">${ico('lock')} Fianzas pendientes (${n})</span><span style="color:var(--text3)">›</span></div>`;})()}
-  <details style="margin-bottom:${isDesk?'24px':'12px'}">
-    <summary style="font-size:11px;color:var(--text3);cursor:pointer;padding:6px 0;list-style:none">${ico('chevron')} Año ${now.getFullYear()} (acumulado)</summary>
+    return `<div class="dh-acts">
+      <button type="button" class="dh-act" onclick="openFreeVehiclesSearch()"><span class="q">Disponibilidad</span><b>Coches libres ${ico('search')}</b></button>
+      <button type="button" class="dh-act${n?' on':''}" onclick="openPendingDeposits()"><span class="q${n?' ac':''}">Fianzas</span><b><span class="n">${n}</span><span class="u">pendientes</span>${_ARR}</b></button>
+    </div>`;})()}
+  <details class="dh-yr">
+    <summary><span class="q">Año ${now.getFullYear()} · acumulado</span>${_PLUS}</summary>
     ${(()=>{
       const yr=now.getFullYear();
       const yrStr=String(yr);
@@ -5709,11 +5793,11 @@ function renderDash(el){
       });
       const yrP=yrI-yrE;
       const yrBks=activeV.reduce((s,v)=>s+(v.bookings||[]).filter(b=>b.startDate.startsWith(yrStr)).length,0);
-      return '<div class="grid2" style="margin-top:8px">'
-        +'<div class="sbox" style="border-color:#10B98133;border-left:4px solid var(--green)"><div class="sv" style="color:var(--green)">'+fmt(yrI)+'</div><div class="sl">INGRESOS '+yr+'</div></div>'
-        +'<div class="sbox" style="border-color:#EF444433;border-left:4px solid var(--red)"><div class="sv" style="color:var(--red)">'+fmt(yrE)+'</div><div class="sl">GASTOS '+yr+'</div></div>'
-        +'<div class="sbox" style="border-color:'+(yrP>=0?'#10B98133':'#EF444433')+';border-left:4px solid '+(yrP>=0?'var(--green)':'var(--red)')+'"><div class="sv" style="color:'+(yrP>=0?'var(--green)':'var(--red)')+'">'+fmt(yrP)+'</div><div class="sl">BENEFICIO '+yr+'</div>'+(yrI>0?'<div style="font-size:10px;color:var(--text3);margin-top:3px">Margen: '+Math.round(yrP/yrI*100)+'%</div>':'')+'</div>'
-        +'<div class="sbox" style="border-color:var(--acc-b);border-left:4px solid var(--amber)"><div class="sv" style="color:var(--amber)">'+yrBks+'</div><div class="sl">ALQUILERES '+yr+'</div></div>'
+      return '<div class="spec">'
+        +'<div><i class="dt dt-ok"></i>INGRESOS '+yr+'<b>'+fmt(yrI)+'</b></div>'
+        +'<div><i class="dt dt-err"></i>GASTOS '+yr+'<b>'+fmt(yrE)+'</b></div>'
+        +'<div>BENEFICIO '+yr+'<b style="color:'+(yrP>=0?'var(--text)':'var(--red)')+'">'+fmt(yrP)+'</b>'+(yrI>0?'<span class="dh-sub">Margen '+Math.round(yrP/yrI*100)+' %</span>':'')+'</div>'
+        +'<div>ALQUILERES '+yr+'<b>'+yrBks+'</b></div>'
         +'</div>';
     })()}
   </details>`;
@@ -5828,34 +5912,34 @@ function renderDash(el){
     }
   } else {
     // ── MOBILE: single column ─────────────────────────────────────────────
-    if(alerts.length){
-      h+=`<div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #EF444440">
-        <div class="sec" style="color:var(--red);margin-bottom:10px">${ico('bell')} ALERTAS (${alerts.length})</div>
-        ${alerts.slice(0,5).map(a=>`<div onclick="openV('${escJs(a.vid)}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer">
-          <div><div style="font-size:13px;font-weight:600">${esc(a.vname)}</div><div style="font-size:11px;color:var(--text3)">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
-          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</div>
-        </div>`).join('')}
-      </div>`;
-    }
-    // ── ALQUILERES EN CURSO ─────────────────────────────────────────────
+    const _n2=n=>String(n).padStart(2,'0');
+    // ── ALQUILERES EN CURSO: fichas neutras, punto con el color del coche ──
     if(activeRentals.length){
-      h+=`<div style="margin-bottom:16px">
-        <div class="sec" style="margin-bottom:8px">${ico('key')} EN ALQUILER AHORA (${activeRentals.length})</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${activeRentals.map(b=>`<div onclick="openV('${escJs(b.vid)}')" style="background:var(--bg2);border:1px solid var(--acc-b);border-left:4px solid var(--amber);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.clientName?(ico('user')+' ')+esc(b.clientName)+' · ':''}hasta ${esc(fmtDMY(b.endDate))}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
-              <div style="font-size:10px;color:var(--amber);margin-top:2px">Termina en ${Math.max(0,Math.ceil((new Date(b.endDate)-new Date(hoy))/864e5))}d</div>
-            </div>
-          </div>`).join('')}
-        </div>
-      </div>`;
+      h+=`<section class="dh-sec">
+        <div class="dh-sh"><h2>En alquiler ahora</h2><span class="q ac">${_n2(activeRentals.length)}</span></div>
+        ${activeRentals.map(b=>{const _d=Math.max(0,Math.ceil((new Date(b.endDate)-new Date(hoy))/864e5));return `<div class="dh-card dh-rent" onclick="openV('${escJs(b.vid)}')">
+          <div class="dh-h"><span class="dh-cl"><i class="dh-dot"${b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':''}></i><span class="q">En curso</span></span><span class="chip ${_d<=2?'chip-amber':'chip-gray'}">Termina en ${_d}d</span></div>
+          <div class="dh-rn">${esc(b.vname)}</div>
+          <div class="spec">
+            ${b.clientName?`<div class="w2">CLIENTE<b>${esc(b.clientName)}</b></div>`:''}
+            <div>HASTA<b>${esc(fmtDMY(b.endDate))}</b></div>
+            <div>IMPORTE<b>${fmt(b.amount)}</b></div>
+          </div>
+        </div>`;}).join('')}
+      </section>`;
     }
-    if(BF.length||activeV.length)h+=buildGlobalChart();
+    // ── ALERTAS: lista técnica ──
+    if(alerts.length){
+      h+=`<section class="dh-sec">
+        <div class="dh-sh"><h2>Alertas</h2><span class="q err">${_n2(alerts.length)}</span></div>
+        <div class="dh-list">${alerts.slice(0,5).map((a,i)=>`<div class="dh-row" onclick="openV('${escJs(a.vid)}')">
+          <span class="q">${_n2(i+1)}</span>
+          <div style="min-width:0"><div class="t">${esc(a.vname)}</div><div class="s">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
+          <span class="chip ${a.expired?'chip-red':'chip-amber'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
+        </div>`).join('')}</div>
+      </section>`;
+    }
+    if(BF.length||activeV.length)h+=`<section class="dh-sec"><div class="dh-sh"><h2>Evolución</h2><span class="q">Mensual</span></div>${buildGlobalChart()}</section>`;
     // Platform data filtered by period
     function _platData(period){
       const n=new Date();const y=n.getFullYear();const mo=n.getMonth();
@@ -5875,43 +5959,39 @@ function renderDash(el){
     }
     const pdP=_platData(_dashPlatPeriod);
     const platTotalP=Math.max(1,...Object.values(pdP).map(p=>p.inc));
-    h+=`<div class="sec" style="margin-top:4px">RENTABILIDAD POR PLATAFORMA</div>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
-      ${['monthly','quarterly','annual'].map(p=>{const a=_dashPlatPeriod===p;const L={monthly:'Mes',quarterly:'Trimestre',annual:'Año'};return '<div onclick="_dashPlatPeriod=\''+p+'\';renderDash(document.getElementById(\'PC\'))" style="flex:1;padding:6px 0;text-align:center;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid '+(a?'var(--amber)':'var(--border2)')+';background:'+(a?'var(--acc-m)':'transparent')+';color:'+(a?'var(--amber)':'var(--text3)')+'">'+L[p]+'</div>';}).join('')}
+    h+=`<section class="dh-sec"><div class="dh-sh"><h2>Rentabilidad</h2><span class="q">Plataforma</span></div>
+    <div class="dh-seg" role="group" aria-label="Periodo">
+      ${['monthly','quarterly','annual'].map(p=>{const a=_dashPlatPeriod===p;const L={monthly:'Mes',quarterly:'Trimestre',annual:'Año'};return '<button type="button" aria-pressed="'+a+'" onclick="_dashPlatPeriod=\''+p+'\';renderDash(document.getElementById(\'PC\'))">'+L[p]+'</button>';}).join('')}
     </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px">
-      ${Object.values(pdP).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:13px;font-weight:600">'+esc(p.label)+' <span style="color:var(--text3);font-size:11px">'+p.n+' alq.</span></span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmt(p.inc)+'</span></div><div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+Number(pct)+'%;background:var(--amber);border-radius:2px"></div></div></div>';}).join('')}
-    </div>`;
+    <div class="dh-card">
+      ${Object.values(pdP).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div class="dh-pl"><div class="dh-plh"><span class="t">'+esc(p.label)+'<span class="q">'+p.n+' alq.</span></span><b>'+fmt(p.inc)+'</b></div><div class="dh-bar"><i style="width:'+Number(pct)+'%"></i></div></div>';}).join('')}
+    </div></section>`;
     const own=activeV.filter(v=>v.vtype!=='managed');
     const managed=activeV.filter(v=>v.vtype==='managed');
     // ── PRÓXIMOS ALQUILERES ───────────────────────────────────────────────
     const nowStr=todayStr();
     const upcoming2=[];
-    activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate>nowStr&&!b.cancelled&&!b.cancellation)upcoming2.push({...b,vname:v.name,vcolor:v.color||'#F59E0B',vid:v.id});}));
+    activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate>nowStr&&!b.cancelled&&!b.cancellation)upcoming2.push({...b,vname:v.name,vcolor:v.color||'',vid:v.id});}));
     upcoming2.sort((a,b)=>a.startDate.localeCompare(b.startDate));
     if(upcoming2.length){
-      h+=`<div class="sec" style="margin-top:4px">${ico('clipboard')} PRÓXIMOS ALQUILERES</div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
+      h+=`<section class="dh-sec"><div class="dh-sh"><h2>Próximos alquileres</h2><span class="q">${_n2(Math.min(8,upcoming2.length))}</span></div>
+      <div class="dh-list">
         ${upcoming2.slice(0,8).map((b,i)=>{
           const p=PLATS[b.platform];
           const daysUntil=Math.ceil((new Date(b.startDate)-new Date(nowStr))/864e5);
           const dur=daysBetween(b.startDate,b.endDate);
-          return '<div onclick="openV(\''+escJs(b.vid)+'\');setTimeout(()=>showBooking(\''+escJs(b.startDate)+'\'),200)" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:'+(i<upcoming2.slice(0,8).length-1?'1px solid var(--border)':'none')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
-            +'<div style="width:4px;height:36px;border-radius:2px;background:'+safeColor(b.vcolor)+';flex-shrink:0"></div>'
-            +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
-            +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+esc(fmtDMY(b.startDate))+' → '+esc(fmtDMY(b.endDate))+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
+          return '<div class="dh-row" onclick="openV(\''+escJs(b.vid)+'\');setTimeout(()=>showBooking(\''+escJs(b.startDate)+'\'),200)">'
+            +'<i class="dh-dot"'+(b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':'')+'></i>'
+            +'<div style="min-width:0">'
+            +'<div class="t ell">'+esc(b.vname)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
+            +'<div class="s">'+esc(fmtDMY(b.startDate))+' → '+esc(fmtDMY(b.endDate))+' · '+dur+'d'+(p?' · '+esc(p.label):'')+'</div>'
             +'</div>'
-            +'<div style="text-align:right;flex-shrink:0">'
-            +'<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmtF(b.amount)+'</div>'
-            +'<div style="font-size:10px;color:'+(daysUntil<=3?'var(--amber)':'var(--text3)')+';margin-top:2px">En '+daysUntil+'d</div>'
-            +'</div>'
+            +'<div class="r"><b>'+fmtF(b.amount)+'</b><span class="chip '+(daysUntil<=3?'chip-amber':'chip-gray')+'">En '+daysUntil+'d</span></div>'
             +'</div>';
         }).join('')}
-      </div>`;
+      </div></section>`;
     }
   }
-
   h+='</div>';el.innerHTML=h;
 }
 
@@ -10401,50 +10481,41 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
     const isSel=selKey&&d.key===selKey;const isCur=d.key===curMKey;
     const ih=d.inc>0?Math.max(3,Math.round(d.inc/maxVal*CH)):0;
     const eh=d.exp>0?Math.max(3,Math.round(d.exp/maxVal*CH)):0;
-    bars+=`<rect x="${gx}" y="${BL-ih}" width="${BW}" height="${Math.max(ih,0)}" rx="3" fill="${isSel?'#10B981':isCur?'#10B98199':'#10B98133'}" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
-    bars+=`<rect x="${gx+BW+BG}" y="${BL-eh}" width="${BW}" height="${Math.max(eh,0)}" rx="3" fill="${isSel?'#EF4444':isCur?'#EF444499':'#EF444433'}" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
+    bars+=`<rect x="${gx}" y="${BL-ih}" width="${BW}" height="${Math.max(ih,0)}" rx="2" style="fill:var(--green);fill-opacity:${isSel?1:isCur?.6:.22};cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
+    bars+=`<rect x="${gx+BW+BG}" y="${BL-eh}" width="${BW}" height="${Math.max(eh,0)}" rx="2" style="fill:var(--red);fill-opacity:${isSel?1:isCur?.6:.22};cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
     bars+=`<rect x="${gx}" y="0" width="${gW}" height="${BL}" fill="transparent" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(d.key)}')"/>`;
-    labels+=`<text x="${cx}" y="${svgH-2}" text-anchor="middle" font-size="9" fill="${isSel?'#F59E0B':isCur?'#94A3B8':'#4B5C76'}" font-weight="${isSel||isCur?700:400}" font-family="JetBrains Mono,monospace">${d.label}</text>`;
-    if(isSel)labels+=`<circle cx="${cx}" cy="${BL+5}" r="2" fill="#F59E0B"/>`;
+    labels+=`<text x="${cx}" y="${svgH-2}" text-anchor="middle" font-size="9" style="fill:${isSel?'var(--amber)':isCur?'var(--text)':'var(--text2)'}" font-weight="${isSel||isCur?700:400}" font-family="JetBrains Mono,monospace">${d.label}</text>`;
+    if(isSel)labels+=`<circle cx="${cx}" cy="${BL+5}" r="2" style="fill:var(--amber)"/>`;
     if(d.inc>0||d.exp>0){const py=Math.max(3,Math.min(BL-2,BL-(d.profit/maxVal*CH)));pts.push({x:cx,y:py,profit:d.profit,key:d.key});}
   });
   let profSVG='';
-  if(pts.length>1)profSVG=`<path d="${pts.map((p,i)=>(i===0?'M':'L')+p.x+','+p.y).join(' ')}" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.5"/>`;
-  pts.forEach(p=>{profSVG+=`<circle cx="${p.x}" cy="${p.y}" r="${p.key===selKey?4:2.5}" fill="${p.profit>=0?'#F59E0B':'#EF4444'}" stroke="${p.key===selKey?'#fff':'none'}" stroke-width="${p.key===selKey?1.5:0}" style="cursor:pointer" onclick="${escJs(onSelFn)}('${escJs(p.key)}')"/>`;});
+  if(pts.length>1)profSVG=`<path d="${pts.map((p,i)=>(i===0?'M':'L')+p.x+','+p.y).join(' ')}" fill="none" style="stroke:var(--amber)" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.6"/>`;
+  pts.forEach(p=>{profSVG+=`<circle cx="${p.x}" cy="${p.y}" r="${p.key===selKey?4:2.5}" style="fill:${p.profit>=0?'var(--amber)':'var(--red)'};stroke:${p.key===selKey?'var(--text)':'none'};cursor:pointer" stroke-width="${p.key===selKey?1.5:0}" onclick="${escJs(onSelFn)}('${escJs(p.key)}')"/>`;});
   const sk=selKey||curMKey;
   const selD=data.find(d=>d.key===sk)||{inc:0,exp:0,profit:0};
   const [sy,sm]=sk.split('-');
   const selLabel=(MON_S[parseInt(sm)-1]||'')+ ' '+sy;
-  return `<div style="background:var(--bg3);border-radius:12px;padding:14px 12px 12px;margin-bottom:16px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+  return `<div class="dh-card dh-chart">
+    <div class="dh-h" style="align-items:center">
       <div style="display:flex;align-items:center;gap:8px">
-        <div class="tap44" onclick="${escJs(prevFn)}()" style="width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text2)">‹</div>
-        <div style="font-size:16px;font-weight:800;letter-spacing:1px;min-width:48px;text-align:center">${Number(year)||''}${esc(title||'')}</div>
-        <div class="tap44" onclick="${escJs(nextFn)}()" style="width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text2)">›</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span style="font-size:9px;color:var(--green);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;background:var(--green);border-radius:2px;display:inline-block"></span>Ing.</span>
-        <span style="font-size:9px;color:var(--red);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;background:var(--red);border-radius:2px;display:inline-block"></span>Gst.</span>
-        <span style="font-size:9px;color:var(--amber);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block"></span>Ben.</span>
+        <button type="button" class="dh-rb" aria-label="Año anterior" onclick="${escJs(prevFn)}()">‹</button>
+        <div class="dh-yrt">${Number(year)||''}${esc(title||'')}</div>
+        <button type="button" class="dh-rb" aria-label="Año siguiente" onclick="${escJs(nextFn)}()">›</button>
       </div>
     </div>
-    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px 4px">
+    <div class="dh-leg"><span><i class="dt dt-ok"></i>Ingresos</span><span><i class="dt dt-err"></i>Gastos</span><span><i class="dt dt-ac"></i>Beneficio</span></div>
+    <div class="dh-scr" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -20px;padding:0 20px 4px">
       <svg viewBox="0 0 ${Number(TW)} ${svgH}" width="100%" height="${svgH}" preserveAspectRatio="xMidYMid meet" style="display:block;overflow:visible;min-width:${Number(TW)}px">
-        <line x1="${PL}" y1="${BL}" x2="${TW-PR}" y2="${BL}" stroke="#1e2d42" stroke-width="1"/>
+        <line x1="${PL}" y1="${BL}" x2="${TW-PR}" y2="${BL}" style="stroke:var(--border2)" stroke-width="1"/>
         ${bars}${profSVG}${labels}
       </svg>
     </div>
-    <div style="margin-top:10px;background:var(--bg);border-radius:10px;padding:12px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--amber);margin-bottom:8px;text-align:center">${selLabel.toUpperCase()}</div>
-      ${(()=>{const _pct=selD.inc>0?Math.round(selD.profit/selD.inc*100):0;const _clrP=selD.profit>=0?'var(--green)':'var(--red)';const _bgP=selD.profit>=0?'#10B98120':'#EF444420';const _brP=selD.profit>=0?'#10B98140':'#EF444440';return '<div style="display:flex;align-items:center;gap:8px">'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:1">'
-        +[['Ingresos',fmtF(selD.inc),'var(--green)'],['Gastos',fmtF(selD.exp),'var(--red)'],['Beneficio',fmtF(selD.profit),_clrP]].map(([l,val,clr])=>'<div style="text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+safeColor(clr)+'">'+val+'</div><div style="font-size:9px;color:var(--text3);margin-top:2px">'+l+'</div></div>').join('')
-        +'</div>'
-        +'<div style="background:'+safeColor(_bgP)+';border:1.5px solid '+safeColor(_brP)+';border-radius:12px;padding:10px 12px;text-align:center;flex-shrink:0">'
-        +'<div style="font-family:var(--mono);font-size:20px;font-weight:800;color:'+safeColor(_clrP)+'">'+_pct+'%</div>'
-        +'<div style="font-size:9px;color:var(--text3);margin-top:3px;letter-spacing:1px;font-weight:700">MARGEN</div>'
-        +'</div>'
-        +'</div>';})()}
+    <div class="dh-csum">
+      ${(()=>{const _pct=selD.inc>0?Math.round(selD.profit/selD.inc*100):0;const _clrP=selD.profit>=0?'var(--text)':'var(--red)';return '<div class="dh-h"><span class="q ac">'+esc(selLabel)+'</span>'
+        +'<div class="dh-mg"><span>MARGEN</span><b style="color:'+(selD.profit>=0?'var(--amber)':'var(--red)')+'">'+_pct+'%</b></div></div>'
+        +'<div class="dh-csr"><div class="spec c3">'
+        +[['INGRESOS',fmtF(selD.inc),'var(--text)'],['GASTOS',fmtF(selD.exp),'var(--text)'],['BENEFICIO',fmtF(selD.profit),_clrP]].map(([l,val,clr])=>'<div>'+l+'<b style="color:'+safeColor(clr)+'">'+val+'</b></div>').join('')
+        +'</div></div>';})()}
     </div>
   </div>`;
 }
