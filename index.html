@@ -3741,14 +3741,13 @@ function _confirmReturn(){
 function openBookingFinance(bookingId,type){
   window._bfBookingId=bookingId;window._bfType=type;window._bfEditId=null;
   const today=todayStr();
-  openSheet('<div class="stitle">'+(type==='income'?(ico('coins')+' Ingreso adicional'):(ico('trend-down')+' Gasto del alquiler'))+'</div>'
-    +'<div class="fg"><label class="lbl">CONCEPTO *</label><input id="bfConcept" placeholder="'+(type==='income'?'Ej: Exceso km, limpieza extra...':'Ej: Limpieza, combustible...')+'" autocomplete="off"/></div>'
-    +'<div class="r2"><div class="fg"><label class="lbl">IMPORTE (€) *</label><input id="bfAmt" type="number" step="0.01" inputmode="decimal"/></div>'
-    +'<div class="fg"><label class="lbl">FECHA</label><input id="bfDate" type="date" value="'+esc(safeDate(today))+'"/></div></div>'
-    +'<div class="fg"><label class="lbl">OBSERVACIONES</label><input id="bfNotes" autocomplete="off"/></div>'
-    +('<button class="btn-pri" onclick="_saveBookingFinance()">'+ico('save')+' Guardar</button>')
-    +'<div style="height:8px"></div>'
-    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+  openSheet('<div class="stitle">'+(type==='income'?'Ingreso adicional':'Gasto del alquiler')+'</div><div class="ssub">'+(type==='income'?'Se suma al total del alquiler':'Se resta del resultado del alquiler')+'</div>'
+    +'<div class="d-f"><label class="q" for="bfConcept">Concepto *</label><input id="bfConcept" placeholder="'+(type==='income'?'Ej: Exceso km, limpieza extra...':'Ej: Limpieza, combustible...')+'" autocomplete="off"/></div>'
+    +'<div class="d-2"><div class="d-f"><label class="q" for="bfAmt">Importe *</label><div class="d-pre"><span>€</span><input id="bfAmt" type="number" step="0.01" inputmode="decimal"/></div></div>'
+    +'<div class="d-f"><label class="q" for="bfDate">Fecha</label><input id="bfDate" type="date" value="'+esc(safeDate(today))+'"/></div></div>'
+    +'<div class="d-f"><label class="q" for="bfNotes">Observaciones</label><input id="bfNotes" autocomplete="off"/></div>'
+    +('<div class="d-acts al-end"><button class="btn-pri" onclick="_saveBookingFinance()">'+ico('save')+' Guardar</button>')
+    +'<button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
 }
 function _saveBookingFinance(){
   const bookingId=window._bfBookingId;
