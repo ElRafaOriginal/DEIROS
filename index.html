@@ -9398,9 +9398,9 @@ function renderOwnersBody(){
       h+=`<div class="d-card ow-c" onclick="openOwnerProfile('${escJs(owner.id)}')">
         <div class="d-ch"><span class="q ac">Propietario</span>
           <div class="ow-ia">
-            <button class="d-ib tap44" onclick="openOwnerReport('${escJs(owner.id)}')" aria-label="Informe">${ico('doc')}</button>
-            <button class="d-ib tap44" onclick="editOwner('${escJs(owner.id)}')" aria-label="Editar">${ico('edit')}</button>
-            <button class="d-ib tap44 ow-del" onclick="deleteOwner('${escJs(owner.id)}')" aria-label="Eliminar">${ico('trash')}</button>
+            <button class="d-ib tap44" onclick="event.stopPropagation();openOwnerReport('${escJs(owner.id)}')" aria-label="Informe">${ico('doc')}</button>
+            <button class="d-ib tap44" onclick="event.stopPropagation();editOwner('${escJs(owner.id)}')" aria-label="Editar">${ico('edit')}</button>
+            <button class="d-ib tap44 ow-del" onclick="event.stopPropagation();deleteOwner('${escJs(owner.id)}')" aria-label="Eliminar">${ico('trash')}</button>
           </div>
         </div>
         <div><div class="d-ct al-ct">${esc(owner.name)}</div><div class="d-meta al-mt6">${[owner.dni,owner.phone,owner.email].filter(Boolean).map(x=>esc(x)).join(' · ')||'Sin datos de contacto'}</div></div>
