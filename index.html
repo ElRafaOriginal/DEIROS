@@ -4350,57 +4350,54 @@ function renderRecurring(el){
     return{...r,nextDate};
   }).sort((a,b)=>a.nextDate>b.nextDate?1:-1);
 
+  // Fila de gasto recurrente: estado con punto · nombre / categoría, frecuencia y último · importe y próximo; debajo, Pausar/Activar · Editar · ×
   function rrCard(r,vId){
     const freqLabel={monthly:'Mensual',quarterly:'Trimestral',yearly:'Anual'}[r.freq]||r.freq;
     const next=upcoming.find(u=>u.id===r.id);
     const daysToNext=next&&next.nextDate?Math.ceil((new Date(next.nextDate)-new Date(today))/864e5):null;
     const editCall=vId?`openAddRecurring('${escJs(r.id)}','${escJs(vId)}')`:`editRecurring('${escJs(r.id)}')`;
     const delCall=`deleteRecurring('${escJs(r.id)}')`;
-    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div style="font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name)}</div>
-            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;${r.active?'background:#10B98115;color:var(--green);border:1px solid #10B98130':'background:var(--bg3);color:var(--text3);border:1px solid var(--border)'}">${r.active?'Activo':'Pausado'}</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3)">${esc(r.category||'Sin categoría')} · ${freqLabel}${vId?'':''}</div>
-          ${r.lastApplied?`<div style="font-size:10px;color:var(--text3);margin-top:2px">Último: ${esc(r.lastApplied)}</div>`:''}
-        </div>
-        <div style="text-align:right;flex-shrink:0;margin-left:12px">
-          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red)">${fmt(r.amount)}</div>
-          ${daysToNext!==null?`<div style="font-size:10px;color:${daysToNext<=7?'var(--amber)':'var(--text3)'};margin-top:2px">${daysToNext<=0?'Hoy':'En '+daysToNext+'d'}</div>`:''}
-        </div>
+    return `<div class="rr-r${r.active?'':' off'}">
+      <div class="rr-m">
+        <div class="al-b"><div class="t ell">${esc(r.name)}</div><div class="s ell">${esc(r.category||'Sin categoría')} · ${freqLabel}${r.lastApplied?' · último '+esc(r.lastApplied):''}</div></div>
+        <div class="r"><b class="ow-neg">${fmt(r.amount)}</b>${daysToNext!==null?`<span class="mono2${daysToNext<=7?' rr-soon':''}">${daysToNext<=0?'Hoy':'En '+daysToNext+'d'}</span>`:''}</div>
       </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-sec" onclick="toggleRecurring('${escJs(r.id)}')" style="flex:1;font-size:12px">${r.active?(ico('pause')+' Pausar'):(ico('play')+' Activar')}</button>
-        <button class="btn-sec" onclick="${editCall}" style="flex:1;font-size:12px">${ico('edit')} Editar</button>
-        <button class="btn-dang" onclick="${delCall}" style="width:auto;font-size:12px">×</button>
+      <div class="rr-a">
+        <span class="chip ${r.active?'chip-green':''}">${r.active?'Activo':'Pausado'}</span>
+        <button class="btn-sec rr-b" onclick="toggleRecurring('${escJs(r.id)}')">${r.active?(ico('pause')+' Pausar'):(ico('play')+' Activar')}</button>
+        <button class="btn-sec rr-b" onclick="${editCall}">${ico('edit')} Editar</button>
+        <button class="d-ib tap44 ow-del" onclick="${delCall}" aria-label="Eliminar">×</button>
       </div>
     </div>`;
   }
 
+  const _tS=fmt(totalMonthly).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
+  const nAct=visibleRR.filter(r=>r.active).length;
+  // Cabecera: gasto mensual equivalente en Doto (la cifra de la pantalla) y los activos; un botón principal
   let h=`<div class="anim">
-  <div class="grid2" style="margin-bottom:16px">
-    <div class="sbox" style="border-left:4px solid var(--red)"><div class="sv" style="color:var(--red)">${fmt(totalMonthly)}</div><div class="sl">GASTO MENSUAL EQUIV.</div></div>
-    <div class="sbox" style="border-left:4px solid var(--amber)"><div class="sv" style="color:var(--amber)">${visibleRR.filter(r=>r.active).length}</div><div class="sl">ACTIVOS</div></div>
-  </div>
-  <button class="btn-pri" onclick="openAddRecurring()" style="margin-bottom:14px">＋ Nuevo gasto recurrente</button>`;
+  <div class="d-card xl dotbg rr-hc">
+    <div class="d-ch"><span class="q ac">Gasto mensual equiv.</span><span class="q">${String(nAct).padStart(2,'0')} activos</span></div>
+    <div class="d-n n2 rr-n">${esc(_tE)}<small>${esc(_tD)}</small></div>
+    <p class="d-meta">Seguros, suscripciones, parking… se aplican solos cada período</p>
+    <button class="btn-pri" onclick="openAddRecurring()">＋ Nuevo gasto recurrente</button>
+  </div>`;
 
   if(!visibleRR.length){
-    h+=`<div class="empty"><div class="ei">${ico('repeat')}</div><div class="et">Sin gastos recurrentes</div><div class="es">Seguros, suscripciones, parking… se aplicarán automáticamente cada período.</div></div>`;
+    h+=`<div class="d-empty rr-e">${ico('repeat')}<h3>Sin gastos recurrentes</h3><p>Seguros, suscripciones, parking… se aplicarán automáticamente cada período.</p></div>`;
   } else {
     // Global recurring
     const globalRR=visibleRR.filter(r=>!r.vId);
     if(globalRR.length){
-      h+=`<div class="sec">NEGOCIO GENERAL</div>`;
+      h+=`<div class="d-sh al-sh"><h2>General</h2><span class="q">${String(globalRR.length).padStart(2,'0')}</span></div><div class="d-list">`;
       globalRR.forEach(r=>{h+=rrCard(r,null);});
+      h+='</div>';
     }
 
     // Own vehicle recurring — grouped by vehicle
     const ownV=V.filter(v=>!v.archived&&v.vtype!=='managed');
     const ownVWithRR=ownV.filter(v=>RR.some(r=>r.vId===v.id));
     if(ownVWithRR.length){
-      h+=`<div class="sec" style="margin-top:4px">VEHÍCULOS PROPIOS</div>`;
+      h+=`<div class="d-sh al-sh"><h2>Por coche</h2><span class="q">${String(ownVWithRR.length).padStart(2,'0')}</span></div>`;
       ownVWithRR.forEach(v=>{
         const vRR=RR.filter(r=>r.vId===v.id);
         const vMonthly=vRR.filter(r=>r.active).reduce((s,r)=>{
@@ -4409,16 +4406,13 @@ function renderRecurring(el){
           if(r.freq==='yearly')return s+Number(r.amount)/12;
           return s;
         },0);
-        h+=`<div style="margin-bottom:6px">
-          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:6px">
-            <div style="width:4px;height:28px;border-radius:2px;background:${safeColor(v.color||'var(--amber)')};flex-shrink:0"></div>
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:700">${esc(v.name)}</div>
-              <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
-            </div>
-            ${vMonthly>0?`<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red)">${fmt(vMonthly)}/mes</div>`:''}
+        h+=`<div class="rr-g">
+          <div class="rr-gh">
+            <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+            <div class="al-b"><div class="rr-gn">${esc(v.name)}</div><div class="mono2">${esc(v.plate)}</div></div>
+            ${vMonthly>0?`<b class="ow-neg">${fmt(vMonthly)}/mes</b>`:''}
           </div>
-          ${vRR.map(r=>rrCard(r,v.id)).join('')}
+          <div class="d-list">${vRR.map(r=>rrCard(r,v.id)).join('')}</div>
         </div>`;
       });
     }
@@ -4438,25 +4432,23 @@ function openVehicleRecurring(vId){
     if(r.freq==='yearly')return s+Number(r.amount)/12;
     return s;
   },0);
-  openSheet(`<div class="stitle">${ico('repeat')} Recurrentes — ${esc(v.name)}</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Gastos periódicos vinculados a este vehículo (seguro, revisión, parking...)</div>
-    ${totalMonthly>0?`<div style="background:var(--bg3);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--text3)">Equivalente mensual</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmt(totalMonthly)}</span></div>`:''}
-    <button class="btn-pri" onclick="openAddRecurring(null,'${escJs(vId)}')" style="margin-bottom:14px">＋ Añadir recurrente</button>
-    ${vRR.length?vRR.map(r=>{
+  openSheet(`<div class="stitle">Recurrentes — ${esc(v.name)}</div>
+    <div class="ssub">Gastos periódicos vinculados a este vehículo (seguro, revisión, parking...)</div>
+    ${totalMonthly>0?`<div class="d-kv"><span>Equivalente mensual</span><b class="ow-neg">${fmt(totalMonthly)}</b></div>`:''}
+    <button class="btn-pri rr-add" onclick="openAddRecurring(null,'${escJs(vId)}')">＋ Añadir recurrente</button>
+    ${vRR.length?'<div class="d-list">'+vRR.map(r=>{
       const freqLabel={monthly:'Mensual',quarterly:'Trimestral',yearly:'Anual'}[r.freq]||r.freq;
-      return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700">${esc(r.name)}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(r.category||'')} · ${freqLabel} · ${r.active?'<span style=\'color:var(--green)\'>Activo</span>':'<span style=\'color:var(--text3)\'>Pausado</span>'}</div>
+      return `<div class="rr-vr">
+        <span class="dh-dot ${r.active?'rr-on':''}"></span>
+        <div class="al-b"><div class="t ell">${esc(r.name)}</div><div class="s ell">${esc(r.category||'')} · ${freqLabel} · ${r.active?'Activo':'Pausado'}</div><b class="ow-neg rr-va">${fmt(r.amount)}</b></div>
+        <div class="rr-vb">
+        <button class="d-ib tap44" onclick="toggleRecurring('${escJs(r.id)}');openVehicleRecurring('${escJs(vId)}')" aria-label="${r.active?'Pausar':'Activar'}">${r.active?ico('pause'):ico('play')}</button>
+        <button class="d-ib tap44" onclick="openAddRecurring('${escJs(r.id)}','${escJs(vId)}')" aria-label="Editar">${ico('edit')}</button>
+        <button class="d-ib tap44 ow-del" onclick="if(confirm('¿Eliminar?')){RR=RR.filter(r=>r.id!=='${escJs(r.id)}');save();openVehicleRecurring('${escJs(vId)}');}" aria-label="Eliminar">×</button>
         </div>
-        <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmt(r.amount)}</div>
-        <button class="btn-sec tap44" onclick="toggleRecurring('${escJs(r.id)}');openVehicleRecurring('${escJs(vId)}')" style="width:auto;padding:0 12px;font-size:16px">${r.active?ico('pause'):ico('play')}</button>
-        <button class="btn-sec tap44" onclick="openAddRecurring('${escJs(r.id)}','${escJs(vId)}')" style="width:auto;padding:0 12px;font-size:16px">${ico('edit')}</button>
-        <button class="btn-dang tap44" onclick="if(confirm('¿Eliminar?')){RR=RR.filter(r=>r.id!=='${escJs(r.id)}');save();openVehicleRecurring('${escJs(vId)}');}" style="width:auto;padding:0 12px;font-size:18px">×</button>
       </div>`;
-    }).join(''):'<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:13px">Sin gastos recurrentes para este vehículo</div>'}
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
+    }).join('')+'</div>':`<div class="d-empty rr-e">${ico('repeat')}<h3>Sin recurrentes</h3><p>Sin gastos recurrentes para este vehículo</p></div>`}
+    <div class="d-acts al-end"><button class="btn-txt" onclick="closeSheet()">Cerrar</button></div>`);
 }
 
 function openAddRecurring(editId,vId){
@@ -4464,22 +4456,21 @@ function openAddRecurring(editId,vId){
   const r=editId?RR.find(r=>r.id===editId):null;
   // If coming from a specific vehicle, show its info
   const fixedV=vId?V.find(v=>v.id===vId):null;
-  const fixedVehicle=fixedV?`<div style="background:var(--bg3);border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">${ico('car')}</span><div><div style="font-size:13px;font-weight:700">${esc(fixedV.name)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(fixedV.plate)}</div></div></div>`:'';
+  const fixedVehicle=fixedV?`<div class="d-kv rr-fv"><span><i class="dh-dot"${fixedV.color?' style="background:'+safeColor(fixedV.color)+'"':''}></i> ${esc(fixedV.name)}</span><b>${esc(fixedV.plate)}</b></div>`:'';
   // Plate search field (only when not pre-assigned to a vehicle)
-  const plateSel=(!vId&&!editId)?`<div class="fg"><label class="lbl">MATRÍCULA DEL VEHÍCULO (dejar vacío = negocio general)</label>
-    <input id="rrPlate" placeholder="Ej: 1234ABC" autocomplete="off" oninput="this.value=this.value.toUpperCase()"
-      style="font-family:var(--mono);font-size:15px;letter-spacing:2px"/>
-    <div id="rrPlateHint" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
+  const plateSel=(!vId&&!editId)?`<div class="d-f"><label class="q" for="rrPlate">Matrícula</label>
+    <input id="rrPlate" class="d-in m" placeholder="Ej: 1234ABC" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/>
+    <div id="rrPlateHint" class="d-hint">Vacía = negocio general</div>
   </div>`:'';
-  openSheet(`<div class="stitle">${r?'Editar':'Nuevo'} gasto recurrente</div>${fixedVehicle}${plateSel}
-    <div class="fg"><label class="lbl">NOMBRE *</label><input id="rrName" value="${esc(r?r.name:'')}" placeholder="Ej: Seguro MAPFRE" autocomplete="off"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">CATEGORÍA</label>
+  openSheet(`<div class="stitle">${r?'Editar':'Nuevo'} gasto recurrente</div><div class="ssub">Se apunta solo como gasto cada período</div>${fixedVehicle}${plateSel}
+    <div class="d-f"><label class="q" for="rrName">Nombre</label><input id="rrName" value="${esc(r?r.name:'')}" placeholder="Ej: Seguro MAPFRE" autocomplete="off"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="rrCat">Categoría</label>
         <select id="rrCat">
           ${['Seguro','Plataforma','Parking','Suscripción','Impuesto','Mantenimiento','Préstamo','Otros gastos'].filter(x=>!(x==='Préstamo'&&!(r&&r.category==='Préstamo')&&V.find(v=>v.id===(vId||(r&&r.vId))&&v.vtype==='managed'))).map(x=>`<option${(r&&r.category===x)?' selected':''}>${x}</option>`).join('')}
         </select>
       </div>
-      <div class="fg"><label class="lbl">FRECUENCIA</label>
+      <div class="d-f"><label class="q" for="rrFreq">Frecuencia</label>
         <select id="rrFreq">
           <option value="monthly"${r&&r.freq==='monthly'?' selected':''}>Mensual</option>
           <option value="quarterly"${r&&r.freq==='quarterly'?' selected':''}>Trimestral</option>
@@ -4487,22 +4478,23 @@ function openAddRecurring(editId,vId){
         </select>
       </div>
     </div>
-    <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="rrAmt" type="number" step="0.01" value="${esc(r?r.amount:'')}" placeholder="0.00" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">APLICAR DESDE</label><input id="rrStart" type="month" value="${esc(safeMonth((r&&r.startDate?r.startDate.slice(0,7):todayStr().slice(0,7))))}"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="rrNotes" value="${esc(r?r.notes||'':'')}" placeholder="Opcional..." autocomplete="off"/></div>
-    <button class="btn-pri" onclick="submitRecurring('${escJs(editId||'')}','${escJs(vId||'')}')">${r?(ico('save')+' Guardar'):'Añadir'}</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="rrAmt">Importe</label><div class="d-pre"><span>€</span><input id="rrAmt" type="number" step="0.01" value="${esc(r?r.amount:'')}" placeholder="0.00" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="rrStart">Desde</label><input id="rrStart" type="month" value="${esc(safeMonth((r&&r.startDate?r.startDate.slice(0,7):todayStr().slice(0,7))))}"/></div>
+    </div>
+    <div class="d-f"><label class="q" for="rrNotes">Notas</label><input id="rrNotes" value="${esc(r?r.notes||'':'')}" placeholder="Opcional" autocomplete="off"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitRecurring('${escJs(editId||'')}','${escJs(vId||'')}')">${r?(ico('save')+' Guardar'):'Añadir'}</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
   // Live plate hint
   if(!vId&&!editId){
     const inp=document.getElementById('rrPlate');
     if(inp)inp.addEventListener('input',()=>{
       const hint=document.getElementById('rrPlateHint');if(!hint)return;
       const q=inp.value.trim().toUpperCase();
-      if(!q){hint.textContent='';return;}
+      if(!q){hint.textContent='Vacía = negocio general';return;}
       const found=V.find(v=>!v.archived&&v.vtype!=='managed'&&v.plate.toUpperCase()===q);
-      if(found)hint.innerHTML=('<span style="color:var(--green)">'+ico('check')+' ')+esc(found.name)+'</span>';
-      else hint.innerHTML='<span style="color:var(--red)">Matrícula no encontrada entre vehículos propios</span>';
+      if(found)hint.innerHTML=('<span class="cl-in">'+ico('check')+' ')+esc(found.name)+'</span>';
+      else hint.innerHTML='<span class="ow-neg">Matrícula no encontrada entre vehículos propios</span>';
     });
   }
 }
