@@ -6079,7 +6079,8 @@ let _analyticsVtype='',_analyticsOwnership='';
 let _flotaFiltersOpen=false,_agFiltersOpen=false;
 let _dashPlatPeriod='monthly'; // 'monthly'|'quarterly'|'annual'
 let _enterAnim=true; // entrada animada solo al abrir la app o cambiar de pantalla (nav), no al repintar por datos
-let _vListMode='compact'; // 'extended'|'compact'|'grid'
+let _vListMode='compact'; // 'extended'|'compact'|'grid' — se recuerda la última vista elegida en este dispositivo
+try{const _m=localStorage.getItem('deiros_flotaView');if(['extended','compact','grid'].includes(_m))_vListMode=_m;}catch(e){}
 let _ctWizStep=1,_ctWizVid=null,_ctWizBid=null; // contract wizard state
 let _contractsTab='presupuestos'; // 'presupuestos'|'finanzas'
 let _searchFlota='',_searchOwners='',_searchArchive='';
@@ -6878,6 +6879,7 @@ function renderListBody(){
   const own=filtered.filter(v=>v.vtype!=='managed');
   const managed=filtered.filter(v=>v.vtype==='managed');
   const mode=_vListMode;
+  try{localStorage.setItem('deiros_flotaView',mode);}catch(e){}
   // update toggle highlight without re-rendering it
   ['extended','compact','grid'].forEach(m=>{
     const d=document.getElementById('vtog-'+m);
