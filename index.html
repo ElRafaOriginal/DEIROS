@@ -1774,7 +1774,7 @@ label.btn-sec.aj-up{width:100%;}
   <button type="button" class="ni-new" id="NINEW" onclick="niNewClick()" aria-label="Nuevo alquiler"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg><span>Nuevo<br>alquiler</span></button>
 </nav>
 <div class="fab" id="FAB" title="Nuevo" aria-label="Nuevo" onclick="fabClick()" style="display:none">＋</div>
-<div class="ov" id="OV" onclick="closeSheet()"></div>
+<div class="ov" id="OV" onclick="_shTryClose()"></div>
 <div class="sheet" id="SH"><div class="sh"></div><div id="SC"></div></div>
 
 <!-- LOADING SCREEN -->
@@ -6447,7 +6447,7 @@ window.addEventListener('popstate',function(){
   const sh=document.getElementById('SH');
   // 1. Sheet open → close it and re-push so next back stays in app
   if(sh&&sh.classList.contains('open')){
-    closeSheet();
+    _shTryClose(); // pregunta si hay cambios sin guardar
     history.pushState(null,'');
     return;
   }
@@ -12001,7 +12001,7 @@ initTheme();
 
 // ═══════════════════════════════════════════════════════════ SHEET
 function openSheet(html){
-  window._depOpen=null;
+  window._depOpen=null;_shSeq++;_shG=false;_shDirty=false; // hoja nueva: sin aviso hasta que se arme (formularios) y se escriba
   const sh=document.getElementById('SH');
   const sc=document.getElementById('SC');
   sc.innerHTML=html;
@@ -12027,11 +12027,21 @@ function openSheet(html){
       dragging=false;
       sh.classList.remove('no-transition');
       const dy=e.changedTouches[0].clientY-sy;
-      if(dy>80){closeSheet();}else{sh.style.transform='';}
+      if(!(dy>80&&_shTryClose()))sh.style.transform=''; // al deslizar también pregunta si hay cambios sin guardar
     });
   }
 }
-function closeSheet(){window._depOpen=null;const sh=document.getElementById('SH');sh.style.transform='';document.getElementById('OV').classList.remove('open');sh.classList.remove('open');}
+function closeSheet(){window._depOpen=null;_shG=false;_shDirty=false;const sh=document.getElementById('SH');sh.style.transform='';document.getElementById('OV').classList.remove('open');sh.classList.remove('open');}
+// ── Aviso antes de perder un formulario a medio rellenar: el velo, el atrás del móvil y deslizar preguntan «¿Descartar cambios?»
+//    solo en las hojas de formulario de la lista y solo si Rafael ha escrito o elegido algo (input/change del usuario).
+//    Los botones Guardar/Cancelar llaman a closeSheet() como siempre: cierran sin preguntar.
+var _shSeq=0,_shG=false,_shDirty=false;
+function _shTryClose(){if(_shG&&_shDirty&&!confirm('¿Descartar cambios?\n\nLo que has escrito en este formulario no se ha guardado.'))return false;closeSheet();return true;}
+['input','change'].forEach(t=>document.getElementById('SC').addEventListener(t,e=>{if(e.isTrusted)_shDirty=true;}));
+['openNewRental','editBooking','_openQuoteForm','openReturnModal','openContractForm','openMgmtContractForm','openAddEntry','openAddBiz','openBookingFinance','openAddV','openEditV','openAddClient','openEditClient','openAddOwner','editOwner','openExtendBooking','openAddRecurring'].forEach(n=>{
+  const f=window[n];if(typeof f!=='function')return;
+  window[n]=function(){const s=_shSeq,r=f.apply(this,arguments);if(_shSeq!==s)_shG=true;return r;}; // arma el aviso solo si de verdad abrió su hoja
+});
 
 // ═══════════════════════════════════════════════════════════ AUTH
 function doLogin(){
