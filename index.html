@@ -626,6 +626,13 @@ select option{background:var(--bg);}
 .dh-now .s span:last-child{white-space:nowrap;flex-shrink:0;}
 .dh-now .r{gap:4px;}
 .dh-now .chip{font-size:10px;padding:1px 8px;}
+/* Inicio · «Hoy»: entregas y devoluciones del día y atrasadas sin marcar (fila fina: punto · coche y cliente / chip de tipo + hora · botón de 44 px o estado) */
+.dh-sec.hoy{margin-top:0;margin-bottom:24px;}
+.hoy .dh-row .s{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;}
+.hoy .dh-row .s.fz{display:block;}.hoy .dh-row .s.fz .ico{color:var(--amber);}
+.hoy-e{font-family:var(--mono);font-size:13px;color:var(--text2);padding:16px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);}
+/* Inicio móvil: desplegables seguidos (Año, Evolución, Rentabilidad) comparten línea */
+.dh-yr+.dh-yr{margin-top:-8px;border-top:0;}
 /* ══ Agenda (móvil): navegación ‹ semana ›, selector Lista/Semana en píldora, cabeceras de día con línea, filas neutras con punto del coche ══ */
 .ag-nav{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
 .ag-rng{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;}
@@ -1611,7 +1618,7 @@ button.qt-so{all:unset;box-sizing:border-box;display:grid;grid-template-columns:
 .fz-r .chip{margin-top:8px;}
 .fz-r .r{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
 .fz-r .r b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
-.btn-sec.fz-v,.btn-sec.fv-q{width:auto;min-height:44px;padding:0 14px;font-size:14px;}
+.btn-sec.fz-v,.btn-sec.fv-q,.btn-sec.hoy-b{width:auto;min-height:44px;padding:0 14px;font-size:14px;}
 .fv-r{align-items:center;}
 .fv-r>.dh-dot{margin-top:0;}
 .fv-p{margin-bottom:16px;}
@@ -1774,7 +1781,7 @@ label.btn-sec.aj-up{width:100%;}
   <button type="button" class="ni-new" id="NINEW" onclick="niNewClick()" aria-label="Nuevo alquiler"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg><span>Nuevo<br>alquiler</span></button>
 </nav>
 <div class="fab" id="FAB" title="Nuevo" aria-label="Nuevo" onclick="fabClick()" style="display:none">＋</div>
-<div class="ov" id="OV" onclick="closeSheet()"></div>
+<div class="ov" id="OV" onclick="_shTryClose()"></div>
 <div class="sheet" id="SH"><div class="sh"></div><div id="SC"></div></div>
 
 <!-- LOADING SCREEN -->
@@ -6447,7 +6454,7 @@ window.addEventListener('popstate',function(){
   const sh=document.getElementById('SH');
   // 1. Sheet open → close it and re-push so next back stays in app
   if(sh&&sh.classList.contains('open')){
-    closeSheet();
+    _shTryClose(); // pregunta si hay cambios sin guardar
     history.pushState(null,'');
     return;
   }
@@ -6595,23 +6602,23 @@ function renderDash(el){
 
   // ── MES EN CURSO: ficha técnica con la cifra protagonista en Doto ──
   const _mpS=fmt(mP).split(','),_mpE=_mpS[0],_mpD=_mpS.length>1?','+_mpS.slice(1).join(','):'';
-  h+=`<section class="dh-card hl dotbg">
+  const _mes=`<section class="dh-card hl dotbg">
     <div class="dh-h"><span class="q ac">Resultado flota</span><span class="q">${MON_LABEL.slice(0,3).toUpperCase()} ${now.getFullYear()}</span></div>
     <div class="dh-big mx${mP<0?' neg':''}${_mpE.length>6?' l':''}">${esc(_mpE)}<small>${esc(_mpD)}</small></div>
     <div class="dh-note">Incl. coches en gestión (parte del propietario) · ${mI>0?'Margen '+Math.round(mP/mI*100)+' % · ':''}${mBks} alq. este mes</div>
     <div class="spec">
       <div><i class="dt dt-ok"></i>INGRESOS MES<b class="lg">${fmt(mI)}</b></div>
       <div><i class="dt dt-err"></i>GASTOS MES<b class="lg">${fmt(mE)}</b></div>
-      <div>VEHÍCULOS ACTIVOS<b>${activeV.length}</b></div>
-      <div>ALQ. TOTALES<b>${totalBk}</b></div>
+      <div class="w2">VEHÍCULOS ACTIVOS<b>${activeV.length}</b></div>
     </div>
-  </section>
-  ${(()=>{let n=0;activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&_fianzaStatus(b)==='pending')n++;}));
+  </section>`;
+  // Accesos (Coches libres · Fianzas) y año acumulado: piezas sueltas para ordenarlas en móvil y escritorio
+  const _acts=(()=>{let n=0;activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&_fianzaStatus(b)==='pending')n++;}));
     return `<div class="dh-acts">
       <button type="button" class="dh-act" onclick="openFreeVehiclesSearch()"><span class="q">Disponibilidad</span><b>Coches libres ${ico('search')}</b></button>
       <button type="button" class="dh-act${n?' on':''}" onclick="openPendingDeposits()"><span class="q${n?' ac':''}">Fianzas</span><b><span class="n">${n}</span><span class="u">pendientes</span>${_ARR}</b></button>
-    </div>`;})()}
-  <details class="dh-yr">
+    </div>`;})();
+  const _yr=`<details class="dh-yr">
     <summary><span class="q">Año ${now.getFullYear()} · acumulado</span>${_PLUS}</summary>
     ${(()=>{
       const yr=now.getFullYear();
@@ -6648,12 +6655,42 @@ function renderDash(el){
   });
   activeRentals.sort((a,b)=>a.endDate.localeCompare(b.endDate));
 
+  // ── HOY: entregas y devoluciones de hoy + devoluciones atrasadas (últimos 14 días) sin marcar; sin cancelados.
+  //    Botones = los de la ficha del coche: abren el coche (openV) y llaman a toggleDelivery / toggleReturn (hoja «Registrar devolución»)
+  const _hoyR=[],_h14=addDays(hoy,-14);
+  activeV.forEach(v=>(v.bookings||[]).forEach(b=>{
+    if(b.cancelled||b.cancellation)return;
+    if(b.startDate===hoy&&!(b.delivered&&b.endDate===hoy))_hoyR.push({b,v,k:0,t:b.startTime||''});
+    else if(b.endDate===hoy)_hoyR.push({b,v,k:1,t:b.endTime||''});
+    else if(b.endDate<hoy&&b.endDate>=_h14&&!b.returned)_hoyR.push({b,v,k:2,t:b.endDate+(b.endTime||'')});
+  }));
+  _hoyR.sort((x,y)=>x.k-y.k||x.t.localeCompare(y.t));
+  const _hoyN=_hoyR.filter(x=>x.k===0?!x.b.delivered:!x.b.returned).length;
+  const _hoyBtn=(fn,b,v,ic,l)=>`<button type="button" class="btn-sec hoy-b" onclick="event.stopPropagation();openV('${escJs(v.id)}');${fn}('${escJs(b.id)}')">${ico(ic)} ${l}</button>`;
+  const _hoyH=`<section class="dh-sec hoy">
+    <div class="dh-sh"><h2>Hoy</h2><span class="q${_hoyN?' ac':''}">${String(_hoyN).padStart(2,'0')}</span></div>
+    ${_hoyR.length?`<div class="dh-list">${_hoyR.map(({b,v,k})=>{
+      const _late=k===2?Math.round((new Date(hoy)-new Date(b.endDate))/864e5):0;
+      const _chip=k===0?'<span class="chip chip-amber">Entrega</span>':k===1?'<span class="chip chip-amber">Devolución</span>':'<span class="chip chip-red">Atrasada '+_late+'d</span>';
+      const _when=k===2?esc(fmtDMY(b.endDate).slice(0,5))+(b.endTime?' '+esc(b.endTime):''):esc((k===0?b.startTime:b.endTime)||'');
+      const _fz=(k===2&&_fianzaStatus(b)==='pending')?`<div class="s fz">${ico('lock')} Fianza pendiente · ${fmtF(b.fianza)}</div>`:'';
+      const _act=k===0?(b.delivered?'<span class="chip chip-green">Entregado</span>':_hoyBtn('toggleDelivery',b,v,'car','Entregar'))
+        :(b.returned?'<span class="chip chip-green">Devuelto</span>':_hoyBtn('toggleReturn',b,v,'key','Devolver'));
+      return `<div class="dh-row" onclick="openV('${escJs(v.id)}');setTimeout(()=>showBookingById('${escJs(b.id)}'),200)">
+        <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+        <div style="min-width:0"><div class="t ell">${esc(v.name)}${b.clientName?' · '+esc(b.clientName):''}</div><div class="s">${_chip}${_when?'<span>'+_when+'</span>':''}</div>${_fz}</div>
+        <div class="r">${_act}</div>
+      </div>`;}).join('')}</div>`:'<p class="hoy-e">Nada para hoy: sin entregas ni devoluciones pendientes.</p>'}
+  </section>`;
+
   if(!activeV.length){
+    h+=_mes+_acts+_yr;
     h+=`<div class="empty"><div class="ei">${ico('car')}</div><div class="et">Sin vehículos</div><div class="es">Ve a Flota y añade tu primer coche</div></div>`;
     h+='</div>';el.innerHTML=h;return;
   }
 
   if(isDesk){
+    h+=_hoyH+_mes+_acts+_yr;
     // ── DESKTOP: 2-column layout: [chart+platforms 3fr] [alerts+activity 1.4fr]
     h+=`<div style="display:grid;grid-template-columns:3fr 1.4fr;gap:24px;align-items:start;margin-bottom:28px">`;
 
@@ -6745,6 +6782,7 @@ function renderDash(el){
     }
   } else {
     // ── MOBILE: single column ─────────────────────────────────────────────
+    h+=_hoyH+_acts; // lo del día primero: Hoy y accesos (Coches libres · Fianzas)
     const _n2=n=>String(n).padStart(2,'0');
     // ── ALQUILERES EN CURSO: desplegable compacto (abierto por defecto; recuerda si Rafael lo cierra), filas de una o dos líneas ──
     if(activeRentals.length){
@@ -6758,46 +6796,6 @@ function renderDash(el){
         </div>`;}).join('')}</div>
       </details>`;
     }
-    // ── ALERTAS: lista técnica ──
-    if(alerts.length){
-      h+=`<section class="dh-sec">
-        <div class="dh-sh"><h2>Alertas</h2><span class="q err">${_n2(alerts.length)}</span></div>
-        <div class="dh-list">${alerts.slice(0,5).map((a,i)=>`<div class="dh-row" onclick="openV('${escJs(a.vid)}')">
-          <span class="q">${_n2(i+1)}</span>
-          <div style="min-width:0"><div class="t">${esc(a.vname)}</div><div class="s">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
-          <span class="chip ${a.expired?'chip-red':'chip-amber'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
-        </div>`).join('')}</div>
-      </section>`;
-    }
-    if(BF.length||activeV.length)h+=`<section class="dh-sec"><div class="dh-sh"><h2>Evolución</h2><span class="q">Mensual</span></div>${buildGlobalChart()}</section>`;
-    // Platform data filtered by period
-    function _platData(period){
-      const n=new Date();const y=n.getFullYear();const mo=n.getMonth();
-      const pd2={amovens:{label:'Amovens',inc:0,n:0},getaround:{label:'Getaround',inc:0,n:0},sinapp:{label:'Sin app',inc:0,n:0}};
-      activeV.forEach(v=>(v.bookings||[]).forEach(b=>{
-        if(!pd2[b.platform])return;
-        const m=b.startDate.slice(0,7);
-        const ym=y+'-'+String(mo+1).padStart(2,'0');
-        const qStart=y+'-'+String(Math.floor(mo/3)*3+1).padStart(2,'0');
-        const qEnd=y+'-'+String(Math.floor(mo/3)*3+3).padStart(2,'0');
-        if(period==='monthly'&&m!==ym)return;
-        if(period==='quarterly'&&(m<qStart||m>qEnd))return;
-        if(period==='annual'&&!m.startsWith(String(y)))return;
-        const _c=b.cancelled||b.cancellation;pd2[b.platform].inc+=_c?_bookingRealTotal(b):Number(b.amount)||0;if(!_c)pd2[b.platform].n++;
-      }));
-      return pd2;
-    }
-    const pdP=_platData(_dashPlatPeriod);
-    const platTotalP=Math.max(1,...Object.values(pdP).map(p=>p.inc));
-    h+=`<section class="dh-sec"><div class="dh-sh"><h2>Rentabilidad</h2><span class="q">Plataforma</span></div>
-    <div class="dh-seg" role="group" aria-label="Periodo">
-      ${['monthly','quarterly','annual'].map(p=>{const a=_dashPlatPeriod===p;const L={monthly:'Mes',quarterly:'Trimestre',annual:'Año'};return '<button type="button" aria-pressed="'+a+'" onclick="_dashPlatPeriod=\''+p+'\';renderDash(document.getElementById(\'PC\'))">'+L[p]+'</button>';}).join('')}
-    </div>
-    <div class="dh-card">
-      ${Object.values(pdP).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div class="dh-pl"><div class="dh-plh"><span class="t">'+esc(p.label)+'<span class="q">'+p.n+' alq.</span></span><b>'+fmt(p.inc)+'</b></div><div class="dh-bar"><i style="width:'+Number(pct)+'%"></i></div></div>';}).join('')}
-    </div></section>`;
-    const own=activeV.filter(v=>v.vtype!=='managed');
-    const managed=activeV.filter(v=>v.vtype==='managed');
     // ── PRÓXIMOS ALQUILERES ───────────────────────────────────────────────
     const nowStr=todayStr();
     const upcoming2=[];
@@ -6821,6 +6819,49 @@ function renderDash(el){
         }).join('')}
       </div></section>`;
     }
+    // ── ALERTAS: lista técnica ──
+    if(alerts.length){
+      h+=`<section class="dh-sec">
+        <div class="dh-sh"><h2>Alertas</h2><span class="q err">${_n2(alerts.length)}</span></div>
+        <div class="dh-list">${alerts.slice(0,5).map((a,i)=>`<div class="dh-row" onclick="openV('${escJs(a.vid)}')">
+          <span class="q">${_n2(i+1)}</span>
+          <div style="min-width:0"><div class="t">${esc(a.vname)}</div><div class="s">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
+          <span class="chip ${a.expired?'chip-red':'chip-amber'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
+        </div>`).join('')}</div>
+      </section>`;
+    }
+    h+='<div class="dh-sec">'+_mes+'</div>'+_yr; // el mes y el año, debajo de lo del día
+    const _fo=k=>{try{return localStorage.getItem(k)==='1';}catch(e){return false;}}; // plegados por defecto; recuerdan si se dejan abiertos
+    const _ft=k=>` ontoggle="try{localStorage.setItem('${k}',this.open?'1':'0')}catch(e){}"`;
+    if(BF.length||activeV.length)h+=`<details class="dh-yr"${_fo('deiros_dashEvoOpen')?' open':''}${_ft('deiros_dashEvoOpen')}><summary><span class="q">Evolución · mensual</span>${_PLUS}</summary>${buildGlobalChart()}</details>`;
+    // Platform data filtered by period
+    function _platData(period){
+      const n=new Date();const y=n.getFullYear();const mo=n.getMonth();
+      const pd2={amovens:{label:'Amovens',inc:0,n:0},getaround:{label:'Getaround',inc:0,n:0},sinapp:{label:'Sin app',inc:0,n:0}};
+      activeV.forEach(v=>(v.bookings||[]).forEach(b=>{
+        if(!pd2[b.platform])return;
+        const m=b.startDate.slice(0,7);
+        const ym=y+'-'+String(mo+1).padStart(2,'0');
+        const qStart=y+'-'+String(Math.floor(mo/3)*3+1).padStart(2,'0');
+        const qEnd=y+'-'+String(Math.floor(mo/3)*3+3).padStart(2,'0');
+        if(period==='monthly'&&m!==ym)return;
+        if(period==='quarterly'&&(m<qStart||m>qEnd))return;
+        if(period==='annual'&&!m.startsWith(String(y)))return;
+        const _c=b.cancelled||b.cancellation;pd2[b.platform].inc+=_c?_bookingRealTotal(b):Number(b.amount)||0;if(!_c)pd2[b.platform].n++;
+      }));
+      return pd2;
+    }
+    const pdP=_platData(_dashPlatPeriod);
+    const platTotalP=Math.max(1,...Object.values(pdP).map(p=>p.inc));
+    h+=`<details class="dh-yr"${_fo('deiros_dashPlatOpen')?' open':''}${_ft('deiros_dashPlatOpen')}><summary><span class="q">Rentabilidad · plataforma</span>${_PLUS}</summary>
+    <div class="dh-seg" role="group" aria-label="Periodo">
+      ${['monthly','quarterly','annual'].map(p=>{const a=_dashPlatPeriod===p;const L={monthly:'Mes',quarterly:'Trimestre',annual:'Año'};return '<button type="button" aria-pressed="'+a+'" onclick="_dashPlatPeriod=\''+p+'\';renderDash(document.getElementById(\'PC\'))">'+L[p]+'</button>';}).join('')}
+    </div>
+    <div class="dh-card">
+      ${Object.values(pdP).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div class="dh-pl"><div class="dh-plh"><span class="t">'+esc(p.label)+'<span class="q">'+p.n+' alq.</span></span><b>'+fmt(p.inc)+'</b></div><div class="dh-bar"><i style="width:'+Number(pct)+'%"></i></div></div>';}).join('')}
+    </div></details>`;
+    const own=activeV.filter(v=>v.vtype!=='managed');
+    const managed=activeV.filter(v=>v.vtype==='managed');
   }
   h+='</div>';el.innerHTML=h;
 }
@@ -12001,7 +12042,7 @@ initTheme();
 
 // ═══════════════════════════════════════════════════════════ SHEET
 function openSheet(html){
-  window._depOpen=null;
+  window._depOpen=null;_shSeq++;_shG=false;_shDirty=false; // hoja nueva: sin aviso hasta que se arme (formularios) y se escriba
   const sh=document.getElementById('SH');
   const sc=document.getElementById('SC');
   sc.innerHTML=html;
@@ -12027,11 +12068,21 @@ function openSheet(html){
       dragging=false;
       sh.classList.remove('no-transition');
       const dy=e.changedTouches[0].clientY-sy;
-      if(dy>80){closeSheet();}else{sh.style.transform='';}
+      if(!(dy>80&&_shTryClose()))sh.style.transform=''; // al deslizar también pregunta si hay cambios sin guardar
     });
   }
 }
-function closeSheet(){window._depOpen=null;const sh=document.getElementById('SH');sh.style.transform='';document.getElementById('OV').classList.remove('open');sh.classList.remove('open');}
+function closeSheet(){window._depOpen=null;_shG=false;_shDirty=false;const sh=document.getElementById('SH');sh.style.transform='';document.getElementById('OV').classList.remove('open');sh.classList.remove('open');}
+// ── Aviso antes de perder un formulario a medio rellenar: el velo, el atrás del móvil y deslizar preguntan «¿Descartar cambios?»
+//    solo en las hojas de formulario de la lista y solo si Rafael ha escrito o elegido algo (input/change del usuario).
+//    Los botones Guardar/Cancelar llaman a closeSheet() como siempre: cierran sin preguntar.
+var _shSeq=0,_shG=false,_shDirty=false;
+function _shTryClose(){if(_shG&&_shDirty&&!confirm('¿Descartar cambios?\n\nLo que has escrito en este formulario no se ha guardado.'))return false;closeSheet();return true;}
+['input','change'].forEach(t=>document.getElementById('SC').addEventListener(t,e=>{if(e.isTrusted)_shDirty=true;}));
+['openNewRental','editBooking','_openQuoteForm','openReturnModal','openContractForm','openMgmtContractForm','openAddEntry','openAddBiz','openBookingFinance','openAddV','openEditV','openAddClient','openEditClient','openAddOwner','editOwner','openExtendBooking','openAddRecurring'].forEach(n=>{
+  const f=window[n];if(typeof f!=='function')return;
+  window[n]=function(){const s=_shSeq,r=f.apply(this,arguments);if(_shSeq!==s)_shG=true;return r;}; // arma el aviso solo si de verdad abrió su hoja
+});
 
 // ═══════════════════════════════════════════════════════════ AUTH
 function doLogin(){
