@@ -1976,8 +1976,8 @@ const KM_RATE_CFG={
 const MON_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MON_S=['En','Fe','Ma','Ab','My','Jn','Jl','Ag','Se','Oc','No','Di'];
 const INC_CATS=['Alquiler','Venta','Seguro','Depósito','Extra km','Limpieza','Otros ingresos'];
-const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Lavado','Limpieza','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
-// Cláusula Quinta (5.2): gastos que paga directamente EL PROPIETARIO (incluye los recurrentes Seguro, Impuesto y Mantenimiento). Neumáticos y frenos → Mantenimiento; franquicia del seguro no imputable a un cliente → Reparación
+const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Daño cliente','Franquicia','Lavado','Limpieza','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
+// Cláusula Quinta (5.2): gastos que paga directamente EL PROPIETARIO (incluye los recurrentes Seguro, Impuesto y Mantenimiento). Neumáticos y frenos → Mantenimiento. Franquicia y Daño cliente: categorías propias que no se cargan al propietario (las paga el cliente).
 const OWNER_PAID_CATS=['Seguro','Mantenimiento','Mantenimiento periódico','Reparación','ITV','Impuesto'];
 // Cláusula Quinta (5.3): LISTA PERMITIDA de gastos que se descuentan al propietario. El resto no se le descuenta. Peajes → Parking
 const OWNER_DEDUCT_CATS=['Combustible','Lavado','Limpieza','Plataforma','Parking','Suscripción'];
@@ -5801,7 +5801,7 @@ function generateMgmtContractPDF(ownerId,vIdParam){
 
   clauseHeader('Quinta','Facturación, gastos, comisión del gestor y liquidación');
   para('5.1. Se entenderá por facturación mensual la suma de los importes facturados en el mes por el alquiler del vehículo, incluidos los extras contratados por los clientes y las penalizaciones por cancelación. No forman parte de la facturación las fianzas, tampoco cuando se retengan total o parcialmente para cubrir daños o gastos.');
-  para('5.2. Correrán a cargo de EL PROPIETARIO, que los abonará directamente con independencia de la facturación del mes, los gastos de seguro del vehículo, mantenimiento (incluido el periódico), ITV, reparaciones y averías no causadas por un cliente, impuesto de circulación, neumáticos y frenos, y la franquicia del seguro cuando el daño no se pueda imputar a un cliente. Estos gastos no se descontarán en la liquidación.');
+  para('5.2. Correrán a cargo de EL PROPIETARIO, que los abonará directamente con independencia de la facturación del mes, los gastos de seguro del vehículo, mantenimiento (incluido el periódico), ITV, reparaciones y averías no causadas por un cliente, impuesto de circulación, neumáticos y frenos. Estos gastos no se descontarán en la liquidación.');
   para('5.3. Se descontarán de la facturación del mes, antes de calcular la comisión, los gastos inherentes a la actividad de alquiler, tales como combustible, limpieza, comisiones y suscripciones de plataformas y aplicaciones, parking y peajes. No se descontará a EL PROPIETARIO ningún otro gasto. Las multas y sanciones generadas durante un alquiler correrán a cargo del cliente arrendatario.');
   para('5.4. EL GESTOR percibirá como retribución una comisión del '+comision+'% sobre la facturación mensual, una vez descontados los gastos del apartado 5.3. Si en un mes el vehículo no genera facturación, o si el resultado de descontar dichos gastos es cero o negativo, no se devengará comisión alguna.');
   para('5.5. Corresponderá a EL PROPIETARIO la facturación mensual, menos los gastos del apartado 5.3 y la comisión de EL GESTOR. Si el resultado fuese negativo, la diferencia será asumida por EL GESTOR y la liquidación a EL PROPIETARIO será de cero euros (0 €); en ningún caso se liquidará a EL PROPIETARIO un importe negativo.');
@@ -8367,6 +8367,7 @@ function openAddEntry(){
       <div class="d-f"><label class="q" for="eDate">Fecha</label><input id="eDate" type="date" value="${esc(safeDate(today))}"/></div>
     </div>
     <div class="d-f"><label class="q" for="eCat">Categoría</label><select id="eCat" onchange="toggleMaintFields()">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    <div class="d-f" id="repCause" style="display:none"><label class="q" id="repCauseL">Causa</label><div class="d-seg" role="group" aria-labelledby="repCauseL"><button type="button" class="tap44" id="repDes" aria-pressed="true" onclick="setRepCause('Reparación')">Desgaste</button><button type="button" class="tap44" id="repCli" aria-pressed="false" onclick="setRepCause('Daño cliente')">Cliente</button></div><div class="d-hint">Desgaste: lo paga el propietario · Cliente: no se le carga al propietario</div></div>
     <div class="d-f"><label class="q" for="eDesc">Descripción</label><input id="eDesc" placeholder="Opcional" autocomplete="off"/></div>
     <div id="maintFields" style="display:none">
       <div class="al-h"><h3>Mantenimiento</h3>${ico('wrench')}</div>
@@ -8386,7 +8387,16 @@ function toggleMaintFields(){
   const fields=document.getElementById('maintFields');
   if(!cat||!fields)return;
   fields.style.display=(cat.value==='Mantenimiento periódico'||cat.value==='Mantenimiento')?'block':'none';
+  const rc=document.getElementById('repCause');
+  if(rc){
+    const isRep=cat.value==='Reparación'||cat.value==='Daño cliente';
+    rc.style.display=isRep?'':'none';
+    const d=document.getElementById('repDes'),c=document.getElementById('repCli');
+    if(d)d.setAttribute('aria-pressed',String(cat.value==='Reparación'));
+    if(c)c.setAttribute('aria-pressed',String(cat.value==='Daño cliente'));
+  }
 }
+function setRepCause(c){const cat=document.getElementById('eCat');if(!cat)return;cat.value=c;toggleMaintFields();}
 function swET(t){
   _etype=t;
   const inc=document.getElementById('tInc'),exp=document.getElementById('tExp'),cat=document.getElementById('eCat');
@@ -8395,6 +8405,7 @@ function swET(t){
   inc.setAttribute('aria-pressed',String(t==='income'));exp.setAttribute('aria-pressed',String(t!=='income'));
   if(t==='income'){cat.innerHTML=INC_CATS.map(c=>`<option>${c}</option>`).join('');}
   else{cat.innerHTML=EXP_CATS.map(c=>`<option>${c}</option>`).join('');}
+  toggleMaintFields();
 }
 function submitEntry(){
   const v=gV();if(!v)return;
@@ -10416,9 +10427,9 @@ function renderBiz(el){
 
   // ── EXPENSE SUBCATEGORY CHART ─────────────────────────────────
   const expCats={
-    'Mantenimiento':['Mantenimiento','Reparaci\u00f3n','ITV','Taller','Neumáticos','Aceite'],
+    'Mantenimiento':['Mantenimiento','Reparaci\u00f3n','Da\u00f1o cliente','ITV','Taller','Neumáticos','Aceite'],
     'Pr\u00e9stamos':['Pr\u00e9stamo','Financiaci\u00f3n','Cuota','Lease'],
-    'Seguros':['Seguro','P\u00f3liza'],
+    'Seguros':['Seguro','Franquicia','P\u00f3liza'],
     'Limpieza':['Limpieza','Lavado'],
     'Otros':[]
   };
