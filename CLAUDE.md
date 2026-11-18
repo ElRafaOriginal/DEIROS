@@ -31,6 +31,7 @@ Rafael la usa sobre todo **en el móvil y en modo oscuro**.
 - Campo nuevo en cada vehículo: **capacidad del depósito en litros** (en `V`, con su normalización y su sitio en la copia de seguridad v4 sin romper copias antiguas).
 - Un workflow **nuevo** en `.github/workflows/` que descarga cada día los precios oficiales de carburantes del Ministerio (datos abiertos) y publica las medias por municipio para la app. El workflow existente `claude.yml` sigue sin tocarse.
 - Campo nuevo en cada presupuesto: **`clientId`** (`QT[].clientId`, texto: id de la ficha de cliente elegida en el buscador; vacío si no se eligió ficha). Viaja en Firestore y en la copia v4 dentro de `quotes`; los presupuestos y copias antiguas sin él siguen funcionando (por nombre). Es el único campo nuevo de la «ficha única de cliente»: **no** se autorizan `licenseIssued` ni `extraDriverId`.
+- **18/11/2026 (#96):** dos campos nuevos en cada alquiler: **`deliveryPlace`** (lugar de entrega) y **`returnPlace`** (lugar de devolución), en `b`, texto; la devolución es por defecto la misma que la entrega. Se escriben en el formulario del alquiler (alta y edición) y rellenan el contrato («Lugar entrega» / «Lugar devolución») y los WhatsApp de confirmación y recordatorio. También viajan en Firestore y en la copia v4 dentro del alquiler; los alquileres y las copias antiguas sin ellos siguen funcionando (vacío: el contrato usa lo de siempre y la línea del mensaje queda vacía para escribirla).
 
 ## Marca
 
