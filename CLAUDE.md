@@ -20,7 +20,8 @@ Rafael la usa sobre todo **en el móvil y en modo oscuro**.
 ## Reglas de negocio (confirmadas por Rafael)
 
 - Precios con IVA incluido.
-- Comisión del gestor: siempre sobre lo **facturado en el mes** × % de comisión del vehículo, aunque el coche dé pérdidas; si no factura, comisión 0. Al propietario le queda `beneficio − comisión`.
+- Comisión del gestor (coche en gestión, cada mes, #90). **Desde noviembre de 2026 (incluido):** (**facturado − gastos de la cláusula 5.3**) × % de comisión del vehículo; si el resultado es cero o negativo, o no factura, comisión 0. Al propietario: facturado − gastos 5.3 − comisión, nunca negativo; si los gastos 5.3 superan lo facturado cobra 0 y el déficit lo asume el gestor. **Hasta octubre de 2026** (no retroactivo: ya está pagado): comisión sobre lo **facturado en el mes** × %, aunque el coche dé pérdidas; al propietario, facturado − comisión − gastos 5.3, mínimo 0 y el déficit a cargo del gestor. El corte es la constante `COMM_RULE_FROM` de `index.html`. Los gastos de la cláusula 5.2 (seguro, mantenimiento, ITV, reparaciones y averías no causadas por un cliente, impuesto de circulación, neumáticos y frenos, franquicia no imputable a un cliente) los paga el propietario aparte y no se descuentan.
+- Un coche **en gestión siempre tiene propietario**: la app no deja guardarlo (alta, edición, asignación) sin un propietario elegido, ni borrar un propietario que tenga coches en gestión.
 - Combustible faltante: **precio medio de mercado en el municipio donde se devuelve el coche + 2 €/litro**. Los litros se calculan con la capacidad del depósito del coche y la diferencia entre el nivel de entrega y el de devolución.
 - Km extra contratados al reservar: 0,15 €/km. Km excedidos a la devolución: **0,19 €/km para todos los vehículos** (también furgonetas).
 - Edad mínima del conductor: **26 años cumplidos** (con 25 cumplidos no se alquila). No es configurable. Fianza por defecto: **200 €** (contrato y presupuesto).
