@@ -10733,26 +10733,26 @@ function renderArchiveBody(){
   const q=_searchArchive.toLowerCase().trim();
   const filtered=archived.filter(v=>!q||v.name.toLowerCase().includes(q)||v.plate.toLowerCase().includes(q)||(v.model||'').toLowerCase().includes(q));
   let h='';
-  if(!archived.length){res.innerHTML=('<div class="empty"><div class="ei">'+ico('box')+'</div><div class="et">Archivo vacío</div><div class="es">Los vehículos vendidos aparecerán aquí</div></div>');return;}
-  h+=`<div class="es" style="margin-bottom:14px">Los vehículos archivados conservan todos sus datos pero no aparecen en la flota activa.</div>`;
-  if(!filtered.length){h+=`<div class="empty" style="padding:30px 0"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div></div>`;}
+  if(!archived.length){res.innerHTML=('<div class="d-empty ar-e">'+ico('box')+'<h3>Archivo vacío</h3><p>Los vehículos vendidos aparecerán aquí</p></div>');return;}
+  h+=`<p class="d-hint ar-h">Los vehículos archivados conservan todos sus datos pero no aparecen en la flota activa.</p>`;
+  h+=`<div class="d-sh ar-sh"><span class="q">Archivados</span><span class="q">${String(filtered.length).padStart(2,'0')}</span></div>`;
+  if(!filtered.length){h+=`<div class="d-empty ar-e">${ico('search')}<h3>Sin resultados</h3><p>Prueba con otro nombre o matrícula</p></div>`;}
   else filtered.forEach(v=>{
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
     const reason=v.archiveReason==='sold'?(ico('tag')+' Vendido'):v.archiveReason==='end'?(ico('handshake')+' Fin de gestión'):(ico('box')+' Archivado');
-    h+=`<div class="arc-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div><div style="font-size:18px;font-weight:800;color:var(--text2)">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
-        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);white-space:nowrap">${reason}${v.archivedDate?' · '+esc(safeDate(v.archivedDate)):''}</span>
+    // Tarjeta del coche archivado: motivo y fecha · nombre y matrícula · ficha técnica del balance · Ver datos | Reactivar y borrar redondo
+    h+=`<div class="d-card ar-c">
+      <div class="d-ch"><span class="chip ar-r">${reason}</span>${v.archivedDate?`<span class="q">${esc(safeDate(v.archivedDate))}</span>`:''}</div>
+      <div><div class="d-ct al-ct">${esc(v.name)}</div><div class="d-meta al-mt6">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
+      <div class="spec c3 ow-s">
+        <div>Ingresos<b class="cl-in">${fmt(vI)}</b></div>
+        <div>Gastos<b class="ow-neg">${fmt(vE)}</b></div>
+        <div>Beneficio<b class="${vP>=0?'cl-in':'ow-neg'}">${fmt(vP)}</b></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
-        <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(vI)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">INGRESOS</div></div>
-        <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--red)">${fmt(vE)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">GASTOS</div></div>
-        <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vP>=0?'var(--green)':'var(--red)'}">${fmt(vP)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">BENEFICIO</div></div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-sec" onclick="openV('${escJs(v.id)}')" style="flex:1;font-size:12px">${ico('eye')} Ver datos</button>
-        <button class="btn-sec" onclick="restoreV('${escJs(v.id)}')" style="flex:1;font-size:12px">${ico('undo')} Reactivar</button>
-        <button class="btn-dang tap44" onclick="deleteV('${escJs(v.id)}')" style="width:44px;padding:0">${ico('trash')}</button>
+      <div class="ar-a">
+        <button class="btn-sec" onclick="openV('${escJs(v.id)}')">${ico('eye')} Ver datos</button>
+        <button class="btn-sec" onclick="restoreV('${escJs(v.id)}')">${ico('undo')} Reactivar</button>
+        <button class="d-ib tap44 ow-del" onclick="deleteV('${escJs(v.id)}')" aria-label="Eliminar">${ico('trash')}</button>
       </div>
     </div>`;
   });
@@ -10761,10 +10761,9 @@ function renderArchiveBody(){
 function renderArchive(el){
   if(!document.getElementById('archive-results')){
     el.innerHTML=`<div class="anim">
-  <div style="margin-bottom:14px">
-    <input type="text" id="searchArchiveInput" placeholder="Buscar en archivo..." value="${esc(_searchArchive)}"
-      oninput="_searchArchive=this.value;renderArchiveBody()"
-      style="font-size:14px"/>
+  <div class="cl-bar">
+    <label class="cl-se">${ico('search')}<input type="text" id="searchArchiveInput" placeholder="Buscar nombre, matrícula o modelo" value="${esc(_searchArchive)}"
+      oninput="_searchArchive=this.value;renderArchiveBody()"/></label>
   </div>
   <div id="archive-results"></div></div>`;
   }
@@ -10776,10 +10775,10 @@ function archiveV(id,reason){
   const label=reason==='sold'?'Vendido':'Archivado por fin de gestión';
   const icon=reason==='sold'?ico('tag'):ico('handshake');
   openSheet(`<div class="stitle">${icon} ${label}</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">${reason==='sold'?'El vehículo se moverá al archivo conservando todos sus datos.':'Este vehículo dejará de estar en gestión. Se moverá al archivo conservando todos sus registros.'}</div>
-    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</div></div>
-    <button class="btn-pri" onclick="confirmArchive('${escJs(id)}','${escJs(reason)}')" style="margin-bottom:10px">${icon} Confirmar — ${label}</button>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <p class="ssub">${reason==='sold'?'El vehículo se moverá al archivo conservando todos sus datos.':'Este vehículo dejará de estar en gestión. Se moverá al archivo conservando todos sus registros.'}</p>
+    <div class="d-kv ar-kv"><span>${esc(v.name)}</span><b>${esc(v.plate)}${esc(v.model?' · '+v.model:'')}</b></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="confirmArchive('${escJs(id)}','${escJs(reason)}')">${icon} Confirmar — ${label}</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function confirmArchive(id,reason){
   const v=V.find(v=>v.id===id);if(!v)return;
@@ -10788,11 +10787,11 @@ function confirmArchive(id,reason){
 }
 function deleteV(id){
   const v=V.find(v=>v.id===id);if(!v)return;
-  openSheet(`<div class="stitle">${ico('trash')} Eliminar definitivamente</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">Se eliminarán todos los datos. Esta acción no se puede deshacer.</div>
-    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:20px"><div style="font-size:16px;font-weight:800">${esc(v.name)}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:2px">${esc(v.plate)}</div></div>
-    <button class="btn-dang" onclick="confirmDelete('${escJs(id)}')" style="margin-bottom:10px">Eliminar definitivamente</button>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+  openSheet(`<div class="stitle">Eliminar definitivamente</div>
+    <p class="ssub">Se eliminarán todos los datos. Esta acción no se puede deshacer.</p>
+    <div class="d-kv ar-kv"><span>${esc(v.name)}</span><b>${esc(v.plate)}</b></div>
+    <div class="d-acts al-end"><button class="btn-dang" onclick="confirmDelete('${escJs(id)}')">${ico('trash')} Eliminar definitivamente</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function confirmDelete(id){V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
 
