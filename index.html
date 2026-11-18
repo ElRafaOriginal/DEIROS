@@ -12221,45 +12221,36 @@ function quoteNum(){
   return 'P-'+yr+'-'+n;
 }
 
+// Presupuestos: estado como chip (punto + texto), tira de contadores con líneas de 1 px y filas finas (.d-row). Solo presentación.
+const _QT_ST={pendiente:['chip-amber','Pendiente'],aceptado:['chip-green','Aceptado'],rechazado:['chip-red','Rechazado'],convertido:['chip-blue','Convertido']};
+function _qtChip(s){const c=_QT_ST[s];return '<span class="chip '+(c?c[0]:'chip-gray')+'">'+esc(c?c[1]:(s||'—'))+'</span>';}
+function _qtKpi(){
+  const total=QT.length,pend=QT.filter(q=>q.status==='pendiente').length,acep=QT.filter(q=>q.status==='aceptado').length,conv=QT.filter(q=>q.status==='convertido').length;
+  return '<div class="d-kpi qt-k">'+[['Total',total,''],['Pendiente',pend,'chip-amber'],['Aceptado',acep,'chip-green'],['Convertido',conv,'chip-blue']].map(([l,n,c])=>'<div><b'+(c?' class="qt-kd '+c+'"':'')+'>'+n+'</b><span>'+l+'</span></div>').join('')+'</div>';
+}
+// Fila de presupuesto: punto del coche · coche y matrícula / cliente / número y fechas · total y estado. onclick: el de siempre (lista o Contratos)
+function _qtRow(q,click){
+  const v=V.find(v=>v.id===q.vehicleId);
+  const _d=s=>esc((fmtDMY(s)||'—').slice(0,5));
+  return `<div class="d-row qt-r" onclick="${click}">
+      <i class="dh-dot"${v&&v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+      <div class="al-b"><div class="t ell">${v?esc(v.name)+' <span class="mono2">'+esc(v.plate)+'</span>':'Vehículo no encontrado'}</div><div class="al-c">${esc(q.clientName||'Sin cliente asignado')}</div><div class="s ell">${_d(q.startDate)} → ${_d(q.endDate)} · ${esc(q.dur||0)}d · ${esc(q.num||'—')}</div></div>
+      <div class="r"><b>${fmtF(q.totalAmount||0)}</b>${_qtChip(q.status)}</div>
+    </div>`;
+}
+
 function renderQuotes(el){
-  const statColor={pendiente:'var(--amber)',aceptado:'var(--green)',rechazado:'var(--red)',convertido:'var(--blue)'};
-  const statLabel={pendiente:'Pendiente',aceptado:'Aceptado',rechazado:'Rechazado',convertido:'Convertido'};
   if(!QT.length){
-    el.innerHTML=('<div class="empty-state"><div style="font-size:48px">'+ico('quote')+'</div><div style="margin-top:12px;font-weight:700">Sin presupuestos</div><div style="font-size:13px;color:var(--text3);margin-top:6px">Pulsa + para crear tu primer presupuesto</div></div>');
+    el.innerHTML=('<div class="anim"><div class="d-empty qt-e">'+ico('quote')+'<h3>Sin presupuestos</h3><p>Pulsa «Nuevo presupuesto» para crear el primero</p></div></div>');
     return;
   }
-  let h='<div style="padding:16px 12px 90px">';
-  // Stats bar
-  const total=QT.length;
-  const pend=QT.filter(q=>q.status==='pendiente').length;
-  const acep=QT.filter(q=>q.status==='aceptado').length;
-  const conv=QT.filter(q=>q.status==='convertido').length;
-  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
-  [['Total',total,'var(--text2)'],['Pendientes',pend,'var(--amber)'],['Aceptados',acep,'var(--green)'],['Convertidos',conv,'var(--blue)']].forEach(([lbl,val,col])=>{
-    h+=`<div style="background:var(--bg2);border-radius:10px;padding:10px;text-align:center">
-      <div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${safeColor(col)}">${val}</div>
-      <div style="font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.5px">${lbl}</div>
-    </div>`;
-  });
-  h+='</div>';
-  // List
+  let h='<div class="anim qt">';
+  h+=_qtKpi();
+  h+='<div class="d-sh al-sh"><h2>Recientes</h2><span class="q">'+String(QT.length).padStart(2,'0')+'</span></div><div class="d-list">';
   [...QT].sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).forEach(q=>{
-    const v=V.find(v=>v.id===q.vehicleId);
-    const col=statColor[q.status]||'var(--text3)';
-    h+=`<div onclick="_quoteEditId='${escJs(q.id)}';showQuoteDetail(document.getElementById('PC'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(q.num||'—')}</div>
-        <div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${safeColor(col)}20;color:${safeColor(col)}">${esc(statLabel[q.status]||q.status)}</div>
-      </div>
-      <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(v?v.name+' · '+v.plate:'Vehículo no encontrado')}</div>
-      <div style="font-size:12px;color:var(--text3)">${esc(fmtDMY(q.startDate)||'—')} → ${esc(fmtDMY(q.endDate)||'—')} · ${esc(q.dur||0)} días</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-        <div style="font-size:11px;color:var(--text3)">${esc(q.clientName||'Sin cliente asignado')}</div>
-        <div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">${fmtF(q.totalAmount||0)}</div>
-      </div>
-    </div>`;
+    h+=_qtRow(q,`_quoteEditId='${escJs(q.id)}';showQuoteDetail(document.getElementById('PC'))`);
   });
-  h+='</div>';
+  h+='</div></div>';
   el.innerHTML=h;
 }
 
@@ -12267,65 +12258,43 @@ function showQuoteDetail(el){
   const q=QT.find(q=>q.id===_quoteEditId);
   if(!q){renderQuotes(el);return;}
   const v=V.find(v=>v.id===q.vehicleId);
-  const statColor={pendiente:'var(--amber)',aceptado:'var(--green)',rechazado:'var(--red)',convertido:'var(--blue)'};
-  const statLabel={pendiente:'Pendiente',aceptado:'Aceptado',rechazado:'Rechazado',convertido:'Convertido'};
-  const col=statColor[q.status]||'var(--text3)';
-  let h='<div style="padding:16px 12px 100px">';
-  // Header
-  h+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-    <div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${esc(q.num)}</div>
-      <div style="font-weight:700;font-size:20px;margin-top:2px">Presupuesto</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:2px">${ymd(new Date(q.createdAt))}</div>
+  const _tV=Number(q.totalAmount)||0,_tS=fmtF(_tV).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
+  // Tarjeta del presupuesto (como la ficha del alquiler): rótulo y estado · coche · número y fecha · ficha técnica · desglose · total Doto tras línea discontinua
+  let h=`<div class="anim qt-det">
+  <div class="back" onclick="_quoteEditId=null;renderQuotes(document.getElementById('PC'))"><span style="font-size:18px">${ico('arrow-left')}</span>Volver</div>
+  <div class="d-card xl qt-c">
+    <div class="d-ch"><span class="q ac">Presupuesto</span>${_qtChip(q.status)}</div>
+    <div><div class="d-ct al-ct">${esc(v?v.name+' · '+v.plate:'—')}</div><div class="d-meta al-mt6">${esc(q.num)} · ${esc(fmtDMY(ymd(new Date(q.createdAt))))}</div></div>
+    <div class="spec qt-sp">
+      <div>Inicio<b>${esc(fmtDMY(q.startDate)||'—')}<span class="dh-sub">${esc(q.startTime||'')}</span></b></div>
+      <div>Fin<b>${esc(fmtDMY(q.endDate)||'—')}<span class="dh-sub">${esc(q.endTime||'')}</span></b></div>
+      <div>Duración<b>${esc(q.dur||0)} días</b></div>
+      <div>Fianza<b>${q.fianza?fmtF(q.fianza):'—'}</b></div>
+      ${q.clientName?'<div class="w2">Cliente<b>'+esc(q.clientName)+'</b></div>':''}
     </div>
-    <div style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${safeColor(col)}20;color:${safeColor(col)}">${esc(statLabel[q.status]||q.status)}</div>
-  </div>`;
-  // Vehicle + dates
-  h+=`<div style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:12px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:8px">VEHÍCULO Y FECHAS</div>
-    <div style="font-weight:700;font-size:15px">${esc(v?v.name+' · '+v.plate:'—')}</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:6px">${esc(fmtDMY(q.startDate)||'—')} ${esc(q.startTime||'')} → ${esc(fmtDMY(q.endDate)||'—')} ${esc(q.endTime||'')}</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:2px">Duración: <strong>${esc(q.dur||0)} días</strong></div>
-    ${q.clientName?'<div style="font-size:12px;color:var(--text3);margin-top:6px">Cliente: <strong>'+esc(q.clientName)+'</strong></div>':''}
-    ${q.fianza?'<div style="font-size:12px;color:var(--amber);margin-top:4px">Fianza reembolsable: <strong>'+fmtF(q.fianza)+'</strong></div>':''}
-  </div>`;
-  // Price breakdown
-  h+=`<div style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:12px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:10px">DESGLOSE DE PRECIO</div>
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px">Base alquiler (${esc(q.basePriceBreakdown||((q.dur||0)+'d × '+fmtF(q.dailyRate||0)))})</span>
-      <span style="font-family:var(--mono);font-weight:700">${fmtF(q.baseAmount||0)}</span>
-    </div>`;
+    <div class="al-l">
+      <div class="al-li"><span>Base alquiler (${esc(q.basePriceBreakdown||((q.dur||0)+'d × '+fmtF(q.dailyRate||0)))})</span><b>${fmtF(q.baseAmount||0)}</b></div>`;
   (q.extras||[]).forEach(ex=>{
-    h+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:12px;color:var(--text3)">${esc(ex.label)}</span>
-      <span style="font-family:var(--mono);font-size:12px">+${fmtF(ex.amount)}</span>
-    </div>`;
+    h+=`<div class="al-li"><span>${esc(ex.label)}</span><b>+${fmtF(ex.amount)}</b></div>`;
   });
-  h+=`<div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px">
-    <span style="font-weight:700;font-size:14px">TOTAL</span>
-    <span style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--green)">${fmtF(q.totalAmount||0)}</span>
-  </div></div>`;
-  if(q.notes){
-    h+=`<div style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:6px">OBSERVACIONES</div>
-      <div style="font-size:13px;color:var(--text2)">${esc(q.notes)}</div>
-    </div>`;
-  }
-  // Actions
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
-  h+=`<button class="btn-pri" onclick="generateQuotePDF('${escJs(q.id)}')">${ico('doc')} PDF</button>`;
+  if(Number(q.discount)>0)h+=`<div class="al-li"><span>Descuento</span><b class="qt-neg">-${fmtF(Number(q.discount))}</b></div>`;
+  h+=`</div>
+    <div class="d-tot"><span class="q">Total</span><div class="d-n n2">${esc(_tE)}<small>${esc(_tD)}</small></div><p>IVA incluido${q.fianza?' · fianza reembolsable aparte':''}</p></div>
+  </div>`;
+  if(q.notes)h+=`<p class="d-note qt-nt">${esc(q.notes)}</p>`;
+  // Un botón principal: Convertir en alquiler (o el PDF si ya está convertido); el resto, secundarios; Eliminar en texto rojo al final
+  h+='<div class="d-acts qt-acts">';
   if(q.status!=='convertido'){
     h+=`<button class="btn-pri" onclick="convertQuoteToBooking('${escJs(q.id)}')">${ico('car')} Convertir en alquiler</button>`;
+    h+=`<div class="two"><button class="btn-sec" onclick="generateQuotePDF('${escJs(q.id)}')">${ico('doc')} PDF</button><button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">${ico('edit')} Editar</button></div>`;
+    h+=`<button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">${ico('tag')} Estado</button>`;
   } else {
-    h+=`<button class="btn-sec" disabled>${ico('check-circle')} Ya convertido</button>`;
+    h+=`<button class="btn-pri" onclick="generateQuotePDF('${escJs(q.id)}')">${ico('doc')} PDF</button>`;
+    h+=`<div class="two"><button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">${ico('edit')} Editar</button><button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">${ico('tag')} Estado</button></div>`;
+    h+=`<p class="d-hint qt-cv">${ico('check-circle')} Ya convertido en alquiler</p>`;
   }
-  h+=`<button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">${ico('edit')} Editar</button>`;
-  h+=`<button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">${ico('tag')} Estado</button>`;
-  h+='</div>';
-  h+=`<button class="btn-sec" onclick="_quoteEditId=null;renderQuotes(document.getElementById('PC'))" style="width:100%;margin-bottom:8px">${ico('arrow-left')} Volver</button>`;
-  h+=`<button class="btn-dang" onclick="deleteQuote('${escJs(q.id)}')">${ico('trash')} Eliminar presupuesto</button>`;
-  h+='</div>';
+  h+=`<div class="al-dz"><button class="btn-txt err" onclick="deleteQuote('${escJs(q.id)}')">${ico('trash')} Eliminar presupuesto</button></div>`;
+  h+='</div></div>';
   el.innerHTML=h;
 }
 
@@ -12404,58 +12373,38 @@ function _openQuoteForm(q){
   ];
   const savedExtras=(q&&q.extras)||[];
   const isChecked=id=>savedExtras.some(e=>e.id===id);
+  // Fila de extra (lista técnica, como el asistente de alquiler): icono · nombre y precio · marca redonda. Mismos data-* que leen _toggleQExtra y _calcQuoteTotal
+  const _qR=(id,icon,label,price,type,chk,sub,kmInp)=>`<div class="_qex al-ex qt-ex" data-qexid="${id}" data-label="${label}" data-price="${price}" data-type="${type}" data-active="${chk?'1':'0'}"><span class="i">${ico(icon)}</span><span class="t">${label}<small>${sub}</small></span>${kmInp||'<span class="p"></span>'}<div id="qchk_${id}" class="al-ck"${chk?' style="background:var(--amber);border-color:var(--amber);color:var(--on-amber)"':''}>${chk?ico('check'):'&nbsp;'}</div></div>`;
   const extrasHtml=EXTRAS_CAT.map(([id,icon,label,price,type,note])=>{
     const chk=isChecked(id);
     const _pdisp={'day':price+'€/día','km':price+'€/km','scale_dur':'desde '+price+'€/día','scale_fixed':'desde '+price+'€','fixedPlus':price+'€','fixed':price+'€','fixed_cond':price+'€','free':'Gratis'};
     let priceDisp=_pdisp[type]||price+'€';
-    return `<div class="_qex" data-qexid="${id}" data-label="${label}" data-price="${price}" data-type="${type}" data-active="${chk?'1':'0'}"
-      style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;
-             background:${chk?'var(--acc-s)':''};cursor:pointer;
-             border:1px solid ${chk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
-      <div id="qchk_${id}" style="width:22px;height:22px;border-radius:6px;border:2px solid ${chk?'var(--amber)':'var(--border2)'};
-           background:${chk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-           font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'var(--on-amber)':'inherit'};transition:all .15s">${chk?ico('check'):'&nbsp;'}</div>
-      <span style="font-size:18px">${ico(icon)}</span>
-      <span style="flex:1;font-size:13px;font-weight:600">${label}
-        <span style="font-size:10px;color:var(--text3);font-weight:400">${priceDisp} · ${note}</span>
-        ${type==='km'?`<input id="qkm_${id}" type="number" min="0" step="50" placeholder="km"
-          onclick="event.stopPropagation()" oninput="_calcQuoteTotal()"
-          style="width:70px;font-size:12px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border2);
-                 border-radius:6px;color:var(--text);font-family:var(--mono);text-align:right;margin-left:6px"/>`:'' }
-      </span>
-    </div>`;
+    return _qR(id,icon,label,price,type,chk,priceDisp+' · '+note,type==='km'?`<input id="qkm_${id}" class="al-kmn" type="number" min="0" step="50" placeholder="km" inputmode="numeric" onclick="event.stopPropagation()" oninput="_calcQuoteTotal()"/>`:'');
   }).join('');
+  const _ph=(()=>{const _vq=V.find(v=>v.id===(q&&q.vehicleId));return (_vq?.vehicle_type||'turismo').startsWith('l')?45:30;})();
 
-  openSheet(`<div class="stitle">${q?(ico('edit')+' Editar presupuesto'):(ico('quote')+' Nuevo presupuesto')}</div><div class="ssub" id="qwSub">Paso 1: vehículo y fechas</div>
-    <div class="wiz-bar">${['Vehículo','Extras','Total'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="qwS'+(i+1)+'"><div class="wiz-dot">'+(i+1)+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
+  openSheet(`<div class="stitle">${q?'Editar presupuesto':'Nuevo presupuesto'}</div><div class="ssub" id="qwSub">Paso 1: vehículo, fechas y cliente</div>
+    <div class="wiz-bar">${['Vehículo','Extras','Total'].map((l,i)=>'<div class="wiz-stp'+(i===0?' active':'')+'" id="qwS'+(i+1)+'"><div class="wiz-dot">'+String(i+1).padStart(2,'0')+'</div><div class="wiz-lbl">'+l+'</div></div>').join('')}</div>
     <div data-qw="1">
-    <div class="fg"><label class="lbl">VEHÍCULO *</label>
+    <div class="d-f"><label class="q" for="qVehicle">Vehículo</label>
       <select id="qVehicle" onchange="_loadQuoteExtrasUpdate()"><option value="">— Seleccionar —</option>${vOpts}</select></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">FECHA INICIO *</label><input type="date" id="qStart" value="${esc(safeDate(q?q.startDate:today))}" onchange="_calcQuoteTotal()"/></div>
-      <div class="fg"><label class="lbl">FECHA FIN *</label><input type="date" id="qEnd" value="${esc(safeDate(q?q.endDate:''))}" onchange="_calcQuoteTotal()"/></div>
-    </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">HORA INICIO</label><input type="time" id="qStartT" value="${esc(safeTime(q?q.startTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div>
-      <div class="fg"><label class="lbl">HORA FIN</label><input type="time" id="qEndT" value="${esc(safeTime(q?q.endTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div>
-    </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">PRECIO/DÍA (€) *</label>
-        <input type="number" id="qCustomRate" step="0.01" inputmode="decimal" placeholder="${(()=>{const _vq=V.find(v=>v.id===(q&&q.vehicleId));return (_vq?.vehicle_type||'turismo').startsWith('l')?45:30;})()} €/día"
+    <div class="d-f"><span class="q">Inicio</span>
+      <div class="d-2"><input type="date" id="qStart" value="${esc(safeDate(q?q.startDate:today))}" onchange="_calcQuoteTotal()"/><input type="time" id="qStartT" value="${esc(safeTime(q?q.startTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div></div>
+    <div class="d-f"><span class="q">Fin</span>
+      <div class="d-2"><input type="date" id="qEnd" value="${esc(safeDate(q?q.endDate:''))}" onchange="_calcQuoteTotal()"/><input type="time" id="qEndT" value="${esc(safeTime(q?q.endTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div></div>
+    <div class="d-f"><label class="q" for="qCustomRate">Precio/día</label>
+      <div class="d-pre"><span>€</span><input type="number" id="qCustomRate" step="0.01" inputmode="decimal" placeholder="${_ph}"
           value="${esc(q&&q.customRate?q.customRate:'')}" oninput="_calcQuoteTotal()"/></div>
-      <div class="fg"><label class="lbl">DESCUENTO (€)</label>
-        <input type="number" id="qDiscount" step="0.01" inputmode="decimal" placeholder="0"
-          value="${esc(q&&q.discount?q.discount:'')}" oninput="_calcQuoteTotal()"/></div>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_qwGo(2)">Siguiente ›</button></div>
+      <span class="d-hint">Vacío: 30 €/día turismo, 45 €/día furgoneta · base para el cálculo por horas</span></div>
+    <div class="al-h"><h3>Cliente</h3><span class="mono2">Opcional</span></div>
+    <div class="fg">${_clPickerHtml('qClient',q?q.clientName||'':'',q&&q.clientId||'')}</div>
+    <div class="al-nav"><button class="btn-sec tap44" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" onclick="_qwGo(2)">Siguiente ›</button></div>
     </div>
     <div data-qw="2" style="display:none">
-    <div class="fg"><label class="lbl">NOMBRE DEL CLIENTE (opcional)</label>
-      ${_clPickerHtml('qClient',q?q.clientName||'':'',q&&q.clientId||'')}</div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">${ico('star')} SUPLEMENTOS</div>
-    <div id="qExtrasSection">${extrasHtml}</div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">${ico('road')} BOLSAS DE KILÓMETROS</div>
-    <div>${(()=>{
+    <div class="al-h al-h0"><h3>Suplementos</h3></div>
+    <div id="qExtrasSection" class="al-exl">${extrasHtml}</div>
+    <div class="al-h"><h3>Kilómetros</h3><span class="mono2">Bolsas</span></div>
+    <div class="al-exl">${(()=>{
       // data-price="turismo|furgoneta" — _calcQuoteTotal elige según vehículo
       const kmBolsas=[
         ['exBolsa200','road','Bolsa +200 km','24.99','fixed','cobro único'],
@@ -12467,39 +12416,13 @@ function _openQuoteForm(q){
       const kmSueltoKm=savedExtras.find(e=>e.id==='exKmPrepago')?.km||'';
       const bolsaHtml=kmBolsas.map(([id,icon,label,price,type,note])=>{
         const chk=savedExtras.some(e=>e.id===id);
-        return `<div class="_qex" data-qexid="${id}" data-label="${label}" data-price="${price}" data-type="${type}" data-active="${chk?'1':'0'}"
-          style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;
-                 background:${chk?'var(--acc-s)':''};cursor:pointer;
-                 border:1px solid ${chk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
-          <div id="qchk_${id}" style="width:22px;height:22px;border-radius:6px;border:2px solid ${chk?'var(--amber)':'var(--border2)'};
-               background:${chk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-               font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'var(--on-amber)':'inherit'};transition:all .15s">${chk?ico('check'):'&nbsp;'}</div>
-          <span style="font-size:18px">${ico(icon)}</span>
-          <span style="flex:1;font-size:13px;font-weight:600">${label}
-            <span style="font-size:10px;color:var(--text3);font-weight:400">${note}</span>
-          </span>
-        </div>`;
+        return _qR(id,icon,label,price,type,chk,price.replace('.',',')+' € · '+note);
       }).join('');
-      const sueltoHtml=`<div class="_qex" data-qexid="exKmPrepago" data-label="Km sueltos" data-price="0.15" data-type="km" data-active="${kmSueltoChk?'1':'0'}"
-        style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;
-               background:${kmSueltoChk?'var(--acc-s)':''};cursor:pointer;
-               border:1px solid ${kmSueltoChk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
-        <div id="qchk_exKmPrepago" style="width:22px;height:22px;border-radius:6px;border:2px solid ${kmSueltoChk?'var(--amber)':'var(--border2)'};
-             background:${kmSueltoChk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-             font-size:13px;font-weight:700;flex-shrink:0;color:${kmSueltoChk?'var(--on-amber)':'inherit'};transition:all .15s">${kmSueltoChk?ico('check'):'&nbsp;'}</div>
-        <span style="font-size:18px">${ico('odometer')}</span>
-        <span style="flex:1;font-size:13px;font-weight:600">Km sueltos
-          <span style="font-size:10px;color:var(--text3);font-weight:400">0,15€/km</span>
-          <input id="qkm_exKmPrepago" type="number" min="0" step="50" placeholder="km" value="${esc(kmSueltoKm)}"
-            onclick="event.stopPropagation()" oninput="_calcQuoteTotal()"
-            style="width:70px;font-size:12px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border2);
-                   border-radius:6px;color:var(--text);font-family:var(--mono);text-align:right;margin-left:6px"/>
-        </span>
-      </div>`;
+      const sueltoHtml=_qR('exKmPrepago','odometer','Km sueltos','0.15','km',kmSueltoChk,'0,15 €/km',`<input id="qkm_exKmPrepago" class="al-kmn" type="number" min="0" step="50" placeholder="km" inputmode="numeric" value="${esc(kmSueltoKm)}" onclick="event.stopPropagation()" oninput="_calcQuoteTotal()"/>`);
       return bolsaHtml+sueltoHtml;
     })()}</div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin:12px 0 8px">${ico('box')} PACKS TEMÁTICOS</div>
-    <div id="qPacksSection">${[
+    <div class="al-h"><h3>Packs temáticos</h3></div>
+    <div id="qPacksSection" class="al-exl">${[
       ['exPackBebe','child-seat','Pack Bebé','34.99','fixedPlus','silla 0+/1, espejo retrovisor, parasol'],
       ['exPackVerano','sun','Pack Verano','44.99','fixedPlus','sillas playa, mesa, nevera, toallas, sombrilla'],
       ['exPackInvierno','snow','Pack Invierno','24.99','fixedPlus','cadenas homologadas, rasqueta, alfombrillas'],
@@ -12510,41 +12433,33 @@ function _openQuoteForm(q){
     ].map(([id,icon,label,price,type,note])=>{
       const chk=savedExtras.some(e=>e.id===id);
       const priceDisp=type==='day'?price+'€/día':price+'€';
-      return `<div class="_qex" data-qexid="${id}" data-label="${label}" data-price="${price}" data-type="${type}" data-active="${chk?'1':'0'}"
-        style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;
-               background:${chk?'var(--acc-s)':''};cursor:pointer;
-               border:1px solid ${chk?'var(--amber)':'var(--border)'};margin-bottom:6px;transition:all .15s">
-        <div id="qchk_${id}" style="width:22px;height:22px;border-radius:6px;border:2px solid ${chk?'var(--amber)':'var(--border2)'};
-             background:${chk?'var(--amber)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;
-             font-size:13px;font-weight:700;flex-shrink:0;color:${chk?'var(--on-amber)':'inherit'};transition:all .15s">${chk?ico('check'):'&nbsp;'}</div>
-        <span style="font-size:18px">${ico(icon)}</span>
-        <span style="flex:1;font-size:13px;font-weight:600">${label}
-          <span style="font-size:10px;color:var(--text3);font-weight:400">${priceDisp} · ${note}</span>
-        </span>
-      </div>`;
+      return _qR(id,icon,label,price,type,chk,priceDisp+' · '+note);
     }).join('')}</div>
-    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_qwGo(1)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_qwGo(3)">Siguiente ›</button></div>
+    <div class="al-nav"><button class="btn-sec tap44" onclick="_qwGo(1)">‹ Atrás</button><button class="btn-pri tap44" onclick="_qwGo(3)">Siguiente ›</button></div>
     </div>
     <div data-qw="3" style="display:none">
-    <div id="qwSummary" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7"></div>
-    <div class="fg"><label class="lbl">FIANZA (€)<span style="font-size:9px;color:var(--text3)">reembolsable, no suma al total</span></label>
-      <input type="number" id="qFianza" step="0.01" inputmode="decimal" placeholder="200"
-        value="${esc(q?String(Number(q.fianza)||0):_fianzaDefault())}"/></div>
-    <div class="fg"><label class="lbl">OBSERVACIONES (aparecerán en el PDF)</label>
-      <input id="qNotes" value="${esc(q?q.notes||'':'')}" placeholder="Condiciones especiales, descuentos..." autocomplete="off"/></div>
-    <div id="qTotalBox" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">Días:</span><span id="qDurOut" style="font-family:var(--mono);font-size:12px">—</span></div>
-      <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">Km incluidos:</span><span id="qKmOut" style="font-family:var(--mono);font-size:12px;color:var(--blue)">—</span></div>
-      <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">Base:</span><span id="qBaseOut" style="font-family:var(--mono);font-size:12px">—</span></div>
-      <div id="qExtrasOut"></div>
-      <div id="qDiscountOut" style="display:none;justify-content:space-between">
-        <span style="font-size:12px;color:var(--red)">Descuento:</span><span id="qDiscountVal" style="font-family:var(--mono);font-size:12px;color:var(--red)">—</span></div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
-        <span style="font-weight:700">TOTAL:</span>
-        <span id="qTotalOut" style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--green)">—</span>
-      </div>
+    <div id="qwSummary" class="al-sum"></div>
+    <div class="d-2 al-mt">
+      <div class="d-f"><label class="q" for="qDiscount">Descuento</label>
+        <div class="d-pre"><span>€</span><input type="number" id="qDiscount" step="0.01" inputmode="decimal" placeholder="0"
+          value="${esc(q&&q.discount?q.discount:'')}" oninput="_calcQuoteTotal()"/></div></div>
+      <div class="d-f"><label class="q" for="qFianza">Fianza</label>
+        <div class="d-pre"><span>€</span><input type="number" id="qFianza" step="0.01" inputmode="decimal" placeholder="200"
+          value="${esc(q?String(Number(q.fianza)||0):_fianzaDefault())}"/></div></div>
     </div>
-    <div style="display:flex;gap:10px"><button class="btn-sec tap44" style="flex:1;min-height:44px" onclick="_qwGo(2)">‹ Atrás</button><button class="btn-pri tap44" style="flex:2;min-height:44px" onclick="_saveQuote()">${q?(ico('save')+' Guardar cambios'):(ico('check-circle')+' Crear presupuesto')}</button></div>
+    <span class="d-hint qt-h">La fianza es reembolsable y no suma al total</span>
+    <div class="d-f"><label class="q" for="qNotes">Observaciones</label>
+      <input id="qNotes" value="${esc(q?q.notes||'':'')}" placeholder="Condiciones especiales, descuentos..." autocomplete="off"/>
+      <span class="d-hint">Aparecerán en el PDF</span></div>
+    <div id="qTotalBox" class="al-l qt-tb">
+      <div class="al-li"><span>Días</span><b id="qDurOut">—</b></div>
+      <div class="al-li"><span>Km incluidos</span><b id="qKmOut">—</b></div>
+      <div class="al-li"><span>Base</span><b id="qBaseOut" class="qt-bo">—</b></div>
+      <div id="qExtrasOut"></div>
+      <div id="qDiscountOut" class="al-li" style="display:none"><span>Descuento</span><b id="qDiscountVal" class="qt-neg">—</b></div>
+    </div>
+    <div class="d-tot al-tot"><span class="q">Total</span><div class="d-n n2" id="qTotalOut">—</div><p>IVA incluido</p></div>
+    <div class="al-nav"><button class="btn-sec tap44" onclick="_qwGo(2)">‹ Atrás</button><button class="btn-pri tap44" onclick="_saveQuote()">${q?(ico('save')+' Guardar cambios'):(ico('check-circle')+' Crear presupuesto')}</button></div>
     </div>`);
 
   setTimeout(()=>{
@@ -12573,13 +12488,14 @@ function _qwGo(n){
   document.querySelectorAll('#SC [data-qw]').forEach(d=>{d.style.display=d.getAttribute('data-qw')===String(n)?'':'none';});
   [1,2,3].forEach(i=>{const e=document.getElementById('qwS'+i);if(e){e.classList.toggle('active',i===n);e.classList.toggle('done',i<n);}});
   const sub=document.getElementById('qwSub');
-  if(sub)sub.textContent=['','Paso 1: vehículo y fechas','Paso 2: cliente y extras','Paso 3: total y guardar'][n];
+  if(sub)sub.textContent=['','Paso 1: vehículo, fechas y cliente','Paso 2: extras','Paso 3: descuento, fianza y total'][n];
   if(n===3){
     _calcQuoteTotal();
     const g=id=>document.getElementById(id)?.value||'';
     const veh=V.find(x=>x.id===g('qVehicle'));
     const cl=g('qClient').trim();
-    document.getElementById('qwSummary').innerHTML=('<div>'+ico('car')+' <b>')+esc(veh?veh.name+' · '+veh.plate:'—')+('</b></div><div>'+ico('calendar')+' ')+esc(fmtDMY(g('qStart')))+' '+esc(g('qStartT'))+' → '+esc(fmtDMY(g('qEnd')))+' '+esc(g('qEndT'))+'</div>'+(cl?('<div>'+ico('user')+' ')+esc(cl)+'</div>':'');
+    const _kv=(k,val)=>'<div class="d-kv"><span>'+k+'</span><b>'+val+'</b></div>';
+    document.getElementById('qwSummary').innerHTML=_kv('Vehículo',esc(veh?veh.name+' · '+veh.plate:'—'))+_kv('Inicio',esc(fmtDMY(g('qStart')))+' '+esc(g('qStartT')))+_kv('Fin',esc(fmtDMY(g('qEnd')))+' '+esc(g('qEndT')))+(cl?_kv('Cliente',esc(cl)):'');
   }
   const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
@@ -12744,10 +12660,10 @@ function _calcQuoteTotal(){
   if(durEl)durEl.textContent=dur+' día'+(dur!==1?'s':'')+(startT&&endT?' · '+startT+'→'+endT:'');
   if(kmEl)kmEl.textContent=(Number.isFinite(kmIncTotal)?kmIncTotal:0).toLocaleString('es-ES')+' km';
   if(baseEl)baseEl.textContent=fmtF(baseAmt)+(basePriceBreakdown?' — '+basePriceBreakdown:'');
-  if(extEl)extEl.innerHTML=extrasSelected.map(e=>'<div style="display:flex;justify-content:space-between"><span style="font-size:11px;color:var(--text3)">+ '+esc(e.label)+'</span><span style="font-family:var(--mono);font-size:11px">+'+fmtF(e.amount)+'</span></div>').join('');
+  if(extEl)extEl.innerHTML=extrasSelected.map(e=>'<div class="al-li"><span>+ '+esc(e.label)+'</span><b>+'+fmtF(e.amount)+'</b></div>').join('');
   if(discRow)discRow.style.display=discount>0?'flex':'none';
   if(discVal)discVal.textContent='-'+fmtF(discount);
-  if(totEl)totEl.textContent=fmtF(total);
+  if(totEl){const _tS=fmtF(total).split(',');totEl.innerHTML=esc(_tS[0].replace(/\./g,''))+'<small>'+esc(_tS.length>1?','+_tS.slice(1).join(','):'')+'</small>';}
 
   window._qCalc={dur,dailyRate,baseAmt,extrasAmt,extrasSelected,discount,total,customRate:customRate||null,kmIncTotal,basePriceBreakdown};
   }catch(err){console.error('_calcQuoteTotal error:',err);}
@@ -12815,9 +12731,10 @@ function _saveQuote(){
 function openQuoteStatusMenu(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const statuses=[['pendiente','hourglass','Pendiente','var(--amber)'],['aceptado','check-circle','Aceptado','var(--green)'],['rechazado','ban','Rechazado','var(--red)'],['convertido','car','Convertido','var(--blue)']];
-  openSheet(('<div class="stitle">'+ico('tag')+' Cambiar estado</div>')
-    +statuses.map(([s,icon,lbl,col])=>`<button onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')" style="width:100%;background:${safeColor(q.status===s?col:'var(--bg3)')};border:1.5px solid ${safeColor(q.status===s?col:'var(--border2)')};color:${q.status===s?'#fff':'var(--text2)'};border-radius:10px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">${ico(icon)} ${esc(lbl)}</button>`).join('')
-    +'<button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>');
+  // Filas finas con el icono del estado; el actual con borde de acento y «Actual» (mismo onclick)
+  openSheet(('<div class="stitle">Cambiar estado</div><div class="ssub">'+esc(q.num||'')+'</div><div class="d-list qt-sl">')
+    +statuses.map(([s,icon,lbl,col])=>`<button type="button" class="d-row qt-so${q.status===s?' on':''}" aria-pressed="${q.status===s?'true':'false'}" onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')"><span class="qt-si" style="color:${safeColor(col)}">${ico(icon)}</span><span class="t">${esc(lbl)}</span><span class="r">${q.status===s?'<span class="q ac">Actual</span>':''}</span></button>`).join('')
+    +'</div><div class="al-dz qt-sc"><button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
 }
 
 function setQuoteStatus(id,status){
