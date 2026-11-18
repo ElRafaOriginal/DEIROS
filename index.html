@@ -2809,7 +2809,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const pInc=pFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const pExp=pFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const pBks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM);
-    const pDays=new Set(pBks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size;
+    const pDays=new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size;
     const occ=periodDim>0?Math.round(pDays/periodDim*100):0;
     const rpdInc=pDays>0?Math.round(pInc/pDays*100)/100:0;
     const avgP=pBks.length>0?Math.round(pInc/pBks.length*100)/100:0;
@@ -2903,7 +2903,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const bks=vs.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM));
     const inc=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
     const exp=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
-    const days=new Set(bks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size||1;
+    const days=vs.reduce((s,v)=>s+new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size,0)||1;
     return{cnt:vs.length,bks:bks.length,inc,exp,profit:inc-exp,days,rpd:days>0?Math.round(inc/days*100)/100:0,avgP:bks.length>0?Math.round(inc/bks.length*100)/100:0};
   };
   const tStat=typeM(turismos),fStat=typeM(furgos);
@@ -7045,7 +7045,7 @@ function renderCal(v){
   const monthKey=calY+'-'+String(calM+1).padStart(2,'0');
 
   let rC=0;
-  for(let d=1;d<=dim;d++){const k=dKey(d);if(dayStatus(v,k)==='rented')rC++;}
+  rC=new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(k=>k.slice(0,7)===monthKey)).size;
 
   const dayBars={};
   (v.bookings||[]).forEach(b=>{
@@ -8300,9 +8300,9 @@ function renderFin(v){
   const now=new Date();
   const curM=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   const dimM=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-  const allBk=v.bookings||[];
+  const allBk=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation);
   const mBk=allBk.filter(b=>b.startDate.slice(0,7)===curM);
-  const mDays=Array.from(new Set(allBk.filter(b=>b.startDate.slice(0,7)===curM||b.endDate.slice(0,7)===curM).flatMap(b=>_eachDate(b.startDate,b.endDate)).filter(d=>d.slice(0,7)===curM))).length;
+  const mDays=new Set(allBk.flatMap(_daysInBooking).filter(d=>d.slice(0,7)===curM)).size;
   const occ=Math.round(mDays/dimM*100);
   const avgDur=allBk.length?Math.round(allBk.reduce((s,b)=>s+Math.max(1,Math.ceil((new Date(b.endDate)-new Date(b.startDate))/864e5)+1),0)/allBk.length*10)/10:0;
   const rpd=Math.round(tInc(v)/(tDays(v)||1));
@@ -9297,7 +9297,7 @@ function runComparison(){
   function periodStats(m){
     const entries=allE.filter(e=>e.date.startsWith(m));
     const bks=[];
-    V.filter(v=>!v.archived).forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate.startsWith(m))bks.push(b);}));
+    V.filter(v=>!v.archived).forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate.startsWith(m)&&!b.cancelled&&!b.cancellation)bks.push(b);}));
     const inc=entries.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const exp=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const days=bks.reduce((s,b)=>s+daysBetween(b.startDate,b.endDate),0);
