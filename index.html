@@ -4211,20 +4211,25 @@ function openPendingDeposits(filter){
   }));
   rows.sort((x,y)=>String(x.b.endDate||'').localeCompare(String(y.b.endDate||'')));
   const LBL={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'};
-  const COL={pending:'var(--amber)',returned:'var(--green)',retained:'var(--red)',partial:(_uiLight()?'#9A3412':'#F97316')};
-  const pill=(k,t)=>'<button onclick="openPendingDeposits(\''+k+'\')" style="flex:1;background:'+(filter===k?'var(--amber)':'var(--bg3)')+';color:'+(filter===k?'var(--on-amber)':'var(--text2)')+';border:1px solid var(--border2);border-radius:8px;padding:8px;min-height:44px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">'+t+'</button>';
-  let h=('<div style="padding:16px"><div style="font-size:16px;font-weight:800;margin-bottom:10px">'+ico('lock')+' Fianzas</div>')
-    +'<div style="display:flex;gap:6px;margin-bottom:12px">'+pill('pending','Pendientes')+pill('retained','Retenidas')+pill('all','Todas')+'</div>';
-  if(!rows.length)h+='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Sin fianzas en esta lista</div>';
-  rows.forEach(({v,b,st})=>{
-    h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><div style="font-size:13px;font-weight:700;min-width:0">'+esc(v.name)+' <span style="font-size:10px;color:var(--text3);font-weight:500">'+esc(v.plate||'')+'</span></div>'
-      +'<span style="font-family:var(--mono);font-size:13px;font-weight:800;color:var(--blue)">'+fmtF(b.fianza)+'</span></div>'
-      +'<div style="font-size:11px;color:var(--text3);margin:2px 0 6px">'+esc(b.clientName||'—')+' · '+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;font-weight:700;color:'+COL[st]+'">'+LBL[st]+'</span>'
-      +'<button class="btn-sec" onclick="showBookingById(\''+escJs(b.id)+'\')" style="width:auto;font-size:12px">Ver alquiler</button></div></div>';
-  });
-  openSheet(h+'</div>');
+  // Estado como chip con punto (antes texto de color; «en parte» en naranja fuera de paleta)
+  const CHIP={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-red'};
+  const pill=(k,t)=>'<button type="button" onclick="openPendingDeposits(\''+k+'\')" aria-pressed="'+(filter===k)+'">'+t+'</button>';
+  let h=('<div class="stitle">'+ico('lock')+' Fianzas</div><div class="ssub">Fianzas de los alquileres, por fecha de devolución</div>')
+    +'<div class="d-seg" role="group" aria-label="Filtro">'+pill('pending','Pendientes')+pill('retained','Retenidas')+pill('all','Todas')+'</div>';
+  if(!rows.length)h+='<div class="d-empty fz-e">'+ico('lock')+'<h3>Sin fianzas</h3><p>Sin fianzas en esta lista</p></div>';
+  else{
+    h+='<div class="d-list fz-l">';
+    rows.forEach(({v,b,st})=>{
+      h+='<div class="fz-r">'
+        +'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>'
+        +'<div class="al-b"><div class="t ell">'+esc(v.name)+' <span class="mono2">'+esc(v.plate||'')+'</span></div>'
+        +'<div class="s ell">'+esc(b.clientName||'—')+'</div><div class="s">'+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
+        +'<span class="chip '+CHIP[st]+'">'+LBL[st]+'</span></div>'
+        +'<div class="r"><b>'+fmtF(b.fianza)+'</b><button class="btn-sec fz-v" onclick="showBookingById(\''+escJs(b.id)+'\')">Ver alquiler</button></div></div>';
+    });
+    h+='</div>';
+  }
+  openSheet(h);
   window._depOpen=filter;
 }
 
@@ -11083,9 +11088,9 @@ function openReport(vId){
   const now=new Date();
   const def=finMonth||(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'));
   openSheet(`<div class="stitle">${ico('doc')} Informe mensual</div><div class="ssub">${esc(v.name)} · ${esc(v.plate)}</div>
-    <div class="fg"><label class="lbl">SELECCIONA MES</label><input type="month" id="repMonth" value="${esc(safeMonth(def))}" style="font-size:16px"/></div>
-    <button class="btn-pri" onclick="genReport('${escJs(vId)}')">Ver informe</button><div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="repMonth">Mes</label><input type="month" id="repMonth" value="${esc(safeMonth(def))}"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="genReport('${escJs(vId)}')">Ver informe</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function genReport(vId){
   const v=V.find(x=>x.id===vId);if(!v)return;
@@ -11106,43 +11111,42 @@ function genReport(vId){
   const inc=fins.filter(e=>e.type==='income');
   const exp=fins.filter(e=>e.type==='expense');
   function rows(list,color){
-    if(!list.length)return`<div style="padding:12px 0;text-align:center;color:var(--text3);font-size:12px">Sin registros</div>`;
-    return list.map(e=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${esc(e.category)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${esc(fmtDMY(e.date))}${e.description?' · '+esc(e.description):''}</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${safeColor(color)};white-space:nowrap">${fmtE(e.amount)}</div></div>`).join('');
+    if(!list.length)return`<p class="d-hint rp-none">Sin registros</p>`;
+    return list.map(e=>`<div class="rp-r"><div class="al-b"><div class="t ell">${esc(e.category)}</div><div class="s ell">${esc(fmtDMY(e.date))}${e.description?' · '+esc(e.description):''}</div></div><b style="color:${safeColor(color)}">${fmtE(e.amount)}</b></div>`).join('');
   }
   closeSheet();
   const ov=document.createElement('div');
   ov.id='repOv';ov.style.cssText='position:fixed;inset:0;z-index:1000;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;';
+  const _tS=fmtE(tP).replace(/\s/g,' ').split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
+  // Informe del coche: barra de cristal con atrás redondo y PDF; resumen con el beneficio del mes en Doto; ingresos y gastos en filas; liquidación y ROI con líneas finas
+  ov.className='rp-ov';
   ov.innerHTML=`
-    <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
-      <div class="tap44" onclick="document.getElementById('repOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">${ico('arrow-left')}</div>
-      <div><div style="font-size:16px;font-weight:800;color:var(--amber)">INFORME MENSUAL</div><div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(v.name)} · ${mLabel.toUpperCase()}</div></div>
-      <button class="btn-pri" onclick="dlReport('${escJs(vId)}','${escJs(month)}')" style="margin-left:auto;width:auto;flex-shrink:0">${ico('download')} PDF</button>
+    <div class="rp-bar">
+      <button class="d-ib tap44" onclick="document.getElementById('repOv').remove()" aria-label="Volver">${ico('arrow-left')}</button>
+      <div class="rp-tt"><div class="rp-t">Informe</div><div class="rp-s">${esc(v.name)} · ${esc(mLabel)}</div></div>
+      <button class="btn-pri rp-pdf" onclick="dlReport('${escJs(vId)}','${escJs(month)}')">${ico('download')} PDF</button>
     </div>
-    <div style="padding:16px">
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid ${safeColor(v.color)}44">
-        <div style="font-size:20px;font-weight:800">${esc(v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${plateColor(v.color)};margin-top:2px">${esc(v.plate)}</div>
-        ${v.model?`<div style="font-size:11px;color:var(--text3);margin-top:4px">${esc(v.model)}${v.year?' · '+esc(v.year):''}</div>`:''}
-        <div style="margin-top:8px"><span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;${isM?'background:#8B5CF620;color:var(--purple);border:1px solid #8B5CF640':'background:var(--acc-s);color:var(--amber);border:1px solid var(--acc-b)'}">${isM?'EN GESTIÓN':'PROPIO'}</span></div>
+    <div class="rp-c">
+      <div class="d-card xl rp-hc">
+        <div class="d-ch"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q ac">${esc(mLabel)}</span></span>${isM?'<span class="chip">'+ico('handshake')+' Gestión</span>':'<span class="chip no-dot">Propio</span>'}</div>
+        <div><div class="d-ct al-ct">${esc(v.name)}</div><div class="d-meta al-mt6">${esc(v.plate)}${v.model?' · '+esc(v.model)+(v.year?' · '+esc(v.year):''):''}</div></div>
+        <div class="spec rp-sp">
+          <div>Ingresos<b class="cl-in">${fmtE(tI)}</b></div>
+          <div>Gastos<b class="ow-neg">${fmtE(tE)}</b></div>
+        </div>
+        <div class="d-tot"><span class="q">Beneficio</span><div class="d-n n2${tP<0?' neg':''}">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${inc.length} ingreso${inc.length!==1?'s':''} · ${exp.length} gasto${exp.length!==1?'s':''}</p></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-        <div style="background:var(--bg3);border-radius:10px;padding:12px 8px;text-align:center;border-top:2px solid var(--green)"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">${fmtE(tI)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">INGRESOS</div></div>
-        <div style="background:var(--bg3);border-radius:10px;padding:12px 8px;text-align:center;border-top:2px solid var(--red)"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--red)">${fmtE(tE)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">GASTOS</div></div>
-        <div style="background:var(--bg3);border-radius:10px;padding:12px 8px;text-align:center;border-top:2px solid ${tP>=0?'var(--green)':'var(--red)'}"><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${tP>=0?'var(--green)':'var(--red)'}">${fmtE(tP)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">BENEFICIO</div></div>
-      </div>
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--green)">${ico('coins')} INGRESOS (${inc.length})</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmtE(tI)}</div></div>
-        ${rows(inc,'var(--green)')}
-      </div>
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--red)">${ico('trend-down')} GASTOS (${exp.length})</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${fmtE(tE)}</div></div>
-        ${rows(exp,'var(--red)')}
-      </div>
-      ${isM?`<div style="background:#8B5CF610;border:1px solid #8B5CF640;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--purple);margin-bottom:12px">${ico('handshake')} LIQUIDACIÓN COMISIÓN (${comm}%)</div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #8B5CF620"><span style="font-size:13px;color:var(--text2)">Beneficio neto</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${tP>=0?'var(--green)':'var(--red)'}">${fmtE(tP)}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #8B5CF620"><span style="font-size:13px;color:var(--text2)">Comisión DEIROS (${comm}% de ${fmtE(tI)} facturado)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple)">${fmtE(commAmt)}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:10px 0 0"><span style="font-size:14px;font-weight:700">Queda para el propietario</span><span style="font-family:var(--mono);font-size:15px;font-weight:800;color:${toOwnerM>=0?'var(--green)':'var(--red)'}">${fmtE(toOwnerM)}</span></div>
+      <div class="d-sh al-sh"><h2>Ingresos</h2><span class="q">${String(inc.length).padStart(2,'0')} · <span class="cl-in">${fmtE(tI)}</span></span></div>
+      <div class="d-list">${rows(inc,'var(--green)')}</div>
+      <div class="d-sh al-sh"><h2>Gastos</h2><span class="q">${String(exp.length).padStart(2,'0')} · <span class="ow-neg">${fmtE(tE)}</span></span></div>
+      <div class="d-list">${rows(exp,'var(--red)')}</div>
+      ${isM?`<div class="d-card rp-lq">
+        <div class="d-ch"><span class="q ac">Liquidación comisión</span><span class="chip no-dot">${comm}%</span></div>
+        <div class="al-l">
+          <div class="al-li"><span>Beneficio neto</span><b class="${tP>=0?'cl-in':'ow-neg'}">${fmtE(tP)}</b></div>
+          <div class="al-li"><span>Comisión DEIROS (${comm}% de ${fmtE(tI)} facturado)</span><b>${fmtE(commAmt)}</b></div>
+        </div>
+        <div class="d-kv rp-own"><span>Queda para el propietario</span><b class="${toOwnerM>=0?'cl-in':'ow-neg'}">${fmtE(toOwnerM)}</b></div>
       </div>`:''}
       ${!isM&&v.purchase_price?(()=>{
         const pp=Number(v.purchase_price);
@@ -11157,39 +11161,15 @@ function genReport(vId){
         const mthsActive=new Set(allFins.map(e=>e.date.slice(0,7))).size||1;
         const monthlyAvg=allP/mthsActive;
         const mthsToBreak=monthlyAvg>0?Math.ceil(remaining/monthlyAvg):null;
-        return `<div style="background:var(--acc-s);border:1.5px solid var(--acc-b);border-radius:12px;padding:14px;margin-bottom:12px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--amber);margin-bottom:12px">${ico('trend-up')} RETORNO DE LA INVERSIÓN (ROI)</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:4px">PRECIO COMPRA</div>
-              <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text)">${fmtE(pp)}</div>
-            </div>
-            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:4px">BENEFICIO ACUMULADO</div>
-              <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${allP>=0?'var(--green)':'var(--red)'}">${fmtE(allP)}</div>
-            </div>
+        return `<div class="d-card rp-roi">
+          <div class="d-ch"><span class="q ac">Retorno de la inversión</span><span class="q">ROI</span></div>
+          <div class="spec rp-sp">
+            <div>Precio compra<b>${fmtE(pp)}</b></div>
+            <div>Beneficio acumulado<b class="${allP>=0?'cl-in':'ow-neg'}">${fmtE(allP)}</b></div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:${roiClr}">${roi.toFixed(1)}%</div>
-              <div style="font-size:9px;color:var(--text3);margin-top:3px;font-weight:700;letter-spacing:1px">ROI REAL</div>
-            </div>
-            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${remaining>0?'var(--amber)':'var(--green)'}">${fmtE(Math.abs(remaining))}</div>
-              <div style="font-size:9px;color:var(--text3);margin-top:3px">${remaining>0?'Por recuperar':'Beneficio extra'}</div>
-            </div>
-            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
-              <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--blue)">${mthsToBreak?mthsToBreak+'m':'—'}</div>
-              <div style="font-size:9px;color:var(--text3);margin-top:3px">Break-even</div>
-            </div>
-          </div>
-          <div style="margin-top:10px;background:var(--bg3);border-radius:6px;overflow:hidden;height:6px">
-            <div style="height:100%;width:${Math.min(100,Math.max(0,roi))}%;background:${roiClr};border-radius:6px;transition:width 0.4s"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <div style="font-size:9px;color:var(--text3)">0%</div>
-            <div style="font-size:9px;color:var(--text3)">Break-even (100%)</div>
-          </div>
+          <div class="d-kpi rp-k"><div><b style="color:${roiClr}">${roi.toFixed(1)}%</b><span>ROI real</span></div><div><b>${fmtE(Math.abs(remaining))}</b><span>${remaining>0?'Por recuperar':'Beneficio extra'}</span></div><div><b>${mthsToBreak?mthsToBreak+'m':'—'}</b><span>Break-even</span></div></div>
+          <div><div class="d-bar rp-bar2"><i style="width:${Math.min(100,Math.max(0,roi))}%;background:${roiClr}"></i></div>
+          <div class="rp-bl"><span>0%</span><span>Break-even (100%)</span></div></div>
         </div>`;
       })():''}
     </div>`;
@@ -11515,24 +11495,32 @@ function exportExcel(vId){
 
 // ═══════════════════════════════════════════════════════════ BACKUP
 function openBackup(){
+  // Copia de seguridad: qué hay (ficha técnica) · exportar (principal) · importar · mantenimiento de datos; textos y onclick de siempre
   openSheet(`<div class="stitle">${ico('save')} Copia de seguridad</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.6">Tus datos se sincronizan automáticamente en la nube. El JSON es una copia de seguridad adicional.</div>
-    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-      <div><div style="font-size:13px;font-weight:700">${V.filter(v=>!v.archived).length} vehículos activos</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${V.filter(v=>v.archived).length} archivados · ${BF.length} mov. negocio · ${OW.length} propietarios · ${CL.length} clientes · ${QT.length} presupuestos</div></div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">${new Date().toLocaleDateString('es-ES')}</div>
+    <div class="ssub">Tus datos se sincronizan automáticamente en la nube. El JSON es una copia de seguridad adicional.</div>
+    <div class="d-card s aj-c">
+      <div class="d-ch"><span class="q ac">En la copia</span><span class="q">${new Date().toLocaleDateString('es-ES')}</span></div>
+      <div class="spec aj-sp">
+        <div>Vehículos activos<b>${V.filter(v=>!v.archived).length}</b></div>
+        <div>Archivados<b>${V.filter(v=>v.archived).length}</b></div>
+        <div>Mov. negocio<b>${BF.length}</b></div>
+        <div>Propietarios<b>${OW.length}</b></div>
+        <div>Clientes<b>${CL.length}</b></div>
+        <div>Presupuestos<b>${QT.length}</b></div>
+      </div>
     </div>
-    <button class="btn-pri" onclick="exportData()" style="margin-bottom:10px">${ico('download')} Exportar copia completa (JSON)</button>
-    <div style="height:1px;background:var(--border);margin:16px 0"></div>
-    <button class="btn-sec" onclick="recalcAllBookings();closeSheet();" style="margin-bottom:14px">${ico('repeat')} Recalcular prorrateo de todos los alquileres</button>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.5">Usa esto si tienes alquileres que cruzan de un mes a otro y no aparecen bien en la gráfica.</div>
-    <div style="height:1px;background:var(--border);margin:16px 0"></div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:12px;line-height:1.6">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</div>
-    <label style="display:block;width:100%;background:var(--bg3);color:var(--text2);border:1.5px dashed var(--border2);border-radius:var(--rsm);padding:14px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;text-align:center;margin-bottom:10px">
+    <button class="btn-pri" onclick="exportData()">${ico('download')} Exportar copia completa (JSON)</button>
+    <p class="d-hint aj-h">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</p>
+    <div class="al-h"><h3>Importar</h3><span class="q">JSON</span></div>
+    <label class="btn-sec aj-up">
       ${ico('upload')} Seleccionar fichero JSON
       <input type="file" accept=".json" onchange="importData(event)" style="display:none"/>
     </label>
-    <div style="font-size:11px;color:var(--red);margin-bottom:14px;line-height:1.5">Un fichero completo sustituye todos esos datos (antes se descarga una copia del estado actual). Un fichero antiguo, solo con vehículos y finanzas, sustituye únicamente esos dos apartados y no borra el resto.</div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
+    <p class="d-hint err aj-h">Un fichero completo sustituye todos esos datos (antes se descarga una copia del estado actual). Un fichero antiguo, solo con vehículos y finanzas, sustituye únicamente esos dos apartados y no borra el resto.</p>
+    <div class="al-h"><h3>Mantenimiento</h3></div>
+    <button class="btn-sec" onclick="recalcAllBookings();closeSheet();">${ico('repeat')} Recalcular prorrateo de todos los alquileres</button>
+    <p class="d-hint aj-h">Usa esto si tienes alquileres que cruzan de un mes a otro y no aparecen bien en la gráfica.</p>
+    <div class="d-acts al-end"><button class="btn-txt" onclick="closeSheet()">Cerrar</button></div>`);
 }
 function _isPlainObject(x){return !!x&&typeof x==='object'&&!Array.isArray(x);}
 function _collectPhotos(){
@@ -11911,22 +11899,21 @@ function openNotifSettings(){
   const perm=('Notification' in window)?Notification.permission:'no-soportado';
   const permLabel={granted:(ico('check-circle')+' Activadas'),denied:(ico('ban')+' Bloqueadas (actívalas en ajustes del navegador)'),default:(ico('hourglass')+' Pendiente de permiso')}[perm]||'No soportado';
   const alerts=getAlerts();
+  // Notificaciones: estado en fila de dato, un botón principal y las alertas en filas finas con chip (rojo vencido, acento próximo)
   openSheet(`<div class="stitle">${ico('bell')} Notificaciones</div>
-    <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">ESTADO</div>
-      <div style="font-size:14px;font-weight:700;color:var(--text)">${permLabel}</div>
-      ${perm==='denied'?'<div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Ve a Ajustes → Privacidad → Notificaciones y permite DEIROS Fleet.</div>':''}
-    </div>
-    ${perm==='default'?`<button class="btn-pri" onclick="Notification.requestPermission().then(p=>{closeSheet();if(p==='granted'){showNotif('DEIROS Fleet','Notificaciones activadas');}else{alert('Permiso denegado. Actívalas desde los ajustes del navegador.');}})">Activar notificaciones</button><div style="height:10px"></div>`:''}
-    <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">ALERTAS ACTIVAS (${alerts.length})</div>
-      ${alerts.length?alerts.slice(0,8).map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
-        <div><div style="font-size:12px;font-weight:600">${esc(a.vname)}</div><div style="font-size:10px;color:var(--text3)">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
-        <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${a.expired?'var(--red)':'var(--amber)'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
-      </div>`).join(''):('<div style="font-size:12px;color:var(--text3)">Sin alertas próximas '+ico('sparkle')+'</div>')}
-    </div>
-    ${perm==='granted'?`<button onclick="localStorage.removeItem('wg_lastNotifCheck');checkAlertNotifs();closeSheet();alert('Notificación enviada (si hay alertas activas)');" class="btn-sec" style="margin-bottom:10px">${ico('repeat')} Forzar comprobación ahora</button>`:''}
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cerrar</button>`);
+    <div class="ssub">Avisos de ITV, seguro y mantenimiento de la flota</div>
+    <div class="d-kv aj-st"><span>Estado</span><b>${permLabel}</b></div>
+    ${perm==='denied'?'<p class="d-hint aj-h">Ve a Ajustes → Privacidad → Notificaciones y permite DEIROS Fleet.</p>':''}
+    ${perm==='default'?`<button class="btn-pri aj-on" onclick="Notification.requestPermission().then(p=>{closeSheet();if(p==='granted'){showNotif('DEIROS Fleet','Notificaciones activadas');}else{alert('Permiso denegado. Actívalas desde los ajustes del navegador.');}})">Activar notificaciones</button>`:''}
+    <div class="al-h"><h3>Alertas activas</h3><span class="q">${String(alerts.length).padStart(2,'0')}</span></div>
+    ${alerts.length?'<div class="d-list">'+alerts.slice(0,8).map(a=>`<div class="aj-r">
+        <span class="aj-i">${a.ico?ico(a.ico):''}</span>
+        <div class="al-b"><div class="t ell">${esc(a.vname)}</div><div class="s ell">${esc(a.label)}</div></div>
+        <span class="chip ${a.expired?'chip-red':'chip-amber'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
+      </div>`).join('')+'</div>':('<div class="d-empty aj-e">'+ico('sparkle')+'<h3>Todo en orden</h3><p>Sin alertas próximas</p></div>')}
+    <div class="d-acts al-end">
+    ${perm==='granted'?`<button onclick="localStorage.removeItem('wg_lastNotifCheck');checkAlertNotifs();closeSheet();alert('Notificación enviada (si hay alertas activas)');" class="btn-sec">${ico('repeat')} Forzar comprobación ahora</button>`:''}
+    <button class="btn-txt" onclick="closeSheet()">Cerrar</button></div>`);
 }
 
 
@@ -12245,12 +12232,12 @@ function openNewQuote(){
 let _fvType='';
 function openFreeVehiclesSearch(){
   const t=todayStr();
-  openSheet(`<div class="stitle">${ico('search')} Coches libres</div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">FECHA INICIO</label><input type="date" id="fvStart" value="${esc(t)}" onchange="_fvSearch()"/></div>
-      <div class="fg"><label class="lbl">FECHA FIN</label><input type="date" id="fvEnd" value="${esc(t)}" onchange="_fvSearch()"/></div>
+  openSheet(`<div class="stitle">${ico('search')} Coches libres</div><div class="ssub">Sin alquiler, mantenimiento ni bloqueo en esas fechas</div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="fvStart">Inicio</label><input type="date" id="fvStart" value="${esc(t)}" onchange="_fvSearch()"/></div>
+      <div class="d-f"><label class="q" for="fvEnd">Fin</label><input type="date" id="fvEnd" value="${esc(t)}" onchange="_fvSearch()"/></div>
     </div>
-    <div class="pills" style="margin-bottom:12px" id="fvPills"></div>
+    <div class="d-pills fv-p" id="fvPills"></div>
     <div id="fvRes"></div>`);
   _fvType='';
   _fvSearch();
@@ -12260,8 +12247,8 @@ function _fvSearch(){
   const s=document.getElementById('fvStart')?.value,e=document.getElementById('fvEnd')?.value;
   const pl=document.getElementById('fvPills'),res=document.getElementById('fvRes');
   if(!pl||!res)return;
-  pl.innerHTML=[['','Todos'],['t','Turismo'],['f','Furgoneta']].map(([k,l])=>{const a=_fvType===k;return `<div class="pill" onclick="_fvSetType('${k}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'var(--acc-m)':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${l}</div>`;}).join('');
-  if(!s||!e||e<s){res.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Elige un intervalo de fechas válido</div>';return;}
+  pl.innerHTML=[['','Todos'],['t','Turismo'],['f','Furgoneta']].map(([k,l])=>{const a=_fvType===k;return `<button type="button" onclick="_fvSetType('${k}')" aria-pressed="${a}">${l}</button>`;}).join('');
+  if(!s||!e||e<s){res.innerHTML='<p class="d-hint fv-h">Elige un intervalo de fechas válido</p>';return;}
   const free=V.filter(v=>{
     if(v.archived)return false;
     const van=(v.vehicle_type||'turismo').startsWith('l');
@@ -12270,11 +12257,12 @@ function _fvSearch(){
     if(_eachDate(s,e).some(k=>{const c=v.calendar&&v.calendar[k];return c==='maintenance'||c==='blocked';}))return false;
     return !(v.bookings||[]).some(b=>!b.returned&&!b.cancelled&&!b.cancellation&&b.startDate<=e&&b.endDate>=s);
   });
-  if(!free.length){res.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">No hay vehículos libres en esas fechas</div>';return;}
-  res.innerHTML=free.map(v=>`<div style="display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">
-    <div style="min-width:0"><div style="font-size:13px;font-weight:700">${esc(v.name)}</div>
-    <div style="font-size:11px;color:var(--text3)">${esc(v.plate||'')} · ${(v.vehicle_type||'turismo').startsWith('l')?'Furgoneta':'Turismo'}</div></div>
-    <button class="btn-pri" onclick="_fvQuote('${escJs(v.id)}')">Presupuesto</button></div>`).join('');
+  if(!free.length){res.innerHTML='<div class="d-empty fv-e">'+ico('car')+'<h3>Ninguno libre</h3><p>No hay vehículos libres en esas fechas</p></div>';return;}
+  // Coches libres en filas finas: punto del coche · nombre / matrícula y tipo · Presupuesto
+  res.innerHTML='<div class="d-sh fv-sh"><span class="q">Libres</span><span class="q">'+String(free.length).padStart(2,'0')+'</span></div><div class="d-list">'+free.map(v=>`<div class="fv-r">
+    <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+    <div class="al-b"><div class="t ell">${esc(v.name)}</div><div class="s">${esc(v.plate||'')} · ${(v.vehicle_type||'turismo').startsWith('l')?'Furgoneta':'Turismo'}</div></div>
+    <button class="btn-sec fv-q" onclick="_fvQuote('${escJs(v.id)}')">Presupuesto</button></div>`).join('')+'</div>';
 }
 function _fvQuote(vid){
   const s=document.getElementById('fvStart').value,e=document.getElementById('fvEnd').value;
