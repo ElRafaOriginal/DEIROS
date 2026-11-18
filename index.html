@@ -1231,6 +1231,137 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .fl-vt button[aria-pressed=true]{background:var(--amber);border-color:var(--amber);color:var(--on-amber);}
 .fl-vt button:active,.fl-pha:active,.fl-phx:active{transform:scale(.97);}
 .fl-et{margin-bottom:20px;}
+/* ══ PR F · Negocio y Analítica: cabecera de Negocio con el beneficio del mes en Doto y ficha técnica, exportar/informe como secundarios, filtros en píldoras,
+   desplegables con la fila del sistema, movimientos y comisiones en filas finas; Analítica con filtros segmentados, cifra Doto (beneficio real del negocio)
+   y secciones en desplegables (solo la primera abierta), KPI con líneas de 1 px, rankings y barras finas, tablas limpias. Sin arcoíris: verde ingresos,
+   rojo gastos, azul información; las plataformas con su color (--plat-*, PR #86) ══ */
+.nb b.ok,.an b.ok{color:var(--green);}.nb b.err,.an b.err{color:var(--red);}.an b.in{color:var(--blue);}
+/* Negocio · cabecera: rótulo del mes y margen, beneficio en Doto, ingresos | gastos; la gráfica del año debajo tras línea discontinua */
+.nb-c{border-color:var(--amber);}
+.nb-hd{margin:-20px -20px 0;padding:20px 20px 4px;border-radius:var(--r-sheet) var(--r-sheet) 0 0;background-image:var(--dots);background-size:var(--dots-size) var(--dots-size);}
+.nb-hd>.q{display:block;}
+.nb-hd .d-n{margin-top:20px;}
+.spec.nb-ie{margin-top:18px;grid-template-columns:1fr 1fr auto;}
+.nb-ie b{font-size:16px;}
+.spec.nb-ie>div{border-bottom:0;}
+.nb-ch{border-top:1px dashed var(--border2);margin-top:12px;padding-top:18px;}
+.nb-acts{margin:0;}
+.nb-mh{margin-top:var(--sp-sec);}
+.nb-ff{margin-bottom:10px;}
+.nb-fm{width:100%;margin-bottom:16px;}
+/* Ingresos por origen / Gastos por categoría: fila de desplegable (mismo onclick) y filas con % y barra fina */
+.nb-accs{border-top:1px solid var(--border2);margin-bottom:16px;}
+.nb-acc{border-bottom:1px solid var(--border2);}
+.nb-as{display:grid;grid-template-columns:auto minmax(0,1fr) auto 20px;align-items:center;gap:12px;min-height:var(--row-h);cursor:pointer;}
+.nb-as>.q{font-size:var(--fs-min);}
+.nb-as .t{font-size:var(--fs-h4);font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nb-as b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;}
+.nb-as .chev{display:inline-flex;color:var(--amber);transition:transform .4s var(--ease);}
+.nb-ab{padding:0 0 14px;}
+.nb-sr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px 12px;padding:10px 0;}
+.nb-sr .t{min-width:0;font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nb-sr .p{font-family:var(--mono);font-size:12px;color:var(--text2);}
+.nb-sr b{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;}
+.nb-sr .d-bar{grid-column:1/-1;}
+/* Movimientos: las filas de la ficha del coche; la descripción (fechas del alquiler, entrega) en dos líneas como máximo */
+.nb-ml .fl-mv .s{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.4;}
+/* Gestión (comisiones): filas con nombre y matrícula, al negocio, comisión y ficha técnica */
+.nb-gh{margin-top:var(--sp-sec);}
+.nb-gs{margin:-6px 0 12px;}
+.nb-gq{width:100%;margin-bottom:8px;}
+.nb-gl{border-top:1px solid var(--border2);}
+.nb-mg{padding:16px 0;border-bottom:1px solid var(--border2);}
+.nb-mt{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;}
+.nb-mt .t{min-width:0;font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nb-mt .t span{font-family:var(--mono);font-size:12px;font-weight:400;letter-spacing:.04em;color:var(--text2);}
+.nb-mt b{font-family:var(--mono);font-size:17px;font-weight:500;white-space:nowrap;}
+.nb-mm{display:flex;justify-content:space-between;gap:12px;margin-top:4px;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.spec.nb-m3{margin-top:14px;}
+.nb-m3 b.ok{color:var(--green);}.nb-m3 b.err{color:var(--red);}
+.nb-g0{padding:12px 0;text-align:center;}
+/* Informe de negocio: periodos rápidos en filas finas (mono) con icono de descarga */
+.nb-rp{margin-bottom:4px;}
+.nb-rp .d-row{min-height:56px;}
+.nb-rp .d-row .t{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:.02em;}
+.nb-rp .d-row>.ico{color:var(--amber);}
+/* Analítica · filtros, cifra protagonista e informe */
+.an-own{margin-bottom:10px;}
+.an-own button .ico,.an-vt button .ico{width:16px;height:16px;}
+.an-vt{margin-bottom:16px;}
+.an-hero{margin-top:6px;}
+.an-hero .d-meta{margin-top:-8px;}
+.an-hero .d-ch .q{white-space:nowrap;}
+.spec.an-hs{margin-top:0;}
+.an-hs>div{border-bottom:0;padding-bottom:0;}
+.an-hs .ico,.an-tb .ico{width:14px;height:14px;vertical-align:-2px;}
+.an-pdf{margin:0 0 var(--sp-sec);}
+/* Desplegables: «"01"» · título · rótulo opcional · «+» */
+.an-acc summary>.q{font-size:var(--fs-min);}
+.an-sq{font-family:var(--mono);font-size:var(--fs-min);letter-spacing:.06em;text-transform:uppercase;color:var(--text2);white-space:nowrap;}
+/* Ranking, ROI y ocupación: filas finas con barra de 2 px */
+.an-rk{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px 12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.an-no{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--text2);}
+.an-rk .d-bar{grid-column:2/-1;}
+.an-rk .t,.an-r .t,.an-oh .t{min-width:0;display:grid;gap:3px;}
+.an .n{font-size:15px;font-weight:600;line-height:1.3;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.an .t>.s{font-family:var(--mono);font-size:12px;line-height:1.45;color:var(--text2);overflow-wrap:anywhere;}
+.an .t>.s.ac{color:var(--amber);}
+.an .t>.s .ico{width:13px;height:13px;vertical-align:-2px;}
+.an-rk>b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.an-r{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+.an-r>.dh-dot,.an-oh>.dh-dot{margin-top:7px;}
+.an-oh>.dh-dot{align-self:start;}
+.an-v{text-align:right;}
+.an-v b{display:block;font-family:var(--mono);font-size:20px;font-weight:500;color:var(--text);white-space:nowrap;}
+.an-v span{display:block;margin-top:4px;font-family:var(--mono);font-size:var(--fs-min);letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
+.an-oc{padding:10px 0;}
+.an-ol{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px;}
+.an-ol span{min-width:0;font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.an-ol b{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;}
+/* Ratio de ocupación: mes + «Ver», KPI del mes y filas por coche con ficha técnica */
+.an-mr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;margin-bottom:16px;}
+.an-mr input{min-width:0;}
+.an-mr .btn-sec{width:auto;padding:0 22px;}
+.d-kpi.an-oz{margin-bottom:18px;}
+.an-oz>div{display:grid;gap:6px;align-content:start;}
+.d-kpi.an-oz b{font-size:28px;}
+.d-kpi.an-oz span{margin-top:0;}
+.an-oz small,.an-kpi small{display:block;font-family:var(--mono);font-size:var(--fs-min);line-height:1.4;color:var(--text2);margin-top:6px;}
+.an-oz small{margin-top:0;}
+.an-q{display:block;margin:4px 0 8px;}
+.an-ovl{border-top:1px solid var(--border2);}
+.an-ov{padding:14px 0;border-bottom:1px solid var(--border);}
+.an-oh{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;}
+.an-oh>b{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--text);white-space:nowrap;}
+.spec.an-o3,.spec.an-o4{grid-template-columns:repeat(3,1fr);margin:10px 0 12px;border-top:0;}
+.spec.an-o4{grid-template-columns:1fr 1fr;}
+.an-o3>div,.an-o4>div{padding:8px 8px 8px 0;border-bottom:0;}
+.an-o3 b,.an-o4 b{font-size:15px;}
+/* Eficiencia y clientes: KPI con pista mono; proyección en filas rótulo | cifra */
+.an-kpi>div{display:grid;align-content:start;}
+.an-kpi em{font-style:normal;font-size:13px;color:var(--text2);}
+.an-l{border-top:1px solid var(--border2);margin-top:12px;}
+.an-li{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;color:var(--text);}
+.an-li small{display:block;margin-top:3px;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--text2);}
+.an-li b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.an-km{margin-top:12px;}
+.an-km b{color:var(--text);font-weight:500;}
+.an-cl .d-row{cursor:default;}
+.an-cl .d-row>div:nth-child(2){min-width:0;}
+.an-rk:last-child,.an-r:last-child,.an-ov:last-child,.an-li:last-child,.an-cl .d-row:last-child,.an-tb>div:last-child,.an-cmp>div:last-child,.an-acc .fl-hr:last-child{border-bottom:0;}
+/* Tablas limpias (turismo vs furgoneta, comparativa de periodos): cabecera mono, líneas finas, cifras a la derecha */
+.an-tb>div,.an-cmp>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.2fr);align-items:center;gap:8px;min-height:44px;border-bottom:1px solid var(--border);}
+.an-cmp>div{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr) 44px;}
+.an-tb>.h,.an-cmp>.h{min-height:40px;font-family:var(--mono);font-size:var(--fs-min);letter-spacing:.06em;text-transform:uppercase;color:var(--text2);border-bottom-color:var(--border2);}
+.an-tb>div>*:not(:first-child),.an-cmp>div>*:not(:first-child){text-align:right;}
+.an-tb>div:not(.h)>span:first-child,.an-cmp>div:not(.h)>span:first-child{font-size:13px;color:var(--text2);}
+.an-tb b,.an-cmp b{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.an-cr{margin-top:16px;}
+.an-d{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text2);}
+.an-d.ok{color:var(--green);}.an-d.err{color:var(--red);}
+/* Informe de analítica: periodos rápidos en píldoras que saltan de línea */
+.an-pp{flex-wrap:wrap;overflow:visible;margin-bottom:16px;}
+.an-pp button{min-height:40px;padding:0 14px;}
 </style>
 </head>
 <body>
@@ -2051,7 +2182,7 @@ function renderOccupancy(){
     if(_analyticsVtype&&(v.vehicle_type||'turismo')!==_analyticsVtype)return false;
     return true;
   });
-  if(!activeV.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">Sin vehículos</div>';return;}
+  if(!activeV.length){el.innerHTML='<div class="d-hint">Sin vehículos</div>';return;}
 
   const selM=document.getElementById('occMonth')?.value||
     new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0');
@@ -2062,87 +2193,65 @@ function renderOccupancy(){
 
   const fmtM=m=>MON_ES[parseInt(m.slice(5,7))-1]+' '+m.slice(0,4);
 
-  function occBar(pct,col){
-    return `<div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-top:4px">
-      <div style="height:100%;width:${Number(pct)}%;background:${safeColor(col)};border-radius:4px;transition:width 0.5s"></div>
-    </div>`;
+  // Barra fina en acento; el % en verde (≥ 70 %), rojo (< 40 %) o texto (sin semáforo ámbar ni rellenos)
+  function occBar(pct){
+    return `<div class="d-bar"><i style="width:${Number(pct)}%"></i></div>`;
   }
-  function occColor(pct){return pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';}
+  function occCls(pct){return pct>=70?'ok':pct>=40?'':'err';}
 
   let h='';
 
-  // ── Global summary tiles ──────────────────────────────────────
-  h+=`<div style="display:grid;grid-template-columns:1fr ${isSameMonth?'':'1fr'};gap:8px;margin-bottom:14px">`;
+  // ── Global summary: tira de KPI con líneas de 1 px ────────────
+  h+=`<div class="d-kpi an-oz" style="--c:${isSameMonth?1:2}">`;
 
   // Current month global
-  h+=`<div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
-    <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:4px">MES ACTUAL · ${fmtM(curM).toUpperCase()}</div>
-    <div style="font-family:var(--mono);font-size:32px;font-weight:900;color:${safeColor(occColor(curG.pct))}">${curG.pct}%</div>
-    <div style="font-size:10px;color:var(--text3);margin-top:2px">${curG.days} días ocupados / ${curG.totalAvail} disponibles</div>
-    ${occBar(curG.pct,occColor(curG.pct))}
-    <div style="font-size:11px;color:var(--text3);margin-top:6px">${fmtF(curG.totalInc)} generados</div>
+  h+=`<div>
+    <b class="${occCls(curG.pct)}">${curG.pct}%</b><span>Mes actual · ${fmtM(curM)}</span>
+    <small>${curG.days} días ocupados / ${curG.totalAvail} disponibles</small>
+    ${occBar(curG.pct)}
+    <small>${fmtF(curG.totalInc)} generados</small>
   </div>`;
 
   // Selected month (only if different)
   if(!isSameMonth){
-    h+=`<div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
-      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:4px">SELECCIONADO · ${fmtM(selM).toUpperCase()}</div>
-      <div style="font-family:var(--mono);font-size:32px;font-weight:900;color:${safeColor(occColor(selG.pct))}">${selG.pct}%</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${selG.days} días ocupados / ${selG.totalAvail} disponibles</div>
-      ${occBar(selG.pct,occColor(selG.pct))}
-      <div style="font-size:11px;color:var(--text3);margin-top:6px">${fmtF(selG.totalInc)} generados</div>
+    h+=`<div>
+      <b class="${occCls(selG.pct)}">${selG.pct}%</b><span>Seleccionado · ${fmtM(selM)}</span>
+      <small>${selG.days} días ocupados / ${selG.totalAvail} disponibles</small>
+      ${occBar(selG.pct)}
+      <small>${fmtF(selG.totalInc)} generados</small>
     </div>`;
   }
   h+='</div>';
 
-  // ── Per-vehicle breakdown ─────────────────────────────────────
-  h+=`<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:8px">POR VEHÍCULO</div>`;
+  // ── Per-vehicle breakdown: filas finas con punto del coche y ficha técnica ──
+  h+=`<span class="q an-q">Por vehículo</span><div class="an-ovl">`;
 
   activeV.forEach(v=>{
     const cur=_calcOcc(v,curM);
     const sel=isSameMonth?cur:_calcOcc(v,selM);
     const all=_allTimeOcc(v);
-    h+=`<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:4px;height:36px;border-radius:2px;background:${safeColor(v.color)};flex-shrink:0"></div>
-          <div>
-            <div style="font-size:14px;font-weight:700">${esc(v.name)}</div>
-            <div style="font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
-          </div>
-        </div>
-        <div style="font-family:var(--mono);font-size:22px;font-weight:900;color:${safeColor(occColor(isSameMonth?cur.pct:sel.pct))}">${isSameMonth?cur.pct:sel.pct}%</div>
+    h+=`<div class="an-ov">
+      <div class="an-oh">
+        <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+        <div class="t"><span class="n">${esc(v.name)}</span><span class="s">${esc(v.plate)}</span></div>
+        <b class="${occCls(isSameMonth?cur.pct:sel.pct)}">${isSameMonth?cur.pct:sel.pct}%</b>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr ${isSameMonth?'1fr':'1fr 1fr'};gap:6px">
-        <div style="background:var(--bg2);border-radius:7px;padding:7px;text-align:center">
-          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${safeColor(occColor(cur.pct))}">${cur.pct}%</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:1px">Mes actual</div>
-          <div style="font-size:9px;color:var(--text3)">${cur.days}/${cur.dim}d</div>
-        </div>
-        ${!isSameMonth?`<div style="background:var(--bg2);border-radius:7px;padding:7px;text-align:center">
-          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${safeColor(occColor(sel.pct))}">${sel.pct}%</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:1px">${fmtM(selM).split(' ')[0]}</div>
-          <div style="font-size:9px;color:var(--text3)">${sel.days}/${sel.dim}d</div>
-        </div>`:''}
-        <div style="background:var(--bg2);border-radius:7px;padding:7px;text-align:center">
-          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue)">${all.pct}%</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:1px">Histórico</div>
-          <div style="font-size:9px;color:var(--text3)">${all.days}/${all.totalDays}d</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:7px;padding:7px;text-align:center">
-          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">${fmtF(isSameMonth?cur.inc:sel.inc)}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:1px">Ingresos mes</div>
-        </div>
+      <div class="spec an-o${isSameMonth?3:4}">
+        <div>Mes actual<b class="${occCls(cur.pct)}">${cur.pct}%</b><span class="dh-sub">${cur.days}/${cur.dim}d</span></div>
+        ${!isSameMonth?`<div>${fmtM(selM).split(' ')[0]}<b class="${occCls(sel.pct)}">${sel.pct}%</b><span class="dh-sub">${sel.days}/${sel.dim}d</span></div>`:''}
+        <div>Histórico<b class="in">${all.pct}%</b><span class="dh-sub">${all.days}/${all.totalDays}d</span></div>
+        <div>Ingresos mes<b class="ok">${fmtF(isSameMonth?cur.inc:sel.inc)}</b></div>
       </div>
-      ${occBar(isSameMonth?cur.pct:sel.pct,occColor(isSameMonth?cur.pct:sel.pct))}
+      ${occBar(isSameMonth?cur.pct:sel.pct)}
     </div>`;
   });
+  h+='</div>';
 
   el.innerHTML=h;
 }
 function renderAnalytics(el){
   const allV=V.filter(v=>!v.archived);
-  if(!allV.length){el.innerHTML=`<div class="anim"><div class="empty"><div class="ei">${ico('trend-up')}</div><div class="et">Sin vehículos</div></div></div>`;return;}
+  if(!allV.length){el.innerHTML=`<div class="anim"><div class="d-empty">${ico('trend-up')}<h3>Sin vehículos</h3><p>Añade un vehículo en Flota para ver la analítica.</p></div></div>`;return;}
   const activeV=allV.filter(v=>{
     if(_analyticsOwnership==='own'&&v.vtype==='managed')return false;
     if(_analyticsOwnership==='managed'&&v.vtype!=='managed')return false;
@@ -2179,137 +2288,21 @@ function renderAnalytics(el){
     return{v,inc,exp,profit,days,bks:bks.length,rpdInc,rpdProfit,pp,roi,paidOff,daysToPayOff,occ,bestPlat,bizShare};
   }).sort((a,b)=>b.rpdInc-a.rpdInc);
 
-  const _ps=active=>`border-color:${active?'var(--amber)':'var(--border2)'};background:${active?'var(--acc-m)':'transparent'};color:${active?'var(--amber)':'var(--text3)'}`;
-  let _filterUI=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px"><div style="display:flex;gap:5px;flex-wrap:wrap;flex:1"><div class="pill" onclick="setAnalyticsOwnership('')" style="${_ps(!_analyticsOwnership)}">Todos</div><div class="pill" onclick="setAnalyticsOwnership('own')" style="${_ps(_analyticsOwnership==='own')}">${ico('key')} Propios</div><div class="pill" onclick="setAnalyticsOwnership('managed')" style="${_ps(_analyticsOwnership==='managed')}">${ico('handshake')} Gestión</div>`;
-  if(usedVtypes.length>1){_filterUI+=`<div style="width:100%;height:0"></div>`;usedVtypes.forEach(t=>{_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('${escJs(t.id)}')" style="${_ps(_analyticsVtype===t.id)}">${ico(t.icon)} ${t.label}</div>`;});_filterUI+=`<div class="pill" onclick="setAnalyticsVtype('')" style="${_ps(!_analyticsVtype)}">Todos los tipos</div>`;}
-  _filterUI+=`</div><button class="btn-pri" onclick="openAnalyticsReportPicker()" style="width:auto;white-space:nowrap;flex-shrink:0">${ico('doc')} Informe PDF</button></div>`;
-  if(!activeV.length){el.innerHTML=`<div class="anim">${_filterUI}<div class="empty"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div><div class="es">Cambia los filtros para ver vehículos</div></div></div>`;return;}
+  // Filtros: propiedad en selector segmentado y tipo de vehículo en píldoras (mismos onclick); informe como secundario
+  const _filterUI=`<div class="d-seg an-own" role="group" aria-label="Propiedad"><button type="button" aria-pressed="${!_analyticsOwnership}" onclick="setAnalyticsOwnership('')">Todos</button><button type="button" aria-pressed="${_analyticsOwnership==='own'}" onclick="setAnalyticsOwnership('own')">${ico('key')} Propios</button><button type="button" aria-pressed="${_analyticsOwnership==='managed'}" onclick="setAnalyticsOwnership('managed')">${ico('handshake')} Gestión</button></div>`
+    +(usedVtypes.length>1?`<div class="d-pills an-vt" role="group" aria-label="Tipo de vehículo"><button type="button" aria-pressed="${!_analyticsVtype}" onclick="setAnalyticsVtype('')">Todos los tipos</button>${usedVtypes.map(t=>`<button type="button" aria-pressed="${_analyticsVtype===t.id}" onclick="setAnalyticsVtype('${escJs(t.id)}')">${ico(t.icon)} ${t.label}</button>`).join('')}</div>`:'');
+  const _pdfBtn=`<button class="btn-sec an-pdf" onclick="openAnalyticsReportPicker()">${ico('doc')} Informe PDF</button>`;
+  if(!activeV.length){el.innerHTML=`<div class="anim an">${_filterUI}<div class="d-empty">${ico('search')}<h3>Sin resultados</h3><p>Cambia los filtros para ver vehículos</p></div>${_pdfBtn}</div>`;return;}
 
-  let h=`<div class="anim">
-  ${_filterUI}
-  <!-- RANKING: Revenue per day -->
-  <div class="sec">${ico('chart')} RANKING — INGRESOS POR DÍA</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px">
-    ${metrics.map((m,i)=>{
-      const maxRpd=metrics[0].rpdInc||1;
-      const pct=Math.round(m.rpdInc/maxRpd*100);
-      return `<div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);min-width:16px">#${i+1}</span>
-            <span style="font-size:14px;font-weight:700">${esc(m.v.name)}</span>
-            <span style="font-family:var(--mono);font-size:10px;color:${plateColor(m.v.color)};background:${safeColor(m.v.color)}22;padding:2px 7px;border-radius:20px">${esc(m.v.plate)}</span>
-          </div>
-          <span style="font-family:var(--mono);font-size:15px;font-weight:800;color:var(--green)">${fmt(m.rpdInc)}/día</span>
-        </div>
-        <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${Number(pct)}%;background:${safeColor(m.v.color)};border-radius:4px;transition:width 0.5s"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px">
-          <span style="font-size:10px;color:var(--text3)">${m.bks} alq. · ${m.days}d ocupado</span>
-          <span style="font-size:10px;color:var(--text3)">Ocup. mes: ${m.occ}%</span>
-        </div>
-      </div>`;
-    }).join('')}
-  </div>
-
-  <!-- ROI TABLE -->
-  <div class="sec">${ico('coins')} ROI POR VEHÍCULO</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px">
-    ${metrics.map(m=>{
-      const roiColor=m.roi===null?'var(--text3)':m.roi>=100?'var(--green)':m.roi>=50?'var(--amber)':'var(--red)';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
-        <div style="width:5px;height:48px;border-radius:3px;background:${safeColor(m.v.color)};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700">${esc(m.v.name)}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">
-            ${m.pp>0?`Compra: ${fmt(m.pp)}`:'Sin precio registrado'}
-            ${m.paidOff?(' · '+ico('check-circle')+' Ya se pagó solo'):''}
-          </div>
-          <div style="font-size:10px;color:var(--text3);margin-top:1px">
-            Ingresos: ${fmt(m.inc)} · Gastos: ${fmt(m.exp)} · Beneficio: ${fmt(m.profit)}
-          </div>
-          ${!m.paidOff&&m.daysToPayOff?`<div style="font-size:10px;color:var(--amber);margin-top:1px">${ico('clock')} Se paga solo en ~${m.daysToPayOff} días al ritmo actual</div>`:''}
-        </div>
-        <div style="text-align:center;flex-shrink:0">
-          <div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${safeColor(roiColor)}">${m.roi!==null?m.roi+'%':'—'}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:2px">ROI</div>
-        </div>
-      </div>`;
-    }).join('')}
-  </div>
-
-  <!-- PLATFORM PER VEHICLE -->
-
-  ${(()=>{
-    const _hasMgd=activeV.some(v=>v.vtype==='managed')&&activeV.some(v=>v.vtype!=='managed');
-    if(!_hasMgd)return '';
-    const _ownMs=metrics.filter(m=>m.v.vtype!=='managed');
-    const _mgdMs=metrics.filter(m=>m.v.vtype==='managed');
-    const _ownProfit=_ownMs.reduce((s,m)=>s+m.profit,0);
-    const _mgdProfit=_mgdMs.reduce((s,m)=>s+m.profit,0);
-    const _mgdShare=_mgdMs.reduce((s,m)=>s+m.bizShare,0);
-    const _bizTotal=_ownProfit+_mgdShare;
-    const _actTotal=metrics.reduce((s,m)=>s+m.profit,0);
-    return `<div class="sec">${ico('bank')} ACTIVIDAD vs BENEFICIO DEL NEGOCIO</div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.5">Los vehículos en gestión generan ingresos brutos para el propietario. En gestión, el beneficio real del negocio es la comisión pactada menos el déficit asumido por el gestor: si el vehículo da pérdidas, el gestor asume el déficit y la cifra puede ser menor que la comisión, incluso negativa.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:2px solid var(--border2)">
-          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--text3);margin-bottom:4px">BFO. TOTAL ACTIVIDAD</div>
-          <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:${_actTotal>=0?'var(--green)':'var(--red)'}">${fmt(_actTotal)}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:3px">propios + bruto gestión</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:3px solid var(--amber)">
-          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--amber);margin-bottom:4px">${ico('star',null,'ico-fill')} BFO. REAL DEL NEGOCIO</div>
-          <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:${_bizTotal>=0?'var(--green)':'var(--red)'}">${fmt(_bizTotal)}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:3px">propios + (comisión − déficit asumido)</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        ${_ownMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">${ico('key')} PROPIOS (${_ownMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:${_ownProfit>=0?'var(--green)':'var(--red)'}">${fmt(_ownProfit)}</div><div style="font-size:9px;color:var(--text3)">beneficio 100%</div></div>`:''}
-        ${_mgdMs.length?`<div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--text3);margin-bottom:3px">${ico('handshake')} GESTIÓN (${_mgdMs.length} veh.)</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--purple)">${fmt(_mgdShare)}</div><div style="font-size:9px;color:var(--text3)">comisión menos déficit asumido</div></div>`:''}
-      </div>
-      ${_mgdMs.map(m=>{const _c=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-top:6px"><span style="font-size:11px;color:var(--text2)">${ico('handshake')} ${esc(m.v.name)} · comisión ${_c}%</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--purple)">${fmt(m.bizShare)} <span style="font-size:9px;font-weight:400;color:var(--text3)">comisión − déficit asumido, de ${fmt(m.inc)} facturado</span></span></div>`;}).join('')}
-    </div>`;
-  })()}
-
-  <!-- OCCUPATION COMPARISON -->
-  <div class="sec">${ico('calendar')} COMPARATIVA OCUPACIÓN (MES ACTUAL)</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px">
-    ${[...metrics].sort((a,b)=>b.occ-a.occ).map(m=>`<div style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:13px;font-weight:600">${esc(m.v.name)}</span>
-        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${m.occ>=70?'var(--green)':m.occ>=40?'var(--amber)':'var(--red)'}">${m.occ}%</span>
-      </div>
-      <div style="height:10px;background:var(--bg4);border-radius:5px;overflow:hidden">
-        <div style="height:100%;width:${m.occ}%;background:${m.occ>=70?'var(--green)':m.occ>=40?'var(--amber)':'var(--red)'};border-radius:5px"></div>
-      </div>
-    </div>`).join('')}
-  </div>
-  </div>
-  <!-- OCCUPANCY SECTION -->
-  <div class="sec" style="margin-top:8px">${ico('calendar')} RATIO DE OCUPACIÓN</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
-    <!-- Month selector -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <input type="month" id="occMonth" value="${esc(safeMonth(new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')))}"
-        onchange="renderOccupancy()"
-        style="flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px"/>
-      <button class="btn-pri" onclick="renderOccupancy()" style="width:auto">Ver</button>
-    </div>
-    <div id="occResults"></div>
-  </div>
-
-  <div class="sec" style="margin-top:8px">${ico('chart')} COMPARATIVA DE PERÍODOS</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div><label class="lbl">PERÍODO A</label><input type="month" id="cmpA" style="font-size:14px;width:100%"/></div>
-      <div><label class="lbl">PERÍODO B</label><input type="month" id="cmpB" style="font-size:14px;width:100%"/></div>
-    </div>
-    <button class="btn-pri" onclick="runComparison()">Comparar períodos</button>
-    <div id="cmpResults" style="margin-top:14px"></div>
-  </div>`;
+  // ── Actividad vs beneficio del negocio (mismas fórmulas de siempre) ─────────
+  const _hasMgd=activeV.some(v=>v.vtype==='managed')&&activeV.some(v=>v.vtype!=='managed');
+  const _ownMs=metrics.filter(m=>m.v.vtype!=='managed');
+  const _mgdMs=metrics.filter(m=>m.v.vtype==='managed');
+  const _ownProfit=_ownMs.reduce((s,m)=>s+m.profit,0);
+  const _mgdProfit=_mgdMs.reduce((s,m)=>s+m.profit,0);
+  const _mgdShare=_mgdMs.reduce((s,m)=>s+m.bizShare,0);
+  const _bizTotal=_ownProfit+_mgdShare;
+  const _actTotal=metrics.reduce((s,m)=>s+m.profit,0);
 
   // ── Calcular métricas avanzadas ────────────────────────────────────────────
   const _nowStr=todayStr();
@@ -2360,114 +2353,127 @@ function renderAnalytics(el){
   const _tStat=_typeStats(_turismos),_fStat=_typeStats(_furgos);
   const _fmtA=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
 
-  // ── NUEVAS SECCIONES UI ───────────────────────────────────────────────────
-  // Eficiencia operativa
-  h+=`<div class="sec" style="margin-top:8px">${ico('bolt')} EFICIENCIA OPERATIVA</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">${ico('clock')} TIEMPO MUERTO MEDIO</div>
-      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${safeColor(_avgDeadTime===null?'var(--text3)':_avgDeadTime<=2?'var(--green)':_avgDeadTime<=5?'var(--amber)':'var(--red)')}">${_avgDeadTime!==null?_avgDeadTime+'d':'—'}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:4px">días libres entre alquileres</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">${ico('trend-down')} COSTE POR DÍA OCUPADO</div>
-      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:var(--red)">${_fmtA(_costPerDay)}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:4px">gasto total ÷ días en alquiler</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">${ico('chart')} RATIO EFICIENCIA</div>
-      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${safeColor(_effRatio===null?'var(--text3)':_effRatio>=3?'var(--green)':_effRatio>=2?'var(--amber)':'var(--red)')}">${_effRatio!==null?_effRatio+'x':'—'}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:4px">€ ingresados por cada € gastado</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">${ico('wrench')} MANTENIMIENTO / INGRESOS</div>
-      <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${safeColor(_maintRatio<=10?'var(--green)':_maintRatio<=20?'var(--amber)':'var(--red)')}">${_maintRatio}%</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:4px">${_fmtA(_maintExp)} en mantenimiento total</div>
-    </div>
-  </div>`;
+  // ── Presentación: cifra Doto (beneficio real del negocio) + secciones en desplegables «"01"» (solo la primera abierta) ──
+  // Colores: verde ingresos/bueno, rojo gastos/malo, azul info; el antiguo tramo ámbar del semáforo pasa a texto. Barras finas en acento.
+  const _cl=(good,bad)=>good?'ok':bad?'err':'';
+  let _n=0;
+  const _PL='<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>';
+  const _acc=(t,body,q)=>`<details class="d-acc an-acc"${_n===0?' open':''}><summary><span class="q">${String(++_n).padStart(2,'0')}</span><span class="t">${t}</span>${q?`<span class="an-sq">${q}</span>`:''}${_PL}</summary><div>${body}</div></details>`;
+  const _bS=fmt(_bizTotal).split(','),_bE=_bS[0].replace(/\./g,''),_bD=_bS.length>1?','+_bS.slice(1).join(','):'';
 
-  // Distribución por duración
-  h+=`<div class="sec">${ico('chart')} DISTRIBUCIÓN POR DURACIÓN DE ALQUILER</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
-    ${[['Corto (1–3d)',_durGroups.short,'var(--blue)'],['Medio (4–7d)',_durGroups.med,'var(--green)'],['Largo (8d+)',_durGroups.long,'var(--amber)']].map(([lbl,grp,col])=>{
-      const totBksAll=_allBks.length||1;const pct=Math.round(grp.length/totBksAll*100);
-      return `<div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:13px;font-weight:600">${lbl}</span>
-          <span style="font-family:var(--mono);font-size:12px;color:${safeColor(col)}">${grp.length} alq. · ${pct}% · Ø${_fmtA(_durAvg(grp))}</span>
-        </div>
-        <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${Number(pct)}%;background:${safeColor(col)};border-radius:4px"></div>
-        </div>
+  let h=`<div class="anim an">
+  ${_filterUI}
+  <div class="d-card xl dotbg an-hero">
+    <div class="d-ch"><span class="q ac">Beneficio del negocio</span><span class="q">${String(activeV.length).padStart(2,'0')} veh.</span></div>
+    <div class="d-n n1 ${_bizTotal<0?'neg':'ac'}">${esc(_bE)}<small>${esc(_bD)}</small></div>
+    <div class="d-meta">${_hasMgd?'propios + (comisión − déficit asumido)':_ownMs.length?'solo vehículos propios':'comisión menos déficit asumido'}</div>
+    ${_hasMgd?`<div class="spec an-hs"><div>Propios (${_ownMs.length})<b class="${_ownProfit>=0?'ok':'err'}">${fmt(_ownProfit)}</b><span class="dh-sub">beneficio 100%</span></div><div>Gestión (${_mgdMs.length})<b class="${_mgdShare>=0?'':'err'}">${fmt(_mgdShare)}</b><span class="dh-sub">comisión menos déficit asumido</span></div></div>`:''}
+  </div>
+  ${_pdfBtn}
+  <div class="d-list an-accs">`;
+
+  // 01 · Ranking por ingresos/día: filas con número, coche, ingresos/día y barra fina
+  h+=_acc('Ranking · ingresos por día',`<div class="an-rl">${metrics.map((m,i)=>{
+      const maxRpd=metrics[0].rpdInc||1;
+      const pct=Math.round(m.rpdInc/maxRpd*100);
+      return `<div class="an-rk">
+        <span class="an-no">${String(i+1).padStart(2,'0')}</span>
+        <div class="t"><span class="n">${esc(m.v.name)}</span><span class="s">${esc(m.v.plate)} · ${m.bks} alq. · ${m.days}d ocupado · ocup. mes ${m.occ}%</span></div>
+        <b class="ok">${fmt(m.rpdInc)}/día</b>
+        <div class="d-bar"><i style="width:${Number(pct)}%"></i></div>
       </div>`;
-    }).join('')}
-    ${_avgKm!==null?`<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text3)">${ico('odometer')} Km medios por alquiler (con datos de km): <strong style="color:var(--text)">${_avgKm.toLocaleString('es-ES')} km</strong> · ${_bksWithKm.length} alq. con datos</div>`:''}
-  </div>`;
+    }).join('')}</div>`);
 
-  // Proyección anual
-  h+=`<div class="sec">${ico('trend-up')} PROYECCIÓN ANUAL <span style="font-size:9px;font-weight:400;color:var(--text3)">(basada en el mes actual · ${_curM2})</span></div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-      <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:2px solid var(--green)">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:4px">INGRESOS PROYECT.</div>
-        <div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">${_fmtA(_projInc)}</div>
-        <div style="font-size:9px;color:var(--text3);margin-top:3px">${_fmtA(_curMInc)}/mes × 12</div>
-      </div>
-      <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:2px solid var(--red)">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:4px">GASTOS PROYECT.</div>
-        <div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--red)">${_fmtA(_projExp)}</div>
-        <div style="font-size:9px;color:var(--text3);margin-top:3px">${_fmtA(_curMExp)}/mes × 12</div>
-      </div>
-      <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:2px solid ${_projProfit>=0?'var(--green)':'var(--red)'}">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:4px">BENEFICIO PROYECT.</div>
-        <div style="font-family:var(--mono);font-size:16px;font-weight:800;color:${_projProfit>=0?'var(--green)':'var(--red)'}">${_fmtA(_projProfit)}</div>
-        <div style="font-size:9px;color:var(--text3);margin-top:3px">margen ${_projInc>0?Math.round(_projProfit/_projInc*100):0}%</div>
-      </div>
-    </div>
-    ${metrics.filter(m=>m.pp>0&&!m.paidOff&&m.rpdProfit>0).map(m=>{const mLeft=Math.ceil((m.pp-m.profit)/m.rpdProfit/30);return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--text2)">${esc(m.v.name)} · Break-even</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">~${mLeft} meses</span></div>`;}).join('')}
-  </div>`;
+  // ROI por vehículo: filas con punto del coche, compra y P&L en mono, ROI a la derecha
+  h+=_acc('ROI por vehículo',metrics.map(m=>{
+      return `<div class="an-r">
+        <i class="dh-dot"${m.v.color?' style="background:'+safeColor(m.v.color)+'"':''}></i>
+        <div class="t">
+          <span class="n">${esc(m.v.name)}</span>
+          <span class="s">${m.pp>0?`Compra: ${fmt(m.pp)}`:'Sin precio registrado'}${m.paidOff?(' · '+ico('check-circle')+' Ya se pagó solo'):''}</span>
+          <span class="s">Ingresos: ${fmt(m.inc)} · Gastos: ${fmt(m.exp)} · Beneficio: ${fmt(m.profit)}</span>
+          ${!m.paidOff&&m.daysToPayOff?`<span class="s ac">${ico('clock')} Se paga solo en ~${m.daysToPayOff} días al ritmo actual</span>`:''}
+        </div>
+        <div class="an-v"><b class="${m.roi===null?'':_cl(m.roi>=100,m.roi<50)}">${m.roi!==null?m.roi+'%':'—'}</b><span>ROI</span></div>
+      </div>`;
+    }).join(''));
 
-  // Clientes
-  h+=`<div class="sec">${ico('user')} ANÁLISIS DE CLIENTES</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
-        <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:var(--blue)">${_cliList.length}</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:3px">CLIENTES ÚNICOS</div>
-      </div>
-      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
-        <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:var(--purple)">${_recurring.length}<span style="font-size:14px;font-weight:400;color:var(--text3)"> (${_cliList.length>0?Math.round(_recurring.length/_cliList.length*100):0}%)</span></div>
-        <div style="font-size:10px;color:var(--text3);margin-top:3px">CLIENTES RECURRENTES</div>
-      </div>
-    </div>
-    ${_cliList.length>0?`<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">TOP 5 POR GASTO</div>
-    ${_cliList.slice(0,5).map((c,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border)">
-      <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);min-width:16px">#${i+1}</span>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(c.name)}</div>
-        <div style="font-size:10px;color:var(--text3)">${c.count} alquiler${c.count!==1?'es':''}</div></div>
-      <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${_fmtA(c.total)}</span>
-      ${c.count>1?`<span style="font-size:9px;padding:2px 6px;background:var(--purple)22;color:var(--purple);border-radius:10px;border:1px solid var(--purple)44">recurrente</span>`:''}
-    </div>`).join('')}`:'<div style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Sin datos de clientes</div>'}
-  </div>`;
-
-  // Turismo vs Furgoneta (solo si hay ambos tipos)
-  if(_turismos.length>0&&_furgos.length>0){
-    h+=`<div class="sec">${ico('car')} TURISMO VS FURGONETA</div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        ${[[(ico('car')+' Turismos'),_tStat,'var(--blue)'],[(ico('van')+' Furgonetas'),_fStat,'var(--amber)']].map(([lbl,st,col])=>`
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;border-top:2px solid ${safeColor(col)}">
-          <div style="font-size:12px;font-weight:700;margin-bottom:8px">${lbl} (${st.cnt})</div>
-          ${[['Ingresos',_fmtA(st.inc),'var(--green)'],['Gastos',_fmtA(st.exp),'var(--red)'],['Beneficio',_fmtA(st.inc-st.exp),st.inc-st.exp>=0?'var(--green)':'var(--red)'],['Alquileres',st.bks,'var(--text)'],['Días ocup.',st.days+'d','var(--text)'],['€/día',_fmtA(st.days>0?Math.round(st.inc/st.days):0),'var(--amber)']].map(([l,v,c])=>`
-          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:11px;color:var(--text3)">${l}</span>
-            <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${c}">${v}</span>
-          </div>`).join('')}
-        </div>`).join('')}
-      </div>
-    </div>`;
+  // Actividad vs beneficio (solo si hay propios y en gestión)
+  if(_hasMgd){
+    h+=_acc('Actividad vs beneficio',`<p class="d-hint">Los vehículos en gestión generan ingresos brutos para el propietario. En gestión, el beneficio real del negocio es la comisión pactada menos el déficit asumido por el gestor: si el vehículo da pérdidas, el gestor asume el déficit y la cifra puede ser menor que la comisión, incluso negativa.</p>
+      <div class="spec an-s2"><div>Bfo. total actividad<b class="${_actTotal>=0?'ok':'err'}">${fmt(_actTotal)}</b><span class="dh-sub">propios + bruto gestión</span></div><div>Bfo. real del negocio<b class="${_bizTotal>=0?'ok':'err'}">${fmt(_bizTotal)}</b><span class="dh-sub">propios + (comisión − déficit asumido)</span></div></div>
+      ${_mgdMs.map(m=>{const _c=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));return `<div class="fl-hr"><div class="t">${esc(m.v.name)} · comisión ${_c}%<span>comisión − déficit asumido, de ${fmt(m.inc)} facturado</span></div><b class="${m.bizShare<0?'err':''}">${fmt(m.bizShare)}</b></div>`;}).join('')}`);
   }
 
+  // Ocupación del mes actual por coche
+  h+=_acc('Ocupación del mes',[...metrics].sort((a,b)=>b.occ-a.occ).map(m=>`<div class="an-oc">
+      <div class="an-ol"><span>${esc(m.v.name)}</span><b class="${_cl(m.occ>=70,m.occ<40)}">${m.occ}%</b></div>
+      <div class="d-bar"><i style="width:${m.occ}%"></i></div>
+    </div>`).join(''),'Mes actual');
+
+  // Ratio de ocupación (mes elegido): mes en su línea + «Ver»
+  h+=_acc('Ratio de ocupación',`<div class="an-mr">
+      <input type="month" id="occMonth" aria-label="Mes" value="${esc(safeMonth(new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')))}"
+        onchange="renderOccupancy()"/>
+      <button class="btn-sec" onclick="renderOccupancy()">Ver</button>
+    </div>
+    <div id="occResults"></div>`);
+
+  // Comparativa de periodos: meses uno debajo de otro (antes «Período B» se salía de la pantalla)
+  h+=_acc('Comparativa de períodos',`<div class="d-f"><label class="q" for="cmpA">Período A</label><input type="month" id="cmpA"/></div>
+    <div class="d-f"><label class="q" for="cmpB">Período B</label><input type="month" id="cmpB"/></div>
+    <button class="btn-pri" onclick="runComparison()">Comparar períodos</button>
+    <div id="cmpResults" class="an-cr"></div>`);
+
+  // Eficiencia operativa: tira de KPI con líneas de 1 px
+  h+=_acc('Eficiencia operativa',`<div class="d-kpi an-kpi" style="--c:2">
+      <div><b class="${_avgDeadTime===null?'':_cl(_avgDeadTime<=2,_avgDeadTime>5)}">${_avgDeadTime!==null?_avgDeadTime+'d':'—'}</b><span>Tiempo muerto medio</span><small>días libres entre alquileres</small></div>
+      <div><b class="err">${_fmtA(_costPerDay)}</b><span>Coste por día ocupado</span><small>gasto total ÷ días en alquiler</small></div>
+      <div><b class="${_effRatio===null?'':_cl(_effRatio>=3,_effRatio<2)}">${_effRatio!==null?_effRatio+'x':'—'}</b><span>Ratio eficiencia</span><small>€ ingresados por cada € gastado</small></div>
+      <div><b class="${_cl(_maintRatio<=10,_maintRatio>20)}">${_maintRatio}%</b><span>Mantenimiento / ingresos</span><small>${_fmtA(_maintExp)} en mantenimiento total</small></div>
+    </div>`);
+
+  // Duración de los alquileres: filas con barra fina
+  h+=_acc('Duración de los alquileres',[['Corto (1–3d)',_durGroups.short],['Medio (4–7d)',_durGroups.med],['Largo (8d+)',_durGroups.long]].map(([lbl,grp])=>{
+      const totBksAll=_allBks.length||1;const pct=Math.round(grp.length/totBksAll*100);
+      return `<div class="an-oc">
+        <div class="an-ol"><span>${lbl}</span><b>${grp.length} alq. · ${pct}% · Ø${_fmtA(_durAvg(grp))}</b></div>
+        <div class="d-bar"><i style="width:${Number(pct)}%"></i></div>
+      </div>`;
+    }).join('')
+    +(_avgKm!==null?`<p class="d-hint an-km">${ico('odometer')} Km medios por alquiler (con datos de km): <b>${_avgKm.toLocaleString('es-ES')} km</b> · ${_bksWithKm.length} alq. con datos</p>`:''));
+
+  // Proyección anual: filas rótulo | cifra (verde ingresos, rojo gastos)
+  h+=_acc('Proyección anual',`<p class="d-hint">Basada en el mes actual · ${_curM2}</p>
+    <div class="an-l">
+      <div class="an-li"><span>Ingresos proyect.<small>${_fmtA(_curMInc)}/mes × 12</small></span><b class="ok">${_fmtA(_projInc)}</b></div>
+      <div class="an-li"><span>Gastos proyect.<small>${_fmtA(_curMExp)}/mes × 12</small></span><b class="err">${_fmtA(_projExp)}</b></div>
+      <div class="an-li"><span>Beneficio proyect.<small>margen ${_projInc>0?Math.round(_projProfit/_projInc*100):0}%</small></span><b class="${_projProfit>=0?'ok':'err'}">${_fmtA(_projProfit)}</b></div>
+      ${metrics.filter(m=>m.pp>0&&!m.paidOff&&m.rpdProfit>0).map(m=>{const mLeft=Math.ceil((m.pp-m.profit)/m.rpdProfit/30);return `<div class="an-li"><span>${esc(m.v.name)} · Break-even</span><b>~${mLeft} meses</b></div>`;}).join('')}
+    </div>`);
+
+  // Clientes: KPI + top 5 en filas
+  h+=_acc('Clientes',`<div class="d-kpi an-kpi" style="--c:2">
+      <div><b class="in">${_cliList.length}</b><span>Clientes únicos</span></div>
+      <div><b>${_recurring.length}<em> (${_cliList.length>0?Math.round(_recurring.length/_cliList.length*100):0}%)</em></b><span>Clientes recurrentes</span></div>
+    </div>
+    ${_cliList.length>0?`<span class="q an-q">Top 5 por gasto</span>
+    <div class="d-list an-cl">${_cliList.slice(0,5).map((c,i)=>`<div class="d-row">
+      <span class="q">${String(i+1).padStart(2,'0')}</span>
+      <div><div class="t ell">${esc(c.name)}</div><div class="s">${c.count} alquiler${c.count!==1?'es':''}</div></div>
+      <div class="r"><b class="ok">${_fmtA(c.total)}</b>${c.count>1?'<span class="chip">Recurrente</span>':''}</div>
+    </div>`).join('')}</div>`:'<p class="d-hint">Sin datos de clientes</p>'}`);
+
+  // Turismo vs Furgoneta (solo si hay ambos tipos): tabla limpia de 3 columnas
+  if(_turismos.length>0&&_furgos.length>0){
+    const _tv=[_tStat,_fStat];
+    h+=_acc('Turismo vs furgoneta',`<div class="an-tb">
+      <div class="h"><span></span><span>${ico('car')} Turismos (${_tStat.cnt})</span><span>${ico('van')} Furgonetas (${_fStat.cnt})</span></div>
+      ${[['Ingresos',st=>_fmtA(st.inc),st=>'ok'],['Gastos',st=>_fmtA(st.exp),st=>'err'],['Beneficio',st=>_fmtA(st.inc-st.exp),st=>st.inc-st.exp>=0?'ok':'err'],['Alquileres',st=>st.bks,st=>''],['Días ocup.',st=>st.days+'d',st=>''],['€/día',st=>_fmtA(st.days>0?Math.round(st.inc/st.days):0),st=>'']].map(([l,f,c])=>`<div><span>${l}</span>${_tv.map(st=>`<b class="${c(st)}">${f(st)}</b>`).join('')}</div>`).join('')}
+    </div>`);
+  }
+
+  h+=`</div></div>`;
   el.innerHTML=h;
   // Default cmp values
   const now2=new Date();
@@ -2498,19 +2504,16 @@ function openAnalyticsReportPicker(){
     ['Este año',jan,curM],
     ['Todo',now.getFullYear()-3+'-01',curM],
   ];
+  // Periodos rápidos en píldoras (rellenan Desde/Hasta, como antes) y meses uno debajo de otro
   openSheet(`<div class="stitle">${ico('doc')} Informe de Analíticas</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Selecciona el período. El informe incluirá KPIs, ranking por vehículo, ocupación, desglose mensual y comparativa.</div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">DESDE (MES)</label><input type="month" id="arFrom" value="${esc(safeMonth(jan))}"/></div>
-      <div class="fg"><label class="lbl">HASTA (MES)</label><input type="month" id="arTo" value="${esc(safeMonth(curM))}"/></div>
+    <div class="ssub">Selecciona el período. El informe incluirá KPIs, ranking por vehículo, ocupación, desglose mensual y comparativa.</div>
+    <div class="d-pills an-pp">
+      ${presets.map(([lbl,f,t])=>`<button type="button" onclick="document.getElementById('arFrom').value='${escJs(f)}';document.getElementById('arTo').value='${escJs(t)}'">${lbl}</button>`).join('')}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px">
-      ${presets.map(([lbl,f,t])=>`<button onclick="document.getElementById('arFrom').value='${escJs(f)}';document.getElementById('arTo').value='${escJs(t)}'"
-        style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:8px 4px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer">${lbl}</button>`).join('')}
-    </div>
-    <button class="btn-pri" onclick="generateAnalyticsPDF(document.getElementById('arFrom').value,document.getElementById('arTo').value);closeSheet()">${ico('doc')} Generar informe PDF</button>
-    <div style="height:8px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="arFrom">Desde</label><input type="month" id="arFrom" value="${esc(safeMonth(jan))}"/></div>
+    <div class="d-f"><label class="q" for="arTo">Hasta</label><input type="month" id="arTo" value="${esc(safeMonth(curM))}"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="generateAnalyticsPDF(document.getElementById('arFrom').value,document.getElementById('arTo').value);closeSheet()">${ico('doc')} Generar informe PDF</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 
 function generateAnalyticsPDF(fromMonth,toMonth){
@@ -8729,22 +8732,17 @@ function openBizReportPicker(){
     {label:'COMPLETO',                       from:'',         to:''},
   ];
   const curM=ym(y,m);
+  // Periodos rápidos en filas finas (descargan al tocar, como antes) y rango personalizado con los campos del sistema
   openSheet(`<div class="stitle">${ico('doc')} Informe de negocio</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Elige un período o selecciona los meses</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-      ${presets.map(p=>`<div onclick="dlBizReport('${escJs(p.from)}','${escJs(p.to)}','${escJs(p.label)}')" style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:12px;cursor:pointer;text-align:center" onmouseover="this.style.borderColor='var(--amber)';this.style.background='var(--acc-s)'" onmouseout="this.style.borderColor='var(--border2)';this.style.background='var(--bg3)'">
-        <div style="font-size:13px;font-weight:700">${esc(p.label)}</div>
-      </div>`).join('')}
+    <div class="ssub">Elige un período o selecciona los meses</div>
+    <div class="d-list nb-rp">
+      ${presets.map((p,i)=>`<div class="d-row" onclick="dlBizReport('${escJs(p.from)}','${escJs(p.to)}','${escJs(p.label)}')"><span class="q">${String(i+1).padStart(2,'0')}</span><span class="t">${esc(p.label)}</span>${ico('download')}</div>`).join('')}
     </div>
-    <div style="height:1px;background:var(--border);margin-bottom:14px"></div>
-    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">RANGO PERSONALIZADO</div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">DESDE</label><input type="month" id="bizRptFrom" value="${esc(safeMonth(ym(y,0)))}" max="${esc(safeMonth(curM))}" style="font-size:14px"/></div>
-      <div class="fg"><label class="lbl">HASTA</label><input type="month" id="bizRptTo" value="${esc(safeMonth(curM))}" max="${esc(safeMonth(curM))}" style="font-size:14px"/></div>
-    </div>
-    <button class="btn-pri" onclick="(()=>{const f=document.getElementById('bizRptFrom').value;const t=document.getElementById('bizRptTo').value;if(!f||!t){alert('Selecciona ambos meses');return;}if(f>t){alert('El mes de inicio debe ser anterior al final');return;}dlBizReport(f,t,(()=>{const[fy,fm]=f.split('-');const[ty,tm]=t.split('-');const MN2=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return f===t?'MES: '+MN2[parseInt(fm)-1]+' '+fy:'PERÍODO: '+MN2[parseInt(fm)-1]+' '+fy+' — '+MN2[parseInt(tm)-1]+' '+ty;})();})()">Generar informe</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="al-h"><h3>Rango personalizado</h3></div>
+    <div class="d-f"><label class="q" for="bizRptFrom">Desde</label><input type="month" id="bizRptFrom" value="${esc(safeMonth(ym(y,0)))}" max="${esc(safeMonth(curM))}"/></div>
+    <div class="d-f"><label class="q" for="bizRptTo">Hasta</label><input type="month" id="bizRptTo" value="${esc(safeMonth(curM))}" max="${esc(safeMonth(curM))}"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="(()=>{const f=document.getElementById('bizRptFrom').value;const t=document.getElementById('bizRptTo').value;if(!f||!t){alert('Selecciona ambos meses');return;}if(f>t){alert('El mes de inicio debe ser anterior al final');return;}dlBizReport(f,t,(()=>{const[fy,fm]=f.split('-');const[ty,tm]=t.split('-');const MN2=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return f===t?'MES: '+MN2[parseInt(fm)-1]+' '+fy:'PERÍODO: '+MN2[parseInt(fm)-1]+' '+fy+' — '+MN2[parseInt(tm)-1]+' '+ty;})();})()">Generar informe</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 
 function dlBizReport(fromMonth,toMonth,periodLabel){
@@ -9141,7 +9139,7 @@ function runComparison(){
   const mB=document.getElementById('cmpB')?.value;
   const res=document.getElementById('cmpResults');
   if(!res)return;
-  if(!mA||!mB){res.innerHTML='<div style="font-size:12px;color:var(--text3)">Selecciona ambos períodos.</div>';return;}
+  if(!mA||!mB){res.innerHTML='<div class="d-hint">Selecciona ambos períodos.</div>';return;}
   const allE=_getBizEntries();
   function periodStats(m){
     const entries=allE.filter(e=>e.date.startsWith(m));
@@ -9157,9 +9155,9 @@ function runComparison(){
   function diff(a,b,isInv){
     const d=b-a;const pct=a!==0?Math.round(d/Math.abs(a)*100):null;
     const positive=(isInv?d<0:d>0);
-    const clr=d===0?'var(--text3)':positive?'var(--green)':'var(--red)';
+    const cls=d===0?'':positive?'ok':'err';
     const arrow=d>0?'↑':d<0?'↓':'—';
-    return `<span style="color:${safeColor(clr)};font-size:11px;font-weight:700">${arrow}${pct!==null?Math.abs(pct)+'%':''}</span>`;
+    return `<span class="an-d ${cls}">${arrow}${pct!==null?Math.abs(pct)+'%':''}</span>`;
   }
   const [ayA,moA]=mA.split('-');const [ayB,moB]=mB.split('-');
   const lblA=MON_ES[parseInt(moA)-1]+' '+ayA;const lblB=MON_ES[parseInt(moB)-1]+' '+ayB;
@@ -9172,14 +9170,15 @@ function runComparison(){
     ['Días facturados',sA.days,sB.days,diff(sA.days,sB.days,false)],
     ['Clientes únicos',sA.clients,sB.clients,diff(sA.clients,sB.clients,false)],
   ];
-  let h='<div style="background:var(--bg3);border-radius:10px;overflow:hidden">';
-  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 60px;padding:8px 12px;border-bottom:1px solid var(--border)"><span style="font-size:10px;font-weight:700;color:var(--text3)">MÉTRICA</span><span style="font-size:10px;font-weight:700;color:var(--blue);text-align:right">${lblA}</span><span style="font-size:10px;font-weight:700;color:var(--amber);text-align:right">${lblB}</span><span style="font-size:10px;font-weight:700;color:var(--text3);text-align:right">Δ</span></div>`;
+  // Tabla limpia: cabecera mono, filas con línea fina, cifras en texto (antes azul/ámbar por periodo) y la variación en verde/rojo
+  let h='<div class="an-cmp">';
+  h+=`<div class="h"><span>Métrica</span><span>${lblA}</span><span>${lblB}</span><span>Δ</span></div>`;
   rows.forEach(([lbl,vA,vB,d],i)=>{
-    h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 60px;padding:9px 12px;border-bottom:1px solid var(--border);background:${i%2===0?'transparent':'var(--bg2)'}">
-      <span style="font-size:13px;color:var(--text2)">${lbl}</span>
-      <span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue);text-align:right">${vA}</span>
-      <span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--amber);text-align:right">${vB}</span>
-      <span style="text-align:right">${d}</span>
+    h+=`<div>
+      <span>${lbl}</span>
+      <b>${vA}</b>
+      <b>${vB}</b>
+      <span>${d}</span>
     </div>`;
   });
   h+='</div>';
@@ -10351,15 +10350,18 @@ function renderBiz(el){
         ${_getBizEntries().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map(e=>{const isIn=e.type==='income';return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><div style="width:4px;height:32px;border-radius:2px;background:'+(isIn?'var(--green)':'var(--red)')+';flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(e.category)+'</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px">'+esc(fmtDMY(e.date))+(e.description?' · '+esc(String(e.description).slice(0,30)):'')+'</div></div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:'+(isIn?'var(--green)':'var(--red)')+';white-space:nowrap">'+(isIn?'+':'-')+fmt(e.amount)+'</div></div>';}).join('')}
       </div>
     </div>`:'';
-  let h=`<div class="anim">${isD?'<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start"><div>':''}
+  // Cabecera con el beneficio del mes en Doto (en buildChart), exportar e informe como secundarios, filtros en píldoras y el mes en su propia línea
+  let h=`<div class="anim nb">${isD?'<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start"><div>':''}
   ${buildBizChart()}
-
-  <button class="btn-sec" onclick="exportGlobalExcel()" style="margin-bottom:8px">${ico('chart')} Exportar todo a Excel</button>
-  <button class="btn-sec" onclick="openBizReportPicker()" style="margin-bottom:14px">${ico('doc')} Informe de negocio (PDF)</button>
-  <div class="pills">
-    ${['all','income','expense'].map(t=>{const a=bizFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<div class="pill" onclick="setBizFilter('${escJs(t)}')" style="border-color:${a?'var(--amber)':'var(--border2)'};background:${a?'var(--acc-m)':'transparent'};color:${a?'var(--amber)':'var(--text3)'}">${L[t]}</div>`;}).join('')}
-    <input type="month" value="${esc(safeMonth(bizMonth))}" onchange="setBizFM(this.value)" style="padding:5px 10px;font-size:12px;min-width:130px"/>
-  </div>`;
+  <div class="d-acts nb-acts"><div class="two">
+    <button class="btn-sec" onclick="exportGlobalExcel()">${ico('chart')} Excel</button>
+    <button class="btn-sec" onclick="openBizReportPicker()">${ico('doc')} Informe PDF</button>
+  </div></div>
+  <div class="al-h nb-mh"><h3>Movimientos</h3><span class="q">${String(filtered.length).padStart(2,'0')}</span></div>
+  <div class="d-pills nb-ff" role="group" aria-label="Tipo de movimiento">
+    ${['all','income','expense'].map(t=>{const a=bizFilter===t;const L={all:'Todos',income:'Ingresos',expense:'Gastos'};return `<button type="button" aria-pressed="${a}" onclick="setBizFilter('${escJs(t)}')">${L[t]}</button>`;}).join('')}
+  </div>
+  <input type="month" class="nb-fm" aria-label="Mes" value="${esc(safeMonth(bizMonth))}" onchange="setBizFM(this.value)"/>`;
 
 
   // ── EXPENSE SUBCATEGORY CHART ─────────────────────────────────
@@ -10438,50 +10440,29 @@ function renderBiz(el){
   incTotal2=Object.values(incGroups2).reduce((s,e)=>s+e,0)||1;
   const incTotal=Object.values(incGroups).reduce((s,v)=>s+v,0)||1;
   var incTotal2=incTotal;
-  const incColors={'Amovens':'#FB7AAC','Getaround':'#8B5CF6','Wallapop':'#25D366','Anuncios':'#F59E0B','Flota propia':'#3B82F6','Otros':'#6B7280'};
+  const incColors={'Amovens':'var(--plat-amovens)','Getaround':'var(--plat-getaround)','Sin app':'var(--plat-sinapp)'}; // plataformas con su color (PR #86); el resto de orígenes y las categorías de gasto, sin color propio
 
 
 
-  function _donutChart(groups,colors,total,title,toggleId){
+  function _donutChart(groups,colors,total,title,toggleId,no,kind){
+    // Desplegable con la fila del sistema («"01"» · título · total · flecha): mismo onclick y mismo contenedor oculto; filas con importe, % y barra fina (verde ingresos, roja gastos), sin arcoíris
     const sorted=Object.entries(groups).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
     if(!sorted.length)return '';
     const maxVal=sorted[0][1];
-    let s=`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px">`;
-    s+=`<div onclick="var el=document.getElementById('${escJs(toggleId)}');el.style.display=el.style.display==='none'?'block':'none';this.querySelector('.chev').style.transform=el.style.display==='none'?'':'rotate(90deg)'"
-      style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;background:var(--bg2)">
-      <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text3)">${title}</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text2)">${fmt(total)}</span>
-        <span class="chev" style="font-size:12px;color:var(--text3);display:inline-flex;transition:transform .15s">${ico('chevron')}</span>
-      </div>
+    let s=`<div class="nb-acc">`;
+    s+=`<div class="nb-as" role="button" onclick="var el=document.getElementById('${escJs(toggleId)}');el.style.display=el.style.display==='none'?'block':'none';this.querySelector('.chev').style.transform=el.style.display==='none'?'':'rotate(90deg)'">
+      <span class="q">${esc(no)}</span><span class="t">${title}</span><b>${fmt(total)}</b><span class="chev">${ico('chevron')}</span>
     </div>`;
-    s+=`<div id="${toggleId}" style="display:none;padding:12px 14px;background:var(--bg3)">`;
-    // Stacked bar
-    s+=`<div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:12px;gap:1px">`;
-    sorted.forEach(function(entry){const k=entry[0],v=entry[1];
-      const pct=(v/total*100).toFixed(1);
-      s+=`<div style="flex:${Number(pct)};background:${safeColor(colors[k]||'#6B7280')};min-width:2px;border-radius:2px" title="${esc(k)}"></div>`;
-    });
-    s+=`</div>`;
-    // Bars per item
+    s+=`<div id="${toggleId}" class="nb-ab" style="display:none">`;
     sorted.forEach(function(entry){const k=entry[0],v=entry[1];
       const pct=Math.round(v/total*100);
       const barW=Math.round(v/maxVal*100);
-      const col=colors[k]||'#6B7280';
-      s+=`<div style="margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-          <div style="display:flex;align-items:center;gap:6px">
-            <div style="width:10px;height:10px;border-radius:3px;background:${safeColor(col)};flex-shrink:0"></div>
-            <span style="font-size:12px;color:var(--text2)">${esc(k)}</span>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${safeColor(col)}">${fmt(v)}</span>
-            <span style="font-size:10px;color:var(--text3)">${pct}%</span>
-          </div>
-        </div>
-        <div style="height:5px;background:var(--bg2);border-radius:3px;overflow:hidden">
-          <div style="height:100%;width:${Number(barW)}%;background:${safeColor(col)};border-radius:3px;transition:width .4s"></div>
-        </div>
+      const col=colors[k];
+      s+=`<div class="nb-sr">
+        <span class="t">${col?`<i class="dt" style="background:${safeColor(col)}"></i>`:''}${esc(k)}</span>
+        <span class="p">${pct}%</span>
+        <b>${fmt(v)}</b>
+        <div class="d-bar ${kind}"><i style="width:${Number(barW)}%"></i></div>
       </div>`;
     });
     s+=`</div></div>`;
@@ -10489,41 +10470,38 @@ function renderBiz(el){
   }
 
   if(Object.keys(expGroups).length>0||Object.keys(incGroups2).length>0){
-    h+=`<div style="margin-bottom:8px">`;
-    if(Object.keys(incGroups2).length>0)h+=_donutChart(incGroups2,incColors,incTotal2,(ico('trend-up')+' INGRESOS POR ORIGEN'),'_inc_chart');
-    if(Object.keys(expGroups).length>0)h+=_donutChart(expGroups,expColors,expTotal,(ico('trend-down')+' GASTOS POR CATEGORÍA'),'_exp_chart');
+    h+=`<div class="nb-accs">`;
+    if(Object.keys(incGroups2).length>0)h+=_donutChart(incGroups2,incColors,incTotal2,'Ingresos por origen','_inc_chart','01','ok');
+    if(Object.keys(expGroups).length>0)h+=_donutChart(expGroups,{},expTotal,'Gastos por categoría','_exp_chart',Object.keys(incGroups2).length>0?'02':'01','err');
     h+=`</div>`;
   }
 
-  // ── ENTRY LIST ────────────────────────────────────────────────
+  // ── ENTRY LIST: filas finas (punto verde/rojo · categoría con icono de coche si es automática / fecha · descripción · importe con signo · ×) ──
 
-  if(!filtered.length){h+=`<div class="empty" style="padding:40px 0"><div class="ei">${ico('briefcase')}</div><div class="et">Sin movimientos</div><div class="es">Pulsa + para añadir</div></div>`;}
-  else filtered.forEach(e=>{
-    const isIn=e.type==='income';
-    const delBtn=e._auto?'<div style="width:28px"></div>':'<div style="font-size:20px;color:var(--text3);padding:4px;cursor:pointer" onclick="delBiz(\''+escJs(e.id)+'\')">×</div>';
-    const autoBadge=e._auto?('<span class="fb2" style="background:#3B82F615;color:var(--blue)">'+ico('car')+'</span>'):'';
-    h+='<div class="fe">'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">'
-      +'<span class="fb2" style="background:'+(isIn?'#10B98120':'#EF444420')+';color:'+(isIn?'var(--green)':'var(--red)')+'">'+( isIn?'ING':'GST')+'</span>'
-      +autoBadge
-      +'<span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px">'+esc(e.category)+'</span>'
-      +'</div>'
-      +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3)">'+esc(fmtDMY(e.date))+(e.description?' · '+esc(e.description):'')+'</div>'
-      +'</div>'
-      +'<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:'+(isIn?'var(--green)':'var(--red)')+';white-space:nowrap;margin-left:8px">'+(isIn?'+':'-')+fmt(e.amount)+'</div>'
-      +delBtn
-      +'</div>';
-  });
+  if(!filtered.length){h+=`<div class="d-empty fl-em">${ico('briefcase')}<h3>Sin movimientos</h3><p>Prueba con otro filtro o pulsa «Nuevo movimiento».</p></div>`;}
+  else{
+    h+='<div class="d-list fl-ml nb-ml">';
+    filtered.forEach(e=>{
+      const isIn=e.type==='income';
+      const delBtn=e._auto?'<span></span>':'<span class="al-x" role="button" aria-label="Borrar movimiento" onclick="delBiz(\''+escJs(e.id)+'\')">×</span>';
+      h+='<div class="fl-mv">'
+        +'<i class="dt '+(isIn?'dt-ok':'dt-err')+'"></i>'
+        +'<div class="t"><span class="c">'+(e._auto?ico('car')+' ':'')+esc(e.category)+'</span>'
+        +'<span class="s">'+esc(fmtDMY(e.date))+(e.description?' · '+esc(e.description):'')+'</span></div>'
+        +'<b class="'+(isIn?'ok':'err')+'">'+(isIn?'+':'-')+fmt(e.amount)+'</b>'
+        +delBtn
+        +'</div>';
+    });
+    h+='</div>';
+  }
 
   // ── GESTIÓN (COMISIONES) — below movimientos, filtered by month ─────────
   const managed=_getManagedCommissions();
   if(managed.length){
-    h+=`<div class="sec" style="margin-top:16px;color:var(--purple)">GESTIÓN (COMISIONES)</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${bizMonth?bizMonth:'Todos los períodos'} · ingresos facturados × comisión%</div>
-    <input id="bizMgmtSearch" type="text" placeholder="Buscar vehículo..." oninput="renderBizMgmt()" autocomplete="off"
-      style="width:100%;font-size:13px;padding:8px 12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);margin-bottom:10px;box-sizing:border-box"/>
-    <div id="bizMgmtList"></div>`;
+    h+=`<div class="al-h nb-gh"><h3>Gestión</h3><span class="q">Comisiones</span></div>
+    <div class="d-hint nb-gs">${bizMonth?bizMonth:'Todos los períodos'} · ingresos facturados × comisión%</div>
+    <input id="bizMgmtSearch" type="text" class="nb-gq" placeholder="Buscar vehículo..." oninput="renderBizMgmt()" autocomplete="off"/>
+    <div id="bizMgmtList" class="nb-gl"></div>`;
   }
 
   h+='</div>';el.innerHTML=h;
@@ -10536,7 +10514,7 @@ function renderBizMgmt(){
   const period=bizMonth; // current month filter from Negocio section
   const all=_getManagedCommissions();
   const visible=q?all.filter(({v})=>v.name.toUpperCase().includes(q)||v.plate.toUpperCase().includes(q)):all;
-  if(!visible.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px">Sin resultados</div>';return;}
+  if(!visible.length){el.innerHTML='<div class="d-hint nb-g0">Sin resultados</div>';return;}
   let h='';
   visible.forEach(({v,comm})=>{
     // Filter finances by month if set
@@ -10546,31 +10524,11 @@ function renderBizMgmt(){
     const commAmt=t.mgr; // comisión − déficit asumido (cláusula 5.5)
     const toOwner=t.toOwner;
     const isPos=commAmt>=0;
-    h+=`<div style="background:var(--bg2);border:1px solid #8B5CF630;border-radius:12px;padding:14px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div>
-          <div style="font-size:14px;font-weight:700">${esc(v.name)} <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${esc(v.plate)}</span></div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">Comisión ${Math.round(comm*100)}%${period?' · '+period:' · acumulado'}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}${fmtF(commAmt)}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">al negocio</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-        <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmtF(vI)}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:2px">Ingresos</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${fmtF(vE)}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:2px">Gastos</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:7px;padding:8px;text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${fmtF(toOwner)}</div>
-          <div style="font-size:9px;color:var(--text3);margin-top:2px">Al propietario</div>
-        </div>
-      </div>
+    // Fila de la lista: nombre y matrícula · al negocio (verde/rojo) / comisión y periodo · ficha técnica Ingresos | Gastos | Al propietario
+    h+=`<div class="nb-mg">
+      <div class="nb-mt"><div class="t">${esc(v.name)} <span>${esc(v.plate)}</span></div><b class="${isPos?'ok':'err'}">${isPos?'+':''}${fmtF(commAmt)}</b></div>
+      <div class="nb-mm"><span>Comisión ${Math.round(comm*100)}%${period?' · '+period:' · acumulado'}</span><span>al negocio</span></div>
+      <div class="spec c3 nb-m3"><div>Ingresos<b class="ok">${fmtF(vI)}</b></div><div>Gastos<b class="err">${fmtF(vE)}</b></div><div>Al propietario<b>${fmtF(toOwner)}</b></div></div>
     </div>`;
   });
   el.innerHTML=h;
@@ -10697,20 +10655,24 @@ function openAddBiz(){
   _bizEtype='expense';
   const today=todayStr();
   openSheet(`<div class="stitle">Movimiento de negocio</div><div class="ssub">Ingreso o gasto general, fuera de vehículos</div>
-    <div class="tsw"><div class="to" id="bInc" onclick="swBiz('income')" style="color:var(--text3)">${ico('coins')} Ingreso</div><div class="to" id="bExp" onclick="swBiz('expense')" style="background:var(--bg);color:var(--red)">${ico('trend-down')} Gasto</div></div>
-    <div class="fg"><label class="lbl">FECHA</label><input id="bDate" type="date" value="${esc(safeDate(today))}"/></div>
-    <div class="fg"><label class="lbl">CATEGORÍA</label><select id="bCat">${BIZ_EXP.map(x=>'<option>'+x+'</option>').join('')}</select></div>
-    <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="bAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">DESCRIPCIÓN (opcional)</label><input id="bDesc" placeholder="Nota..." autocomplete="off"/></div>
-    <button class="btn-pri" onclick="submitBiz()">Añadir</button><div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-seg fl-et" role="group" aria-label="Tipo de movimiento"><button type="button" id="bInc" aria-pressed="false" onclick="swBiz('income')">${ico('coins')} Ingreso</button><button type="button" id="bExp" aria-pressed="true" onclick="swBiz('expense')">${ico('trend-down')} Gasto</button></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="bAmt">Importe</label><div class="d-pre"><span>€</span><input id="bAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="bDate">Fecha</label><input id="bDate" type="date" value="${esc(safeDate(today))}"/></div>
+    </div>
+    <div class="d-f"><label class="q" for="bCat">Categoría</label><select id="bCat">${BIZ_EXP.map(x=>'<option>'+x+'</option>').join('')}</select></div>
+    <div class="d-f"><label class="q" for="bDesc">Descripción</label><input id="bDesc" placeholder="Opcional" autocomplete="off"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitBiz()">${ico('save')} Añadir</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function swBiz(t){
   _bizEtype=t;
   const inc=document.getElementById('bInc'),exp=document.getElementById('bExp'),cat=document.getElementById('bCat');
   if(!inc||!exp||!cat)return;
-  if(t==='income'){inc.style.background='var(--bg)';inc.style.color='var(--green)';exp.style.background='transparent';exp.style.color='var(--text3)';cat.innerHTML=BIZ_INC.map(x=>`<option>${x}</option>`).join('');}
-  else{exp.style.background='var(--bg)';exp.style.color='var(--red)';inc.style.background='transparent';inc.style.color='var(--text3)';cat.innerHTML=BIZ_EXP.map(x=>`<option>${x}</option>`).join('');}
+  // Estado del segmentado con aria-pressed (antes colores en línea); mismas categorías
+  inc.setAttribute('aria-pressed',String(t==='income'));exp.setAttribute('aria-pressed',String(t!=='income'));
+  if(t==='income'){cat.innerHTML=BIZ_INC.map(x=>`<option>${x}</option>`).join('');}
+  else{cat.innerHTML=BIZ_EXP.map(x=>`<option>${x}</option>`).join('');}
 }
 function submitBiz(){
   const amt=parseFloat(document.getElementById('bAmt').value);
@@ -10929,7 +10891,7 @@ function submitV(){
 }
 
 // ═══════════════════════════════════════════════════════════ CHARTS
-function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
+function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title,hero){
   title=title||'';
   const now=new Date();
   const curMKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
@@ -10967,7 +10929,14 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
   const selD=data.find(d=>d.key===sk)||{inc:0,exp:0,profit:0};
   const [sy,sm]=sk.split('-');
   const selLabel=(MON_S[parseInt(sm)-1]||'')+ ' '+sy;
-  return `<div class="dh-card dh-chart">
+  // Negocio («hero»): el resumen del mes elegido sube a la cabecera con el beneficio en Doto (mismos selD y margen); sin «hero» (Resumen, Finanzas del coche) todo sigue igual
+  const _hero=hero?(()=>{const _pct=selD.inc>0?Math.round(selD.profit/selD.inc*100):0;const _hS=fmtF(selD.profit).split(','),_hE=_hS[0].replace(/\./g,''),_hD=_hS.length>1?','+_hS.slice(1).join(','):'';
+    return `<div class="nb-hd">
+      <span class="q ac">${esc(hero)} · ${esc((MON_ES[parseInt(sm)-1]||'')+' '+sy)}</span>
+      <div class="d-n n1 ${selD.profit<0?'neg':'ac'}">${esc(_hE)}<small>${esc(_hD)}</small></div>
+      <div class="spec nb-ie"><div><i class="dt dt-ok"></i>INGRESOS<b class="ok">${fmtF(selD.inc)}</b></div><div><i class="dt dt-err"></i>GASTOS<b class="err">${fmtF(selD.exp)}</b></div><div>MARGEN<b style="color:${selD.profit>=0?'var(--amber)':'var(--red)'}">${_pct}%</b></div></div>
+    </div>`;})():'';
+  return `<div class="dh-card dh-chart${hero?' nb-c':''}">${_hero}${hero?'<div class="nb-ch">':''}
     <div class="dh-h" style="align-items:center">
       <div style="display:flex;align-items:center;gap:8px">
         <button type="button" class="dh-rb" aria-label="Año anterior" onclick="${escJs(prevFn)}()">‹</button>
@@ -10982,13 +10951,13 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title){
         ${bars}${profSVG}${labels}
       </svg>
     </div>
-    <div class="dh-csum">
+    ${hero?'</div>':`<div class="dh-csum">
       ${(()=>{const _pct=selD.inc>0?Math.round(selD.profit/selD.inc*100):0;const _clrP=selD.profit>=0?'var(--text)':'var(--red)';return '<div class="dh-h"><span class="q ac">'+esc(selLabel)+'</span>'
         +'<div class="dh-mg"><span>MARGEN</span><b style="color:'+(selD.profit>=0?'var(--amber)':'var(--red)')+'">'+_pct+'%</b></div></div>'
         +'<div class="dh-csr"><div class="spec c3">'
         +[['INGRESOS',fmtF(selD.inc),'var(--text)'],['GASTOS',fmtF(selD.exp),'var(--text)'],['BENEFICIO',fmtF(selD.profit),_clrP]].map(([l,val,clr])=>'<div>'+l+'<b style="color:'+safeColor(clr)+'">'+val+'</b></div>').join('')
         +'</div></div>';})()}
-    </div>
+    </div>`}
   </div>`;
 }
 function buildMonthlyChart(v){
@@ -11061,7 +11030,7 @@ function setDashFM(k){dashFinMonth=k;if(k)dashChartYear=parseInt(k.split("-")[0]
 
 function buildBizChart(){
   // Uses same source as Negocio KPI pills: propios + BF + managed commissions
-  return buildChart(_getBizEntriesWithMgmt(),bizChartYear,bizMonth||null,'setBizFM','prevBizYr','nextBizYr',' NEGOCIO');
+  return buildChart(_getBizEntriesWithMgmt(),bizChartYear,bizMonth||null,'setBizFM','prevBizYr','nextBizYr',' NEGOCIO','Beneficio'); // cabecera de Negocio con la cifra Doto
 }
 function buildGlobalChart(){
   // Dashboard BRUTO = BF + all vehicle finances including b.finance extras
