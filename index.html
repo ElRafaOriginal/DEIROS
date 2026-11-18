@@ -1460,6 +1460,173 @@ button.qt-so{all:unset;box-sizing:border-box;display:grid;grid-template-columns:
 .eb-cl{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:8px 0 8px 14px;border-left:2px solid var(--border2);}
 .eb-cn{flex:1;min-width:0;font-size:14px;line-height:1.4;color:var(--text2);overflow-wrap:anywhere;}
 .eb-cl .btn-txt{flex-shrink:0;padding:0 8px;}
+/* ══ PR H · Clientes, Propietarios, Archivo, Recurrentes, informes y ajustes: listas en filas finas, fichas con ficha técnica
+   y una cifra Doto tras línea discontinua, formularios con los campos del sistema; sin bordes de color ni cajas rellenas ══ */
+/* Comunes: buscador con lupa + vista segmentada; cifras de ingreso en verde y de gasto en rojo (D4) */
+.cl-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;}
+.cl-se{flex:1;min-width:0;position:relative;display:block;}
+.cl-se>.ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text2);pointer-events:none;}
+.cl-se>input{padding-left:44px;min-height:48px;border-radius:var(--r-pill);}
+.d-seg.cl-mode{flex:none;width:148px;margin:0;}
+.d-seg.cl-mode button{font-size:18px;min-height:40px;}
+.d-seg.cl-mode .ico{width:18px;height:18px;}
+.cl-sh{margin:0 0 4px;}
+.cl-in{color:var(--green)!important;}
+.ow-neg{color:var(--red)!important;}
+.cl-e,.ow-e,.ar-e,.rr-e,.fz-e,.fv-e,.aj-e{margin-top:8px;}
+/* Clientes: filas finas («01» · nombre / DNI y teléfono / último alquiler · total y nº) */
+.cl-r{align-items:start;}
+.cl-r>.q{margin-top:4px;}
+.cl-r:active,.cl-h:active,.ow-vr:active,.cl-gc:active,.ow-bk:active{opacity:.6;}
+.cl-rc{min-height:56px;align-items:center;}
+.cl-rc>.q{margin-top:0;}
+.cl-rt{display:inline-flex;align-items:center;gap:3px;color:var(--amber);}
+.cl-rt .ico{width:12px;height:12px;}
+.cl-nt{font-size:13px;color:var(--text2);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cl-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.cl-gc>*{min-width:0;}
+.cl-gc{cursor:pointer;gap:12px;margin:0;min-width:0;}
+.cl-gn{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cl-gm{font-size:12px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.spec.cl-gs{margin-top:0;}
+.spec.cl-gs>div{padding:10px 0;border-bottom:0;font-size:11px;}
+.spec.cl-gs b{font-size:13px;}
+.ow-c .d-ct+.d-meta,.rp-hc .d-ct+.d-meta,.ar-c .d-ct+.d-meta{margin-top:6px;}
+.cl-gr{display:flex;gap:2px;color:var(--amber);}
+.cl-gr .ico{width:14px;height:14px;}
+/* Ficha del cliente y del propietario: tarjeta con ficha técnica, valoración y total en Doto */
+.cl-c,.ow-hc{margin-top:4px;}
+.cl-c .spec,.ow-hc .spec{margin-top:0;}
+.cl-sp b{white-space:normal;overflow-wrap:anywhere;}
+.btn-sec.cl-ed{width:auto;min-height:44px;padding:0 18px;}
+.cl-rate{display:grid;gap:6px;}
+.cl-stars{display:flex;gap:0;margin-left:-10px;color:var(--amber);}
+.cl-stars>span{display:grid;place-items:center;width:44px;height:44px;cursor:pointer;font-size:24px;}
+.cl-k,.ow-k{--c:3;}
+.cl-k b,.ow-k b{font-size:17px;}
+.cl-h{align-items:start;}
+.cl-h>.dh-dot{margin-top:7px;}
+.chip.cl-pl::before{background:var(--pc,var(--text2));}
+/* Propietarios: tarjeta por propietario (accesos redondos arriba), compacta en filas y cuadrícula */
+.ow-c{cursor:pointer;}
+.ow-ia{display:flex;gap:8px;flex:none;}
+.ow-ia .d-ib .ico{width:18px;height:18px;}
+.ow-del{color:var(--red);border-color:var(--err-b);}
+.spec.c3.ow-s{margin-top:0;border-top:1px solid var(--border2);padding-top:14px;}
+.ow-s b{font-size:15px;}
+.ow-vl{margin-top:-4px;}
+.ow-vr{min-height:52px;padding:8px 0;}
+.ow-vr .t{font-size:15px;}
+.ow-ch{display:inline-flex;color:var(--text2);}
+.ow-rc{grid-template-columns:minmax(0,1fr) auto auto;cursor:default;align-items:start;}
+.ow-rc .ow-ia .d-ib{width:44px;height:44px;}
+.ow-chs{display:flex;flex-wrap:wrap;gap:6px;}
+.chip.ow-vc{cursor:pointer;text-transform:none;letter-spacing:0;color:var(--text);}
+.chip.ow-vc .dh-dot{width:6px;height:6px;}
+.ow-ib b{display:flex;align-items:center;justify-content:space-between;gap:10px;white-space:normal;overflow-wrap:anywhere;}
+.ow-eye{width:40px;height:40px;font-size:18px;}
+.ow-acts{margin:0 0 var(--gap-card);}
+.ow-vh{cursor:pointer;}
+.d-ct.ow-vn{font-size:20px;}
+.spec.ow-vs{margin-top:0;}
+.ow-vs b{font-size:15px;}
+.ow-bl{margin-top:8px;}
+.ow-bk{cursor:pointer;align-items:flex-start;}
+.ow-bk>span{min-width:0;display:grid;gap:3px;}
+.ow-bt{font-size:14px;font-weight:600;color:var(--text);}
+.ow-bk small{font-family:var(--mono);font-size:12px;color:var(--text2);}
+/* Informes a pantalla completa (liquidación del propietario, informe del coche): barra de cristal, resumen con Doto, filas */
+.rp-bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:calc(var(--st) + 10px) 16px 10px;background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border-bottom:1px solid var(--border);}
+.rp-tt{flex:1;min-width:0;}
+.rp-t{font-size:var(--fs-bar);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rp-s{font-family:var(--mono);font-size:var(--fs-min);letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.btn-pri.rp-pdf{width:auto;flex:none;min-height:44px;padding:0 16px;}
+.rp-c{padding:16px 16px calc(32px + var(--sb));max-width:720px;margin:0 auto;}
+.spec.rp-sp{margin-top:0;}
+.rp-hc .d-tot .d-n.neg,.ow-hc .d-tot .d-n.neg{color:var(--red);}
+.rp-sp b{font-size:16px;}
+.rp-vc .spec,.rp-lq .spec{margin-top:0;}
+.rp-pm{margin-top:-10px;}
+.rp-vc .al-li span,.rp-lq .al-li span{min-width:0;display:grid;gap:3px;}
+.rp-vc .al-li small{font-family:var(--mono);font-size:12px;color:var(--text2);}
+.rp-l{margin-top:8px;}
+.rp-l .al-li{font-size:13px;}
+.rp-fin{margin-top:8px;}
+.rp-fin span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rp-ft{text-align:center;font-family:var(--mono);font-size:var(--fs-min);color:var(--text2);padding:16px 0;}
+.rp-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;min-height:56px;padding:8px 0;border-bottom:1px solid var(--border2);}
+.rp-r>b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.rp-none{padding:14px 0;border-bottom:1px solid var(--border2);}
+.rp-lq,.rp-roi{margin-top:var(--sp-sec);}
+.rp-own{margin:0;}
+.rp-k{--c:3;margin:0;}
+.rp-k b{font-size:16px;}
+.d-bar.rp-bar2{height:4px;}
+.rp-bl{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--mono);font-size:var(--fs-min);color:var(--text2);}
+/* Contratos · Finanzas: aviso como vacío con trama */
+.ct-fz{margin-top:4px;}
+.ct-fz p{max-width:300px;}
+/* Archivo: tarjeta por coche (motivo en chip, balance en ficha técnica, Ver datos | Reactivar y borrar redondo) */
+.ar-h{margin-bottom:12px;}
+.ar-sh{margin:0 0 8px;}
+.ar-c .d-ct{color:var(--text2);}
+.chip.ar-r .ico{width:13px;height:13px;}
+.ar-a{display:grid;grid-template-columns:1fr 1fr 44px;gap:8px;align-items:center;}
+.ar-a .btn-sec{padding:0 10px;}
+.ar-kv{margin-bottom:0;}
+.ar-kv span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Recurrentes: cabecera con el gasto mensual en Doto; filas con estado en chip y acciones compactas */
+.rr-hc{margin-top:4px;}
+.d-n.rr-n{color:var(--red);}
+.rr-hc .d-meta{margin-top:-6px;}
+.rr-r{padding:14px 0;border-bottom:1px solid var(--border2);display:grid;gap:12px;}
+.rr-r.off .t{color:var(--text2);}
+.rr-m{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;}
+.rr-m .r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.rr-m .r b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.rr-soon{color:var(--amber);}
+.rr-a{display:grid;grid-template-columns:auto 1fr 1fr 44px;gap:8px;align-items:center;}
+.btn-sec.rr-b{min-height:44px;padding:0 10px;font-size:14px;}
+.rr-a .d-ib{font-size:18px;}
+.rr-g{margin-bottom:8px;}
+.rr-gh{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;margin:20px 0 8px;}
+.rr-gh>b{font-family:var(--mono);font-size:14px;font-weight:500;white-space:nowrap;}
+.rr-gn{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+.btn-pri.rr-add{margin:4px 0 12px;}
+.rr-vr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--border2);}
+.rr-vr>.dh-dot{margin-top:7px;}
+.dh-dot.rr-on{background:var(--green);}
+.rr-vr .t{font-size:16px;font-weight:600;color:var(--text);}
+.rr-vr .s{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--text2);margin-top:3px;}
+.rr-va{display:block;font-family:var(--mono);font-size:15px;font-weight:500;margin-top:6px;}
+.rr-vb{grid-column:2;display:flex;gap:8px;}
+.rr-vb .d-ib .ico{width:18px;height:18px;}
+.rr-fv{margin-bottom:16px;}
+.rr-fv span{display:inline-flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-family:var(--font);font-size:15px;font-weight:600;color:var(--text);}
+/* Fianzas y Coches libres: filas finas con el importe/acción a la derecha */
+.fz-r,.fv-r{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--border2);}
+.fz-r>.dh-dot,.fv-r>.dh-dot{margin-top:7px;}
+.rr-m .t,.rp-r .t,.fz-r .t,.fv-r .t,.aj-r .t{font-size:16px;font-weight:600;color:var(--text);}
+.rr-m .s,.rp-r .s,.fz-r .s,.fv-r .s,.aj-r .s{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--text2);margin-top:3px;}
+.fz-r .chip{margin-top:8px;}
+.fz-r .r{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.fz-r .r b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;}
+.btn-sec.fz-v,.btn-sec.fv-q{width:auto;min-height:44px;padding:0 14px;font-size:14px;}
+.fv-r{align-items:center;}
+.fv-r>.dh-dot{margin-top:0;}
+.fv-p{margin-bottom:16px;}
+.fv-h{text-align:center;padding:20px 0;}
+.fv-sh{margin:0 0 4px;}
+/* Copia de seguridad y notificaciones */
+.aj-c{margin-bottom:16px;}
+.spec.aj-sp{margin-top:0;}
+.aj-sp b{font-size:16px;}
+.aj-h{margin:10px 0 0;}
+label.btn-sec.aj-up{width:100%;}
+.aj-st b{display:inline-flex;align-items:center;gap:6px;font-family:var(--font);font-size:14px;font-weight:600;}
+.btn-pri.aj-on{margin:8px 0 0;}
+.aj-r{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:60px;padding:8px 0;border-bottom:1px solid var(--border2);}
+.aj-i{display:grid;place-items:center;font-size:20px;color:var(--text2);}
 </style>
 </head>
 <body>
