@@ -10782,20 +10782,24 @@ function openAddBiz(){
   _bizEtype='expense';
   const today=todayStr();
   openSheet(`<div class="stitle">Movimiento de negocio</div><div class="ssub">Ingreso o gasto general, fuera de vehículos</div>
-    <div class="tsw"><div class="to" id="bInc" onclick="swBiz('income')" style="color:var(--text3)">${ico('coins')} Ingreso</div><div class="to" id="bExp" onclick="swBiz('expense')" style="background:var(--bg);color:var(--red)">${ico('trend-down')} Gasto</div></div>
-    <div class="fg"><label class="lbl">FECHA</label><input id="bDate" type="date" value="${esc(safeDate(today))}"/></div>
-    <div class="fg"><label class="lbl">CATEGORÍA</label><select id="bCat">${BIZ_EXP.map(x=>'<option>'+x+'</option>').join('')}</select></div>
-    <div class="fg"><label class="lbl">IMPORTE (€)</label><input id="bAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
-    <div class="fg"><label class="lbl">DESCRIPCIÓN (opcional)</label><input id="bDesc" placeholder="Nota..." autocomplete="off"/></div>
-    <button class="btn-pri" onclick="submitBiz()">Añadir</button><div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-seg fl-et" role="group" aria-label="Tipo de movimiento"><button type="button" id="bInc" aria-pressed="false" onclick="swBiz('income')">${ico('coins')} Ingreso</button><button type="button" id="bExp" aria-pressed="true" onclick="swBiz('expense')">${ico('trend-down')} Gasto</button></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="bAmt">Importe</label><div class="d-pre"><span>€</span><input id="bAmt" type="number" step="0.01" placeholder="0.00" inputmode="decimal"/></div></div>
+      <div class="d-f"><label class="q" for="bDate">Fecha</label><input id="bDate" type="date" value="${esc(safeDate(today))}"/></div>
+    </div>
+    <div class="d-f"><label class="q" for="bCat">Categoría</label><select id="bCat">${BIZ_EXP.map(x=>'<option>'+x+'</option>').join('')}</select></div>
+    <div class="d-f"><label class="q" for="bDesc">Descripción</label><input id="bDesc" placeholder="Opcional" autocomplete="off"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitBiz()">${ico('save')} Añadir</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function swBiz(t){
   _bizEtype=t;
   const inc=document.getElementById('bInc'),exp=document.getElementById('bExp'),cat=document.getElementById('bCat');
   if(!inc||!exp||!cat)return;
-  if(t==='income'){inc.style.background='var(--bg)';inc.style.color='var(--green)';exp.style.background='transparent';exp.style.color='var(--text3)';cat.innerHTML=BIZ_INC.map(x=>`<option>${x}</option>`).join('');}
-  else{exp.style.background='var(--bg)';exp.style.color='var(--red)';inc.style.background='transparent';inc.style.color='var(--text3)';cat.innerHTML=BIZ_EXP.map(x=>`<option>${x}</option>`).join('');}
+  // Estado del segmentado con aria-pressed (antes colores en línea); mismas categorías
+  inc.setAttribute('aria-pressed',String(t==='income'));exp.setAttribute('aria-pressed',String(t!=='income'));
+  if(t==='income'){cat.innerHTML=BIZ_INC.map(x=>`<option>${x}</option>`).join('');}
+  else{cat.innerHTML=BIZ_EXP.map(x=>`<option>${x}</option>`).join('');}
 }
 function submitBiz(){
   const amt=parseFloat(document.getElementById('bAmt').value);
