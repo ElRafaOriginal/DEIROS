@@ -9338,69 +9338,59 @@ function renderOwnersBody(){
   const res=document.getElementById('owners-results'); if(!res)return;
   const toggleRow=document.getElementById('ownerToggleRow');
   const mode=_vOwnersMode;
-  // Update toggle highlights
+  // Modo de vista: el activo con aria-pressed (antes colores en línea); mismos modos y onclick
   ['extended','compact','grid'].forEach(m=>{
     const d=document.getElementById('otog-'+m);
-    if(d){d.style.background=m===mode?'var(--bg)':'transparent';d.style.color=m===mode?'var(--amber)':'var(--text3)';}
+    if(d)d.setAttribute('aria-pressed',String(m===mode));
   });
   const q=_searchOwners.toLowerCase().trim();
   const filtered=OW.filter(o=>!q||o.name.toLowerCase().includes(q)||(o.dni||'').toLowerCase().includes(q)||(o.phone||'').includes(q));
+  const _vdot=v=>'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>';
   let h='';
   if(!OW.length){
-    h=`<div class="empty"><div class="ei">${ico('users')}</div><div class="et">Sin propietarios</div><div class="es">Pulsa + para añadir un propietario</div></div>`;
+    h=`<div class="d-empty ow-e">${ico('users')}<h3>Sin propietarios</h3><p>Pulsa «Nuevo propietario» para añadir el primero</p></div>`;
   } else if(!filtered.length){
-    h=`<div class="empty"><div class="ei">${ico('search')}</div><div class="et">Sin resultados</div><div class="es">Prueba con otra búsqueda</div></div>`;
+    h=`<div class="d-empty ow-e">${ico('search')}<h3>Sin resultados</h3><p>Prueba con otra búsqueda</p></div>`;
   } else if(mode==='grid'){
-    // GRID: 2-col compact cards
-    h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">`;
+    // Cuadrícula: tarjetas compactas con ficha técnica de 2 datos y los coches como chips
+    h=`<div class="cl-g">`;
     filtered.forEach(owner=>{
       const vehicles=V.filter(v=>!v.archived&&v.ownerId===owner.id);
       const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
       const totalP=totalI-vehicles.reduce((s,v)=>s+tExp(v),0);
       const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
       const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0);
-      h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A630;border-radius:12px;padding:16px;cursor:pointer" onclick="openOwnerProfile('${escJs(owner.id)}')">
-        <div style="font-size:15px;font-weight:800;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(owner.name)}</div>
-        ${owner.dni?`<div style="font-size:10px;color:var(--text3);margin-bottom:8px">${ico('id-card')} ${esc(owner.dni)}</div>`:''}
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-          <div style="background:var(--bg3);border-radius:7px;padding:7px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(totalI)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">INGRESOS</div></div>
-          <div style="background:var(--bg3);border-radius:7px;padding:7px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${fmt(toOwner)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">AL PROP.</div></div>
-        </div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">
-          ${vehicles.map(v=>`<span onclick="event.stopPropagation();openV('${escJs(v.id)}')" style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#14B8A615;color:#14B8A6;border:1px solid #14B8A640;cursor:pointer">${esc(v.name)}</span>`).join('')}
-          ${!vehicles.length?'<span style="font-size:10px;color:var(--text3)">Sin vehículos</span>':''}
+      h+=`<div class="d-card s cl-gc" onclick="openOwnerProfile('${escJs(owner.id)}')">
+        <div><div class="cl-gn">${esc(owner.name)}</div>${owner.dni?`<div class="d-meta cl-gm">${esc(owner.dni)}</div>`:''}</div>
+        <div class="spec cl-gs"><div>Ingresos<b class="cl-in">${fmt(totalI)}</b></div><div>Al prop.<b class="${toOwner<0?'ow-neg':''}">${fmt(toOwner)}</b></div></div>
+        <div class="ow-chs">
+          ${vehicles.map(v=>`<span class="chip no-dot ow-vc" onclick="event.stopPropagation();openV('${escJs(v.id)}')">${_vdot(v)}${esc(v.name)}</span>`).join('')}
+          ${!vehicles.length?'<span class="mono2">Sin vehículos</span>':''}
         </div>
       </div>`;
     });
     h+=`</div>`;
   } else if(mode==='compact'){
-    // COMPACT: simple rows
-    h=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">`;
+    // Compacta: filas finas con lo que hay que pagar y los dos accesos (informe y editar)
+    h=`<div class="d-list">`;
     filtered.forEach((owner,i)=>{
       const vehicles=V.filter(v=>!v.archived&&v.ownerId===owner.id);
       const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
       const totalP=totalI-vehicles.reduce((s,v)=>s+tExp(v),0);
       const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
       const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0);
-      h+=`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:${i<filtered.length-1?'1px solid var(--border)':'none'}">
-        <div style="width:6px;height:36px;border-radius:3px;background:#14B8A6;flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(owner.name)}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:1px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}${owner.dni?' · '+esc(owner.dni):''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${fmt(toOwner)}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:1px">al prop.</div>
-        </div>
-        <div style="display:flex;gap:4px;flex-shrink:0">
-          <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">${ico('doc')}</div>
-          <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:14px">${ico('edit')}</div>
+      h+=`<div class="d-row ow-rc">
+        <div class="al-b"><div class="t ell">${esc(owner.name)}</div><div class="s ell">${vehicles.length} vehículo${vehicles.length!==1?'s':''}${owner.dni?' · '+esc(owner.dni):''}</div></div>
+        <div class="r"><b class="${toOwner<0?'ow-neg':''}">${fmt(toOwner)}</b><span class="mono2">al prop.</span></div>
+        <div class="ow-ia">
+          <button class="d-ib tap44" onclick="openOwnerReport('${escJs(owner.id)}')" aria-label="Informe">${ico('doc')}</button>
+          <button class="d-ib tap44" onclick="editOwner('${escJs(owner.id)}')" aria-label="Editar">${ico('edit')}</button>
         </div>
       </div>`;
     });
     h+=`</div>`;
   } else {
-    // EXTENDED (default): full cards
+    // Lista (por defecto): una tarjeta por propietario (nombre · contacto · ficha técnica · coches en filas) y sus 3 accesos
     filtered.forEach(owner=>{
       const vehicles=V.filter(v=>!v.archived&&v.ownerId===owner.id);
       const totalI=vehicles.reduce((s,v)=>s+tInc(v),0);
@@ -9408,36 +9398,27 @@ function renderOwnersBody(){
       const totalP=totalI-totalE;
       const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
       const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0);
-      h+=`<div style="background:var(--bg2);border:1.5px solid #14B8A644;border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer" onclick="openOwnerProfile('${escJs(owner.id)}')">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-          <div>
-            <div style="font-size:18px;font-weight:800">${esc(owner.name)}</div>
-            ${owner.dni?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${ico('id-card')} ${esc(owner.dni)}</div>`:''}
-            ${owner.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${ico('phone')} ${esc(owner.phone)}</div>`:''}
-            ${owner.email?`<div style="font-size:11px;color:var(--text3)">${ico('mail')} ${esc(owner.email)}</div>`:''}
-          </div>
-          <div style="display:flex;gap:6px">
-            <div class="btn-pri tap44" onclick="openOwnerReport('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">${ico('doc')}</div>
-            <div class="btn-sec tap44" onclick="editOwner('${escJs(owner.id)}')" style="width:44px;padding:0;font-size:16px">${ico('edit')}</div>
-            <div class="tap44" onclick="deleteOwner('${escJs(owner.id)}')" style="width:36px;height:36px;background:var(--bg3);border:1px solid #EF444430;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">${ico('trash')}</div>
+      h+=`<div class="d-card ow-c" onclick="openOwnerProfile('${escJs(owner.id)}')">
+        <div class="d-ch"><span class="q ac">Propietario</span>
+          <div class="ow-ia">
+            <button class="d-ib tap44" onclick="openOwnerReport('${escJs(owner.id)}')" aria-label="Informe">${ico('doc')}</button>
+            <button class="d-ib tap44" onclick="editOwner('${escJs(owner.id)}')" aria-label="Editar">${ico('edit')}</button>
+            <button class="d-ib tap44 ow-del" onclick="deleteOwner('${escJs(owner.id)}')" aria-label="Eliminar">${ico('trash')}</button>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
-          <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${vehicles.length}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">VEHÍCULOS</div></div>
-          <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(totalI)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">INGRESOS</div></div>
-          <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${toOwner>=0?'var(--amber)':'var(--red)'}">${fmt(toOwner)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">AL PROPIET.</div></div>
+        <div><div class="d-ct al-ct">${esc(owner.name)}</div><div class="d-meta al-mt6">${[owner.dni,owner.phone,owner.email].filter(Boolean).map(x=>esc(x)).join(' · ')||'Sin datos de contacto'}</div></div>
+        <div class="spec c3 ow-s">
+          <div>Vehículos<b>${vehicles.length}</b></div>
+          <div>Ingresos<b class="cl-in">${fmt(totalI)}</b></div>
+          <div>Al propiet.<b class="${toOwner<0?'ow-neg':''}">${fmt(toOwner)}</b></div>
         </div>
-        ${vehicles.length?`<div class="sec" style="margin-bottom:8px">VEHÍCULOS ASIGNADOS</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${vehicles.map(v=>`<div onclick="openV('${escJs(v.id)}')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid #14B8A630;border-radius:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='#14B8A6'" onmouseout="this.style.borderColor='#14B8A630'">
-            <div style="width:8px;height:8px;border-radius:50%;background:${safeColor(v.color)};flex-shrink:0"></div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(v.name)}</div>
-              <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">${esc(v.plate)}</div>
-            </div>
-            <div style="margin-left:4px;font-size:11px;color:var(--text3)">→</div>
+        ${vehicles.length?`<div class="d-list ow-vl">
+          ${vehicles.map(v=>`<div class="d-row ow-vr" onclick="openV('${escJs(v.id)}')">
+            ${_vdot(v)}
+            <div class="al-b"><div class="t ell">${esc(v.name)}</div><div class="s">${esc(v.plate)}</div></div>
+            <span class="ow-ch">${ico('chevron')}</span>
           </div>`).join('')}
-        </div>`:`<div style="font-size:11px;color:var(--text3)">Sin vehículos asignados</div>`}
+        </div>`:`<p class="d-hint">Sin vehículos asignados</p>`}
       </div>`;
     });
   }
@@ -9449,16 +9430,13 @@ function renderOwners(el){
     const owStats=isD?buildOwnersStats():'';
     const mode=_vOwnersMode;
     el.innerHTML=`<div class="anim">${isD?'<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start"><div>':''}
-  <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
-    <div style="flex:1">
-      <input type="text" id="searchOwnersInput" placeholder="Buscar propietario..." value="${esc(_searchOwners)}"
-        oninput="_searchOwners=this.value;renderOwnersBody()"
-        style="font-size:14px"/>
-    </div>
-    <div id="ownerToggleRow" style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-      <div class="tap44" id="otog-extended" onclick="_vOwnersMode='extended';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">${ico('menu')}</div>
-      <div class="tap44" id="otog-compact" onclick="_vOwnersMode='compact';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
-      <div class="tap44" id="otog-grid" onclick="_vOwnersMode='grid';renderOwnersBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
+  <div class="cl-bar">
+    <label class="cl-se">${ico('search')}<input type="text" id="searchOwnersInput" placeholder="Buscar nombre, DNI…" value="${esc(_searchOwners)}"
+        oninput="_searchOwners=this.value;renderOwnersBody()"/></label>
+    <div id="ownerToggleRow" class="d-seg cl-mode" role="group" aria-label="Vista">
+      <button type="button" class="tap44" id="otog-extended" onclick="_vOwnersMode='extended';renderOwnersBody()" aria-pressed="true" aria-label="Lista">${ico('menu')}</button>
+      <button type="button" class="tap44" id="otog-compact" onclick="_vOwnersMode='compact';renderOwnersBody()" aria-pressed="false" aria-label="Compacta">≡</button>
+      <button type="button" class="tap44" id="otog-grid" onclick="_vOwnersMode='grid';renderOwnersBody()" aria-pressed="false" aria-label="Cuadrícula">⊞</button>
     </div>
   </div>
   <div id="owners-results"></div></div>${isD?'</div>'+owStats+'</div>':''}`;
@@ -9576,57 +9554,49 @@ function renderOwnerProfile(el){
     const recentBk=[...(v.bookings||[])].sort((a,b)=>b.startDate.localeCompare(a.startDate)).slice(0,5);
     return{v,vI,vE,vP,comm,vOwner:_settleTotals(v,fins).toOwner,mI,mE,recentBk};
   });
+  const _tS=fmt(toOwner).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
 
-  let h=`<div class="anim">
+  // Ficha del propietario: tarjeta con rótulo, nombre, ficha técnica (contacto e IBAN) y total al propietario en Doto tras línea discontinua
+  let h=`<div class="anim ow-det">
   <div class="back" onclick="nav('owners')"><span style="font-size:18px">${ico('arrow-left')}</span>Volver a propietarios</div>
 
-  <!-- Header -->
-  <div style="background:var(--bg2);border:1px solid #14B8A640;border-radius:14px;padding:22px;margin-bottom:20px">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-      <div>
-        <div style="font-size:24px;font-weight:800;margin-bottom:6px">${esc(owner.name)}</div>
-        ${owner.dni?`<div style="font-size:13px;color:var(--text3);margin-bottom:3px">${ico('id-card')} ${esc(owner.dni)}</div>`:''}
-        ${owner.phone?`<div style="font-size:13px;color:var(--text3);margin-bottom:3px">${ico('phone')} ${esc(owner.phone)}</div>`:''}
-        ${owner.email?`<div style="font-size:13px;color:var(--text3)">${ico('mail')} ${esc(owner.email)}</div>`:''}
-        ${owner.iban?`<div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px"><span>${ico('bank')}</span><span id="ibanDisplay" style="font-family:var(--mono)">${esc(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}</span><span onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${escJs(owner.iban)}':'${escJs(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}';" style="cursor:pointer;font-size:15px;padding:2px 6px;background:var(--bg3);border-radius:5px;border:1px solid var(--border2)">${ico('eye')}</span></div>`:''}
-      </div>
-      <div class="own-actions">
-        <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')">${ico('doc')} Informe PDF</button>
-        <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')">${ico('clipboard')} Contrato de gestión</button>
-        <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')">${ico('edit')} Editar</button>
-      </div>
+  <div class="d-card xl ow-hc">
+    <div class="d-ch"><span class="q ac">Propietario</span><span class="q">${String(vehicles.length).padStart(2,'0')} vehículo${vehicles.length!==1?'s':''}</span></div>
+    <div class="d-ct al-ct">${esc(owner.name)}</div>
+    <div class="spec cl-sp">
+      ${owner.dni?`<div>DNI / NIE<b>${esc(owner.dni)}</b></div>`:''}
+      ${owner.phone?`<div>Teléfono<b>${esc(owner.phone)}</b></div>`:''}
+      ${owner.email?`<div class="w2">Email<b>${esc(owner.email)}</b></div>`:''}
+      ${owner.iban?`<div class="w2 ow-ib">IBAN<b><span id="ibanDisplay">${esc(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}</span><span class="d-ib ow-eye" onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${escJs(owner.iban)}':'${escJs(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}';">${ico('eye')}</span></b></div>`:''}
+      ${!owner.dni&&!owner.phone&&!owner.email&&!owner.iban?'<div class="w2">Datos<b>Sin datos de contacto</b></div>':''}
     </div>
+    <div class="d-tot"><span class="q">Total al propietario</span><div class="d-n n2${toOwner<0?' neg':''}">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${vehicles.length} vehículo${vehicles.length!==1?'s':''} · ${totalBk} alquiler${totalBk!==1?'es':''} · comisión media ${avgComm}%</p></div>
+  </div>
+  <div class="own-actions ow-acts">
+    <button class="btn-pri" onclick="openOwnerReport('${escJs(owner.id)}')">${ico('doc')} Informe PDF</button>
+    <button class="btn-sec" onclick="openMgmtContractForm('${escJs(owner.id)}')">${ico('clipboard')} Contrato de gestión</button>
+    <button class="btn-sec" onclick="editOwner('${escJs(owner.id)}')">${ico('edit')} Editar</button>
   </div>
 
-  <!-- Global KPIs -->
-  <div class="grid2" style="margin-bottom:20px">
-    <div class="sbox" style="border-left:4px solid var(--blue)"><div class="sv" style="color:var(--blue)">${vehicles.length}</div><div class="sl">VEHÍCULOS</div></div>
-    <div class="sbox" style="border-left:4px solid var(--green)"><div class="sv" style="color:var(--green)">${fmt(totalI)}</div><div class="sl">INGRESOS TOTALES</div></div>
-    <div class="sbox" style="border-left:4px solid var(--red)"><div class="sv" style="color:var(--red)">${fmt(totalE)}</div><div class="sl">GASTOS TOTALES</div></div>
-    <div class="sbox" style="border-left:4px solid var(--amber)"><div class="sv" style="color:var(--amber)">${fmt(toOwner)}</div><div class="sl">TOTAL AL PROPIETARIO</div></div>
-  </div>
+  <div class="d-kpi ow-k"><div><b>${vehicles.length}</b><span>Vehículos</span></div><div><b class="cl-in">${fmt(totalI)}</b><span>Ingresos</span></div><div><b class="ow-neg">${fmt(totalE)}</b><span>Gastos</span></div></div>
 
-  <!-- Per vehicle -->
-  <div class="sec">VEHÍCULOS EN GESTIÓN</div>
+  <div class="d-sh al-sh"><h2>En gestión</h2><span class="q">${String(vData.length).padStart(2,'0')}</span></div>
+  ${!vData.length?`<div class="d-empty ow-e">${ico('car')}<h3>Sin vehículos</h3><p>Asígnale un coche en gestión desde la ficha del vehículo</p></div>`:''}
   ${isD?'<div class="desk-fleet-grid">':''}
   ${vData.map(d=>`
-  <div style="background:var(--bg2);border:1.5px solid ${safeColor(d.v.color)}44;border-radius:14px;padding:18px;${isD?'':'margin-bottom:14px'}">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;cursor:pointer" onclick="openV('${escJs(d.v.id)}')">
-      <div>
-        <div style="font-size:18px;font-weight:800">${esc(d.v.name)}</div>
-        <div style="font-family:var(--mono);font-size:12px;color:${plateColor(d.v.color)};margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
-        ${d.v.km?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${ico('odometer')} ${Number(d.v.km).toLocaleString('es-ES')} km</div>`:''}
-      </div>
-      <span style="font-size:11px;font-weight:700;padding:4px 10px;background:#8B5CF620;color:var(--purple);border-radius:20px">Com. ${d.comm}%</span>
+  <div class="d-card ow-vc2">
+    <div class="ow-vh" onclick="openV('${escJs(d.v.id)}')">
+      <div class="d-ch"><span class="dh-cl"><i class="dh-dot"${d.v.color?' style="background:'+safeColor(d.v.color)+'"':''}></i><span class="d-ct ow-vn">${esc(d.v.name)}</span></span><span class="chip no-dot">Com. ${d.comm}%</span></div>
+      <div class="d-meta al-mt6">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}${d.v.km?' · '+Number(d.v.km).toLocaleString('es-ES')+' km':''}</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
-      <div style="background:var(--bg3);border-radius:8px;padding:9px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(d.vI)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">INGRESOS</div></div>
-      <div style="background:var(--bg3);border-radius:8px;padding:9px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${fmt(d.vE)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">GASTOS</div></div>
-      <div style="background:var(--bg3);border-radius:8px;padding:9px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${fmt(d.vOwner)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">AL PROP.</div></div>
-      <div style="background:var(--bg3);border-radius:8px;padding:9px;text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${d.mI>0?fmt(d.mI):'—'}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">MES ACT.</div></div>
+    <div class="spec ow-vs">
+      <div>Ingresos<b class="cl-in">${fmt(d.vI)}</b></div>
+      <div>Gastos<b class="ow-neg">${fmt(d.vE)}</b></div>
+      <div>Al prop.<b>${fmt(d.vOwner)}</b></div>
+      <div>Mes act.<b>${d.mI>0?fmt(d.mI):'—'}</b></div>
     </div>
-    ${d.recentBk.length?`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">ÚLTIMOS ALQUILERES</div>
-    ${d.recentBk.map(b=>{const p=PLATS[b.platform];return '<div onclick="showBookingById(\''+escJs(b.id)+'\')" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);cursor:pointer" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'"><div><div style="font-size:12px;font-weight:600">'+esc(fmtDMY(b.startDate))+(b.endDate&&b.endDate!==b.startDate?' → '+esc(fmtDMY(b.endDate)):'')+(b.clientName?' · '+esc(b.clientName):'')+'</div><div style="font-size:10px;color:var(--text3);margin-top:1px">'+esc(p?p.label:b.platform||'—')+'</div></div><div style="text-align:right"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmtF(b.amount)+'</div><div style="font-size:9px;color:var(--text3);margin-top:1px">ver ficha →</div></div></div>';}).join('')}`:''}
+    ${d.recentBk.length?`<div><span class="q">Últimos alquileres</span>
+    <div class="al-l ow-bl">${d.recentBk.map(b=>{const p=PLATS[b.platform];return '<div class="al-li ow-bk" onclick="showBookingById(\''+escJs(b.id)+'\')"><span><span class="ow-bt">'+esc(fmtDMY(b.startDate))+(b.endDate&&b.endDate!==b.startDate?' → '+esc(fmtDMY(b.endDate)):'')+(b.clientName?' · '+esc(b.clientName):'')+'</span><small>'+esc(p?p.label:b.platform||'—')+'</small></span><b class="cl-in">'+fmtF(b.amount)+'</b></div>';}).join('')}</div></div>`:''}
   </div>`).join('')}
   ${isD?'</div>':''}
   </div>`;
@@ -9634,17 +9604,16 @@ function renderOwnerProfile(el){
 }
 
 function openAddOwner(){
-  openSheet(`<div class="stitle">Nuevo propietario</div>
-    <div class="fg"><label class="lbl">NOMBRE *</label><input id="owN" placeholder="Nombre completo" autocomplete="off"/></div>
-    <div class="r2 fg">
-      <div><label class="lbl">DNI / NIE *</label><input id="owDNI" placeholder="12345678A" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div><label class="lbl">TELÉFONO</label><input id="owP" type="tel" placeholder="+34 600..." inputmode="tel"/></div>
+  openSheet(`<div class="stitle">Nuevo propietario</div><div class="ssub">Dueño de un coche en gestión: recibe la liquidación de cada mes</div>
+    <div class="d-f"><label class="q" for="owN">Nombre</label><input id="owN" placeholder="Nombre completo" autocomplete="off"/><span class="d-hint">Obligatorio</span></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="owDNI">DNI / NIE</label><input id="owDNI" class="d-in m" placeholder="12345678A" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="owP">Teléfono</label><input id="owP" type="tel" placeholder="+34 600..." inputmode="tel"/></div>
     </div>
-    <div class="fg"><label class="lbl">EMAIL</label><input id="owE" type="email" placeholder="email@..." inputmode="email"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="owNo" placeholder="Observaciones..."/></div>
-    <button class="btn-pri" onclick="submitOwner()">Crear propietario</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="owE">Email</label><input id="owE" type="email" placeholder="email@..." inputmode="email"/></div>
+    <div class="d-f"><label class="q" for="owNo">Notas</label><input id="owNo" placeholder="Opcional"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitOwner()">${ico('user')} Crear propietario</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 
 function submitOwner(){
@@ -9657,18 +9626,17 @@ function submitOwner(){
 
 function editOwner(id){
   const o=OW.find(o=>o.id===id);if(!o)return;
-  openSheet(`<div class="stitle">Editar propietario</div>
-    <div class="fg"><label class="lbl">NOMBRE *</label><input id="owN" value="${esc(o.name)}" autocomplete="off"/></div>
-    <div class="r2 fg">
-      <div><label class="lbl">DNI / NIE *</label><input id="owDNI" value="${esc(o.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div><label class="lbl">TELÉFONO</label><input id="owP" type="tel" value="${esc(o.phone||'')}" inputmode="tel"/></div>
+  openSheet(`<div class="stitle">Editar propietario</div><div class="ssub">${esc(o.name)}</div>
+    <div class="d-f"><label class="q" for="owN">Nombre</label><input id="owN" value="${esc(o.name)}" autocomplete="off"/><span class="d-hint">Obligatorio</span></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="owDNI">DNI / NIE</label><input id="owDNI" class="d-in m" value="${esc(o.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="owP">Teléfono</label><input id="owP" type="tel" value="${esc(o.phone||'')}" inputmode="tel"/></div>
     </div>
-    <div class="fg"><label class="lbl">EMAIL</label><input id="owE" type="email" value="${esc(o.email||'')}" inputmode="email"/></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="owNo" value="${esc(o.notes||'')}" placeholder="Observaciones..."/></div>
-    <div class="fg"><label class="lbl">IBAN (cuenta bancaria)</label><input id="owIBAN" value="${esc(o.iban||'')}" placeholder="ES00 0000 0000 0000 0000 0000" autocomplete="off" style="font-family:var(--mono)"/></div>
-    <button class="btn-pri" onclick="submitEditOwner('${escJs(id)}')">Guardar cambios</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="owE">Email</label><input id="owE" type="email" value="${esc(o.email||'')}" inputmode="email"/></div>
+    <div class="d-f"><label class="q" for="owNo">Notas</label><input id="owNo" value="${esc(o.notes||'')}" placeholder="Opcional"/></div>
+    <div class="d-f"><label class="q" for="owIBAN">IBAN</label><input id="owIBAN" class="d-in m" value="${esc(o.iban||'')}" placeholder="ES00 0000 0000 0000 0000 0000" autocomplete="off"/><span class="d-hint">Cuenta donde se paga la liquidación</span></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitEditOwner('${escJs(id)}')">${ico('save')} Guardar cambios</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 
 function submitEditOwner(id){
@@ -9682,10 +9650,10 @@ function submitEditOwner(id){
 function deleteOwner(id){
   const o=OW.find(o=>o.id===id);if(!o)return;
   const linked=V.filter(v=>v.ownerId===id).length;
-  openSheet(`<div class="stitle">${ico('trash')} Eliminar propietario</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">¿Eliminar a <strong>${esc(o.name)}</strong>?${linked?` Tiene <strong>${linked} vehículo${linked!==1?'s':''}</strong> asignado${linked!==1?'s':''} — quedarán sin propietario.`:''}</div>
-    <button class="btn-dang" onclick="confirmDeleteOwner('${escJs(id)}')" style="margin-bottom:10px">Eliminar</button>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+  openSheet(`<div class="stitle">Eliminar propietario</div>
+    <p class="ssub">¿Eliminar a <b>${esc(o.name)}</b>?${linked?` Tiene <b>${linked} vehículo${linked!==1?'s':''}</b> asignado${linked!==1?'s':''} — quedarán sin propietario.`:''}</p>
+    <div class="d-acts al-end"><button class="btn-dang" onclick="confirmDeleteOwner('${escJs(id)}')">${ico('trash')} Eliminar</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function confirmDeleteOwner(id){
   OW=OW.filter(o=>o.id!==id);
@@ -9720,12 +9688,10 @@ function openOwnerReport(ownerId){
   const now=new Date();
   const defMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   openSheet(`<div class="stitle">${ico('doc')} Informe de propietario</div>
-    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${esc(o.name)}</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">${vehicles.length} vehículo${vehicles.length!==1?'s':''}: ${esc(vehicles.map(v=>v.name).join(', '))}</div>
-    <div class="fg"><label class="lbl">MES DEL INFORME</label><input type="month" id="repOwnerMonth" value="${esc(safeMonth(defMonth))}" style="font-size:16px"/></div>
-    <button class="btn-pri" onclick="genOwnerReport('${escJs(ownerId)}')">Ver informe</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="ssub">${esc(o.name)} · ${vehicles.length} vehículo${vehicles.length!==1?'s':''}: ${esc(vehicles.map(v=>v.name).join(', '))}</div>
+    <div class="d-f"><label class="q" for="repOwnerMonth">Mes</label><input type="month" id="repOwnerMonth" value="${esc(safeMonth(defMonth))}"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="genOwnerReport('${escJs(ownerId)}')">Ver informe</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 
 function genOwnerReport(ownerId){
@@ -9753,76 +9719,57 @@ function genOwnerReport(ownerId){
   const ov=document.createElement('div');
   ov.id='ownerRepOv';
   ov.style.cssText='position:fixed;inset:0;z-index:1000;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;';
+  const _tS=fmtE(totOwner).replace(/\s/g,' ').split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
+  // Liquidación: barra de cristal con atrás redondo y PDF; resumen como ficha técnica con el saldo en Doto tras línea discontinua; un bloque por coche
+  ov.className='rp-ov';
   ov.innerHTML=`
-    <div style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 16px 12px;display:flex;align-items:center;gap:12px">
-      <div class="tap44" onclick="document.getElementById('ownerRepOv').remove()" style="width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0">${ico('arrow-left')}</div>
-      <div>
-        <div style="font-size:16px;font-weight:800;color:var(--amber)">LIQUIDACIÓN PROPIETARIO</div>
-        <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:1px">${esc(o.name.toUpperCase())} · ${mLabel.toUpperCase()}</div>
-      </div>
-      <button class="btn-pri" onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')" style="margin-left:auto;width:auto;flex-shrink:0">${ico('download')} PDF</button>
+    <div class="rp-bar">
+      <button class="d-ib tap44" onclick="document.getElementById('ownerRepOv').remove()" aria-label="Volver">${ico('arrow-left')}</button>
+      <div class="rp-tt"><div class="rp-t">Liquidación</div><div class="rp-s">${esc(o.name)} · ${esc(mLabel)}</div></div>
+      <button class="btn-pri rp-pdf" onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')">${ico('download')} PDF</button>
     </div>
-    <div style="padding:16px">
-      <!-- Owner info -->
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid #8B1FD444">
-        <div style="font-size:20px;font-weight:800">${esc(o.name)}</div>
-        ${o.dni?`<div style="font-size:12px;color:var(--text3);margin-top:4px">${ico('id-card')} ${esc(o.dni)}</div>`:''}
-        ${o.phone?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${ico('phone')} ${esc(o.phone)}</div>`:''}
-        ${o.email?`<div style="font-size:12px;color:var(--text3)">${ico('mail')} ${esc(o.email)}</div>`:''}
+    <div class="rp-c">
+      <div class="d-card xl rp-hc">
+        <div class="d-ch"><span class="q ac">Liquidación</span><span class="q">${esc(mLabel)}</span></div>
+        <div><div class="d-ct al-ct">${esc(o.name)}</div><div class="d-meta al-mt6">${[o.dni,o.phone,o.email].filter(Boolean).map(x=>esc(x)).join(' · ')||'Sin datos de contacto'}</div></div>
+        <div class="spec rp-sp">
+          <div>Ingresos totales<b class="cl-in">${fmtE(totI)}</b></div>
+          <div>Gastos descontados<b class="ow-neg">${fmtE(totE)}</b></div>
+          <div>Comisión DEIROS<b>${fmtE(totComm)}</b></div>
+          <div>Vehículos<b>${vehicles.length}</b></div>
+        </div>
+        <div class="d-tot"><span class="q">A pagar al propietario</span><div class="d-n n2">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${esc(mLabel)} · ${vehicles.length} vehículo${vehicles.length!==1?'s':''}</p></div>
       </div>
-      <!-- Global summary -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--green)"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmtE(totI)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">INGRESOS TOTALES</div></div>
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--red)"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)">${fmtE(totE)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">GASTOS DESCONTADOS</div></div>
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--purple)"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--purple)">${fmtE(totComm)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">COMISIÓN DEIROS</div></div>
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border-top:2px solid var(--amber)"><div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">${fmtE(totOwner)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">A PAGAR AL PROPIETARIO</div></div>
-      </div>
-      <!-- Per vehicle breakdown -->
+      <div class="d-sh al-sh"><h2>Por vehículo</h2><span class="q">${String(vData.length).padStart(2,'0')}</span></div>
       ${vData.map(d=>`
-      <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #8B1FD420">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-          <div>
-            <div style="font-size:15px;font-weight:800">${esc(d.v.name)}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:2px">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
-          </div>
-          <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#8B5CF620;color:var(--purple);border:1px solid #8B5CF640">Comisión ${d.comm}%</span>
+      <div class="d-card rp-vc">
+        <div class="d-ch"><span class="dh-cl"><i class="dh-dot"${d.v.color?' style="background:'+safeColor(d.v.color)+'"':''}></i><span class="d-ct ow-vn">${esc(d.v.name)}</span></span><span class="chip no-dot">Comisión ${d.comm}%</span></div>
+        <div class="d-meta rp-pm">${esc(d.v.plate)}${esc(d.v.model?' · '+d.v.model:'')}</div>
+        <div class="spec c3 ow-s">
+          <div>Ingresos<b class="cl-in">${fmtE(d.tI)}</b></div>
+          <div>Gastos desc.<b class="ow-neg">${fmtE(d.tE)}</b></div>
+          <div>Beneficio<b class="${d.tP>=0?'cl-in':'ow-neg'}">${fmtE(d.tP)}</b></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
-          <div style="text-align:center;background:var(--bg);border-radius:7px;padding:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">${fmtE(d.tI)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">Ingresos</div></div>
-          <div style="text-align:center;background:var(--bg);border-radius:7px;padding:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red)">${fmtE(d.tE)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">Gastos descontados</div></div>
-          <div style="text-align:center;background:var(--bg);border-radius:7px;padding:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${d.tP>=0?'var(--green)':'var(--red)'}">${fmtE(d.tP)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">Beneficio</div></div>
+        <div class="al-l">
+          <div class="al-li"><span>Comisión DEIROS (${d.comm}%)<small>${fmtE(d.tI)} facturado × ${d.comm}%</small></span><b>${fmtE(d.commAmt)}</b></div>
+          <div class="al-li"><span>Propietario</span><b>${fmtE(d.toOwner)}</b></div>
         </div>
-        <div style="background:#8B5CF610;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:10px;color:var(--purple);font-weight:700">Comisión DEIROS (${d.comm}%)</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtE(d.tI)} facturado × ${d.comm}%</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple)">${fmtE(d.commAmt)}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px">Propietario: ${fmtE(d.toOwner)}</div>
-          </div>
-        </div>
-        ${d.paid>0?`<div style="font-size:11px;color:var(--text3);margin-top:8px">Pagado directamente por el propietario (no se descuenta): ${fmtE(d.paid)}</div>`:''}
-        ${d.deficit>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Déficit asumido por el gestor: ${fmtE(d.deficit)}</div>`:''}
-        ${d.other>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">Gastos no descontados al propietario (las multas corren a cargo del cliente): ${fmtE(d.other)}</div>`:''}
+        ${d.paid>0?`<p class="d-hint">Pagado directamente por el propietario (no se descuenta): ${fmtE(d.paid)}</p>`:''}
+        ${d.deficit>0?`<p class="d-hint">Déficit asumido por el gestor: ${fmtE(d.deficit)}</p>`:''}
+        ${d.other>0?`<p class="d-hint">Gastos no descontados al propietario (las multas corren a cargo del cliente): ${fmtE(d.other)}</p>`:''}
         ${d.fins.filter(e=>_isOwnerDeduct(d.v,e)).length?`
-        <div style="margin-top:10px">
-          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">GASTOS DESCONTADOS (5.3)</div>
-          ${d.fins.filter(e=>_isOwnerDeduct(d.v,e)).map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${esc(fmtDMY(e.date))} · ${esc(e.category)}</span><span style="font-family:var(--mono);color:var(--red);font-weight:700">${fmtE(e.amount)}</span></div>`).join('')}
+        <div>
+          <span class="q">Gastos descontados (5.3)</span>
+          <div class="al-l rp-l">${d.fins.filter(e=>_isOwnerDeduct(d.v,e)).map(e=>`<div class="al-li"><span>${esc(fmtDMY(e.date))} · ${esc(e.category)}</span><b class="ow-neg">${fmtE(e.amount)}</b></div>`).join('')}</div>
         </div>`:''}
         ${d.fins.filter(e=>e.type==='income').length?`
-        <div style="margin-top:10px">
-          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px">INGRESOS DEL MES</div>
-          ${d.fins.filter(e=>e.type==='income').map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${esc(fmtDMY(e.date))} · ${esc(e.category)}</span><span style="font-family:var(--mono);color:var(--green);font-weight:700">${fmtE(e.amount)}</span></div>`).join('')}
+        <div>
+          <span class="q">Ingresos del mes</span>
+          <div class="al-l rp-l">${d.fins.filter(e=>e.type==='income').map(e=>`<div class="al-li"><span>${esc(fmtDMY(e.date))} · ${esc(e.category)}</span><b class="cl-in">${fmtE(e.amount)}</b></div>`).join('')}</div>
         </div>`:''}
       </div>`).join('')}
-      <!-- Total to pay -->
-      <div style="background:#8B1FD415;border:2px solid #8B1FD4;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">
-        <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--amber);margin-bottom:8px">TOTAL A PAGAR A ${esc(o.name.toUpperCase())}</div>
-        <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--amber)">${fmtE(totOwner)}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">${mLabel} · ${vehicles.length} vehículo${vehicles.length!==1?'s':''}</div>
-      </div>
-      <div style="text-align:center;padding:12px 0;font-size:11px;color:var(--text3)">DEIROS Fleet · ${new Date().toLocaleDateString('es-ES')}</div>
+      <div class="d-kv rp-fin"><span>Total a pagar a ${esc(o.name)}</span><b>${fmtE(totOwner)}</b></div>
+      <p class="rp-ft">DEIROS Fleet · ${new Date().toLocaleDateString('es-ES')}</p>
     </div>`;
   document.body.appendChild(ov);
 }
@@ -10284,11 +10231,9 @@ function renderContracts(el){
 
   } else if(_contractsTab==='finanzas'){
     el.innerHTML=`<div class="anim">${tabBar}
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center">
-      <div style="font-size:36px;margin-bottom:10px">${ico('briefcase')}</div>
-      <div style="font-size:15px;font-weight:800;margin-bottom:6px">Sección Negocio</div>
-      <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">Los números reales de Deiros: ingresos propios + comisiones de gestión (sin sumar el total de vehículos ajenos)</div>
-      <button onclick="nav('biz')" class="btn-pri" style="width:auto">Ir a Negocio →</button>
+    <div class="d-empty ct-fz">${ico('briefcase')}<h3>Sección Negocio</h3>
+      <p>Los números reales de Deiros: ingresos propios + comisiones de gestión (sin sumar el total de vehículos ajenos)</p>
+      <button onclick="nav('biz')" class="btn-sec">Ir a Negocio →</button>
     </div>
     </div>`;
 
