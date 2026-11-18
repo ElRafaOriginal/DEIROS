@@ -4734,8 +4734,8 @@ function openContractForm(vId,bookingId){
   <div data-ct="3" style="display:none">
   <div class="al-h al-h0"><span class="q ac">01</span><h3>Entrega y uso</h3></div>
   <div class="d-2">
-    <div class="d-f"><label class="q" for="ctEntLugar">Lugar entrega</label><input id="ctEntLugar" value="${esc(co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
-    <div class="d-f"><label class="q" for="ctDevLugar">Lugar devolución</label><input id="ctDevLugar" value="${esc(co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
+    <div class="d-f"><label class="q" for="ctEntLugar">Lugar entrega</label><input id="ctEntLugar" value="${esc(b.deliveryPlace||co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
+    <div class="d-f"><label class="q" for="ctDevLugar">Lugar devolución</label><input id="ctDevLugar" value="${esc(b.returnPlace||b.deliveryPlace||co.ciudadEntrega||co.ciudad||'')}" autocomplete="off"/></div>
   </div>
   <div class="d-2">
     <div class="d-f"><label class="q" for="ctZona">Zona autorizada</label><input id="ctZona" value="${esc(co.zonaAut||'Territorio nacional')}" autocomplete="off"/></div>
@@ -5455,7 +5455,8 @@ function generateContractPDF(vId,bookingId){
   const _kmFinal=_kmBonus===Infinity?'Ilimitados':(_kmCalc+_kmBonus)+' km';
   const co={nombre:g('ctArNombre'),nif:g('ctArNif'),direccion:g('ctArDir'),telefono:g('ctArTel'),email:g('ctArEmail'),ciudad:g('ctCiudad'),ciudadEntrega:g('ctEntLugar'),zonaAut:g('ctZona'),edadMin:'25',kmInc:g('ctKmInc'),kmExtra:g('ctKmExtra'),fianza:g('ctFianza'),recargoCombL:g('ctRecargoL'),penalLimp:g('ctPenalLimp'),uso:g('ctUso'),formaPago:g('ctPago'),fuelLevel:g('ctFuelLevel')};
   // La fianza se guarda como valor por defecto solo si no viene de la propia reserva
-  if(document.getElementById('ctSaveDefaults')?.checked)saveCompanyData(b.fianza!=null&&b.fianza!==''?{...co,fianza:getCompanyData().fianza}:co);
+  // El lugar de entrega tampoco, si viene del propio alquiler (#96)
+  if(document.getElementById('ctSaveDefaults')?.checked)saveCompanyData(Object.assign({},co,b.fianza!=null&&b.fianza!==''?{fianza:getCompanyData().fianza}:{},String(b.deliveryPlace||'').trim()?{ciudadEntrega:getCompanyData().ciudadEntrega}:{}));
   if(co.fuelLevel){b.deliveredFuelLevel=co.fuelLevel;save();} // nivel de entrega real: lo usa la devolución
   // Fianza del contrato: queda registrada en el alquiler (control de fianzas, recibo)
   {const _fz=parseFloat(String(co.fianza||'').replace(',','.'));b.fianza=Number.isFinite(_fz)&&_fz>0?Math.round(_fz*100)/100:0;if(Number(b.fianzaRetainedAmount)>b.fianza)b.fianzaRetainedAmount=Math.min(Number(b.fianzaRetainedAmount),b.fianza);save();}
@@ -6440,7 +6441,7 @@ function _normBooking(b){
   _normEnum(b,'fianzaStatus',['pending','returned','retained','partial'],'');
   _normNum(b,'fianzaRetainedAmount');
   _normBool(b,'hasExtraDriver');_normDate(b,'extraDriverBirth');_normDate(b,'extraDriverLicenseExp');
-  ['fianzaRetainedReason','fianzaReturnedAt'].forEach(k=>{if(b[k]!=null&&typeof b[k]!=='string')_normBump(b,k,'');});
+  ['fianzaRetainedReason','fianzaReturnedAt','deliveryPlace','returnPlace'].forEach(k=>{if(b[k]!=null&&typeof b[k]!=='string')_normBump(b,k,'');});
   _normList(b,'finances');_normList(b,'extras');
   (b.finances||[]).forEach(_normEntry);
   (b.extras||[]).forEach(x=>{if(x&&typeof x==='object')_normNum(x,'amount');});
@@ -7749,6 +7750,10 @@ function editBooking(id){
       <div class="d-2"><input type="date" id="rSD" value="${esc(safeDate(b.startDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(b.startTime))}" oninput="_recalcRentalExtras()"/></div></div>
     <div class="d-f"><span class="q">Fin</span>
       <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(b.endDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(b.endTime))}" oninput="_recalcRentalExtras()"/></div></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="rDelP">Lugar de entrega</label><input id="rDelP" type="text" placeholder="Dirección o punto" autocomplete="off" value="${esc(b.deliveryPlace||'')}" oninput="_bkPlaceSync(this)"/></div>
+      <div class="d-f"><label class="q" for="rRetP">Lugar de devolución</label><input id="rRetP" type="text" placeholder="Igual que la entrega" autocomplete="off" value="${esc(b.returnPlace||'')}" data-same="${!b.returnPlace||b.returnPlace===b.deliveryPlace?'1':'0'}" oninput="_bkPlaceSync(this)"/></div>
+    </div>
     <div class="d-f"><label class="q" for="rAmt">Importe alquiler</label>
       <div class="d-pre"><span>€</span><input type="number" id="rAmt" value="${esc(b.amount)}" step="0.01" inputmode="decimal"/></div>
       <span class="d-hint" id="rAmtHint"></span></div>
@@ -7956,6 +7961,7 @@ function submitEditBooking(id){
     else if(_clKey(_fcE.dni)&&_clKey(_fcE.dni)!==_clKey(b.clientDni)){b.clientDni=(_fcE.dni||'').toUpperCase();alert('El DNI se queda como el de la ficha del cliente (no se actualizó la ficha).');}
   }
   b.notes=(document.getElementById('rNotes')?.value||'').trim();
+  b.deliveryPlace=(document.getElementById('rDelP')?.value||'').trim();b.returnPlace=(document.getElementById('rRetP')?.value||'').trim()||b.deliveryPlace;
   b.fianza=parseFloat(document.getElementById('rFianza')?.value||'0')||0;
   b.kmStart=kmStart;b.kmEnd=kmEnd;
   const _pdEdit=parseFloat(document.getElementById('rPriceDay')?.value);if(!isNaN(_pdEdit)&&_pdEdit>0)b.priceDay=_pdEdit;
@@ -8107,6 +8113,10 @@ function openNewRental(){
       <div class="d-2"><input type="date" id="rSD" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(hh))}" oninput="_recalcRentalExtras()"/></div></div>
     <div class="d-f"><span class="q">Fin</span>
       <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="rDelP">Lugar de entrega</label><input id="rDelP" type="text" placeholder="Dirección o punto" autocomplete="off" oninput="_bkPlaceSync(this)"/></div>
+      <div class="d-f"><label class="q" for="rRetP">Lugar de devolución</label><input id="rRetP" type="text" placeholder="Igual que la entrega" autocomplete="off" data-same="1" oninput="_bkPlaceSync(this)"/></div>
+    </div>
     <div class="d-f"><label class="q" for="rAmt">Importe</label>
       <div class="d-pre"><span>€</span><input type="number" id="rAmt" placeholder="0.00" step="0.01" inputmode="decimal"/></div>
       <span class="d-hint" id="rAmtHint"></span></div>
@@ -8192,7 +8202,7 @@ function _rwGo(n){
     const ex=parseFloat((document.getElementById('exTotalAmt')?.textContent||'0').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''))||0;
     const f=x=>x.toFixed(2).replace('.',',')+' €';
     const _tS=f(amt+ex).split(','),_kv=(k,val)=>'<div class="d-kv"><span>'+k+'</span><b>'+val+'</b></div>';
-    document.getElementById('rwSummary').innerHTML=_kv('Plataforma',esc((PLATS[_plat]&&PLATS[_plat].label)||_plat))+_kv('Inicio',esc(fmtDMY(g('rSD')))+' '+esc(g('rST')))+_kv('Fin',esc(fmtDMY(g('rED')))+' '+esc(g('rET')))+(cl?_kv('Cliente',esc(cl)):'')+_kv('Importe',f(amt))+_kv('Extras',f(ex))+'<div class="d-tot al-tot"><span class="q">Total</span><div class="d-n n2">'+esc(_tS[0])+'<small>'+esc(','+_tS.slice(1).join(','))+'</small></div><p>IVA incluido</p></div>';
+    document.getElementById('rwSummary').innerHTML=_kv('Plataforma',esc((PLATS[_plat]&&PLATS[_plat].label)||_plat))+_kv('Inicio',esc(fmtDMY(g('rSD')))+' '+esc(g('rST')))+_kv('Fin',esc(fmtDMY(g('rED')))+' '+esc(g('rET')))+(g('rDelP').trim()?_kv('Entrega en',esc(g('rDelP').trim())):'')+(g('rRetP').trim()&&g('rRetP').trim()!==g('rDelP').trim()?_kv('Devolución en',esc(g('rRetP').trim())):'')+(cl?_kv('Cliente',esc(cl)):'')+_kv('Importe',f(amt))+_kv('Extras',f(ex))+'<div class="d-tot al-tot"><span class="q">Total</span><div class="d-n n2">'+esc(_tS[0])+'<small>'+esc(','+_tS.slice(1).join(','))+'</small></div><p>IVA incluido</p></div>';
   }
   const sc=document.getElementById('SC');if(sc)sc.scrollTop=0;
 }
@@ -8245,6 +8255,12 @@ function selPlat(k){
     else{custom.value='';}
   }
 }
+// Lugar de devolución = lugar de entrega mientras no se toque (#96). Si se escribe otro, deja de seguirlo; si se vacía o se iguala, vuelve a seguirlo
+function _bkPlaceSync(el){
+  const d=document.getElementById('rDelP'),r=document.getElementById('rRetP');if(!d||!r)return;
+  if(el===r){r.dataset.same=(!r.value.trim()||r.value===d.value)?'1':'0';return;}
+  if(r.dataset.same==='1')r.value=d.value;
+}
 function _updatePlatFromCustom(val){
   const v=val.trim().toLowerCase().replace(/\s+/g,'');
   _plat=v||'sinapp';
@@ -8259,6 +8275,7 @@ function submitRental(){
   const _clD=_clFormVals('rClientPicker');
   let clientName=_clD.name||'',clientPhone=_clD.phone||'',clientDni=(_clD.dni||'').toUpperCase();
   const notes=(document.getElementById('rNotes')?.value||'').trim();
+  const deliveryPlace=(document.getElementById('rDelP')?.value||'').trim(),returnPlace=(document.getElementById('rRetP')?.value||'').trim()||deliveryPlace;
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
   if(!sd||!ed||!st||!et){alert('Completa las fechas y horas');return;}
@@ -8297,7 +8314,7 @@ function submitRental(){
   // Fianza: la escrita (también 0). Vacía: la de por defecto si es sin app; 0 en plataformas (gestionan ellas el depósito)
   const _fzRawSR=(document.getElementById('rFianza')?.value||'').trim();
   const _fzSR=_fzRawSR!==''?Math.max(0,Math.round((parseFloat(_fzRawSR.replace(',','.'))||0)*100)/100):(_plat==='sinapp'?(parseFloat(_fianzaDefault())||0):0);
-  v.bookings.push({id:bId,startDate:sd,startTime:st,endDate:ed,endTime:et,platform:_plat,amount:amt,notes,clientName,clientPhone,clientDni,kmStart,kmEnd,financeIds:fIds,financeId:fIds[0]||null,paid:false,extras:_extArrSR,finance:[],priceDay:_priceDaySR,fianza:_fzSR});
+  v.bookings.push({id:bId,startDate:sd,startTime:st,endDate:ed,endTime:et,platform:_plat,amount:amt,notes,clientName,clientPhone,clientDni,kmStart,kmEnd,financeIds:fIds,financeId:fIds[0]||null,paid:false,extras:_extArrSR,finance:[],priceDay:_priceDaySR,fianza:_fzSR,deliveryPlace,returnPlace});
   // Guardar entradas de finanza por cada extra
   const _bkSR=v.bookings.find(b=>b.id===bId);
   _extArrSR.forEach(function(ex){
@@ -11820,7 +11837,7 @@ function _checkEntry(e,label){
 }
 function _checkBooking(b,label){
   if(!_isPlainObject(b))return '«'+label+'» tiene que ser un objeto.';
-  let err=_expectStr(b,'id',label+' · id')||_expectDate(b,'startDate',label+' · inicio')||_expectDate(b,'endDate',label+' · fin')||_expectStr(b,'clientName',label+' · cliente')||_expectStr(b,'clientPhone',label+' · teléfono')||_expectStr(b,'clientDni',label+' · DNI')||_expectStr(b,'notes',label+' · notas')||_expectStr(b,'platform',label+' · plataforma')||_expectNum(b,'amount',label+' · importe')||_expectStr(b,'extraDriverName',label+' · conductor adicional')||_expectStr(b,'extraDriverDni',label+' · DNI conductor adicional')||_expectStr(b,'extraDriverLicense',label+' · permiso conductor adicional')||_expectStr(b,'extraDriverId',label+' · ficha conductor adicional')||_expectDate(b,'extraDriverBirth',label+' · nacimiento conductor adicional')||_expectDate(b,'extraDriverLicenseExp',label+' · caducidad permiso conductor adicional');
+  let err=_expectStr(b,'id',label+' · id')||_expectDate(b,'startDate',label+' · inicio')||_expectDate(b,'endDate',label+' · fin')||_expectStr(b,'clientName',label+' · cliente')||_expectStr(b,'clientPhone',label+' · teléfono')||_expectStr(b,'clientDni',label+' · DNI')||_expectStr(b,'notes',label+' · notas')||_expectStr(b,'deliveryPlace',label+' · lugar de entrega')||_expectStr(b,'returnPlace',label+' · lugar de devolución')||_expectStr(b,'platform',label+' · plataforma')||_expectNum(b,'amount',label+' · importe')||_expectStr(b,'extraDriverName',label+' · conductor adicional')||_expectStr(b,'extraDriverDni',label+' · DNI conductor adicional')||_expectStr(b,'extraDriverLicense',label+' · permiso conductor adicional')||_expectStr(b,'extraDriverId',label+' · ficha conductor adicional')||_expectDate(b,'extraDriverBirth',label+' · nacimiento conductor adicional')||_expectDate(b,'extraDriverLicenseExp',label+' · caducidad permiso conductor adicional');
   if(err)return err;
   if('finances' in b&&b.finances!=null){
     if(!Array.isArray(b.finances))return '«'+label+' · finances» tiene que ser una lista.';
