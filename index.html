@@ -3814,6 +3814,7 @@ function openExtendBooking(bookingId){
     +'</div>'
     +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
     +('<button onclick="generateExtensionPDF(window._extBookingId)" class="btn-sec">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
+    +('<button onclick="_pdfSend(\'ax\',window._extBookingId)" class="btn-sec">'+ico('send')+' Enviar anexo</button>')
     +'<button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
 }
 
@@ -4835,7 +4836,7 @@ function openContractForm(vId,bookingId){
     <span class="t">Guardar datos de empresa para futuros contratos</span>
   </label>
   <div class="al-dz ct-cn"><button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>
-  <div class="al-nav"><button class="btn-sec tap44" onclick="_ctGo(3)">‹ Atrás</button><button class="btn-pri tap44" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">${ico('doc')} Generar PDF</button></div>
+  <div class="al-nav ct-nav3"><button class="btn-sec tap44" onclick="_ctGo(3)">‹ Atrás</button><button class="btn-sec tap44" onclick="_pdfSend('ct','${escJs(vId)}','${escJs(bookingId)}')">${ico('send')} Enviar</button><button class="btn-pri tap44" onclick="generateContractPDF('${escJs(vId)}','${escJs(bookingId)}')">${ico('doc')} Generar PDF</button></div>
   </div>`);
   _ctSumUpd('Ar');_ctSumUpd('V');_clStatusUpd('ctClPick');
   // Pre-check extras from the booking (b.extras array)
@@ -4920,6 +4921,7 @@ function _ctGo(n){
 
 // ── Helper universal de guardado PDF (móvil + escritorio) ────────────────────
 function _savePDF(doc, filename){
+  if(_pdfShareTry(doc,d=>_savePDF(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{
     const blob=doc.output('blob');
     const url=URL.createObjectURL(blob);
@@ -5056,6 +5058,38 @@ function _waSync(){
 }
 // Atrás del móvil con la hoja de WhatsApp abierta: cierra solo esa hoja (la de debajo sigue)
 window.addEventListener('popstate',function(e){if(_waEl){e.stopImmediatePropagation();_waClose();history.pushState(null,'');}},true);
+
+// «Enviar» PDF: el mismo generador de siempre; _savePDF/_pdfDownload pasan el PDF al menú de compartir del móvil
+// (navigator.share con el fichero) si el navegador lo admite; si no, o si falla, hacen lo de siempre (abrir o descargar).
+var _pdfSendName=null;
+function _pdfSend(k,a,c){
+  const F=s=>String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9-]+/g,'_').replace(/^_+|_+$/g,'');
+  const bk=id=>{let r=null;V.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.id===id)r={v,b};}));return r;};
+  let n='',run=null;
+  if(k==='ct'){const r=bk(c);n='Contrato-'+F((document.getElementById('ctVPlate')||{}).value||(r&&r.v.plate))+'-'+((r&&r.b.startDate)||todayStr());run=()=>generateContractPDF(a,c);}
+  else if(k==='qt'){const q=QT.find(x=>x.id===a);n='Presupuesto-'+F(q&&q.num);run=()=>generateQuotePDF(a);}
+  else if(k==='ax'){const r=bk(a);n='Anexo-ampliacion-'+F(r&&r.v.plate)+'-'+((r&&r.b.endDate)||todayStr());run=()=>generateExtensionPDF(a);}
+  else if(k==='rc'){const r=bk(a);n='Recibo-'+F(r&&r.v.plate)+'-'+((r&&r.b.endDate)||todayStr());run=()=>generateReceiptPDF(a);}
+  else if(k==='lq'){const o=OW.find(x=>x.id===a);n='Liquidacion-'+F(o&&o.name)+'-'+c;run=()=>dlOwnerReport(a,c);}
+  if(!run)return;
+  _pdfSendName=n.replace(/-+(?=-|$)/g,'')+'.pdf';
+  try{run();}finally{_pdfSendName=null;}
+}
+// jsPDF solo comprime en la PRIMERA llamada a output(): el PDF se saca una sola vez y, si compartir falla, se reutiliza (mismos bytes).
+function _pdfShareTry(doc,fallback){
+  const n=_pdfSendName;if(!n)return false;_pdfSendName=null;
+  try{
+    if(typeof navigator.share!=='function'||typeof navigator.canShare!=='function')return false;
+    if(!navigator.canShare({files:[new File([],n,{type:'application/pdf'})]}))return false;
+    const ab=doc.output('arraybuffer'),blob=new Blob([ab],{type:'application/pdf'});
+    const d2={output:t=>{
+      if(t==='blob')return blob;if(t==='arraybuffer')return ab;
+      if(t==='datauristring'){const u=new Uint8Array(ab);let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return 'data:application/pdf;filename=generated.pdf;base64,'+btoa(s);}
+      return doc.output(t);}};
+    navigator.share({files:[new File([blob],n,{type:'application/pdf'})]}).catch(e=>{if(!e||e.name!=='AbortError')fallback(d2);}); // cancelar el menú no hace nada; otro error: lo de siempre
+    return true;
+  }catch(e){return false;}
+}
 
 function generateReceiptPDF(bookingId){
   try{
@@ -7533,7 +7567,8 @@ function showBooking(k,_overrideId){
         <button class="btn-sec" onclick="closeSheet();setTimeout(function(){openExtendBooking('${escJs(b.id)}');},200)">${ico('calendar')} Ampliar</button>
         ${_st!=='pro'?`<button class="btn-sec" onclick="closeSheet();openContractForm('${escJs(v.id)}','${escJs(b.id)}')">${ico('doc')} Contrato</button>`:''}
         ${_st!=='fin'?`<button class="btn-sec" onclick="generateReceiptPDF('${escJs(b.id)}')">${ico('receipt')} Recibo</button>`:''}
-        ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec al-w" onclick="generateExtensionPDF('${escJs(b.id)}')">${ico('clipboard')} Anexo de ampliación</button>`:''}
+        <button class="btn-sec${_st!=='pro'&&_st!=='fin'?' al-w':''}" onclick="_pdfSend('rc','${escJs(b.id)}')">${ico('send')} Enviar recibo</button>
+        ${(b.finance||[]).some(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci'))?`<button class="btn-sec al-w" onclick="generateExtensionPDF('${escJs(b.id)}')">${ico('clipboard')} Anexo de ampliación</button><button class="btn-sec al-w" onclick="_pdfSend('ax','${escJs(b.id)}')">${ico('send')} Enviar anexo</button>`:''}
       </div></div>
       <div class="al-dz">
         ${!b.cancelled?`<button class="btn-txt err" onclick="openCancelBooking('${escJs(b.id)}')">${ico('ban')} Cancelar alquiler</button>`:''}
@@ -9913,6 +9948,7 @@ function genOwnerReport(ownerId){
     <div class="rp-bar">
       <button class="d-ib tap44" onclick="document.getElementById('ownerRepOv').remove()" aria-label="Volver">${ico('arrow-left')}</button>
       <div class="rp-tt"><div class="rp-t">Liquidación</div><div class="rp-s">${esc(o.name)} · ${esc(mLabel)}</div></div>
+      <button class="d-ib" onclick="_pdfSend('lq','${escJs(ownerId)}','${escJs(month)}')" aria-label="Enviar PDF">${ico('send')}</button>
       <button class="btn-pri rp-pdf" onclick="dlOwnerReport('${escJs(ownerId)}','${escJs(month)}')">${ico('download')} PDF</button>
     </div>
     <div class="rp-c">
@@ -11559,6 +11595,7 @@ function _pdfField(doc,x,y,lbl,val,w,font){
   doc.text(w?_pdfFit(doc,String(val),w):String(val),x,y+4.8);
 }
 function _pdfDownload(doc,filename){
+  if(_pdfShareTry(doc,d=>_pdfDownload(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{const blob=doc.output('blob');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);}
   catch(e){const a=document.createElement('a');a.href=doc.output('datauristring');a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),2000);}
 }
@@ -12415,10 +12452,11 @@ function showQuoteDetail(el){
   h+='<div class="d-acts qt-acts">';
   if(q.status!=='convertido'){
     h+=`<button class="btn-pri" onclick="convertQuoteToBooking('${escJs(q.id)}')">${ico('car')} Convertir en alquiler</button>`;
-    h+=`<div class="two"><button class="btn-sec" onclick="generateQuotePDF('${escJs(q.id)}')">${ico('doc')} PDF</button><button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">${ico('edit')} Editar</button></div>`;
-    h+=`<button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">${ico('tag')} Estado</button>`;
+    h+=`<div class="two"><button class="btn-sec" onclick="generateQuotePDF('${escJs(q.id)}')">${ico('doc')} PDF</button><button class="btn-sec" onclick="_pdfSend('qt','${escJs(q.id)}')">${ico('send')} Enviar</button></div>`;
+    h+=`<div class="two"><button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">${ico('edit')} Editar</button><button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">${ico('tag')} Estado</button></div>`;
   } else {
     h+=`<button class="btn-pri" onclick="generateQuotePDF('${escJs(q.id)}')">${ico('doc')} PDF</button>`;
+    h+=`<button class="btn-sec" onclick="_pdfSend('qt','${escJs(q.id)}')">${ico('send')} Enviar</button>`;
     h+=`<div class="two"><button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">${ico('edit')} Editar</button><button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">${ico('tag')} Estado</button></div>`;
     h+=`<p class="d-hint qt-cv">${ico('check-circle')} Ya convertido en alquiler</p>`;
   }
