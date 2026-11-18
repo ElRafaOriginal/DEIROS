@@ -7399,89 +7399,84 @@ function editBooking(id){
   const isFurgEdit=(v.vehicle_type||'turismo').startsWith('l');
   const _clE=_clFind({name:b.clientName,dni:b.clientDni,phone:b.clientPhone},b.id);
   closeSheet();
-  openSheet(`<div class="stitle">${ico('edit')} Editar alquiler</div><div class="ssub">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
-    <div class="fg"><label class="lbl">VEHÍCULO</label>
-      <select id="rNewVehicle" style="background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;width:100%">
+  // Fila de extra (lista técnica, como el asistente de alquiler). Mismos ids, clases _exrow/_kmrow y data-* que leen _toggleExtra/_kmToggleStyled
+  const _exR=(eid,icon,label,price,km)=>'<div class="_exrow'+(km?' _kmrow':'')+' al-ex" data-exid="'+eid+'" data-dur="'+dur+'" id="row_ex_'+eid+'"><span class="i">'+ico(icon)+'</span><span class="t">'+label+'</span><span class="p">'+price+'</span><div id="chk_ex_'+eid+'" class="al-ck">&nbsp;</div><input type="checkbox" id="ex_'+eid+'" style="display:none"/></div>';
+  openSheet(`<div class="stitle">Editar alquiler</div><div class="ssub">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
+    <div class="d-f"><label class="q" for="rNewVehicle">Vehículo</label>
+      <select id="rNewVehicle">
         ${activeV.map(vx=>`<option value="${esc(vx.id)}"${vx.id===v.id?' selected':''}>${esc(vx.name)} · ${esc(vx.plate)}</option>`).join('')}
       </select>
     </div>
-    <div class="lbl">PLATAFORMA</div>
-    <div class="plat-opts">
-      ${PLAT_QUICK.map(k=>{const p=PLATS[k];return `<div class="plat-opt${k===_plat?' sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')"><div style="font-size:24px;margin-bottom:6px">${p.icon}</div><div style="font-size:11px;font-weight:700;color:var(--text2)">${esc(p.label)}</div></div>`;}).join('')}
+    <div class="d-f"><span class="q">Plataforma</span>
+    <div class="d-seg al-plat" role="group" aria-label="Plataforma">
+      ${PLAT_QUICK.map(k=>{const p=PLATS[k];return `<button type="button" class="${k===_plat?'sel':''}" id="po_${k}" onclick="selPlat('${escJs(k)}')">${esc(p.label)}</button>`;}).join('')}
     </div>
     <input id="platCustom" type="text" placeholder="Otra fuente (Wallapop, Instagram...)" autocomplete="off"
       value="${esc((!PLATS[_plat]&&_plat!=='sinapp')?_plat:'')}"
-      oninput="_updatePlatFromCustom(this.value)"
-      style="margin-top:6px;width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px"/>
-    <div class="lbl">PRECIO/DÍA (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">base para cálculo por horas</span></div>
-    <div style="position:relative;margin-bottom:10px"><input type="number" id="rPriceDay" value="${esc(b.priceDay||'')}" step="0.01" inputmode="decimal" placeholder="${(v.vehicle_type||'turismo').startsWith('l')?'45':'30'}" style="padding-left:30px" oninput="_recalcRentalExtras()"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="lbl">INICIO</div>
-    <div class="r2 fg"><input type="date" id="rSD" value="${esc(safeDate(b.startDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(b.startTime))}" oninput="_recalcRentalExtras()"/></div>
-    <div class="lbl">FIN</div>
-    <div class="r2 fg"><input type="date" id="rED" value="${esc(safeDate(b.endDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(b.endTime))}" oninput="_recalcRentalExtras()"/></div>
-    <div class="lbl">IMPORTE ALQUILER (€) <span id="rAmtHint" style="font-size:9px;font-weight:400;color:var(--text3)"></span></div>
-    <div style="position:relative;margin-bottom:10px"><input type="number" id="rAmt" value="${esc(b.amount)}" step="0.01" inputmode="decimal" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="lbl">FIANZA / DEPÓSITO (€) <span style="font-size:9px;font-weight:400;color:var(--text3)">reembolsable</span></div>
-    <div style="position:relative;margin-bottom:14px"><input type="number" id="rFianza" value="${esc(b.fianza||'')}" step="0.01" inputmode="decimal" placeholder="0" style="padding-left:30px"/><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--blue);font-weight:700;font-family:var(--mono)">€</span></div>
-    <div class="sec" style="margin-bottom:10px">KILÓMETROS</div>
-    <div class="r2 fg">
-      <div style="position:relative"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric" value="${esc(b.kmStart||'')}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
-      <div style="position:relative"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric" value="${esc(b.kmEnd||'')}"/><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);font-family:var(--mono)">km</span></div>
+      oninput="_updatePlatFromCustom(this.value)"/>
     </div>
-    <div class="sec" style="margin-bottom:6px">CLIENTE</div>
+    <div class="d-f"><label class="q" for="rPriceDay">Precio/día</label>
+      <div class="d-pre"><span>€</span><input type="number" id="rPriceDay" value="${esc(b.priceDay||'')}" step="0.01" inputmode="decimal" placeholder="${(v.vehicle_type||'turismo').startsWith('l')?'45':'30'}" oninput="_recalcRentalExtras()"/></div>
+      <span class="d-hint">Base para el cálculo por horas</span></div>
+    <div class="d-f"><span class="q">Inicio</span>
+      <div class="d-2"><input type="date" id="rSD" value="${esc(safeDate(b.startDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(b.startTime))}" oninput="_recalcRentalExtras()"/></div></div>
+    <div class="d-f"><span class="q">Fin</span>
+      <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(b.endDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(b.endTime))}" oninput="_recalcRentalExtras()"/></div></div>
+    <div class="d-f"><label class="q" for="rAmt">Importe alquiler</label>
+      <div class="d-pre"><span>€</span><input type="number" id="rAmt" value="${esc(b.amount)}" step="0.01" inputmode="decimal"/></div>
+      <span class="d-hint" id="rAmtHint"></span></div>
+    <div class="d-f"><label class="q" for="rFianza">Fianza</label>
+      <div class="d-pre"><span>€</span><input type="number" id="rFianza" value="${esc(b.fianza||'')}" step="0.01" inputmode="decimal" placeholder="0"/></div>
+      <span class="d-hint">Reembolsable</span></div>
+    <div class="al-h"><h3>Kilómetros</h3></div>
+    <div class="d-2">
+      <div class="al-suf"><input type="number" id="rKmStart" placeholder="Km inicio" inputmode="numeric" value="${esc(b.kmStart||'')}"/><span>km</span></div>
+      <div class="al-suf"><input type="number" id="rKmEnd" placeholder="Km fin" inputmode="numeric" value="${esc(b.kmEnd||'')}"/><span>km</span></div>
+    </div>
+    <div class="al-h"><h3>Cliente</h3></div>
     <input id="rCN" type="hidden" value="${esc(b.clientName||'')}"/>
     <input id="rCP" type="hidden" value="${esc(b.clientPhone||'')}"/>
     <input id="rCDNI" type="hidden" value="${esc(b.clientDni||'')}"/>
     <div oninput="_clStatusUpd('rClientPicker')" onchange="_clStatusUpd('rClientPicker')">
     <div class="fg">${_clPickerHtml('rClientPicker',b.clientName||_clE&&_clE.name||'',_clE&&_clE.id||'')}</div>
-    ${b.clientName?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2)">
-        ${ico('user')} ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}
-      </div>
-      <button type="button" class="btn-dang" onclick="unlinkBookingClient('${escJs(b.id)}')" style="width:auto;white-space:nowrap;flex-shrink:0">${ico('unlink')} Desvincular</button>
+    ${b.clientName?`<div class="eb-cl">
+      <div class="eb-cn">${ico('user')} ${esc(b.clientName)}${b.clientDni?' · '+esc(b.clientDni):''}${b.clientPhone?' · '+esc(b.clientPhone):''}</div>
+      <button type="button" class="btn-txt err" onclick="unlinkBookingClient('${escJs(b.id)}')">${ico('unlink')} Desvincular</button>
     </div>`:'<div style="margin-bottom:8px"></div>'}
-    <div class="r2 fg">
-      <div><label class="lbl">TELÉFONO</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||_clE?.phone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
-      <div><label class="lbl">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()" value="${esc(b.clientDni||_clE?.dni||'')}"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="rCPvis">Teléfono</label><input id="rCPvis" placeholder="+34 600..." type="tel" inputmode="tel" value="${esc(b.clientPhone||_clE?.phone||'')}" oninput="document.getElementById('rCP').value=this.value"/></div>
+      <div class="d-f"><label class="q" for="rCDNIvis">DNI / NIE</label><input id="rCDNIvis" placeholder="12345678A" type="text" autocomplete="off" oninput="document.getElementById('rCDNI').value=this.value.toUpperCase();this.value=this.value.toUpperCase()" value="${esc(b.clientDni||_clE?.dni||'')}"/></div>
     </div>
     <div id="rClStatus" style="margin:-4px 0 10px"></div>
     ${_clMoreHtml(_clE)}
     </div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off" value="${esc(b.notes||'')}"/></div>
-    <div style="height:1px;background:var(--border);margin:12px 0"></div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">${ico('star')} EXTRAS <span id="rExDurLabel" style="font-weight:400;color:var(--text3)">(${dur} día${dur!==1?'s':''})</span></div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px">POR DÍA</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      ${[['exConductorAdicional','user','Conductor adicional','14,99€/día'],['exProteccionDeiros','shield','Protección Deiros','9,99€/día'],['exCargadorUniversal','plug','Cargador universal','2,99€/día']].map(([eid,icon,label,price])=>'<div class="_exrow" data-exid="'+eid+'" data-dur="'+dur+'" id="row_ex_'+eid+'" style="display:flex;align-items:center;gap:0;cursor:pointer;border-bottom:1px solid var(--border)"><div style="padding:10px 10px;font-size:18px;background:var(--bg2);flex-shrink:0">'+ico(icon)+'</div><div style="flex:1;padding:8px 10px;font-size:13px;font-weight:600">'+label+'</div><div style="padding:8px 14px;text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</div><div id="chk_ex_'+eid+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">&nbsp;</div></div><input type="checkbox" id="ex_'+eid+'" style="display:none"/></div>').join('')}
+    <div class="d-f"><label class="q" for="rNotes">Notas</label><input id="rNotes" placeholder="Notas..." type="text" autocomplete="off" value="${esc(b.notes||'')}"/></div>
+    <div class="al-h"><h3>Extras</h3><span class="mono2" id="rExDurLabel">(${dur} día${dur!==1?'s':''})</span></div>
+    <span class="q al-q">Por día</span>
+    <div class="al-exl">
+      ${[['exConductorAdicional','user','Conductor adicional','14,99€/día'],['exProteccionDeiros','shield','Protección Deiros','9,99€/día'],['exCargadorUniversal','plug','Cargador universal','2,99€/día']].map(([eid,icon,label,price])=>_exR(eid,icon,label,price)).join('')}
     </div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px">FIJO POR ALQUILER</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€'],['exEntregaDomicilio','home','Entrega a domicilio','49€'],['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel','59€'],['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([eid,icon,label,price])=>'<div class="_exrow" data-exid="'+eid+'" data-dur="'+dur+'" id="row_ex_'+eid+'" style="display:flex;align-items:center;gap:0;cursor:pointer;border-bottom:1px solid var(--border)"><div style="padding:10px 10px;font-size:18px;background:var(--bg2);flex-shrink:0">'+ico(icon)+'</div><div style="flex:1;padding:8px 10px;font-size:13px;font-weight:600">'+label+'</div><div style="padding:8px 14px;text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</div><div id="chk_ex_'+eid+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">&nbsp;</div></div><input type="checkbox" id="ex_'+eid+'" style="display:none"/></div>').join('')}
+    <span class="q al-q">Fijo por alquiler</span>
+    <div class="al-exl">
+      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€'],['exEntregaDomicilio','home','Entrega a domicilio','49€'],['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel','59€'],['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([eid,icon,label,price])=>_exR(eid,icon,label,price)).join('')}
     </div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px">PACKS</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      ${[['exPackBebe','child-seat','Pack Bebé','34,99€'],['exPackVerano','sun','Pack Verano','44,99€'],['exPackInvierno','snow','Pack Invierno','24,99€'],['exPackOcio','racket','Pack Ocio','4,99€/día'],['exPackCamping','tent','Pack Camping','49,99€'],['exPackMascota','paw','Pack Mascota','19,99€'],['exPackConfort','sparkle','Pack Confort','174,99€']].map(([eid,icon,label,price])=>'<div class="_exrow" data-exid="'+eid+'" data-dur="'+dur+'" id="row_ex_'+eid+'" style="display:flex;align-items:center;gap:0;cursor:pointer;border-bottom:1px solid var(--border)"><div style="padding:10px 10px;font-size:18px;background:var(--bg2);flex-shrink:0">'+ico(icon)+'</div><div style="flex:1;padding:8px 10px;font-size:13px;font-weight:600">'+label+'</div><div style="padding:8px 14px;text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</div><div id="chk_ex_'+eid+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">&nbsp;</div></div><input type="checkbox" id="ex_'+eid+'" style="display:none"/></div>').join('')}
+    <span class="q al-q">Packs</span>
+    <div class="al-exl">
+      ${[['exPackBebe','child-seat','Pack Bebé','34,99€'],['exPackVerano','sun','Pack Verano','44,99€'],['exPackInvierno','snow','Pack Invierno','24,99€'],['exPackOcio','racket','Pack Ocio','4,99€/día'],['exPackCamping','tent','Pack Camping','49,99€'],['exPackMascota','paw','Pack Mascota','19,99€'],['exPackConfort','sparkle','Pack Confort','174,99€']].map(([eid,icon,label,price])=>_exR(eid,icon,label,price)).join('')}
     </div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin:4px 0 4px" id="rExKmLbl">KM — ${calcKmInc(dur,isFurgEdit)} km incluidos (${dur} día${dur!==1?'s':''})</div>
-    <div style="background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:8px">
-      <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
-        ${[['exBolsa200','road','Bolsa +200 km','24,99€'],['exBolsa500','road','Bolsa +500 km','39,99€'],['exBolsa1000','road','Bolsa +1.000 km','59,99€'],['exKmIlimitados','infinity','Km ilimitados','79,99€']].map(([eid,icon,label,price])=>'<div class="_exrow _kmrow" data-exid="'+eid+'" data-dur="'+dur+'" id="row_ex_'+eid+'" style="display:flex;align-items:center;gap:10px;padding:8px 6px;cursor:pointer;border-radius:8px"><div id="chk_ex_'+eid+'" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">&nbsp;</div><input type="checkbox" id="ex_'+eid+'" style="display:none"/><span style="font-size:18px">'+ico(icon)+'</span><span style="flex:1;font-size:13px;font-weight:600">'+label+'</span><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)">'+price+'</span></div>').join('')}
-      </div>
-      <div class="_exrow" data-exid="exKmPrepago" data-dur="${dur}" id="row_ex_exKmPrepago" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer">
-        <div id="chk_ex_exKmPrepago" style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">&nbsp;</div>
+    <span class="q al-q" id="rExKmLbl">KM — ${calcKmInc(dur,isFurgEdit)} km incluidos (${dur} día${dur!==1?'s':''})</span>
+    <div class="al-exl">
+      ${[['exBolsa200','road','Bolsa +200 km','24,99€'],['exBolsa500','road','Bolsa +500 km','39,99€'],['exBolsa1000','road','Bolsa +1.000 km','59,99€'],['exKmIlimitados','infinity','Km ilimitados','79,99€']].map(([eid,icon,label,price])=>_exR(eid,icon,label,price,1)).join('')}
+      <div class="_exrow al-ex" data-exid="exKmPrepago" data-dur="${dur}" id="row_ex_exKmPrepago">
+        <span class="i">${ico('odometer')}</span>
+        <span class="t">Km sueltos<small>0,15 €/km</small></span>
+        <input id="exKmPrepagoN" class="al-kmn" type="number" min="0" step="50" placeholder="km" inputmode="numeric" onclick="event.stopPropagation()" oninput="_calcExtrasTotal(${dur},${isFurgEdit})"/>
+        <div id="chk_ex_exKmPrepago" class="al-ck">&nbsp;</div>
         <input type="checkbox" id="ex_exKmPrepago" style="display:none"/>
-        <span style="font-size:20px">${ico('odometer')}</span>
-        <span style="flex:1;font-size:13px;font-weight:600">Km sueltos <span style="font-size:10px;color:var(--text3);font-weight:400">(0,15€/km)</span></span>
-        <input id="exKmPrepagoN" type="number" min="0" step="50" placeholder="km" onclick="event.stopPropagation()" oninput="_calcExtrasTotal(${dur},${isFurgEdit})" style="width:70px;font-size:13px;padding:4px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);text-align:right"/>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:2px solid var(--border);margin-bottom:12px">
-      <span style="font-size:13px;font-weight:700">Total extras:</span>
-      <span id="exTotalAmt" style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--amber)">0,00 €</span>
-    </div>
-    <button class="btn-pri" onclick="submitEditBooking('${escJs(id)}')">${ico('save')} Guardar cambios</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="al-ext"><span>Total extras</span><b id="exTotalAmt">0,00 €</b></div>
+    <div class="al-nav"><button class="btn-sec tap44" onclick="closeSheet()">Cancelar</button><button class="btn-pri tap44" onclick="submitEditBooking('${escJs(id)}')">${ico('save')} Guardar cambios</button></div>`);
   _clStatusUpd('rClientPicker');
   // Pre-check extras already on the booking
   if(b.extras&&b.extras.length){
