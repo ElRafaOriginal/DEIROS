@@ -27,6 +27,7 @@
   --amber:#FFD700;--green:#10B981;--red:#F87171;--blue:#60A5FA;--purple:#AAAAAA;--on-amber:#0D0D0D;--on-green:#000;--danger-text:#F87171;
   --acc-s:rgba(255,215,0,.08);--acc-m:rgba(255,215,0,.13);--acc-b:rgba(255,215,0,.25);--acc-sh:rgba(255,215,0,.3);
   --c-own:#FFD700;--c-man:#2DD4BF;
+  --plat-amovens:#FB7AAC;--plat-getaround:#8B5CF6;--plat-sinapp:#10B981;--plat-otra:#AAAAAA;
   --text:#FFFFFF;--text2:#AAAAAA;--text3:#AAAAAA;
   --border:#262626;--border2:#333333;
   --r-card:24px;--r-sheet:28px;--r-pill:999px;--r-in:14px;
@@ -791,6 +792,9 @@ select option{background:var(--bg);}
 .calcell{position:relative;aspect-ratio:1;border-radius:10px;border:1px solid var(--border);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 .cal-d{position:relative;z-index:1;font-family:var(--mono);font-size:12px;color:var(--text2);}
 .calcell.t .cal-d{color:var(--amber);font-weight:700;}
+.cal-lg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--text2);}
+.cal-lg span{display:inline-flex;align-items:center;gap:6px;}
+.cal-lg i{display:inline-block;width:14px;height:3px;border-radius:2px;}
 .cal-mp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
 .cal-mp .q{font-size:10px;margin-right:auto;}
 .manpill{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--border2);border-radius:var(--r-pill);font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);}
@@ -6896,7 +6900,7 @@ function renderCal(v){
 
   const dayBars={};
   (v.bookings||[]).forEach(b=>{
-    const col=safeColor(b.cancelled?'var(--border2)':'var(--amber)'); // barra de «alquilado» en acento (la plataforma va en la fila)
+    const col=safeColor(b.cancelled?'var(--border2)':({amovens:'var(--plat-amovens)',getaround:'var(--plat-getaround)',sinapp:'var(--plat-sinapp)'}[b.platform]||'var(--plat-otra)')); // barra de «alquilado» con el color de la plataforma
     _eachDate(b.startDate,b.endDate).forEach(k=>{
       if(!dayBars[k])dayBars[k]=[];
       dayBars[k].push({col,isStart:k===b.startDate,isEnd:k===b.endDate,id:b.id,startDate:b.startDate,startTime:b.startTime||'09:00',endTime:b.endTime||'09:00',client:b.clientName||'',cancelled:b.cancelled});
@@ -6939,6 +6943,9 @@ function renderCal(v){
           ${lineHtml}
         </div>`;
       }).join('')}
+    </div>
+    <div class="cal-lg" aria-label="Colores por plataforma">
+      <span><i style="background:var(--plat-amovens)"></i>Amovens</span><span><i style="background:var(--plat-getaround)"></i>Getaround</span><span><i style="background:var(--plat-sinapp)"></i>Sin app</span><span><i style="background:var(--plat-otra)"></i>Otra</span>
     </div>
     <div class="cal-mp">
       <span class="q">Marcar días</span>
