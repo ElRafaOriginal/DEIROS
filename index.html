@@ -2167,89 +2167,57 @@ function _ctClPickToggle(){
 // ── fin ficha única de cliente ──
 function renderClientsBody(){
   const res=document.getElementById('clients-results');if(!res)return;
-  // Update toggle highlights
+  // Modo de vista: el activo con aria-pressed (antes colores en línea); mismos modos y onclick
   ['extended','compact','grid'].forEach(m=>{
     const el=document.getElementById('ctog-'+m);
-    if(el){el.style.background=m===_clientsMode?'var(--bg)':'transparent';el.style.color=m===_clientsMode?'var(--amber)':'var(--text3)';}
+    if(el)el.setAttribute('aria-pressed',String(m===_clientsMode));
   });
   _clientsMergeBookings();
   const q=_searchClients.toLowerCase();
   const filtered=CL.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.dni||'').toLowerCase().includes(q)||(c.phone||'').includes(q));
   filtered.sort((a,b)=>(b.bookingIds||[]).length-(a.bookingIds||[]).length);
-  if(!filtered.length){res.innerHTML=`<div class="empty"><div class="ei">${ico('user')}</div><div class="et">${CL.length?'Sin resultados':'Sin clientes aún'}</div><div class="es">Los clientes se crean automáticamente al añadir alquileres con DNI o nombre</div></div>`;return;}
+  if(!filtered.length){res.innerHTML=`<div class="d-empty cl-e">${ico(CL.length?'search':'user')}<h3>${CL.length?'Sin resultados':'Sin clientes aún'}</h3><p>${CL.length?'Prueba con otro nombre, DNI o teléfono':'Los clientes se crean automáticamente al añadir alquileres con DNI o nombre'}</p></div>`;return;}
   const open=(cl)=>`_clientDetail='${escJs(cl.id)}';renderClientDetail(document.getElementById('PC'))`;
-  let h='';
+  const stars=(cl)=>(cl.rating?'<span class="cl-rt">'+ico('star',null,'ico-fill')+' '+esc(cl.rating)+'</span>':'');
+  let h=`<div class="d-sh cl-sh"><span class="q">Por alquileres</span><span class="q">${String(filtered.length).padStart(2,'0')}</span></div>`;
   if(_clientsMode==='grid'){
-    h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
+    // Cuadrícula: tarjetas compactas con ficha técnica de 2 datos
+    h+=`<div class="cl-g">`;
     filtered.forEach(cl=>{
       const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
-      h+=`<div onclick="${open(cl)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer">
-        <div style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cl.name||'Sin nombre')}</div>
-        ${cl.dni?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${ico('id-card')} ${esc(cl.dni)}</div>`:''}
-        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <div style="text-align:center;background:var(--bg3);border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green)">${fmt(total)}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">TOTAL</div></div>
-          <div style="text-align:center;background:var(--bg3);border-radius:6px;padding:6px 4px"><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue)">${bks.length}</div><div style="font-size:8px;color:var(--text3);margin-top:1px">ALQ.</div></div>
-        </div>
-        <div style="font-size:11px;color:var(--amber);margin-top:8px">${ico('star',null,'ico-fill').repeat(cl.rating||0)+ico('star').repeat(5-(cl.rating||0))}</div>
-      </div>`;
-    });
-    h+=`</div>`;
-  } else if(_clientsMode==='compact'){
-    h=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">`;
-    filtered.forEach((cl,i)=>{
-      const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
-      h+=`<div onclick="${open(cl)}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:${i<filtered.length-1?'1px solid var(--border)':'none'}" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${ico('user')}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cl.name||'Sin nombre')}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:1px">${esc(cl.dni||cl.phone||'Sin datos')}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(total)}</div>
-          <div style="font-size:10px;color:var(--text3)">${bks.length} alq.</div>
-        </div>
-        <div style="color:var(--text3);font-size:14px;flex-shrink:0">›</div>
+      h+=`<div class="d-card s cl-gc" onclick="${open(cl)}">
+        <div><div class="cl-gn">${esc(cl.name||'Sin nombre')}</div><div class="d-meta cl-gm">${esc(cl.dni||cl.phone||'Sin datos')}</div></div>
+        <div class="spec cl-gs"><div>Total<b class="cl-in">${fmt(total)}</b></div><div>Alq.<b>${bks.length}</b></div></div>
+        <div class="cl-gr">${ico('star',null,'ico-fill').repeat(cl.rating||0)+ico('star').repeat(5-(cl.rating||0))}</div>
       </div>`;
     });
     h+=`</div>`;
   } else {
-    // extended
-    filtered.forEach(cl=>{
+    // Lista técnica (como el FAQ de la web): «01» · nombre / DNI y teléfono / último alquiler · total y nº de alquileres
+    h+=`<div class="d-list cl-l">`;
+    filtered.forEach((cl,i)=>{
       const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
-      const stars=ico('star',null,'ico-fill').repeat(cl.rating||0)+ico('star').repeat(5-(cl.rating||0));
-      h+=`<div onclick="${open(cl)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;cursor:pointer">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-          <div>
-            <div style="font-size:16px;font-weight:800">${esc(cl.name||'Sin nombre')}</div>
-            ${cl.dni?`<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${ico('id-card')} ${esc(cl.dni)}</div>`:''}
-            ${cl.phone?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${ico('phone')} ${esc(cl.phone)}</div>`:''}
-          </div>
-          <div style="text-align:right">
-            <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmt(total)}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px">${bks.length} alquiler${bks.length!==1?'es':''}</div>
-            <div style="font-size:12px;margin-top:3px">${stars}</div>
-          </div>
-        </div>
-        ${bks.length?`<div style="font-size:10px;color:var(--text3)">Último: ${esc(fmtDMY(bks[0].startDate))} · ${esc(bks[0].vname)}</div>`:''}
-        ${cl.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">"${esc(cl.notes)}"</div>`:''}
+      const ids=[cl.dni,cl.phone].filter(Boolean).map(x=>esc(x)).join(' · ');
+      h+=`<div class="d-row cl-r${_clientsMode==='compact'?' cl-rc':''}" onclick="${open(cl)}">
+        <span class="q">${String(i+1).padStart(2,'0')}</span>
+        <div class="al-b"><div class="t ell">${esc(cl.name||'Sin nombre')}</div><div class="s ell">${ids||'Sin datos'}${_clientsMode==='compact'?'':' '+stars(cl)}</div>${_clientsMode!=='compact'&&bks.length?`<div class="s ell">Último ${esc(fmtDMY(bks[0].startDate))} · ${esc(bks[0].vname)}</div>`:''}${_clientsMode!=='compact'&&cl.notes?`<div class="cl-nt">${esc(cl.notes)}</div>`:''}</div>
+        <div class="r"><b class="cl-in">${fmt(total)}</b><span class="mono2">${bks.length} ${_clientsMode==='compact'?'alq.':'alquiler'+(bks.length!==1?'es':'')}</span></div>
       </div>`;
     });
+    h+=`</div>`;
   }
   res.innerHTML=h;
 }
 function renderClients(el){
   if(!document.getElementById('clients-results')){
     el.innerHTML=`<div class="anim">
-    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
-      <div style="flex:1;position:relative">
-        <input type="text" id="searchClientsInput" placeholder="Buscar cliente..."
-          oninput="_searchClients=this.value;renderClientsBody()"
-          style="padding-left:14px;font-size:14px"/>
-      </div>
-      <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;flex-shrink:0">
-        <div class="tap44" id="ctog-extended" onclick="_clientsMode='extended';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--bg);color:var(--amber)">${ico('menu')}</div>
-        <div class="tap44" id="ctog-compact" onclick="_clientsMode='compact';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">≡</div>
-        <div class="tap44" id="ctog-grid" onclick="_clientsMode='grid';renderClientsBody()" style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:transparent;color:var(--text3)">⊞</div>
+    <div class="cl-bar">
+      <label class="cl-se">${ico('search')}<input type="text" id="searchClientsInput" placeholder="Buscar nombre, DNI…"
+          oninput="_searchClients=this.value;renderClientsBody()"/></label>
+      <div class="d-seg cl-mode" role="group" aria-label="Vista">
+        <button type="button" class="tap44" id="ctog-extended" onclick="_clientsMode='extended';renderClientsBody()" aria-pressed="true" aria-label="Lista">${ico('menu')}</button>
+        <button type="button" class="tap44" id="ctog-compact" onclick="_clientsMode='compact';renderClientsBody()" aria-pressed="false" aria-label="Compacta">≡</button>
+        <button type="button" class="tap44" id="ctog-grid" onclick="_clientsMode='grid';renderClientsBody()" aria-pressed="false" aria-label="Cuadrícula">⊞</button>
       </div>
     </div>
     <div id="clients-results"></div></div>`;
@@ -2266,53 +2234,43 @@ function renderClientDetail(el){
   bks.sort((a,b)=>b.startDate.localeCompare(a.startDate));
   const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
   const avgAmount=bks.length?Math.round(total/bks.length):0;
+  const _tS=fmt(total).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
+  const _sp=(l,v,w)=>v?`<div${w?' class="w2"':''}>${l}<b>${esc(v)}</b></div>`:'';
 
-  let h=`<div class="anim">
+  // Ficha del cliente: tarjeta con rótulo, nombre, ficha técnica de sus datos, valoración y total facturado en Doto tras línea discontinua
+  let h=`<div class="anim cl-det">
   <div class="back" onclick="_clientDetail=null;renderClients(document.getElementById('PC'))"><span style="font-size:18px">${ico('arrow-left')}</span>Volver a clientes</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-      <div>
-        <div style="font-size:22px;font-weight:800">${esc(cl.name||'Sin nombre')}</div>
-        ${cl.dni?`<div style="font-size:13px;color:var(--text3);margin-top:4px">${ico('id-card')} ${esc(cl.dni)}</div>`:''}
-        ${cl.phone?`<div style="font-size:13px;color:var(--text3);margin-top:2px">${ico('phone')} ${esc(cl.phone)}</div>`:''}
-        ${cl.email?`<div style="font-size:13px;color:var(--text3);margin-top:2px">${ico('mail')} ${esc(cl.email)}</div>`:''}
-      </div>
-      <button class="btn-pri" onclick="openEditClient('${escJs(cl.id)}')" style="width:auto">${ico('edit')} Editar</button>
+  <div class="d-card xl cl-c">
+    <div class="d-ch"><span class="q ac">Cliente</span><button class="btn-sec cl-ed" onclick="openEditClient('${escJs(cl.id)}')">${ico('edit')} Editar</button></div>
+    <div class="d-ct al-ct">${esc(cl.name||'Sin nombre')}</div>
+    <div class="spec cl-sp">
+      ${_sp('DNI / NIE',cl.dni)}${_sp('Teléfono',cl.phone)}${_sp('Email',cl.email,1)}${_sp('Domicilio',cl.address,1)}
+      ${_sp('Nacimiento',cl.birthdate?fmtDMY(cl.birthdate):'')}${_sp('Carnet caduca',cl.licenseExp?fmtDMY(cl.licenseExp):'')}
+      ${!cl.dni&&!cl.phone&&!cl.email?'<div class="w2">Datos<b>Sin datos de contacto</b></div>':''}
     </div>
-    <div style="margin-bottom:10px">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">VALORACIÓN</div>
-      <div style="display:flex;gap:6px">${[1,2,3,4,5].map(i=>`<span onclick="setClientRating('${escJs(cl.id)}',${i})" style="font-size:24px;cursor:pointer">${i<=(cl.rating||0)?ico('star',null,'ico-fill'):ico('star')}</span>`).join('')}</div>
-    </div>
-    ${cl.notes?`<div style="background:var(--bg3);border-radius:8px;padding:10px;font-size:12px;color:var(--text2);font-style:italic">"${esc(cl.notes)}"</div>`:''}
+    <div class="cl-rate"><span class="q">Valoración</span><div class="cl-stars">${[1,2,3,4,5].map(i=>`<span class="tap44" onclick="setClientRating('${escJs(cl.id)}',${i})">${i<=(cl.rating||0)?ico('star',null,'ico-fill'):ico('star')}</span>`).join('')}</div></div>
+    ${cl.notes?`<p class="d-note">${esc(cl.notes)}</p>`:''}
+    <div class="d-tot"><span class="q">Total facturado</span><div class="d-n n2">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${bks.length} alquiler${bks.length!==1?'es':''} · IVA incluido</p></div>
   </div>
-  <div class="grid2" style="margin-bottom:16px">
-    <div class="sbox" style="border-left:4px solid var(--green)"><div class="sv" style="color:var(--green)">${fmt(total)}</div><div class="sl">TOTAL GASTADO</div></div>
-    <div class="sbox" style="border-left:4px solid var(--blue)"><div class="sv" style="color:var(--blue)">${bks.length}</div><div class="sl">ALQUILERES</div></div>
-    <div class="sbox" style="border-left:4px solid var(--amber)"><div class="sv" style="color:var(--amber)">${fmt(avgAmount)}</div><div class="sl">TICKET MEDIO</div></div>
-    <div class="sbox" style="border-left:4px solid var(--purple)"><div class="sv" style="color:var(--purple)">${cl.rating||0}/5</div><div class="sl">VALORACIÓN</div></div>
-  </div>
-  <div class="sec">HISTORIAL DE ALQUILERES</div>`;
+  <div class="d-kpi cl-k"><div><b>${bks.length}</b><span>Alquileres</span></div><div><b>${fmt(avgAmount)}</b><span>Ticket medio</span></div><div><b>${cl.rating||0}/5</b><span>Valoración</span></div></div>
+  <div class="d-sh al-sh"><h2>Historial</h2><span class="q">${String(bks.length).padStart(2,'0')}</span></div>`;
 
-  if(!bks.length){h+=`<div class="empty"><div class="ei">${ico('calendar')}</div><div class="et">Sin alquileres</div></div>`;}
-  else bks.forEach(b=>{
-    const p=PLATS[b.platform];
-    h+=`<div onclick="openV('${escJs(b.vid)}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
-        <div>
-          <div style="font-size:14px;font-weight:700">${esc(b.vname)}</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)">${fmt(b.amount)}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(p?p.label:b.platform)}</div>
-        </div>
-      </div>
-      ${b.notes?`<div style="font-size:11px;color:var(--text3)">${esc(b.notes)}</div>`:''}
-    </div>`;
-  });
+  if(!bks.length){h+=`<div class="d-empty cl-e">${ico('calendar')}<h3>Sin alquileres</h3><p>Aparecerán aquí al asignarle un alquiler</p></div>`;}
+  else{
+    h+='<div class="d-list">';
+    bks.forEach(b=>{
+      const p=PLATS[b.platform];
+      const pc={amovens:'var(--plat-amovens)',getaround:'var(--plat-getaround)',sinapp:'var(--plat-sinapp)'}[b.platform]||'var(--plat-otra)';
+      h+=`<div class="d-row cl-h" onclick="openV('${escJs(b.vid)}')">
+        <i class="dh-dot"${b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':''}></i>
+        <div class="al-b"><div class="t ell">${esc(b.vname)}</div><div class="s">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>${b.notes?`<div class="s ell">${esc(b.notes)}</div>`:''}</div>
+        <div class="r"><b class="cl-in">${fmt(b.amount)}</b><span class="chip cl-pl" style="--pc:${pc}">${esc(p?p.label:b.platform)}</span></div>
+      </div>`;
+    });
+    h+='</div>';
+  }
 
-  h+=`<div style="height:16px"></div>
-  <button onclick="deleteClient('${escJs(cl.id)}')" class="btn-dang">${ico('trash')} Eliminar cliente</button>
+  h+=`<div class="al-dz"><button onclick="deleteClient('${escJs(cl.id)}')" class="btn-txt err">${ico('trash')} Eliminar cliente</button></div>
   </div>`;
   el.innerHTML=h;
 }
@@ -2324,18 +2282,17 @@ function setClientRating(id,rating){
 }
 
 function openAddClient(){
-  openSheet(`<div class="stitle">Nuevo cliente</div>
-    <div class="fg"><label class="lbl">NOMBRE *</label><input id="clN" placeholder="Nombre completo" autocomplete="off"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">DNI / NIE</label><input id="clDni" placeholder="12345678A" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div class="fg"><label class="lbl">TELÉFONO</label><input id="clPhone" type="tel" placeholder="600 000 000" inputmode="tel"/></div>
+  openSheet(`<div class="stitle">Nuevo cliente</div><div class="ssub">Datos de contacto; el resto, en «Más datos» o al hacer el contrato</div>
+    <div class="d-f"><label class="q" for="clN">Nombre</label><input id="clN" placeholder="Nombre completo" autocomplete="off"/><span class="d-hint">Obligatorio</span></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="clDni">DNI / NIE</label><input id="clDni" class="d-in m" placeholder="12345678A" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="clPhone">Teléfono</label><input id="clPhone" type="tel" placeholder="600 000 000" inputmode="tel"/></div>
     </div>
-    <div class="fg"><label class="lbl">EMAIL</label><input id="clEmail" type="email" placeholder="email@ejemplo.com" inputmode="email"/></div>
+    <div class="d-f"><label class="q" for="clEmail">Email</label><input id="clEmail" type="email" placeholder="email@ejemplo.com" inputmode="email"/></div>
     ${_clMoreHtml(null,'ncl',true)}
-    <div class="fg"><label class="lbl">NOTAS</label><input id="clNotes" placeholder="Observaciones..." autocomplete="off"/></div>
-    <button class="btn-pri" onclick="submitAddClient()">Crear cliente</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f"><label class="q" for="clNotes">Notas</label><input id="clNotes" placeholder="Opcional" autocomplete="off"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitAddClient()">${ico('user')} Crear cliente</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 
 function submitAddClient(){
@@ -2349,30 +2306,27 @@ function submitAddClient(){
 
 function openEditClient(id){
   const cl=CL.find(c=>c.id===id);if(!cl)return;
-  openSheet(`<div class="stitle">Editar cliente</div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);margin-bottom:8px">${ico('user')} DATOS PERSONALES</div>
-    <div class="fg"><label class="lbl">NOMBRE COMPLETO</label><input id="eclN" value="${esc(cl.name)}" autocomplete="off"/></div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">DNI / NIE</label><input id="eclDni" value="${esc(cl.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div class="fg"><label class="lbl">NACIONALIDAD</label><input id="eclNationality" value="${esc(cl.nationality||'')}" autocomplete="off"/></div>
+  openSheet(`<div class="stitle">Editar cliente</div><div class="ssub">${esc(cl.name||'Sin nombre')}</div>
+    <div class="al-h al-h0"><h3>Datos personales</h3></div>
+    <div class="d-f"><label class="q" for="eclN">Nombre completo</label><input id="eclN" value="${esc(cl.name)}" autocomplete="off"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="eclDni">DNI / NIE</label><input id="eclDni" class="d-in m" value="${esc(cl.dni||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="eclNationality">Nacionalidad</label><input id="eclNationality" value="${esc(cl.nationality||'')}" autocomplete="off"/></div>
     </div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">TELÉFONO</label><input id="eclPhone" type="tel" value="${esc(cl.phone||'')}" inputmode="tel"/></div>
-      <div class="fg"><label class="lbl">EMAIL</label><input id="eclEmail" type="email" value="${esc(cl.email||'')}" inputmode="email"/></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="eclPhone">Teléfono</label><input id="eclPhone" type="tel" value="${esc(cl.phone||'')}" inputmode="tel"/></div>
+      <div class="d-f"><label class="q" for="eclEmail">Email</label><input id="eclEmail" type="email" value="${esc(cl.email||'')}" inputmode="email"/></div>
     </div>
-    <div class="fg"><label class="lbl">DOMICILIO</label><input id="eclAddress" value="${esc(cl.address||'')}" autocomplete="off"/></div>
-    <div class="fg"><label class="lbl">FECHA DE NACIMIENTO</label><input id="eclBirthdate" type="date" value="${esc(safeDate(cl.birthdate||''))}"/></div>
-    <div style="height:1px;background:var(--border);margin:12px 0"></div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px">${ico('id-card')} PERMISO DE CONDUCIR</div>
-    <div class="r2">
-      <div class="fg"><label class="lbl">Nº PERMISO</label><input id="eclLicense" value="${esc(cl.license||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
-      <div class="fg"><label class="lbl">CADUCIDAD</label><input id="eclLicenseExp" type="date" value="${esc(safeDate(cl.licenseExp||''))}"/></div>
+    <div class="d-f"><label class="q" for="eclAddress">Domicilio</label><input id="eclAddress" value="${esc(cl.address||'')}" autocomplete="off"/></div>
+    <div class="d-f"><label class="q" for="eclBirthdate">Nacimiento</label><input id="eclBirthdate" type="date" value="${esc(safeDate(cl.birthdate||''))}"/><span class="d-hint">Edad mínima para alquilar: 26 años cumplidos</span></div>
+    <div class="al-h"><h3>Permiso de conducir</h3></div>
+    <div class="d-2">
+      <div class="d-f"><label class="q" for="eclLicense">Nº permiso</label><input id="eclLicense" class="d-in m" value="${esc(cl.license||'')}" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+      <div class="d-f"><label class="q" for="eclLicenseExp">Caducidad</label><input id="eclLicenseExp" type="date" value="${esc(safeDate(cl.licenseExp||''))}"/></div>
     </div>
-    <div style="height:1px;background:var(--border);margin:12px 0"></div>
-    <div class="fg"><label class="lbl">NOTAS</label><input id="eclNotes" value="${esc(cl.notes||'')}" autocomplete="off"/></div>
-    <button class="btn-pri" onclick="submitEditClient('${escJs(id)}')">${ico('save')} Guardar</button>
-    <div style="height:10px"></div>
-    <button class="btn-sec" onclick="closeSheet()" style="width:100%">Cancelar</button>`);
+    <div class="d-f al-mt"><label class="q" for="eclNotes">Notas</label><input id="eclNotes" value="${esc(cl.notes||'')}" autocomplete="off"/></div>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="submitEditClient('${escJs(id)}')">${ico('save')} Guardar</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
 
 function submitEditClient(id){
