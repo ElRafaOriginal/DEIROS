@@ -1634,6 +1634,20 @@ label.btn-sec.aj-up{width:100%;}
 .btn-pri.aj-on{margin:8px 0 0;}
 .aj-r{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:60px;padding:8px 0;border-bottom:1px solid var(--border2);}
 .aj-i{display:grid;place-items:center;font-size:20px;color:var(--text2);}
+/* #96 Enviar al cliente: Llamar / WhatsApp (dos píldoras secundarias; en «Hoy», dos botones redondos de 44 px), hoja de mensajes y «Enviar» PDF */
+.wa-two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
+.d-card .wa-two{margin-top:0;}
+.wa-two a,.wa-ic a,#waGo{text-decoration:none;}
+.wa-two .ico{width:20px;height:20px;}
+.wa-ic{display:flex;gap:8px;}
+.wa-ic .d-ib{font-size:18px;}
+.ov.wa-ov{z-index:700;}
+.sheet.wa-sh{z-index:701;display:grid;gap:16px;align-content:start;}
+.wa-sh .sh{margin:12px auto 4px;}
+.wa-tx{display:block;width:100%;box-sizing:border-box;min-height:236px;resize:vertical;font-family:var(--font);font-size:15px;line-height:1.5;color:var(--text);background:transparent;border:1px solid var(--border2);border-radius:var(--r-in);padding:14px 16px;outline:none;}
+.wa-tx:focus{border-color:var(--amber);}
+.al-nav.ct-nav3{grid-template-columns:auto auto 1fr;gap:8px;}
+.al-nav.ct-nav3>button{padding:0 14px;}.al-nav.ct-nav3>.btn-sec{flex-wrap:nowrap;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -1931,6 +1945,10 @@ receipt:'<path d="M5.5 3h10l3 3v15l-2.2-1.5-2.1 1.5-2.2-1.5-2.2 1.5-2.1-1.5-2.2 
 // ── Personas, contacto y lugares
 'id-card':'<path d="M2.5 5h16l3 3v11h-19z"/><circle cx="8.5" cy="11" r="2.2"/><path d="M5 16.5c.5-1.5 1.8-2.3 3.5-2.3s3 .8 3.5 2.3M14.5 10.5h4M14.5 14h3"/>',
 phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2"/><path d="M10.5 18.5h3M6.5 5.5h11"/>',
+call:'<path d="M5 3.5h4l2 5-2.5 1.5a11 11 0 0 0 5.5 5.5L15.5 13l5 2v4a2 2 0 0 1-2 2A16.5 16.5 0 0 1 3 5.5a2 2 0 0 1 2-2z"/>',
+chat:'<path d="M4 20l1.5-4.2A8 8 0 1 1 9 19z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/>',
+send:'<path d="M21 3L2.5 10.2l7.3 3.9 3.9 7.4z"/><path d="M21 3L9.8 14.1"/>',
+close:'<path d="M6 6l12 12M18 6L6 18"/>',
 mail:'<rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="M3.5 6.5l8.5 7 8.5-7"/>',
 pin:'<path d="M12 21s-6.5-6.2-6.5-11.5a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.4"/>',
 building:'<path d="M4.5 20.5v-16h9.5v16M14 9h5.5v11.5M2.5 20.5h19"/><path d="M7.5 8h1.5M10.5 8H12M7.5 11.5h1.5M10.5 11.5H12M7.5 15h1.5M10.5 15H12M16.5 12.5H18M16.5 16H18"/>',
@@ -2257,6 +2275,7 @@ function renderClientDetail(el){
       ${_sp('Nacimiento',cl.birthdate?fmtDMY(cl.birthdate):'')}${_sp('Carnet caduca',cl.licenseExp?fmtDMY(cl.licenseExp):'')}
       ${!cl.dni&&!cl.phone&&!cl.email?'<div class="w2">Datos<b>Sin datos de contacto</b></div>':''}
     </div>
+    ${_waBtns(cl.phone,'c',cl.id)}
     <div class="cl-rate"><span class="q">Valoración</span><div class="cl-stars">${[1,2,3,4,5].map(i=>`<span class="tap44" onclick="setClientRating('${escJs(cl.id)}',${i})">${i<=(cl.rating||0)?ico('star',null,'ico-fill'):ico('star')}</span>`).join('')}</div></div>
     ${cl.notes?`<p class="d-note">${esc(cl.notes)}</p>`:''}
     <div class="d-tot"><span class="q">Total facturado</span><div class="d-n n2">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${bks.length} alquiler${bks.length!==1?'es':''} · IVA incluido</p></div>
@@ -4932,6 +4951,112 @@ function _savePDF(doc, filename){
   }
 }
 
+// ── Enviar al cliente (#96) ─────────────────────────────────────────────────
+// Llamar y WhatsApp en un toque donde se ve el teléfono de un cliente, con mensajes ya escritos (solo datos que ya existen).
+// Número: sin espacios ni signos; +34/0034 o 9 cifras españolas (6, 7, 8, 9) → 34XXXXXXXXX. Menos de 8 cifras: sin botones.
+function _waNum(p){
+  const s=String(p==null?'':p).split(/[\/,;]/)[0].trim();let d=s.replace(/\D/g,'');
+  if(!s.startsWith('+')&&d.startsWith('00'))d=d.slice(2);
+  else if(!s.startsWith('+')&&d.length===9&&/^[6789]/.test(d))d='34'+d;
+  return d.length>=8&&d.length<=15?d:'';
+}
+function _waPhB(b){return b.clientPhone||((_clFind({name:b.clientName,dni:b.clientDni,phone:b.clientPhone},b.id)||{}).phone)||'';}
+function _waPhQ(q){const c=(q.clientId&&CL.find(x=>x.id===q.clientId))||(q.clientName?_clFind({name:q.clientName},null):null);return (c&&c.phone)||'';}
+// Botones: dos píldoras secundarias (fichas) o dos redondos de 44 px (fila de «Hoy»). Sin teléfono válido, nada.
+function _waBtns(ph,k,id,sm){
+  const n=_waNum(ph);if(!n)return '';
+  const go=`_waPick('${escJs(k)}','${escJs(id)}')`;
+  if(sm)return `<div class="wa-ic"><a class="d-ib" href="tel:+${n}" aria-label="Llamar" onclick="event.stopPropagation()">${ico('call')}</a><button type="button" class="d-ib" aria-label="WhatsApp" onclick="event.stopPropagation();${go}">${ico('chat')}</button></div>`;
+  return `<div class="wa-two"><a class="btn-sec" href="tel:+${n}">${ico('call')} Llamar</a><button type="button" class="btn-sec" onclick="${go}">${ico('chat')} WhatsApp</button></div>`;
+}
+// Textos (tono Deiros: cercano, profesional y breve; firma fija). «Lugar de entrega:» y «Dónde:» llevan el lugar del alquiler
+// (b.deliveryPlace / b.returnPlace, que por defecto es el de entrega); si está vacío, la línea queda vacía y Rafael la completa en la hoja
+const _WA_FIRMA='Deiros · deiros.net';
+function _waLug(s){return String(s==null?'':s).replace(/\s+/g,' ').trim();}
+function _waDia(s){const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||''));return m?new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}):'';}
+function _waCu(d,t){const x=_waDia(d);return x?x+(t?' a las '+t:''):'';}
+function _waHola(n){const f=String(n||'').trim().split(/\s+/)[0];return 'Hola'+(f?' '+f:'')+',';}
+function _waJ(a){return a.filter(x=>x!==null&&x!==false).join('\n');}
+function _waTxCf(b,v){
+  const fz=Number(b.fianza)||0,i=_waCu(b.startDate,b.startTime),f=_waCu(b.endDate,b.endTime);
+  return _waJ([_waHola(b.clientName)+' tu reserva con Deiros está confirmada.','',
+    'Coche: '+v.name+(v.plate?' ('+v.plate+')':''),i&&'Recogida: '+i,f&&'Devolución: '+f,'Lugar de entrega: '+_waLug(b.deliveryPlace),
+    'Total: '+fmtF(_bookingClientTotal(b))+' (IVA incluido)',fz>0&&'Fianza: '+fmtF(fz)+', se devuelve al terminar si todo está correcto.',
+    '','Trae tu DNI y el carnet de conducir. Cualquier duda, escríbeme por aquí.','',_WA_FIRMA]);
+}
+function _waTxRd(b,v){
+  const f=_waCu(b.endDate,b.endTime);
+  return _waJ([_waHola(b.clientName)+' te recuerdo la devolución del '+v.name+(v.plate?' ('+v.plate+')':'')+':','',
+    f&&'Cuándo: '+f,'Dónde: '+_waLug(b.returnPlace||b.deliveryPlace),'',
+    'Devuélvelo con el mismo nivel de combustible con el que lo recogiste. Si necesitas más días, avísame y lo vemos.','',_WA_FIRMA]);
+}
+function _waTxFz(b,v){ // solo con fianza, coche devuelto (o fianza ya marcada devuelta) y sin retenerla entera
+  const fz=Number(b.fianza)||0;if(fz<=0)return null;const st=_fianzaStatus(b);if(st==='retained'||!(b.returned||st==='returned'||st==='partial'))return null;
+  const r=st==='partial'?Math.min(fz,Number(b.fianzaRetainedAmount)||0):0,why=String(b.fianzaRetainedReason||'').trim();
+  return _waJ([r>0?_waHola(b.clientName)+' ya te hemos devuelto '+fmtF(fz-r)+' de la fianza del '+v.name+' ('+fmtF(fz)+'). Hemos retenido '+fmtF(r)+(why?' por: '+why+'.':'.')
+      :_waHola(b.clientName)+' ya te hemos devuelto la fianza del '+v.name+': '+fmtF(fz)+'.','',
+    'Gracias por alquilar con Deiros. Aquí nos tienes para la próxima.','',_WA_FIRMA]);
+}
+function _waTxQt(q,v){
+  const i=_waCu(q.startDate,q.startTime),f=_waCu(q.endDate,q.endTime),d=Number(q.dur)||0,fz=Number(q.fianza)||0;
+  return _waJ([_waHola(q.clientName)+' aquí tienes tu presupuesto de Deiros'+(q.num?' ('+q.num+')':'')+':','',
+    v&&'Coche: '+v.name,i&&'Recogida: '+i,f&&'Devolución: '+f+(d?' ('+d+' día'+(d!==1?'s':'')+')':''),
+    'Total: '+fmtF(Number(q.totalAmount)||0)+' (IVA incluido)',fz>0&&'Fianza: '+fmtF(fz)+', reembolsable.',
+    '','Si te encaja, contéstame por aquí y te lo reservo.','',_WA_FIRMA]);
+}
+// Alquiler de referencia de un cliente: el que está en curso, si no el próximo, si no el último (sin cancelados)
+function _waClBk(cl){
+  const ids=new Set(cl.bookingIds||[]),h=todayStr(),A=[];
+  V.forEach(v=>(v.bookings||[]).forEach(b=>{if(ids.has(b.id)&&!b.cancelled&&!b.cancellation)A.push({b,v});}));
+  return A.find(x=>x.b.startDate<=h&&x.b.endDate>=h&&!x.b.returned)
+    ||A.filter(x=>x.b.startDate>h).sort((x,y)=>x.b.startDate.localeCompare(y.b.startDate))[0]
+    ||A.sort((x,y)=>y.b.startDate.localeCompare(x.b.startDate))[0]||null;
+}
+// Hoja pequeña encima de la que esté abierta (la ficha del alquiler sigue debajo): mensajes, texto editable y «Abrir WhatsApp»
+var _waEl=null,_waT=[],_waN='';
+function _waClose(){if(!_waEl)return;_waEl.forEach(e=>e.remove());_waEl=null;}
+function _waPick(k,id){
+  let ph='',name='',sub='',b=null,v=null,def='bl';_waT=[];
+  if(k==='q'){
+    const q=QT.find(x=>x.id===id);if(!q)return;v=V.find(x=>x.id===q.vehicleId)||null;
+    ph=_waPhQ(q);name=q.clientName||'';sub=(v?v.name+' · ':'')+(q.num||'');_waT.push(['qt','Presupuesto',_waTxQt(q,v)]);def='qt';
+  }else if(k==='o'){const o=OW.find(x=>x.id===id);if(!o)return;ph=o.phone||''; // propietario: chat directo, sin plantillas
+  }else{
+    if(k==='c'){const cl=CL.find(x=>x.id===id);if(!cl)return;ph=cl.phone;name=cl.name||'';const r=_waClBk(cl);if(r){b=r.b;v=r.v;}}
+    else{V.forEach(x=>(x.bookings||[]).forEach(y=>{if(y.id===id){b=y;v=x;}}));if(!b)return;ph=_waPhB(b);name=b.clientName||'';}
+    if(b){
+      const fz=_waTxFz(b,v);sub=v.name+' · '+fmtDMY(b.startDate)+' → '+fmtDMY(b.endDate);
+      _waT.push(['cf','Confirmación',_waTxCf(b,v)],['rd','Recordatorio',_waTxRd(b,v)]);if(fz!==null)_waT.push(['fz','Fianza devuelta',fz]);
+      def=(b.returned&&fz!==null)?'fz':(b.delivered&&!b.returned)?'rd':'cf';
+    }
+  }
+  const n=_waNum(ph);if(!n)return;_waN=n;_waT.push(['bl','En blanco','']);
+  if(_waT.length===1){window.open('https://wa.me/'+n,'_blank','noopener');return;} // propietario, o cliente sin alquileres: directo, sin hoja
+  _waClose();
+  const o=document.createElement('div');o.className='ov open wa-ov';o.onclick=_waClose;
+  const s=document.createElement('div');s.className='sheet wa-sh';s.setAttribute('role','dialog');s.setAttribute('aria-label','Mensaje de WhatsApp');
+  s.innerHTML=`<div class="sh"></div>
+    <div class="d-ch"><span class="q ac">WhatsApp</span><button type="button" class="d-ib" onclick="_waClose()" aria-label="Cerrar">${ico('close')}</button></div>
+    <div><div class="d-ct al-ct">${esc(name||'Cliente')}</div><div class="d-meta al-mt6">${esc(ph)}${sub?' · '+esc(sub):''}</div></div>
+    <div class="d-pills wa-p" role="group" aria-label="Mensaje">${_waT.map((t,i)=>`<button type="button" aria-pressed="false" onclick="_waSel(${i})">${t[1]}</button>`).join('')}</div>
+    <textarea id="waTx" class="wa-tx" rows="11" oninput="_waSync()" aria-label="Texto del mensaje"></textarea>
+    <a id="waGo" class="btn-pri" target="_blank" rel="noopener" onclick="setTimeout(_waClose,400)">${ico('chat')} Abrir WhatsApp</a>`;
+  document.body.append(o,s);_waEl=[o,s];
+  _waSel(Math.max(0,_waT.findIndex(t=>t[0]===def)));
+  requestAnimationFrame(()=>s.classList.add('open'));
+}
+function _waSel(i){
+  const t=_waT[i];if(!t)return;const x=document.getElementById('waTx');
+  if(x){x.value=t[2];const m=/^(Lugar de entrega|Dónde): $/m.exec(t[2]);if(m){const c=m.index+m[0].length;x.focus({preventScroll:true});x.setSelectionRange(c,c);}} // cursor donde se escribe el lugar
+  document.querySelectorAll('.wa-p button').forEach((e,j)=>e.setAttribute('aria-pressed',String(j===i)));_waSync();
+}
+function _waSync(){
+  const x=document.getElementById('waTx'),a=document.getElementById('waGo');if(!a)return;const t=x?x.value:'';
+  a.href='https://wa.me/'+_waN+(t.trim()?'?text='+encodeURIComponent(t):'');
+}
+// Atrás del móvil con la hoja de WhatsApp abierta: cierra solo esa hoja (la de debajo sigue)
+window.addEventListener('popstate',function(e){if(_waEl){e.stopImmediatePropagation();_waClose();history.pushState(null,'');}},true);
+
 function generateReceiptPDF(bookingId){
   try{
   // ── Buscar alquiler ───────────────────────────────────────────────────────
@@ -6679,7 +6804,7 @@ function renderDash(el){
       return `<div class="dh-row" onclick="openV('${escJs(v.id)}');setTimeout(()=>showBookingById('${escJs(b.id)}'),200)">
         <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
         <div style="min-width:0"><div class="t ell">${esc(v.name)}${b.clientName?' · '+esc(b.clientName):''}</div><div class="s">${_chip}${_when?'<span>'+_when+'</span>':''}</div>${_fz}</div>
-        <div class="r">${_act}</div>
+        <div class="r">${_act}${_waBtns(_waPhB(b),'b',b.id,1)}</div>
       </div>`;}).join('')}</div>`:'<p class="hoy-e">Nada para hoy: sin entregas ni devoluciones pendientes.</p>'}
   </section>`;
 
@@ -7285,6 +7410,7 @@ function showBooking(k,_overrideId){
   openSheet(`<div class="d-ch al-ch"><span class="q ac">Detalle del alquiler</span>${_stChip}</div>
     <div class="d-ct al-ct">${esc(b.clientName||'Sin cliente')}</div>
     <div class="d-meta al-mt6">${esc(v.name)} · ${esc(v.plate)}${b.clientPhone?' · '+esc(b.clientPhone):''}${b.clientDni?' · '+esc(b.clientDni):''}</div>
+    ${_waBtns(_waPhB(b),'b',b.id)}
     ${b.cancelled?`<div class="al-cx">
       <div>${b.cancellation?.by==='client'?'Cancelado por el <strong>cliente</strong>':'Cancelado por <strong>DEIROS</strong>'}${b.cancellation?.date?' · '+esc(fmtDMY(safeDate(b.cancellation.date))):''}</div>
       ${(b.cancellation?.penalty>0)?`<div class="al-cxp" style="color:${b.cancellation.by==='client'?'var(--green)':'var(--amber)'}">Penalización ${fmtF(b.cancellation.penalty)} — ${b.cancellation.by==='client'?'a favor de DEIROS (ingreso)':'a favor del cliente (coste)'}</div>`:''}
@@ -9629,6 +9755,7 @@ function renderOwnerProfile(el){
       ${owner.iban?`<div class="w2 ow-ib">IBAN<b><span id="ibanDisplay">${esc(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}</span><span class="d-ib ow-eye" onclick="const d=document.getElementById('ibanDisplay');d.textContent=d.textContent.includes('*')?'${escJs(owner.iban)}':'${escJs(owner.iban.slice(0,4)+' ****  ****  ****  ****  '+owner.iban.slice(-4))}';">${ico('eye')}</span></b></div>`:''}
       ${!owner.dni&&!owner.phone&&!owner.email&&!owner.iban?'<div class="w2">Datos<b>Sin datos de contacto</b></div>':''}
     </div>
+    ${_waBtns(owner.phone,'o',owner.id)}
     <div class="d-tot"><span class="q">Total al propietario</span><div class="d-n n2${toOwner<0?' neg':''}">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${vehicles.length} vehículo${vehicles.length!==1?'s':''} · ${totalBk} alquiler${totalBk!==1?'es':''} · comisión media ${avgComm}%</p></div>
   </div>
   <div class="own-actions ow-acts">
@@ -12273,6 +12400,7 @@ function showQuoteDetail(el){
       <div>Fianza<b>${q.fianza?fmtF(q.fianza):'—'}</b></div>
       ${q.clientName?'<div class="w2">Cliente<b>'+esc(q.clientName)+'</b></div>':''}
     </div>
+    ${_waBtns(_waPhQ(q),'q',q.id)}
     <div class="al-l">
       <div class="al-li"><span>Base alquiler (${esc(q.basePriceBreakdown||((q.dur||0)+'d × '+fmtF(q.dailyRate||0)))})</span><b>${fmtF(q.baseAmount||0)}</b></div>`;
   (q.extras||[]).forEach(ex=>{
