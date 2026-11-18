@@ -1976,14 +1976,16 @@ const KM_RATE_CFG={
 const MON_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MON_S=['En','Fe','Ma','Ab','My','Jn','Jl','Ag','Se','Oc','No','Di'];
 const INC_CATS=['Alquiler','Venta','Seguro','Depósito','Extra km','Limpieza','Otros ingresos'];
-const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Lavado','Limpieza','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
-// Cláusula Quinta (5.2): gastos que paga directamente EL PROPIETARIO (incluye los recurrentes Seguro, Impuesto y Mantenimiento)
+const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Daño cliente','Franquicia','Lavado','Limpieza','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
+// Cláusula Quinta (5.2): gastos que paga directamente EL PROPIETARIO (incluye los recurrentes Seguro, Impuesto y Mantenimiento). Neumáticos y frenos → Mantenimiento. Franquicia y Daño cliente: categorías propias que no se cargan al propietario (las paga el cliente).
 const OWNER_PAID_CATS=['Seguro','Mantenimiento','Mantenimiento periódico','Reparación','ITV','Impuesto'];
-// Cláusula Quinta (5.3): LISTA PERMITIDA de gastos que se descuentan al propietario. El resto no se le descuenta.
+// Cláusula Quinta (5.3): LISTA PERMITIDA de gastos que se descuentan al propietario. El resto no se le descuenta. Peajes → Parking
 const OWNER_DEDUCT_CATS=['Combustible','Lavado','Limpieza','Plataforma','Parking','Suscripción'];
 // Clave de categoría sin mayúsculas, acentos ni espacios sobrantes (solo para comparar; no cambia lo guardado)
 function _catKey(c){return String(c||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
 const OWNER_DEDUCT_KEYS=OWNER_DEDUCT_CATS.map(_catKey);
+// Cláusula Quinta (#90): desde este mes (incluido) la comisión de los coches con propietario va sobre (facturado − gastos 5.3); los meses anteriores siguen con la regla antigua (sobre lo facturado). No es retroactivo. Constante de código, no es un dato guardado.
+const COMM_RULE_FROM='2026-11';
 const BIZ_INC=['Subvención','Consultoría','Servicio','Comisión','Reembolso','Otros ingresos'];
 const BIZ_EXP=['Oficina','Software','Marketing','Gestoría/Asesoría','Seguros generales','Sueldos','Impuestos','Alquiler local','Teléfono/Internet','Material','Préstamo','Formación','Otros gastos'];
 const PLATS={amovens:{label:'Amovens',icon:'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#FB7AAC;flex-shrink:0"></span>',cls:'plat-amovens'},getaround:{label:'Getaround',icon:'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#8B5CF6;flex-shrink:0"></span>',cls:'plat-getaround'},sinapp:{label:'Sin app',icon:ico('handshake'),cls:'plat-sinapp'}};
@@ -3106,7 +3108,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     doc.setTextColor(...DARK);doc.text(String(totBks),W-mg,y+5.5,{align:'right'});
     y+=8;
     doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('(G) Vehículo en gestión: Part.Negocio = comisión del gestor sobre lo facturado menos el déficit asumido',mg,y+4);
+    doc.text('(G) Vehículo en gestión: Part.Negocio = comisión del gestor menos el déficit asumido; comisión sobre lo facturado menos gastos 5.3 (hasta 10/2026, sobre lo facturado)',mg,y+4);
     y+=8;
   } else {
     _tblH([
@@ -5799,10 +5801,10 @@ function generateMgmtContractPDF(ownerId,vIdParam){
 
   clauseHeader('Quinta','Facturación, gastos, comisión del gestor y liquidación');
   para('5.1. Se entenderá por facturación mensual la suma de los importes facturados en el mes por el alquiler del vehículo, incluidos los extras contratados por los clientes y las penalizaciones por cancelación. No forman parte de la facturación las fianzas, tampoco cuando se retengan total o parcialmente para cubrir daños o gastos.');
-  para('5.2. Correrán a cargo de EL PROPIETARIO, que los abonará directamente con independencia de la facturación del mes, los gastos de seguro del vehículo, mantenimiento (incluido el periódico), reparaciones, ITV e impuestos del vehículo. Estos gastos no se descontarán en la liquidación.');
-  para('5.3. Se descontarán en la liquidación únicamente los siguientes gastos de explotación del mes: combustible, lavado y limpieza, comisiones de plataformas, parking y suscripciones. No se descontará a EL PROPIETARIO ningún otro gasto. Las multas y sanciones generadas durante un alquiler correrán a cargo del cliente arrendatario.');
-  para('5.4. EL GESTOR percibirá como retribución una comisión del '+comision+'% sobre la facturación mensual. La comisión se devengará aunque en ese mes los gastos del apartado 5.3 superen la facturación. Si en un mes el vehículo no genera facturación, no se devengará comisión alguna.');
-  para('5.5. Corresponderá a EL PROPIETARIO la facturación mensual, menos la comisión de EL GESTOR y los gastos del apartado 5.3. Si el resultado fuese negativo, la diferencia será asumida por EL GESTOR y la liquidación a EL PROPIETARIO será de cero euros (0 €); en ningún caso se liquidará a EL PROPIETARIO un importe negativo.');
+  para('5.2. Correrán a cargo de EL PROPIETARIO, que los abonará directamente con independencia de la facturación del mes, los gastos de seguro del vehículo, mantenimiento (incluido el periódico), ITV, reparaciones y averías no causadas por un cliente, impuesto de circulación, neumáticos y frenos. Estos gastos no se descontarán en la liquidación.');
+  para('5.3. Se descontarán de la facturación del mes, antes de calcular la comisión, los gastos inherentes a la actividad de alquiler, tales como combustible, limpieza, comisiones y suscripciones de plataformas y aplicaciones, parking y peajes. No se descontará a EL PROPIETARIO ningún otro gasto. Las multas y sanciones generadas durante un alquiler correrán a cargo del cliente arrendatario.');
+  para('5.4. EL GESTOR percibirá como retribución una comisión del '+comision+'% sobre la facturación mensual, una vez descontados los gastos del apartado 5.3. Si en un mes el vehículo no genera facturación, o si el resultado de descontar dichos gastos es cero o negativo, no se devengará comisión alguna.');
+  para('5.5. Corresponderá a EL PROPIETARIO la facturación mensual, menos los gastos del apartado 5.3 y la comisión de EL GESTOR. Si el resultado fuese negativo, la diferencia será asumida por EL GESTOR y la liquidación a EL PROPIETARIO será de cero euros (0 €); en ningún caso se liquidará a EL PROPIETARIO un importe negativo.');
   para('5.6. La liquidación se realizará mensualmente. EL GESTOR presentará un resumen detallado con la facturación, los gastos descontados y la comisión. El pago a EL PROPIETARIO se efectuará mediante transferencia bancaria a la cuenta '+(owner.iban||'indicada por el propietario')+', en un plazo de '+plazo+'.');
 
   clauseHeader('Sexta','Obligaciones del propietario');
@@ -6375,23 +6377,26 @@ function _isOwnerPaid(v,e){return !!(v&&v.vtype==='managed'&&v.ownerId&&e&&e.typ
 function _plFins(v,fins){return fins.filter(e=>!_isOwnerPaid(v,e));}
 // Gasto que se descuenta en la liquidación. Coches en gestión con propietario: solo OWNER_DEDUCT_CATS (5.3). Resto: como antes.
 function _isOwnerDeduct(v,e){if(!e||e.type!=='expense')return false;if(v&&v.vtype==='managed'&&v.ownerId)return OWNER_DEDUCT_KEYS.includes(_catKey(e.category));return !_isOwnerPaid(v,e);}
-// Liquidación de UN mes (cláusulas 5.3-5.5). fins = movimientos de ese mes del coche.
+// Liquidación de UN mes (cláusulas 5.3-5.5). fins = movimientos de ese mes del coche; ym = 'AAAA-MM' de ese mes (si no se pasa, se toma de las fechas de fins).
+// Comisión: con propietario y ym >= COMM_RULE_FROM (#90), max(0, facturado − gastos 5.3) × %; antes (o sin propietario), facturado × %.
 // toOwner = max(0, facturado − comisión − gastos 5.3); si saldría negativo, el déficit lo asume el gestor: mgr = comisión − déficit.
-function _ownerSettle(v,fins){
+function _ownerSettle(v,fins,ym){
   const sum=a=>a.reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tI=sum(fins.filter(e=>e.type==='income'));
   const paid=sum(fins.filter(e=>_isOwnerPaid(v,e)));
   const tE=sum(fins.filter(e=>_isOwnerDeduct(v,e)));
   const other=sum(fins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)&&!_isOwnerDeduct(v,e))); // no se descuentan al propietario
-  const comm=(v.commission==null||v.commission===''?30:Number(v.commission)),commAmt=tI*comm/100,raw=tI-commAmt-tE;
+  if(!ym){const d=fins.find(e=>typeof e.date==='string');ym=d?d.date.slice(0,7):'';}
+  const net53=!!(v.ownerId&&(!ym||ym>=COMM_RULE_FROM)); // regla de #90 en este mes
+  const comm=(v.commission==null||v.commission===''?30:Number(v.commission)),base=net53?Math.max(0,tI-tE):tI,commAmt=base*comm/100,raw=tI-commAmt-tE;
   const deficit=(v.ownerId&&raw<0)?-raw:0;
-  return{tI,tE,paid,other,tP:tI-tE,comm,commAmt,toOwner:raw+deficit,deficit,mgr:commAmt-deficit};
+  return{tI,tE,paid,other,tP:tI-tE,comm,base,net53,commAmt,toOwner:raw+deficit,deficit,mgr:commAmt-deficit};
 }
 // Suma mes a mes de _ownerSettle (para acumulados y periodos de varios meses)
 function _settleTotals(v,fins){
   const by={};fins.forEach(e=>{if(typeof e.date!=='string')return;const m=e.date.slice(0,7);(by[m]=by[m]||[]).push(e);});
   const t={tI:0,tE:0,paid:0,other:0,tP:0,commAmt:0,toOwner:0,deficit:0,mgr:0,comm:(v.commission==null||v.commission===''?30:Number(v.commission))};
-  Object.values(by).forEach(f=>{const x=_ownerSettle(v,f);['tI','tE','paid','other','tP','commAmt','toOwner','deficit','mgr'].forEach(k=>{t[k]+=x[k];});});
+  Object.entries(by).forEach(([m,f])=>{const x=_ownerSettle(v,f,m);['tI','tE','paid','other','tP','commAmt','toOwner','deficit','mgr'].forEach(k=>{t[k]+=x[k];});});
   return t;
 }
 function tDays(v){return new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking)).size;}
@@ -8362,6 +8367,7 @@ function openAddEntry(){
       <div class="d-f"><label class="q" for="eDate">Fecha</label><input id="eDate" type="date" value="${esc(safeDate(today))}"/></div>
     </div>
     <div class="d-f"><label class="q" for="eCat">Categoría</label><select id="eCat" onchange="toggleMaintFields()">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    <div class="d-f" id="repCause" style="display:none"><label class="q" id="repCauseL">Causa</label><div class="d-seg" role="group" aria-labelledby="repCauseL"><button type="button" class="tap44" id="repDes" aria-pressed="true" onclick="setRepCause('Reparación')">Desgaste</button><button type="button" class="tap44" id="repCli" aria-pressed="false" onclick="setRepCause('Daño cliente')">Cliente</button></div><div class="d-hint">Desgaste: lo paga el propietario · Cliente: no se le carga al propietario</div></div>
     <div class="d-f"><label class="q" for="eDesc">Descripción</label><input id="eDesc" placeholder="Opcional" autocomplete="off"/></div>
     <div id="maintFields" style="display:none">
       <div class="al-h"><h3>Mantenimiento</h3>${ico('wrench')}</div>
@@ -8381,7 +8387,16 @@ function toggleMaintFields(){
   const fields=document.getElementById('maintFields');
   if(!cat||!fields)return;
   fields.style.display=(cat.value==='Mantenimiento periódico'||cat.value==='Mantenimiento')?'block':'none';
+  const rc=document.getElementById('repCause');
+  if(rc){
+    const isRep=cat.value==='Reparación'||cat.value==='Daño cliente';
+    rc.style.display=isRep?'':'none';
+    const d=document.getElementById('repDes'),c=document.getElementById('repCli');
+    if(d)d.setAttribute('aria-pressed',String(cat.value==='Reparación'));
+    if(c)c.setAttribute('aria-pressed',String(cat.value==='Daño cliente'));
+  }
 }
+function setRepCause(c){const cat=document.getElementById('eCat');if(!cat)return;cat.value=c;toggleMaintFields();}
 function swET(t){
   _etype=t;
   const inc=document.getElementById('tInc'),exp=document.getElementById('tExp'),cat=document.getElementById('eCat');
@@ -8390,6 +8405,7 @@ function swET(t){
   inc.setAttribute('aria-pressed',String(t==='income'));exp.setAttribute('aria-pressed',String(t!=='income'));
   if(t==='income'){cat.innerHTML=INC_CATS.map(c=>`<option>${c}</option>`).join('');}
   else{cat.innerHTML=EXP_CATS.map(c=>`<option>${c}</option>`).join('');}
+  toggleMaintFields();
 }
 function submitEntry(){
   const v=gV();if(!v)return;
@@ -8507,7 +8523,7 @@ function renderInfo(v){
     <div class="al-in"><div class="al-suf"><input type="number" id="commInput" value="${comm}" min="0" max="100" step="1" inputmode="decimal"/><span>%</span></div>
       <button class="btn-sec" onclick="saveComm('${escJs(v.id)}')">Guardar</button>
     </div>
-    <div class="d-hint">% del beneficio neto que va al negocio.</div></div>
+    <div class="d-hint">% de lo facturado en el mes, menos los gastos 5.3 (desde 11/2026), que va al negocio.</div></div>
     <div class="d-pills fl-cp">${[10,20,25,30,35,40,50].map(p=>`<button type="button" onclick="document.getElementById('commInput').value=${p}">${p}%</button>`).join('')}</div></div>`:''}
   <div class="fl-sec"><div class="al-h"><h3>Kilómetros</h3>${ico('odometer')}</div>
   ${(()=>{
@@ -8660,6 +8676,7 @@ function submitEditV(){
   const plate=(document.getElementById('evP')?.value||'').trim();
   if(!name||!plate){alert('Nombre y matrícula son obligatorios');return;}
   const newVtype=window._editVtype||v.vtype;
+  if(newVtype==='managed'&&!OW.some(o=>o.id===(document.getElementById('evOwner')?.value||v.ownerId))){alert('Un coche en gestión siempre tiene propietario: elígelo en «Propietario» antes de guardar (si aún no existe, créalo en Propietarios).');return;}
   v.name=name;
   v.plate=plate;
   v.make=(document.getElementById('evMake')?.value||'').trim();
@@ -9325,6 +9342,7 @@ function runComparison(){
 function saveMaintKm(id,val){const v=V.find(v=>v.id===id);if(!v)return;v.maint_km=val?String(parseInt(val)):'';save();renderDetail(document.getElementById('PC'));}
 function assignOwner(vId,ownerId){
   const v=V.find(v=>v.id===vId);if(!v)return;
+  if(v.vtype==='managed'&&!OW.some(o=>o.id===ownerId)){alert('Un coche en gestión siempre tiene propietario: elígelo en «Propietario» antes de guardar (si aún no existe, créalo en Propietarios).');renderDetail(document.getElementById('PC'));return;}
   v.ownerId=ownerId||null;save();renderDetail(document.getElementById('PC'));
 }
 function saveComm(id){const val=parseInt(document.getElementById('commInput').value);if(isNaN(val)||val<0||val>100){alert('0-100');return;}const v=V.find(v=>v.id===id);if(!v)return;v.commission=val;save();renderDetail(document.getElementById('PC'));}
@@ -9535,7 +9553,7 @@ function renderOwnerProfile(el){
   const totalE=vehicles.reduce((s,v)=>s+tExp(v),0);
   const totalP=totalI-totalE;
   const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
-  const toOwner=totalP*(1-avgComm/100);
+  const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0); // mismo cálculo que la lista de propietarios (cláusula Quinta)
   const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).length,0);
   const now=new Date().toISOString().slice(0,7);
   const isD=window.innerWidth>=768;
@@ -9647,6 +9665,7 @@ function submitEditOwner(id){
 function deleteOwner(id){
   const o=OW.find(o=>o.id===id);if(!o)return;
   const linked=V.filter(v=>v.ownerId===id).length;
+  const _mg=V.filter(v=>v.ownerId===id&&v.vtype==='managed');if(_mg.length){alert('No se puede eliminar a '+o.name+': tiene en gestión '+_mg.map(v=>v.name+' ('+v.plate+')').join(', ')+'. Un coche en gestión siempre tiene propietario: asigna antes esos coches a otro propietario o pásalos a propios.');return;}
   openSheet(`<div class="stitle">Eliminar propietario</div>
     <p class="ssub">¿Eliminar a <b>${esc(o.name)}</b>?${linked?` Tiene <b>${linked} vehículo${linked!==1?'s':''}</b> asignado${linked!==1?'s':''} — quedarán sin propietario.`:''}</p>
     <div class="d-acts al-end"><button class="btn-dang" onclick="confirmDeleteOwner('${escJs(id)}')">${ico('trash')} Eliminar</button>
@@ -9703,7 +9722,7 @@ function genOwnerReport(ownerId){
   // Calculate per-vehicle figures — incluye extras b.finance
   const vData=vehicles.map(v=>{
     const fins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month);
-    return{v,fins,..._ownerSettle(v,fins)}; // cláusula Quinta: gastos 5.3, comisión sobre lo facturado, mínimo 0
+    return{v,fins,..._ownerSettle(v,fins,month)}; // cláusula Quinta: gastos 5.3 y comisión según la regla del mes (COMM_RULE_FROM), mínimo 0
   });
 
   const totI=vData.reduce((s,d)=>s+d.tI,0);
@@ -9748,7 +9767,7 @@ function genOwnerReport(ownerId){
           <div>Beneficio<b class="${d.tP>=0?'cl-in':'ow-neg'}">${fmtE(d.tP)}</b></div>
         </div>
         <div class="al-l">
-          <div class="al-li"><span>Comisión DEIROS (${d.comm}%)<small>${fmtE(d.tI)} facturado × ${d.comm}%</small></span><b>${fmtE(d.commAmt)}</b></div>
+          <div class="al-li"><span>Comisión DEIROS (${d.comm}%)<small>${d.net53?`(${fmtE(d.tI)} facturado − ${fmtE(d.tE)} gastos 5.3) × ${d.comm}%`:`${fmtE(d.tI)} facturado × ${d.comm}%`}</small></span><b>${fmtE(d.commAmt)}</b></div>
           <div class="al-li"><span>Propietario</span><b>${fmtE(d.toOwner)}</b></div>
         </div>
         ${d.paid>0?`<p class="d-hint">Pagado directamente por el propietario (no se descuenta): ${fmtE(d.paid)}</p>`:''}
@@ -9780,7 +9799,7 @@ function dlOwnerReport(ownerId,month){
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const vData=vehicles.map(v=>{
     const fins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month);
-    return{v,fins,..._ownerSettle(v,fins)}; // cláusula Quinta: gastos 5.3, comisión sobre lo facturado, mínimo 0
+    return{v,fins,..._ownerSettle(v,fins,month)}; // cláusula Quinta: gastos 5.3 y comisión según la regla del mes (COMM_RULE_FROM), mínimo 0
   });
   const totOwner=vData.reduce((s,d)=>s+d.toOwner,0);
   const totComm=vData.reduce((s,d)=>s+d.commAmt,0);
@@ -10408,9 +10427,9 @@ function renderBiz(el){
 
   // ── EXPENSE SUBCATEGORY CHART ─────────────────────────────────
   const expCats={
-    'Mantenimiento':['Mantenimiento','Reparaci\u00f3n','ITV','Taller','Neumáticos','Aceite'],
+    'Mantenimiento':['Mantenimiento','Reparaci\u00f3n','Da\u00f1o cliente','ITV','Taller','Neumáticos','Aceite'],
     'Pr\u00e9stamos':['Pr\u00e9stamo','Financiaci\u00f3n','Cuota','Lease'],
-    'Seguros':['Seguro','P\u00f3liza'],
+    'Seguros':['Seguro','Franquicia','P\u00f3liza'],
     'Limpieza':['Limpieza','Lavado'],
     'Otros':[]
   };
@@ -10541,7 +10560,7 @@ function renderBiz(el){
   const managed=_getManagedCommissions();
   if(managed.length){
     h+=`<div class="al-h nb-gh"><h3>Gestión</h3><span class="q">Comisiones</span></div>
-    <div class="d-hint nb-gs">${bizMonth?bizMonth:'Todos los períodos'} · ingresos facturados × comisión%</div>
+    <div class="d-hint nb-gs">${bizMonth?bizMonth:'Todos los períodos'} · ${bizMonth&&bizMonth<COMM_RULE_FROM?'facturado × comisión%':'(facturado − gastos 5.3) × comisión%'+(bizMonth?'':' desde 11/2026; antes, facturado × comisión%')}</div>
     <input id="bizMgmtSearch" type="text" class="nb-gq" placeholder="Buscar vehículo..." oninput="renderBizMgmt()" autocomplete="off"/>
     <div id="bizMgmtList" class="nb-gl"></div>`;
   }
@@ -10651,11 +10670,11 @@ function exportGlobalExcel(){
   const months={};
   activeV.forEach(v=>{
     const isM=v.vtype==='managed';const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission)))/100:1;
-    // Misma fuente que Finanzas (sin cancelados duplicados). Gestionados: comisión = facturado del mes × comisión del vehículo
+    // Misma fuente que Finanzas (sin cancelados duplicados). Gestionados: comisión − déficit del mes según _ownerSettle (cláusula Quinta, regla del mes)
     const _vF=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry);
     if(isM){
       _vF.forEach(e=>{const m=e.date.slice(0,7);if(!months[m])months[m]={inc:0,exp:0,bizInc:0,bizExp:0};});
-      Object.keys(months).forEach(m=>{const f=_vF.filter(e=>e.date.slice(0,7)===m);if(f.length)months[m]._mComm=(months[m]._mComm||0)+_ownerSettle(v,f).mgr;});
+      Object.keys(months).forEach(m=>{const f=_vF.filter(e=>e.date.slice(0,7)===m);if(f.length)months[m]._mComm=(months[m]._mComm||0)+_ownerSettle(v,f,m).mgr;});
       return;
     }
     _vF.forEach(e=>{
@@ -10906,6 +10925,7 @@ function submitV(){
   const name=(document.getElementById('vN')?.value||'').trim();
   const plate=(document.getElementById('vP')?.value||'').trim();
   if(!name||!plate){alert('Nombre y matrícula son obligatorios');return;}
+  if(_vtype==='managed'&&!OW.some(o=>o.id===document.getElementById('vOwner')?.value)){alert('Un coche en gestión siempre tiene propietario: elígelo en «Propietario» antes de guardar (si aún no existe, créalo en Propietarios).');return;}
   // Use photo captured via pickNewVPhoto()
   const _photoData=window._newVPhoto||null;
   window._newVPhoto=null;
@@ -11013,14 +11033,14 @@ function buildMonthlyChart(v){
     const mF=fins.filter(e=>typeof e.date==='string'&&e.date.slice(0,7)===sk);
     const mInc=mF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mExp=mF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const mComm=mInc*(comm/100); // sobre lo facturado en el mes
-    const mOwner=_ownerSettle(v,mF).toOwner; // mínimo 0 si tiene propietario
+    const _ms=_ownerSettle(v,mF,sk),mComm=_ms.commAmt; // cláusula Quinta: desde COMM_RULE_FROM, max(0, facturado − gastos 5.3) × %; antes, facturado × %
+    const mOwner=_ms.toOwner; // mínimo 0 si tiene propietario
     const [sy,sm]=sk.split('-');
     const mLabel=(MON_S[parseInt(sm)-1]||'')+' '+sy;
-    // Comisión del mes como ficha técnica (sin rellenos morados): facturado × % = al negocio; queda para el propietario
+    // Comisión del mes como ficha técnica (sin rellenos morados): base (facturado, o facturado − gastos 5.3 desde COMM_RULE_FROM) × % = al negocio; queda para el propietario
     commRow=`<div class="d-card s fl-cm">
       <span class="q">Comisión · ${esc(mLabel)}</span>
-      <div class="spec c3 fl-c3"><div>Facturado<b class="ok">${fmtF(mInc)}</b></div><div>Comisión<b>${comm}%</b></div><div>Al negocio<b>${fmtF(mComm)}</b></div></div>
+      <div class="spec c3 fl-c3"><div>${_ms.net53?'Fact. − gastos':'Facturado'}<b class="ok">${fmtF(_ms.base)}</b></div><div>Comisión<b>${comm}%</b></div><div>Al negocio<b>${fmtF(mComm)}</b></div></div>
       <div class="fl-own"><span>Queda para el propietario</span><b style="color:${mOwner>=0?'var(--green)':'var(--red)'}">${fmtF(mOwner)}</b></div>
     </div>`;
   }
@@ -11049,7 +11069,7 @@ function _getBizEntriesWithMgmt(){
       (byMonth[m]=byMonth[m]||[]).push(e);
     });
     Object.entries(byMonth).forEach(([m,f])=>{
-      const commAmt=_ownerSettle(v,f).mgr; // comisión − déficit asumido (cláusula 5.5)
+      const commAmt=_ownerSettle(v,f,m).mgr; // comisión − déficit asumido (cláusula 5.5)
       if(commAmt!==0){
         entries.push({
           id:'biz_mgmt_'+v.id+'_'+m,
@@ -11105,8 +11125,9 @@ function genReport(vId){
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
   const isM=v.vtype==='managed';
   const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
-  const commAmt=isM?tI*(comm/100):null; // comisión sobre lo facturado en el mes (0 si no factura)
-  const toOwnerM=isM?_ownerSettle(v,fins).toOwner:null; // mínimo 0 si tiene propietario
+  const _st=isM?_ownerSettle(v,fins,month):null; // cláusula Quinta: desde COMM_RULE_FROM, max(0, facturado − gastos 5.3) × %; antes, facturado × %
+  const commAmt=isM?_st.commAmt:null,commBase=isM?_st.base:null;
+  const toOwnerM=isM?_st.toOwner:null; // mínimo 0 si tiene propietario
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const inc=fins.filter(e=>e.type==='income');
   const exp=fins.filter(e=>e.type==='expense');
@@ -11144,7 +11165,7 @@ function genReport(vId){
         <div class="d-ch"><span class="q ac">Liquidación comisión</span><span class="chip no-dot">${comm}%</span></div>
         <div class="al-l">
           <div class="al-li"><span>Beneficio neto</span><b class="${tP>=0?'cl-in':'ow-neg'}">${fmtE(tP)}</b></div>
-          <div class="al-li"><span>Comisión DEIROS (${comm}% de ${fmtE(tI)} facturado)</span><b>${fmtE(commAmt)}</b></div>
+          <div class="al-li"><span>Comisión DEIROS (${comm}% de ${fmtE(commBase)}${_st.net53?' = facturado − gastos 5.3':' facturado'})</span><b>${fmtE(commAmt)}</b></div>
         </div>
         <div class="d-kv rp-own"><span>Queda para el propietario</span><b class="${toOwnerM>=0?'cl-in':'ow-neg'}">${fmtE(toOwnerM)}</b></div>
       </div>`:''}
@@ -11383,8 +11404,9 @@ function dlReport(vId,month){
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
   const isM=v.vtype==='managed';
   const comm=isM?((v.commission==null||v.commission===''?30:Number(v.commission))):null;
-  const commAmt=isM?tI*(comm/100):null; // comisión sobre lo facturado en el mes (0 si no factura)
-  const toOwnerM=isM?_ownerSettle(v,fins).toOwner:null; // mínimo 0 si tiene propietario
+  const _st=isM?_ownerSettle(v,fins,month):null; // cláusula Quinta: desde COMM_RULE_FROM, max(0, facturado − gastos 5.3) × %; antes, facturado × %
+  const commAmt=isM?_st.commAmt:null,commBase=isM?_st.base:null;
+  const toOwnerM=isM?_st.toOwner:null; // mínimo 0 si tiene propietario
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
   const incRows=fins.filter(e=>e.type==='income');
   const expRows=fins.filter(e=>e.type==='expense');
@@ -11420,7 +11442,7 @@ function dlReport(vId,month){
     if(y>240){doc.addPage();y=PDFS.TOP;}else y+=6;
     y=_pdfSection(doc,margin,cW,y,'LIQUIDACIÓN COMISIÓN ('+comm+'%)',106,13,173);
     [['Beneficio neto',fmtE(tP),tP>=0?[4,120,87]:[185,28,28]],
-     ['Comisión DEIROS ('+comm+'% de '+fmtE(tI)+' facturado)',fmtE(commAmt),[106,13,173]],
+     ['Comisión DEIROS ('+comm+'% de '+fmtE(commBase)+(_st.net53?' = facturado - gastos 5.3)':' facturado)'),fmtE(commAmt),[106,13,173]],
      ['Queda para el propietario',fmtE(toOwnerM),toOwnerM>=0?[4,120,87]:[185,28,28]]
     ].forEach(([l,val,col])=>{
       doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);doc.text(l,margin+3,y+5);
