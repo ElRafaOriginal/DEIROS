@@ -6410,7 +6410,7 @@ function bizContrib(v){
 function getAlerts(){
   const now=new Date();
   const dateAlerts=V.filter(v=>!v.archived).flatMap(v=>
-    ALERT_FIELDS.map(([f,l,ic])=>{
+    [...ALERT_FIELDS,['maint_date','Revisión','wrench']].map(([f,l,ic])=>{
       if(!v[f])return null;
       const days=Math.ceil((new Date(v[f])-now)/864e5);
       if(days>60)return null;
@@ -6567,7 +6567,7 @@ function renderDash(el){
     mE+=mF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   });
   const mP=mI-mE;
-  const mBks=activeV.reduce((s,v)=>s+(v.bookings||[]).filter(b=>b.startDate.startsWith(curM)).length,0);
+  const mBks=activeV.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.startsWith(curM)).length,0);
 
   // ── ALL-TIME totals ──
   const bizI=BF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -6576,7 +6576,7 @@ function renderDash(el){
   const vE=activeV.reduce((s,v)=>s+tExp(v),0);
   const tI=vI+bizI,tE=vE+bizE,tP=tI-tE;
   const totalDays=activeV.reduce((s,v)=>s+tDays(v),0);
-  const totalBk=activeV.reduce((s,v)=>s+(v.bookings||[]).length,0);
+  const totalBk=activeV.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0);
   const alerts=getAlerts();
   const MON_LABEL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][now.getMonth()];
 
@@ -6586,7 +6586,7 @@ function renderDash(el){
     getaround:{label:'Getaround',icon:'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8B5CF6;vertical-align:middle;margin-right:5px"></span>',inc:0,n:0},
     sinapp:{label:'Sin app',icon:'<span style="margin-right:5px">'+ico('handshake')+'</span>',inc:0,n:0}
   };
-  activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(pd[b.platform]){pd[b.platform].inc+=Number(b.amount)||0;pd[b.platform].n++;}}));
+  activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(pd[b.platform]){const _c=b.cancelled||b.cancellation;pd[b.platform].inc+=_c?_bookingRealTotal(b):Number(b.amount)||0;if(!_c)pd[b.platform].n++;}})); // cancelado: suma su penalización neta y no cuenta como alquiler (como el informe PDF)
   const platTotal=Object.values(pd).reduce((s,p)=>s+p.inc,0)||1;
 
   let h='<div class="anim">';
@@ -6625,7 +6625,7 @@ function renderDash(el){
         yrE+=yF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
       });
       const yrP=yrI-yrE;
-      const yrBks=activeV.reduce((s,v)=>s+(v.bookings||[]).filter(b=>b.startDate.startsWith(yrStr)).length,0);
+      const yrBks=activeV.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.startsWith(yrStr)).length,0);
       return '<div class="spec">'
         +'<div><i class="dt dt-ok"></i>INGRESOS '+yr+'<b>'+fmt(yrI)+'</b></div>'
         +'<div><i class="dt dt-err"></i>GASTOS '+yr+'<b>'+fmt(yrE)+'</b></div>'
@@ -6783,7 +6783,7 @@ function renderDash(el){
         if(period==='monthly'&&m!==ym)return;
         if(period==='quarterly'&&(m<qStart||m>qEnd))return;
         if(period==='annual'&&!m.startsWith(String(y)))return;
-        pd2[b.platform].inc+=Number(b.amount)||0;pd2[b.platform].n++;
+        const _c=b.cancelled||b.cancellation;pd2[b.platform].inc+=_c?_bookingRealTotal(b):Number(b.amount)||0;if(!_c)pd2[b.platform].n++;
       }));
       return pd2;
     }
@@ -6918,7 +6918,7 @@ function renderListBody(){
       // Compact: en móvil, lista técnica (filas con línea); en escritorio, tabla
       const hoy=todayStr();
       const getVStatus=v=>{
-        const bks=v.bookings||[];
+        const bks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation);
         const inProgress=bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
         if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')}<span>${esc(inProgress.clientName||'En alquiler')}</span></span>`,row:`<span class="chip chip-amber">Alquilado</span><span class="fl-cl">${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
         const nextB=bks.filter(b=>b.startDate>hoy).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
@@ -8954,14 +8954,15 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     if(fromMonth&&m<fromMonth)return;
     if(toMonth&&m>toMonth)return;
     periodBks.push({...b,amount:_bookingRealTotal(b),vname:v.name,vcolor:v.color||'#8B5CF6',vid:v.id});
-    if(b.clientDni)periodClients.add(b.clientDni);
-    else if(b.clientName)periodClients.add(b.clientName);
+    if(!b.cancelled&&!b.cancellation){if(b.clientDni)periodClients.add(b.clientDni);
+    else if(b.clientName)periodClients.add(b.clientName);}
   }));
   const totalI=allE.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const totalEx=allE.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const totalP=totalI-totalEx;
   const totalBk=periodBks.filter(b=>!b.cancelled).length;
-  const totalDays=periodBks.filter(b=>!b.cancelled).reduce((s,b)=>s+daysBetween(b.startDate,b.endDate),0);
+  const vDays={};activeV.forEach(v=>{vDays[v.id]=new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>{const m=d.slice(0,7);return(!fromMonth||m>=fromMonth)&&(!toMonth||m<=toMonth);})).size;}); // días ocupados de cada coche dentro del periodo (incluido el de devolución), como la ocupación de Analítica
+  const totalDays=Object.values(vDays).reduce((s,n)=>s+n,0);
   const totalClients=periodClients.size;
   const margin_pct=totalI>0?Math.round(totalP/totalI*100):0;
   const avgPerBk=totalBk>0?totalI/totalBk:0;
@@ -9057,7 +9058,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     ['GASTOS',fE(totalEx),null,RED],
     ['BENEFICIO NETO',fE(totalP),totalP>=0?'Positivo':'Negativo',totalP>=0?GREEN:RED],
     ['ALQUILERES',String(totalBk),'Ticket medio '+fE(avgPerBk),BLUE],
-    ['DÍAS FACTURADOS',String(totalDays),totalBk>0?(totalDays/totalBk).toFixed(1)+'d por alquiler':null,PURPLE],
+    ['DÍAS OCUPADOS',String(totalDays),totalBk>0?(totalDays/totalBk).toFixed(1)+'d por alquiler':null,PURPLE],
     ['CLIENTES ÚNICOS',String(totalClients),'En el período',AMBER],
   ];
   kpis.forEach(([t,v,s,clr],i)=>{
@@ -9097,7 +9098,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   if(y>248)y=newPage();
   y=secTitle('Desglose por plataforma',y);
   const platData={amovens:{label:'Amovens',bks:0,amt:0},getaround:{label:'Getaround',bks:0,amt:0},sinapp:{label:'Sin app',bks:0,amt:0}};
-  periodBks.forEach(b=>{if(platData[b.platform]){platData[b.platform].bks++;platData[b.platform].amt+=Number(b.amount)||0;}});
+  periodBks.forEach(b=>{if(platData[b.platform]){if(!b.cancelled&&!b.cancellation)platData[b.platform].bks++;platData[b.platform].amt+=Number(b.amount)||0;}});
   const platMaxAmt=Math.max(1,...Object.values(platData).map(p=>p.amt));
   const pBoxW=(cW-8)/3;
   Object.values(platData).forEach((p,i)=>{
@@ -9184,7 +9185,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   const vStats={};
   periodBks.forEach(b=>{
     if(!vStats[b.vid])vStats[b.vid]={bks:0,amt:0,days:0,name:b.vname,color:b.vcolor};
-    vStats[b.vid].amt+=Number(b.amount)||0;if(!b.cancelled){vStats[b.vid].bks++;vStats[b.vid].days+=daysBetween(b.startDate,b.endDate);}
+    vStats[b.vid].amt+=Number(b.amount)||0;if(!b.cancelled){vStats[b.vid].bks++;}
   });
   const vExps={};
   V.filter(v=>!v.archived).forEach(v=>(v.finances||[]).filter(e=>e.type==='expense').forEach(e=>{
@@ -9193,8 +9194,8 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     if(!vExps[v.id])vExps[v.id]=0;vExps[v.id]+=Number(e.amount)||0;
   }));
   const vList=activeV.map(v=>({...v,...(vStats[v.id]||{bks:0,amt:0,days:0,name:v.name,color:v.color||'#8B5CF6'}),exp:vExps[v.id]||0}))
-    .map(v=>({...v,profit:v.amt-v.exp,rpd:v.days>0?v.amt/v.days:0}))
-    .filter(v=>v.bks>0||v.exp>0).sort((a,b)=>b.amt-a.amt);
+    .map(v=>({...v,days:vDays[v.id]||0})).map(v=>({...v,profit:v.amt-v.exp,rpd:v.days>0?v.amt/v.days:0}))
+    .filter(v=>v.bks>0||v.exp>0||v.days>0).sort((a,b)=>b.amt-a.amt);
   const maxAmt=Math.max(1,...vList.map(v=>v.amt));
 
   vList.forEach((v,i)=>{
@@ -9263,7 +9264,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   periodBks.forEach(b=>{
     const key=b.clientDni||b.clientName||'Sin datos';
     if(!clientMap[key])clientMap[key]={name:b.clientName||key,bks:0,amt:0};
-    clientMap[key].bks++;clientMap[key].amt+=Number(b.amount)||0;
+    if(!b.cancelled&&!b.cancellation)clientMap[key].bks++;clientMap[key].amt+=Number(b.amount)||0;
   });
   const topClients=Object.values(clientMap).sort((a,b)=>b.amt-a.amt).slice(0,10);
   const maxCA=Math.max(1,...topClients.map(cl=>cl.amt));
@@ -9300,7 +9301,7 @@ function runComparison(){
     V.filter(v=>!v.archived).forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate.startsWith(m)&&!b.cancelled&&!b.cancellation)bks.push(b);}));
     const inc=entries.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const exp=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const days=bks.reduce((s,b)=>s+daysBetween(b.startDate,b.endDate),0);
+    const days=V.filter(v=>!v.archived).reduce((s,v)=>s+new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.startsWith(m))).size,0); // días ocupados de cada coche en este mes (incluido el de devolución), como la ocupación de Analítica
     const clients=new Set(bks.map(b=>b.clientDni||b.clientName).filter(Boolean)).size;
     return{inc,exp,profit:inc-exp,bks:bks.length,days,clients,margin:inc>0?Math.round((inc-exp)/inc*100):0};
   }
@@ -9320,7 +9321,7 @@ function runComparison(){
     ['Beneficio',fmt(sA.profit),fmt(sB.profit),diff(sA.profit,sB.profit,false)],
     ['Margen',sA.margin+'%',sB.margin+'%',diff(sA.margin,sB.margin,false)],
     ['Alquileres',sA.bks,sB.bks,diff(sA.bks,sB.bks,false)],
-    ['Días facturados',sA.days,sB.days,diff(sA.days,sB.days,false)],
+    ['Días ocupados',sA.days,sB.days,diff(sA.days,sB.days,false)],
     ['Clientes únicos',sA.clients,sB.clients,diff(sA.clients,sB.clients,false)],
   ];
   // Tabla limpia: cabecera mono, filas con línea fina, cifras en texto (antes azul/ámbar por periodo) y la variación en verde/rojo
@@ -9486,7 +9487,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
   const toOwner=totalP*(1-avgComm/100);
   const totalDays=vehicles.reduce((s,v)=>s+tDays(v),0);
-  const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).length,0);
+  const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0);
   const now=new Date().toISOString().slice(0,7);
 
   let h=`<div class="stitle">${ico('user')} ${esc(owner.name)}</div>
@@ -9556,7 +9557,7 @@ function renderOwnerProfile(el){
   const totalP=totalI-totalE;
   const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
   const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0); // mismo cálculo que la lista de propietarios (cláusula Quinta)
-  const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).length,0);
+  const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0);
   const now=new Date().toISOString().slice(0,7);
   const isD=window.innerWidth>=768;
 
@@ -9917,7 +9918,7 @@ function buildFlotaRightPanel(){
   const totalI=activeV.reduce((s,v)=>s+tInc(v),0);
   const totalE=activeV.reduce((s,v)=>s+tExp(v),0);
   const totalDays=activeV.reduce((s,v)=>s+tDays(v),0);
-  const totalBk=activeV.reduce((s,v)=>s+(v.bookings||[]).length,0);
+  const totalBk=activeV.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0);
   // Type breakdown
   const typeCount=VTYPES.map(t=>({...t,count:activeV.filter(v=>(v.vehicle_type||'turismo')===t.id).length})).filter(t=>t.count>0);
   return `<div>
@@ -10302,8 +10303,8 @@ function _renderWizardStep(){
     <div style="display:flex;flex-direction:column;gap:8px">`;
     activeV.forEach(v=>{
       const today=todayStr();
-      const activeB=(v.bookings||[]).find(b=>b.startDate<=today&&b.endDate>=today);
-      const nextB=(v.bookings||[]).filter(b=>b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
+      const activeB=(v.bookings||[]).find(b=>!b.cancelled&&!b.cancellation&&b.startDate<=today&&b.endDate>=today);
+      const nextB=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate>today).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
       const statusTxt=activeB?`<span class="chip chip-amber">${ico('key')}<span>En alquiler · ${esc(activeB.clientName||'cliente')}</span></span>`:nextB?`<span class="chip chip-blue"><span>Próx. ${esc(fmtDMY(nextB.startDate))}</span></span>`:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`;
       h+=`<div class="pk" onclick="_ctWizVid='${escJs(v.id)}';_ctWizStep=2;_renderWizardStep()">
         <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
@@ -11509,7 +11510,7 @@ function exportExcel(vId){
   XLSX.utils.book_append_sheet(wb,ws2,'Alquileres');
   const tI=_xlsFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=_xlsFins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
-  const resRows=[['RESUMEN',v.name],['Matrícula',v.plate],['Modelo',v.model||''],['Combustible',v.fuel||''],['Km',v.km||''],[''],['Ingresos totales',tI],['Gastos totales',tE],['Beneficio neto',tI-tE],[''],['Alquileres totales',(v.bookings||[]).length],['Días alquilados',tDays(v)]];
+  const resRows=[['RESUMEN',v.name],['Matrícula',v.plate],['Modelo',v.model||''],['Combustible',v.fuel||''],['Km',v.km||''],[''],['Ingresos totales',tI],['Gastos totales',tE],['Beneficio neto',tI-tE],[''],['Alquileres totales',(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length],['Días alquilados',tDays(v)]];
   const ws3=XLSX.utils.aoa_to_sheet(resRows);ws3['!cols']=[{wch:20},{wch:20}];
   XLSX.utils.book_append_sheet(wb,ws3,'Resumen');
   const modelPart=(v.model||v.name).replace(/\s+/g,'_');
@@ -11882,7 +11883,7 @@ function checkReturnNotifs(){
   const tStr=addDays(todayStr(),1);
   const returning=[];
   V.filter(v=>!v.archived).forEach(v=>(v.bookings||[]).forEach(b=>{
-    if(b.endDate===tStr)returning.push({vname:v.name,client:b.clientName||'',time:b.endTime||''});
+    if(b.endDate===tStr&&!b.cancelled&&!b.cancellation)returning.push({vname:v.name,client:b.clientName||'',time:b.endTime||''});
   }));
   if(returning.length){
     showNotif(
