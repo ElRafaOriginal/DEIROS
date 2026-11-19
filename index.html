@@ -2798,14 +2798,14 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   const _dt=doc.text.bind(doc);
   doc.text=(t,...a)=>_dt(Array.isArray(t)?t.map(x=>_s(x)):typeof t==='string'?_s(t):t,...a);
 
-  // Paleta de colores
-  const DARK=[18,10,35],PURPLE=[106,13,173],LPURPLE=[200,185,255],GOLD=[255,215,0];
-  const GREEN=[4,120,87],LGREEN=[200,245,235],DGREEN=[10,130,90];
-  const RED=[185,28,28],LRED=[255,215,215],DRED=[180,40,40];
-  const AMBER=[180,83,9],LAMBER=[255,240,200],DAMBER=[146,64,14];
-  const BLUE=[29,78,216],LBLUE=[215,235,255],DBLUE=[30,90,200];
-  const LPURPLE2=[230,222,248],DPURPLE=[80,40,160];
-  const BORDER=[218,212,232],BGROW=[248,246,255],GRAY=[100,90,120];
+  // Paleta de colores: la común de los PDF (PDFS). El azul pasa a morado y el ámbar a dorado oscuro; los tonos claros ya no se usan
+  const DARK=PDFS.K,PURPLE=PDFS.P,LPURPLE=PDFS.LN,GOLD=PDFS.G;
+  const GREEN=PDFS.OK,LGREEN=PDFS.LN,DGREEN=PDFS.OK;
+  const RED=PDFS.KO,LRED=PDFS.LN,DRED=PDFS.KO;
+  const AMBER=PDFS.GT,LAMBER=PDFS.LN,DAMBER=PDFS.GT;
+  const BLUE=PDFS.P,LBLUE=PDFS.LN,DBLUE=PDFS.P;
+  const LPURPLE2=PDFS.LN,DPURPLE=PDFS.P;
+  const BORDER=PDFS.LN,BGROW=PDFS.LN,GRAY=PDFS.T2;
 
   // ══ CALCULOS ════════════════════════════════════════════════════════════
   // Meses del periodo
@@ -2946,16 +2946,16 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   // Barra horizontal proporcional: carril de filete fino y barra fina (sin píldoras rellenas)
   function _hbar(x,yy,w,h,pct,colFill,colEmpty){
     const t=Math.min(h,1.4),ty=yy+(h-t)/2;
-    doc.setDrawColor(210,210,210);doc.setLineWidth(0.2);doc.line(x,ty+t/2,x+w,ty+t/2);
+    doc.setDrawColor(...PDFS.GR);doc.setLineWidth(0.2);doc.line(x,ty+t/2,x+w,ty+t/2);
     if(pct>0){doc.setFillColor(...colFill);doc.rect(x,ty,Math.max(w*Math.min(pct,100)/100,0.8),t,'F');}
   }
 
-  // Cabecera de sección: título en mono del color de la sección y filete fino con arranque de color (sin banda)
+  // Cabecera de sección: título en mono morado y filete fino con arranque morado, como en los contratos (sin banda; lc, lbg y tc ya no se usan)
   function _sect(title,lc,lbg,tc){
-    doc.setFontSize(7.5);doc.setFont('jbm','bold');doc.setTextColor(...tc);
+    doc.setFontSize(7.5);doc.setFont('jbm','bold');doc.setTextColor(...PDFS.P);
     doc.text(title,mg,y+5);
     doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);doc.line(mg,y+7,mg+cW,y+7);
-    doc.setDrawColor(...lc);doc.setLineWidth(0.8);doc.line(mg,y+7,mg+10,y+7);doc.setLineWidth(0.2);
+    doc.setDrawColor(...PDFS.P);doc.setLineWidth(0.8);doc.line(mg,y+7,mg+10,y+7);doc.setLineWidth(0.2);
     doc.setFont('helvetica','normal');
     y+=10;
   }
@@ -2976,7 +2976,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const h=rh||7;
     cells.forEach(([txt,x,a,col,bold])=>{
       doc.setFontSize(7.5);doc.setFont('helvetica',bold?'bold':'normal');
-      doc.setTextColor(...(col||[40,30,70]));
+      doc.setTextColor(...(col||PDFS.T));
       if(txt!==null&&txt!==undefined)doc.text(String(txt),x,y+h*0.6,{align:a||'left'});
     });
     doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+h,mg+cW,y+h);
@@ -2997,7 +2997,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   // Nueva página: raya dorada y título en Syne
   function _addPage(subtitle){
     doc.addPage();
-    doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(mg,PDFS.TOP-5,mg+10,PDFS.TOP-5);doc.setLineWidth(0.2);
+    doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(mg,PDFS.TOP-5,mg+10,PDFS.TOP-5);doc.setLineWidth(0.2);
     doc.setFontSize(11);doc.setFont('syne','bold');doc.setTextColor(...PDFS.K);
     doc.text('INFORME ANALÍTICAS'+( subtitle?' — '+subtitle:''),mg,PDFS.TOP+1);
     doc.setFont('helvetica','normal');
@@ -3063,7 +3063,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const colW=(cW-8)/3;
     const cols=[
       ['PROPIOS ('+_ownMs.length+' veh.)','Beneficio 100%',fE(_ownProfit),_ownProfit>=0?GREEN:RED],
-      ['GESTIÓN ('+_mgdMs.length+' veh.)','Comisión menos déficit asumido',fE(_mgdShare),[103,58,183]],
+      ['GESTIÓN ('+_mgdMs.length+' veh.)','Comisión menos déficit asumido',fE(_mgdShare),PDFS.P2],
       ['BFO. REAL DEL NEGOCIO','propios + (comisión menos déficit asumido)',fE(bizTotProfit),bizTotProfit>=0?GREEN:RED],
     ];
     cols.forEach(([lbl,sub,val,col],ci)=>{
@@ -3093,7 +3093,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     _safeAddPage(8,'RESUMEN');
     const oc=m.occ;const ocCol=oc>=70?GREEN:oc>=40?AMBER:RED;
     _tblR([
-      ['#'+(i+1),mg+3,'left',[103,58,183],true],
+      ['#'+(i+1),mg+3,'left',PDFS.P2,true],
       [_vehLbl(m.v.name,m.v.plate,' · ',m.v.vtype==='managed'?' ●':'',34),mg+12,'left'],
       [m.pBks,mg+80,'right'],
       [m.pDays+'d',mg+97,'right'],
@@ -3119,11 +3119,11 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const isGest=m.v.vtype==='managed';
       const comm=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));
       _tblR([
-        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-3-(mg+3),true),mg+3,'left',isGest?[103,58,183]:[20,15,40],true],
+        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-3-(mg+3),true),mg+3,'left',isGest?PDFS.P2:PDFS.T,true],
         [fE(m.pInc),mg+62,'right',GREEN],
         [fE(m.pExp),mg+92,'right',RED],
         [fE(prof),mg+128,'right',prof>=0?GREEN:RED,false],
-        [isGest?fE(m.bizShare):'—',mg+163,'right',isGest?[103,58,183]:(prof>=0?GREEN:RED),isGest],
+        [isGest?fE(m.bizShare):'—',mg+163,'right',isGest?PDFS.P2:(prof>=0?GREEN:RED),isGest],
         [String(m.pBks),W-mg,'right'],
       ],i%2===1);
     });
@@ -3148,7 +3148,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       _safeAddPage(8,'RESUMEN');
       const prof=m.pProfit;
       _tblR([
-        [_vehLbl(m.v.name,m.v.plate,' ','',28),mg+3,'left',[20,15,40],true],
+        [_vehLbl(m.v.name,m.v.plate,' ','',28),mg+3,'left',PDFS.T,true],
         [fE(m.pInc),mg+76,'right',GREEN],
         [fE(m.pExp),mg+108,'right',RED],
         [fE(prof),mg+145,'right',prof>=0?GREEN:RED,true],
@@ -3180,7 +3180,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const roiCol=m.roi===null?GRAY:m.roi>=100?GREEN:m.roi>=50?AMBER:RED;
       const pend=Math.max(0,m.pp-m.allProfit);
       _tblR([
-        [_vehLbl(m.v.name,m.v.plate,' ','',26),mg+3,'left',[20,15,40],true],
+        [_vehLbl(m.v.name,m.v.plate,' ','',26),mg+3,'left',PDFS.T,true],
         [fE(m.pp),mg+66,'right',GRAY],
         [fE(m.allProfit),mg+104,'right',m.allProfit>=0?GREEN:RED],
         [m.paidOff?'AMORTIZADO':fE(pend),mg+144,'right',m.paidOff?GREEN:AMBER],
@@ -3209,7 +3209,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   doc.setFontSize(20);doc.setFont('helvetica','bold');doc.setTextColor(...occCol);
   doc.text(globalOcc+'%',W-mg-4,y+13,{align:'right'});
   y+=18;
-  _hbar(mg,y,cW,5,globalOcc,occCol,[220,225,240]);
+  _hbar(mg,y,cW,5,globalOcc,occCol,PDFS.LN);
   doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
   doc.text('0%',mg,y+8);doc.text('50%',mg+cW/2,y+8,{align:'center'});doc.text('100%',W-mg,y+8,{align:'right'});
   y+=12;
@@ -3221,7 +3221,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     _safeAddPage(8,'OCUPACIÓN');
     const oc=m.occ;const bc=oc>=70?GREEN:oc>=40?AMBER:RED;
     const vlbl=_vehLbl(m.v.name,m.v.plate,' · ',m.v.vtype==='managed'?' (G)':'',28);
-    doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(30,25,50);
+    doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
     doc.text(vlbl,mg,y+3.5);
     doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
     doc.text(m.pDays+'d / '+periodDim+'d',mg+70,y+3.5,{align:'right'});
@@ -3264,7 +3264,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   metrics.forEach((m,i)=>{
     _safeAddPage(8,'TARIFAS');
     _tblR([
-      [_vehLbl(m.v.name,m.v.plate,' ','',26),mg+3,'left',[20,15,40],true],
+      [_vehLbl(m.v.name,m.v.plate,' ','',26),mg+3,'left',PDFS.T,true],
       [fE(m.avgP),mg+68,'right',AMBER],
       [fE(m.rpdInc),mg+106,'right',GREEN],
       [m.avgDur+'d',mg+140,'right',BLUE],
@@ -3300,20 +3300,20 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       // (sin sombreado alterno: el filete fino de abajo separa las filas)
       // Punto de color
       doc.setFillColor(...pc);doc.circle(mg+4,y+4.5,2,'F');
-      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(30,25,50);
+      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
       doc.text(d.label,mg+9,y+5.5);
       doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
       doc.text(String(d.count),mg+52,y+5.5,{align:'right'});
       // Barra %bk (28mm desde mg+56)
       _hbar(mg+56,y+2,28,5,pctBk,pc);
-      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(25,25,25);
+      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
       doc.text(pctBk+'%',mg+88,y+5.5,{align:'left'});
       // Ingresos
       doc.setTextColor(...GREEN);
       doc.text(fE(d.inc),mg+128,y+5.5,{align:'right'});
       // Barra %inc (28mm desde mg+133)
-      _hbar(mg+133,y+2,28,5,pctInc,[16,185,129]);
-      doc.setTextColor(10,130,90);doc.setFont('helvetica','bold');
+      _hbar(mg+133,y+2,28,5,pctInc,PDFS.OK);
+      doc.setTextColor(...PDFS.OK);doc.setFont('helvetica','bold');
       doc.text(pctInc+'%',W-mg,y+5.5,{align:'right'});
       doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+9,mg+cW,y+9);
       y+=9;
@@ -3345,13 +3345,13 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const ec=expColors[i%expColors.length];
       // (sin sombreado alterno: el filete fino de abajo separa las filas)
       doc.setFillColor(...ec);doc.circle(mg+4,y+3.5,2,'F');
-      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(30,25,50);
+      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
       doc.text(cat.substring(0,26),mg+9,y+4.5);
       doc.setFont('helvetica','normal');doc.setTextColor(...DRED);
       doc.text(fE(amt),mg+60,y+4.5,{align:'right'});
-      doc.setTextColor(25,25,25);doc.setFont('helvetica','bold');
+      doc.setTextColor(...PDFS.T);doc.setFont('helvetica','bold');
       doc.text(pct+'%',mg+78,y+4.5);
-      _hbar(mg+96,y+1.5,Math.min(barW,cW-96),4,pct,ec,[240,225,225]);
+      _hbar(mg+96,y+1.5,Math.min(barW,cW-96),4,pct,ec,PDFS.LN);
       doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+7,mg+cW,y+7);
       y+=7;
     });
@@ -3401,7 +3401,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     validDead.forEach((d,i)=>{
       _safeAddPage(7,'EFICIENCIA');
       const dc=d.avg<=2?GREEN:d.avg<=5?AMBER:RED;
-      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(30,25,50);
+      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
       doc.text(_vehLbl(d.v.name,d.v.plate,' · ','',28),mg+3,y+4);
       doc.setFont('helvetica','bold');doc.setTextColor(...dc);
       doc.text(d.avg+'d ('+d.gaps+' int.)',W-mg,y+4,{align:'right'});
@@ -3429,7 +3429,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const lblLines=lbl.split('\n');
     doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(...col);
     lblLines.forEach((l,li)=>doc.text(l,dx+dw/2,dy+8+li*5,{align:'center'}));
-    doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(20,15,40);
+    doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
     doc.text(String(grp.length),dx+dw/2,dy+23,{align:'center'});
     doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
     doc.text('alq. - '+pct+'% - media: '+fE(durAvg(grp)),dx+dw/2,dy+29,{align:'center'});
@@ -3531,7 +3531,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       // (sin sombreado alterno: el filete fino de abajo separa las filas)
       doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
       doc.text(String(i+1),mg+3,y+4.5);
-      doc.setFont('helvetica','normal');doc.setTextColor(20,15,40);
+      doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
       doc.text(c.name.substring(0,34),mg+13,y+4.5);
       if(isRec){
         doc.setDrawColor(...PURPLE);doc.setLineWidth(0.3);doc.roundedRect(mg+109,y+1.5,20,4,1,1,'S');doc.setLineWidth(0.2);
@@ -3565,7 +3565,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
         doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(tx,ry+5,tx+tvW,ry+5);
         doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
         doc.text(l,tx+4,ry+3.5);
-        doc.setFont('helvetica','bold');doc.setTextColor(20,15,40);
+        doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
         doc.text(v,tx+tvW-4,ry+3.5,{align:'right'});
       });
     });
@@ -3588,7 +3588,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
       const mBk=filtered.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.startsWith(mk)).length,0);
       const mP=mI-mE;
       _tblR([
-        [MON_ES[parseInt(mo2)-1]+' '+yr2,mg+3,'left',[30,60,120],true],
+        [MON_ES[parseInt(mo2)-1]+' '+yr2,mg+3,'left',PDFS.T,true],
         [fE(mI),mg+62,'right',GREEN],[fE(mE),mg+100,'right',RED],
         [fE(mP),mg+142,'right',mP>=0?GREEN:RED,true],[String(mBk),W-mg,'right'],
       ],i%2===1);
@@ -5616,7 +5616,7 @@ function generateContractPDF(vId,bookingId){
   y=_hdr(DOCNAME,co.nombre);y+=6;
 
   // TITLE (raya dorada, Syne alineado a la izquierda y filete negro)
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(mg,y-6,mg+10,y-6);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(mg,y-6,mg+10,y-6);doc.setLineWidth(0.2);
   doc.setFont('syne','bold');{let _ts=16;doc.setFontSize(_ts);while(doc.getTextWidth(DOCNAME)>cW&&_ts>10){_ts-=0.5;doc.setFontSize(_ts);}}
   doc.setTextColor(...PDFS.K);doc.text(DOCNAME,mg,y+2);y+=9;
   doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...MID);
@@ -5700,7 +5700,7 @@ function generateContractPDF(vId,bookingId){
 
   // ANNEXE
   addPage();
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(mg,y,mg+10,y);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(mg,y,mg+10,y);doc.setLineWidth(0.2);
   doc.setFontSize(12);doc.setFont('syne','bold');doc.setTextColor(...PDFS.K);
   doc.text('ANEXO — DATOS TÉCNICOS Y ECONÓMICOS',mg,y+8);y+=16;
   doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...MID);
@@ -5936,7 +5936,7 @@ function generateMgmtContractPDF(ownerId,vIdParam){
   function addPage(){doc.addPage();y=_hdr(DOCNAME,gestor.nombre);}
   y=_hdr(DOCNAME,gestor.nombre);y+=6;
 
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(mg,y-6,mg+10,y-6);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(mg,y-6,mg+10,y-6);doc.setLineWidth(0.2);
   doc.setFont('syne','bold');{let _ts=16;doc.setFontSize(_ts);while(doc.getTextWidth(DOCNAME)>cW&&_ts>10){_ts-=0.5;doc.setFontSize(_ts);}}
   doc.setTextColor(...PDFS.K);doc.text(DOCNAME,mg,y+2);y+=9;
   doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...MID);
@@ -8949,10 +8949,10 @@ function dlMaintReport(vId){
 
   // ── Título (la cabecera y el pie comunes los pinta _pdfBrand) ──
   let y=PDFS.TOP+4;
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(mg,y-7,mg+10,y-7);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(mg,y-7,mg+10,y-7);doc.setLineWidth(0.2);
   doc.setFontSize(16);doc.setFont('syne','bold');doc.setTextColor(...PDFS.K);
   doc.text(v.name,mg,y+2);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(80,95,120);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T2);
   doc.text(v.plate+(v.model?' · '+v.model:'')+(v.year?' · '+v.year:'')+'  ·  Km actuales: '+(curKm?curKm.toLocaleString('es-ES')+' km':'—'),mg,y+8);
   y+=16;
 
@@ -8966,43 +8966,43 @@ function dlMaintReport(vId){
   const cW4=(cW-12)/4;
   cards.forEach(([lbl,val,sub],i)=>{
     const cx=mg+i*(cW4+4);
-    const clr=i===0?[59,130,246]:i===1?[239,68,68]:i===2?[16,185,129]:[180,83,9];
+    const clr=i===0?PDFS.P:i===1?PDFS.KO:i===2?PDFS.OK:PDFS.GT;
     doc.setDrawColor(...clr);doc.setLineWidth(0.8);doc.line(cx,y,cx+cW4,y);doc.setLineWidth(0.2);
-    doc.setDrawColor(220,225,235);doc.line(cx,y+20,cx+cW4,y+20);
-    doc.setFontSize(5.5);doc.setFont('jbm','normal');doc.setTextColor(90,90,90);
+    doc.setDrawColor(...PDFS.LN);doc.line(cx,y+20,cx+cW4,y+20);
+    doc.setFontSize(5.5);doc.setFont('jbm','normal');doc.setTextColor(...PDFS.T2);
     doc.text(lbl,cx,y+5.5);
-    doc.setFontSize(10);doc.setFont('jbm','bold');doc.setTextColor(...(i===0?[29,78,216]:i===1?[185,28,28]:i===2?[4,120,87]:clr));
+    doc.setFontSize(10);doc.setFont('jbm','bold');doc.setTextColor(...(i===0?PDFS.P:i===1?PDFS.KO:i===2?PDFS.OK:clr));
     doc.text(val,cx,y+13);
-    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(90,90,90);
+    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T2);
     doc.text(sub,cx,y+18.5);
   });
   y+=28;
 
   // ── ALERT BANNER if overdue ────────────────────────────────────
   if(nextKm&&curKm&&curKm>nextKm){
-    doc.setDrawColor(239,68,68);doc.setLineWidth(0.8);doc.line(mg,y,mg,y+10);doc.setLineWidth(0.2);
-    doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(185,28,28);
+    doc.setDrawColor(...PDFS.KO);doc.setLineWidth(0.8);doc.line(mg,y,mg,y+10);doc.setLineWidth(0.2);
+    doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.KO);
     doc.text('MANTENIMIENTO VENCIDO — '+(curKm-nextKm).toLocaleString('es-ES')+' km desde el último previsto',mg+4,y+7);
     y+=14;
   } else if(nextDate){
     const daysToNext=_daysUntil(nextDate);
     if(daysToNext<30&&daysToNext>0){
-      doc.setDrawColor(245,158,11);doc.setLineWidth(0.8);doc.line(mg,y,mg,y+10);doc.setLineWidth(0.2);
-      doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(146,64,14);
+      doc.setDrawColor(...PDFS.GT);doc.setLineWidth(0.8);doc.line(mg,y,mg,y+10);doc.setLineWidth(0.2);
+      doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.GT);
       doc.text('Próximo mantenimiento en '+daysToNext+' días ('+fmtDMY(nextDate)+')',mg+4,y+7);
       y+=14;
     }
   }
 
   if(!maints.length){
-    doc.setFontSize(12);doc.setFont(undefined,'normal');doc.setTextColor(90,90,90);
+    doc.setFontSize(12);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
     doc.text('Sin mantenimientos registrados.',mg,y+12);
     doc.text('Añade gastos de categoría "Mantenimiento periódico" en la app.',mg,y+22);
   } else {
     // ── MAINTENANCE ENTRIES ───────────────────────────────────────
-    doc.setFontSize(8.5);doc.setFont(undefined,'bold');doc.setTextColor(29,78,216);
+    doc.setFontSize(8.5);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.P);
     doc.text('HISTORIAL DE MANTENIMIENTOS',mg,y);
-    doc.setDrawColor(59,130,246);doc.setLineWidth(0.4);doc.line(mg,y+1.5,mg+cW,y+1.5);doc.setLineWidth(0.2);
+    doc.setDrawColor(...PDFS.P);doc.setLineWidth(0.4);doc.line(mg,y+1.5,mg+cW,y+1.5);doc.setLineWidth(0.2);
     y+=8;
 
     maints.forEach((e,idx)=>{
@@ -9015,7 +9015,7 @@ function dlMaintReport(vId){
       }
 
       // Entry: filete fino debajo (sin fondo)
-      doc.setDrawColor(220,225,235);doc.setLineWidth(0.2);doc.line(mg,y+entryH,mg+cW,y+entryH);
+      doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.2);doc.line(mg,y+entryH,mg+cW,y+entryH);
 
       // Index (número en mono, sin bloque de color)
       doc.setFontSize(9);doc.setFont('jbm','bold');doc.setTextColor(...PDFS.P);
@@ -9023,34 +9023,34 @@ function dlMaintReport(vId){
       doc.setFont('helvetica','normal');
 
       // Date
-      doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(60,70,90);
+      doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.T2);
       doc.text(fmtDMY(e.date),mg+15,y+6);
 
       // Km at service
       if(m.km){
-        doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(100,110,130);
+        doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
         doc.text(m.km.toLocaleString('es-ES')+' km',mg+35,y+6);
       }
 
       // Cost (right)
-      doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(185,28,28);
+      doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.KO);
       doc.text(fmtF(e.amount),mg+cW-2,y+6,{align:'right'});
 
       // Work description
-      doc.setFontSize(8.5);doc.setFont(undefined,'bold');doc.setTextColor(17,24,39);
+      doc.setFontSize(8.5);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.T);
       doc.text(workLines,mg+15,y+12);
 
       // Shop
       if(m.shop){
-        doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(100,110,130);
+        doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
         doc.text('Taller: '+m.shop,mg+15,y+12+workLines.length*4.5+2);
       }
 
       // Next service row
       if(m.nextKm||m.nextDate){
         const nextY=y+entryH-5;
-        doc.setDrawColor(220,225,235);doc.setLineWidth(0.15);doc.line(mg+14,nextY+2.5,mg+cW,nextY+2.5);
-        doc.setFontSize(6.5);doc.setFont(undefined,'bold');doc.setTextColor(29,78,216);
+        doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(mg+14,nextY+2.5,mg+cW,nextY+2.5);
+        doc.setFontSize(6.5);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.P);
         doc.text('PRÓXIMO: '+(m.nextKm?m.nextKm.toLocaleString('es-ES')+' km':'')+(m.nextKm&&m.nextDate?' · ':'')+(m.nextDate?fmtDMY(m.nextDate):''),mg+16,nextY+0.5);
       }
 
@@ -9061,9 +9061,9 @@ function dlMaintReport(vId){
     if(maints.filter(e=>e.maint&&e.maint.km).length>1){
       if(y>240){doc.addPage();y=PDFS.TOP;}
       y+=4;
-      doc.setFontSize(7.5);doc.setFont(undefined,'bold');doc.setTextColor(29,78,216);
+      doc.setFontSize(7.5);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.P);
       doc.text('EVOLUCIÓN DE KM ENTRE MANTENIMIENTOS',mg,y);
-      doc.setDrawColor(59,130,246);doc.line(mg,y+1.5,mg+cW,y+1.5);
+      doc.setDrawColor(...PDFS.P);doc.line(mg,y+1.5,mg+cW,y+1.5);
       y+=6;
       const kmPoints=maints.filter(e=>e.maint&&e.maint.km);
       const intervals=[];
@@ -9074,12 +9074,12 @@ function dlMaintReport(vId){
         const maxKm=Math.max(1,...intervals.map(iv=>iv.km));
         const bW2=Math.min(10,(cW-4)/intervals.length*0.6);
         const chartH3=22;const baseY3=y+chartH3;
-        doc.setDrawColor(220,225,235);doc.line(mg,baseY3,mg+cW,baseY3);
+        doc.setDrawColor(...PDFS.LN);doc.line(mg,baseY3,mg+cW,baseY3);
         intervals.forEach((iv,i)=>{
           const bx=mg+4+i*(cW-8)/intervals.length;
           const h2=Math.max(1,(iv.km/maxKm)*chartH3);
-          doc.setDrawColor(59,130,246);doc.setLineWidth(0.3);doc.rect(bx,baseY3-h2,bW2,h2,'S');doc.setLineWidth(0.2);
-          doc.setFontSize(5);doc.setFont(undefined,'normal');doc.setTextColor(100,110,130);
+          doc.setDrawColor(...PDFS.P);doc.setLineWidth(0.3);doc.rect(bx,baseY3-h2,bW2,h2,'S');doc.setLineWidth(0.2);
+          doc.setFontSize(5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
           doc.text(iv.label.slice(5),bx+bW2/2,baseY3+3.5,{align:'center'});
           doc.setFontSize(4.5);doc.text(iv.km.toLocaleString('es-ES'),bx+bW2/2,baseY3-h2-1.5,{align:'center'});
         });
@@ -9134,8 +9134,8 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   const activeV=V.filter(v=>!v.archived);
 
   const G=(r,g,b)=>[r,g,b];
-  const GREEN=G(4,120,87),RED=G(185,28,28),AMBER=G(180,83,9),BLUE=G(29,78,216),PURPLE=G(106,13,173);
-  const DARK=G(17,24,39),MEDDARK=G(30,37,55),LIGHT=G(248,250,252),MID=G(90,90,90),BORDER=G(220,225,235);
+  const GREEN=PDFS.OK,RED=PDFS.KO,AMBER=PDFS.GT,BLUE=PDFS.P,PURPLE=PDFS.P;
+  const DARK=PDFS.K,MEDDARK=PDFS.T,LIGHT=PDFS.LN,MID=PDFS.T2,BORDER=PDFS.LN;
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
 
   // Period subtitle
@@ -9220,7 +9220,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   }
   function hBar(x,y,w,h,pct,clr){
     const t=Math.min(h,1.2),ty=y+(h-t)/2;
-    doc.setDrawColor(210,210,210);doc.setLineWidth(0.2);doc.line(x,ty+t/2,x+w,ty+t/2);
+    doc.setDrawColor(...PDFS.GR);doc.setLineWidth(0.2);doc.line(x,ty+t/2,x+w,ty+t/2);
     if(pct>0){doc.setFillColor(...clr);doc.rect(x,ty,Math.max(0.8,w*Math.min(pct,100)/100),t,'F');}
   }
   // Gráfico de barras a trazo (sin rellenos)
@@ -9258,7 +9258,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     doc.setDrawColor(...RED);doc.rect(x+w-28,y+1,4,3,'S');
     doc.setLineWidth(0.2);
     doc.text('Gastos',x+w-22,y+4);
-    doc.setFontSize(5);doc.setTextColor(...G(80,100,80));doc.text('%Rent.',x+w-10,y+4);
+    doc.setFontSize(5);doc.setTextColor(...PDFS.T2);doc.text('%Rent.',x+w-10,y+4);
   }
 
   // ══════════════════════════════════════════════════
@@ -9266,10 +9266,10 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   // ══════════════════════════════════════════════════
   let y=PDFS.TOP+4;
   const periodLines=doc.splitTextToSize(periodLabel,cW);
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(mg,y-7,mg+10,y-7);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(mg,y-7,mg+10,y-7);doc.setLineWidth(0.2);
   doc.setFontSize(16);doc.setFont('syne','bold');doc.setTextColor(...DARK);
   doc.text(periodLines,mg,y+2);y+=(periodLines.length-1)*7;
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(80,95,120);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T2);
   doc.text(periodSub+'  ·  '+activeV.length+' vehículo'+(activeV.length!==1?'s activos':' activo')+'  ·  Confidencial',mg,y+8);
   y+=16;
 
@@ -9464,7 +9464,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
       let bx=mg;
       vals.forEach((v2,j)=>{
         doc.setFontSize(7.5);doc.setFont(undefined,j===5?'bold':'normal');
-        doc.setTextColor(...(j===5?GREEN:G(40,45,60)));
+        doc.setTextColor(...(j===5?GREEN:PDFS.T));
         doc.text(String(v2),j===5?bx+tw[j]-2:bx+1,y,{align:j===5?'right':undefined,maxWidth:tw[j]-2});
         bx+=tw[j];
       });
@@ -10040,28 +10040,28 @@ function dlOwnerReport(ownerId,month){
   const subtitle=(o.dni?o.dni+' · ':'')+mLabel.toUpperCase()+' · '+vehicles.length+' VEHÍCULO'+(vehicles.length!==1?'S':'');
   let y=_pdfHeader(doc,W,margin,cW,o.name,o.phone||o.email||null,'LIQUIDACIÓN MENSUAL · '+subtitle,new Date().toLocaleDateString('es-ES'));
   y=_pdfKpiRow(doc,W,margin,cW,y,[
-    ['INGRESOS BRUTOS',fmtE(totI),4,120,87],
-    ['COMISIÓN DEIROS',fmtE(totComm),106,13,173],
-    ['AL PROPIETARIO',fmtE(totOwner),106,13,173],
+    ['INGRESOS BRUTOS',fmtE(totI),...PDFS.OK],
+    ['COMISIÓN DEIROS',fmtE(totComm),...PDFS.P],
+    ['AL PROPIETARIO',fmtE(totOwner),...PDFS.P],
   ]);
   y+=6;
   const addPage=()=>{doc.addPage();return _pdfHeader(doc,W,margin,cW,o.name,null,'LIQUIDACIÓN · '+mLabel.toUpperCase()+' (cont.)',new Date().toLocaleDateString('es-ES'));};
   vData.forEach(d=>{
     if(y>240){y=addPage();}
-    doc.setDrawColor(106,13,173);doc.setLineWidth(0.4);doc.line(margin,y,margin+cW,y);
-    doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(40,40,60);
+    doc.setDrawColor(...PDFS.P);doc.setLineWidth(0.4);doc.line(margin,y,margin+cW,y);
+    doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.T);
     doc.text(d.v.name,margin,y+5);
-    doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(90,90,90);
+    doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
     const vKmStr=d.v.km?Number(d.v.km).toLocaleString('es-ES')+' km':'—';
     doc.text(d.v.plate+(d.v.model?' · '+d.v.model:'')+' · Km: '+vKmStr,margin,y+10);
-    doc.setFontSize(7.5);doc.setTextColor(106,13,173);
+    doc.setFontSize(7.5);doc.setTextColor(...PDFS.P);
     doc.text('Comisión '+d.comm+'%',margin+cW-3,y+7,{align:'right'});
     y+=14;
     const bW=(cW-6)/4;
-    [['Ingresos',fmtE(d.tI),4,120,87],['Gastos descontados',fmtE(d.tE),185,28,28],['Beneficio',fmtE(d.tP),d.tP>=0?4:185,d.tP>=0?120:28,d.tP>=0?87:28],['Al propietario',fmtE(d.toOwner),106,13,173]].forEach(([l,val,r,g,b],i)=>{
+    [['Ingresos',fmtE(d.tI),...PDFS.OK],['Gastos descontados',fmtE(d.tE),...PDFS.KO],['Beneficio',fmtE(d.tP),...(d.tP>=0?PDFS.OK:PDFS.KO)],['Al propietario',fmtE(d.toOwner),...PDFS.P]].forEach(([l,val,r,g,b],i)=>{
       const bx=margin+i*(bW+2);
       doc.setDrawColor(r,g||0,b||0);doc.setLineWidth(0.6);doc.line(bx,y,bx+bW,y);doc.setLineWidth(0.2);
-      doc.setFontSize(5.5);doc.setFont('jbm','normal');doc.setTextColor(90,90,90);doc.text(l,bx,y+3.8);
+      doc.setFontSize(5.5);doc.setFont('jbm','normal');doc.setTextColor(...PDFS.T2);doc.text(l,bx,y+3.8);
       doc.setFontSize(8.5);doc.setFont('jbm','bold');doc.setTextColor(r,g||0,b||0);doc.text(val,bx,y+9);
       doc.setFont('helvetica','normal');
     });
@@ -10070,11 +10070,11 @@ function dlOwnerReport(ownerId,month){
     if(d.paid>0)_info.push('Pagado directamente por el propietario (no se descuenta): '+fmtE(d.paid));
     if(d.deficit>0)_info.push('Déficit asumido por el gestor: '+fmtE(d.deficit));
     if(d.other>0)_info.push('Gastos no descontados al propietario (las multas corren a cargo del cliente): '+fmtE(d.other));
-    if(_info.length){doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(100,100,120);_info.forEach(t=>{doc.text(t,margin,y+2);y+=5;});y+=1;}
+    if(_info.length){doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);_info.forEach(t=>{doc.text(t,margin,y+2);y+=5;});y+=1;}
     const vInc=d.fins.filter(e=>e.type==='income');
-    if(vInc.length){y=_pdfTableRows(doc,margin,cW,y,vInc,[4,120,87],262,addPage);}
+    if(vInc.length){y=_pdfTableRows(doc,margin,cW,y,vInc,PDFS.OK,262,addPage);}
     const vDed=d.fins.filter(e=>_isOwnerDeduct(d.v,e));
-    if(vDed.length){if(y>250){y=addPage();}doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(90,90,110);doc.text('GASTOS DESCONTADOS (CLÁUSULA 5.3)',margin,y+3);y+=5;y=_pdfTableRows(doc,margin,cW,y,vDed,[185,28,28],262,addPage);}
+    if(vDed.length){if(y>250){y=addPage();}doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(...PDFS.T2);doc.text('GASTOS DESCONTADOS (CLÁUSULA 5.3)',margin,y+3);y+=5;y=_pdfTableRows(doc,margin,cW,y,vDed,PDFS.KO,262,addPage);}
     y+=4;
   });
   if(y>260){y=addPage();}
@@ -10082,13 +10082,13 @@ function dlOwnerReport(ownerId,month){
   doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.5);doc.line(margin,y,margin+cW,y);doc.setLineWidth(0.2);doc.line(margin,y+0.9,margin+cW,y+0.9);
   doc.setFontSize(10);doc.setFont('syne','bold');doc.setTextColor(...PDFS.K);
   doc.text(_pdfFit(doc,'TOTAL A PAGAR A '+o.name.toUpperCase(),cW-55),margin,y+8);
-  doc.setFontSize(14);doc.setTextColor(106,13,173);doc.text(fmtE(totOwner),margin+cW,y+8,{align:'right'});
+  doc.setFontSize(14);doc.setTextColor(...PDFS.P);doc.text(fmtE(totOwner),margin+cW,y+8,{align:'right'});
   doc.setFont('helvetica','normal');doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.2);doc.line(margin,y+11,margin+cW,y+11);
   // Liquidación ya registrada como pagada: se muestra junto al cálculo actual (no se recalcula ni se modifica)
   const _liq=(o.liquidaciones||[]).find(l=>l.month===month&&l.paid);
   if(_liq){
     const _dif=Math.round((totOwner-(Number(_liq.amount)||0))*100)/100;
-    doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(90,90,90);
+    doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
     doc.text('Liquidación registrada como pagada'+(_liq.paidAt?' el '+new Date(_liq.paidAt).toLocaleDateString('es-ES'):'')+': '+fmtE(_liq.amount)+(Math.abs(_dif)>=0.01?'. El cálculo actual difiere en '+fmtE(_dif)+' (por movimientos posteriores al pago o por el cambio de la regla de comisión).':'.'),margin,y+16,{maxWidth:cW});
     y+=10;
   }
@@ -11438,7 +11438,7 @@ function _pdfSetup(){
 function _pdfHeader(doc,W,margin,cW,titleLine1,titleLine2,subtitleLine,dateStr){
   // Bloque de título «Ficha suiza» bajo la cabecera común: raya dorada, título en Syne y línea de datos entre filetes (sin fondo)
   let y=PDFS.TOP+2;
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(margin,y-5,margin+10,y-5);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(margin,y-5,margin+10,y-5);doc.setLineWidth(0.2);
   doc.setFontSize(15);doc.setFont('syne','bold');doc.setTextColor(...PDFS.K);
   doc.text(_pdfFit(doc,titleLine1,cW),margin,y+1);
   if(titleLine2){
@@ -11471,7 +11471,7 @@ function _pdfKpiRow(doc,W,margin,cW,y,items){
 function _pdfSection(doc,margin,cW,y,title,r,g,b){
   doc.setFontSize(7.5);doc.setFont('jbm','bold');doc.setTextColor(r,g,b);
   doc.text(title,margin,y+4);
-  doc.setDrawColor(220,220,220);doc.setLineWidth(0.2);doc.line(margin,y+6,margin+cW,y+6);
+  doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.2);doc.line(margin,y+6,margin+cW,y+6);
   doc.setDrawColor(r,g,b);doc.setLineWidth(0.8);doc.line(margin,y+6,margin+10,y+6);doc.setLineWidth(0.2);
   doc.setFont('helvetica','normal');
   return y+10;
@@ -11479,13 +11479,13 @@ function _pdfSection(doc,margin,cW,y,title,r,g,b){
 // Draw table rows (minimal, light separators)
 function _pdfTableRows(doc,margin,cW,y,rows,amtColor,maxY,addPageFn){
   if(!rows.length){
-    doc.setFontSize(8);doc.setFont(undefined,'italic');doc.setTextColor(90,90,90);
+    doc.setFontSize(8);doc.setFont(undefined,'italic');doc.setTextColor(...PDFS.T2);
     doc.text('Sin registros',margin+3,y+5);return y+10;
   }
   y=_pdfTh(doc,y,[['FECHA',margin+3],['CONCEPTO',margin+24],['IMPORTE',margin+cW-3,'right']])+1;
   rows.forEach(e=>{
     if(y>maxY){y=addPageFn();}
-    doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);
+    doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
     doc.text(fmtDMY(e.date),margin+3,y+4);
     const desc=(e.category+(e.description?' · '+e.description:''));
     const descW=cW-24-28;
@@ -11494,7 +11494,7 @@ function _pdfTableRows(doc,margin,cW,y,rows,amtColor,maxY,addPageFn){
     doc.setFont(undefined,'bold');doc.setTextColor(...amtColor);
     doc.text(e.amount!==undefined?new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(e.amount||0):(e.val||''),margin+cW-3,y+4,{align:'right'});
     const rowH=Math.max(7,3+descLines.length*4);
-    doc.setDrawColor(235,235,242);doc.setLineWidth(0.15);doc.line(margin,y+rowH-1.5,margin+cW,y+rowH-1.5);
+    doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(margin,y+rowH-1.5,margin+cW,y+rowH-1.5);
     doc.setFont(undefined,'normal');
     y+=rowH;
   });
@@ -11503,7 +11503,7 @@ function _pdfTableRows(doc,margin,cW,y,rows,amtColor,maxY,addPageFn){
 // Fila de total: doble filete contable y cifra en mono del color indicado
 function _pdfTotal(doc,margin,cW,y,label,val,r,g,b){
   doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.5);doc.line(margin,y,margin+cW,y);doc.setLineWidth(0.2);doc.line(margin,y+0.9,margin+cW,y+0.9);
-  doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(50,50,60);
+  doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
   doc.text(label,margin+3,y+6);
   doc.setFont('jbm','bold');doc.setTextColor(r,g,b);doc.text(val,margin+cW-3,y+6,{align:'right'});
   doc.setFont('helvetica','normal');
@@ -11605,7 +11605,7 @@ function _pdfLbl(doc,y,n,t){
 // Título grande del documento (raya dorada + Syne + punto morado) y sello de estado a trazo a la derecha. Devuelve la nueva y
 function _pdfTitle(doc,y,txt,stamp){
   const m=PDFS.MG,W=doc.internal.pageSize.getWidth();
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(m,y,m+10,y);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(m,y,m+10,y);doc.setLineWidth(0.2);
   doc.setFont('syne','bold');doc.setFontSize(26);doc.setTextColor(...PDFS.K);doc.text(txt,m,y+12);
   doc.setTextColor(...PDFS.P);doc.text('.',m+doc.getTextWidth(txt)+0.3,y+12);
   if(stamp){
@@ -11657,32 +11657,32 @@ function dlReport(vId,month){
   );
   // KPI row
   y=_pdfKpiRow(doc,W,margin,cW,y,[
-    ['INGRESOS',fmtE(tI),4,120,87],
-    ['GASTOS',fmtE(tE),185,28,28],
+    ['INGRESOS',fmtE(tI),...PDFS.OK],
+    ['GASTOS',fmtE(tE),...PDFS.KO],
     ['BENEFICIO',fmtE(tP),tP>=0?4:185,tP>=0?120:28,tP>=0?87:28],
   ]);
   y+=4;
   const addPage=()=>{doc.addPage();return _pdfHeader(doc,W,margin,cW,v.name,null,'INFORME MENSUAL · '+mLabel.toUpperCase()+' (cont.)',new Date().toLocaleDateString('es-ES'));};
   // Ingresos
-  y=_pdfSection(doc,margin,cW,y,'INGRESOS  ('+incRows.length+')',4,120,87);
-  y=_pdfTableRows(doc,margin,cW,y,incRows,[4,120,87],265,addPage);
-  y=_pdfTotal(doc,margin,cW,y,'Total ingresos',fmtE(tI),4,120,87);
+  y=_pdfSection(doc,margin,cW,y,'INGRESOS  ('+incRows.length+')',...PDFS.OK);
+  y=_pdfTableRows(doc,margin,cW,y,incRows,PDFS.OK,265,addPage);
+  y=_pdfTotal(doc,margin,cW,y,'Total ingresos',fmtE(tI),...PDFS.OK);
   if(y>252){doc.addPage();y=PDFS.TOP;}else y+=4;
   // Gastos
-  y=_pdfSection(doc,margin,cW,y,'GASTOS  ('+expRows.length+')',185,28,28);
-  y=_pdfTableRows(doc,margin,cW,y,expRows,[185,28,28],265,addPage);
-  y=_pdfTotal(doc,margin,cW,y,'Total gastos',fmtE(tE),185,28,28);
+  y=_pdfSection(doc,margin,cW,y,'GASTOS  ('+expRows.length+')',...PDFS.KO);
+  y=_pdfTableRows(doc,margin,cW,y,expRows,PDFS.KO,265,addPage);
+  y=_pdfTotal(doc,margin,cW,y,'Total gastos',fmtE(tE),...PDFS.KO);
   // Comisión (managed only)
   if(isM){
     if(y>240){doc.addPage();y=PDFS.TOP;}else y+=6;
-    y=_pdfSection(doc,margin,cW,y,'LIQUIDACIÓN COMISIÓN ('+comm+'%)',106,13,173);
-    [['Beneficio neto',fmtE(tP),tP>=0?[4,120,87]:[185,28,28]],
-     ['Comisión DEIROS ('+comm+'% de '+fmtE(commBase)+(_st.net53?' = facturado - gastos 5.3)':' facturado)'),fmtE(commAmt),[106,13,173]],
-     ['Queda para el propietario',fmtE(toOwnerM),toOwnerM>=0?[4,120,87]:[185,28,28]]
+    y=_pdfSection(doc,margin,cW,y,'LIQUIDACIÓN COMISIÓN ('+comm+'%)',...PDFS.P);
+    [['Beneficio neto',fmtE(tP),tP>=0?PDFS.OK:PDFS.KO],
+     ['Comisión DEIROS ('+comm+'% de '+fmtE(commBase)+(_st.net53?' = facturado - gastos 5.3)':' facturado)'),fmtE(commAmt),PDFS.P],
+     ['Queda para el propietario',fmtE(toOwnerM),toOwnerM>=0?PDFS.OK:PDFS.KO]
     ].forEach(([l,val,col])=>{
-      doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);doc.text(l,margin+3,y+5);
+      doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);doc.text(l,margin+3,y+5);
       doc.setFont(undefined,'bold');doc.setTextColor(...col);doc.text(val,margin+cW-3,y+5,{align:'right'});
-      doc.setDrawColor(235,235,242);doc.setLineWidth(0.15);doc.line(margin,y+7,margin+cW,y+7);y+=9;
+      doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(margin,y+7,margin+cW,y+7);y+=9;
     });
   }
   // ROI (only for own vehicles with purchase price)
@@ -11697,27 +11697,27 @@ function dlReport(vId,month){
     const mthsActive=new Set(allFins.map(e=>e.date.slice(0,7))).size||1;
     const monthlyAvg=allP/mthsActive;
     const mthsToBreak=monthlyAvg>0?Math.ceil(remaining/monthlyAvg):null;
-    const roiClr=roi>=100?[4,120,87]:roi>=50?[180,83,9]:[185,28,28];
+    const roiClr=roi>=100?PDFS.OK:roi>=50?PDFS.GT:PDFS.KO;
     if(y>235){doc.addPage();y=PDFS.TOP;}else y+=6;
-    y=_pdfSection(doc,margin,cW,y,'RETORNO DE LA INVERSIÓN (ROI)',180,83,9);
+    y=_pdfSection(doc,margin,cW,y,'RETORNO DE LA INVERSIÓN (ROI)',...PDFS.GT);
     const roiItems=[
-      ['Precio de compra',fmtE(pp),[80,80,100]],
-      ['Beneficio acumulado (histórico)',fmtE(allP),allP>=0?[4,120,87]:[185,28,28]],
+      ['Precio de compra',fmtE(pp),PDFS.T2],
+      ['Beneficio acumulado (histórico)',fmtE(allP),allP>=0?PDFS.OK:PDFS.KO],
       ['ROI real acumulado',roi.toFixed(1)+'%',roiClr],
-      ['Pendiente de recuperar',fmtE(Math.max(0,remaining)),remaining>0?[180,83,9]:[4,120,87]],
-      ['Promedio mensual',fmtE(monthlyAvg),[29,78,216]],
-      ['Meses estimados para break-even',allP>=pp?'Ya recuperado':(mthsToBreak?mthsToBreak+' meses':'No estimable'),allP>=pp?[4,120,87]:(mthsToBreak?[180,83,9]:[100,100,110])],
+      ['Pendiente de recuperar',fmtE(Math.max(0,remaining)),remaining>0?PDFS.GT:PDFS.OK],
+      ['Promedio mensual',fmtE(monthlyAvg),PDFS.P],
+      ['Meses estimados para break-even',allP>=pp?'Ya recuperado':(mthsToBreak?mthsToBreak+' meses':'No estimable'),allP>=pp?PDFS.OK:(mthsToBreak?PDFS.GT:PDFS.T2)],
     ];
     roiItems.forEach(([l,val,col])=>{
-      doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(80,80,100);doc.text(l,margin+3,y+5);
+      doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);doc.text(l,margin+3,y+5);
       doc.setFont(undefined,'bold');doc.setTextColor(...col);doc.text(val,margin+cW-3,y+5,{align:'right'});
-      doc.setDrawColor(235,235,242);doc.setLineWidth(0.15);doc.line(margin,y+7,margin+cW,y+7);y+=9;
+      doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(margin,y+7,margin+cW,y+7);y+=9;
     });
     // Progress bar
     const barW=cW;const pct=Math.min(100,Math.max(0,roi));
-    doc.setDrawColor(210,210,210);doc.setLineWidth(0.2);doc.line(margin,y+4.75,margin+barW,y+4.75);
+    doc.setDrawColor(...PDFS.GR);doc.setLineWidth(0.2);doc.line(margin,y+4.75,margin+barW,y+4.75);
     if(pct>0){doc.setFillColor(...roiClr);doc.rect(margin,y+4.1,barW*pct/100,1.3,'F');}
-    doc.setFontSize(6);doc.setFont(undefined,'normal');doc.setTextColor(90,90,90);
+    doc.setFontSize(6);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
     doc.text('0%',margin,y+9.5);doc.text('Break-even 100%',margin+cW,y+9.5,{align:'right'});
     y+=14;
   }
@@ -13099,7 +13099,7 @@ function generateQuotePDF(id){
   y=_pdfTh(doc,y-4,[['DESGLOSE DEL PRECIO',M+2],['IMPORTE',W-M,'right']])+6;
 
   // Base
-  doc.setFontSize(9.5);doc.setFont('helvetica','normal');doc.setTextColor(40,30,70);
+  doc.setFontSize(9.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
   // Recalcular desglose si no est\u00e1 guardado (presupuestos anteriores)
   // Mostrar solo d\u00edas totales del alquiler, sin f\u00f3rmulas
   const _qDurLabel=q.dur&&q.dur>0?q.dur+' d\u00eda'+(q.dur!==1?'s':''):'alquiler';
@@ -13111,17 +13111,17 @@ function generateQuotePDF(id){
   // Extras
   (q.extras||[]).forEach(ex=>{
     if(y>262){doc.addPage();y=PDFS.TOP;doc.setFontSize(9.5);}
-    doc.setFont('helvetica','normal');doc.setTextColor(60,50,90);
+    doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T2);
     const lbl=('  + '+ex.label+(ex.km?' ('+ex.km+' km)':'')).substring(0,55);
     doc.text(lbl,M+2,y);
-    doc.setFont('helvetica','bold');doc.setTextColor(40,30,70);
+    doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
     doc.text(fmtF(ex.amount),W-M,y,{align:'right'});
     y+=6;
   });
 
   // Extras subtotal line (only if extras exist)
   if((q.extras||[]).length>0){
-    doc.setFontSize(8.5);doc.setFont('helvetica','italic');doc.setTextColor(80,70,110);
+    doc.setFontSize(8.5);doc.setFont('helvetica','italic');doc.setTextColor(...PDFS.T2);
     doc.text('  Subtotal extras',M+2,y);
     doc.setFont('helvetica','bold');doc.text('+'+fmtF(_extrasSum),W-M,y,{align:'right'});
     y+=6;
@@ -13129,7 +13129,7 @@ function generateQuotePDF(id){
 
   // Discount
   if(q.discount>0){
-    doc.setFont('helvetica','italic');doc.setTextColor(180,40,40);
+    doc.setFont('helvetica','italic');doc.setTextColor(...PDFS.KO);
     doc.text('  Descuento aplicado',M+2,y);
     doc.setFont('helvetica','bold');doc.text('-'+fmtF(q.discount),W-M,y,{align:'right'});
     y+=6;
@@ -13148,7 +13148,7 @@ function generateQuotePDF(id){
   const fianzaAmt=(q.fianza==null||q.fianza==='')?(parseFloat(_fianzaDefault())||0):(Number(q.fianza)||0);
   if(fianzaAmt>0){
   if(y+18>272){doc.addPage();y=PDFS.TOP;}
-  doc.setDrawColor(212,168,0);doc.setLineWidth(0.8);doc.line(M,y,M,y+13);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(0.8);doc.line(M,y,M,y+13);doc.setLineWidth(0.2);
   doc.setFontSize(7);doc.setFont('jbm','bold');doc.setTextColor(...PDFS.T);
   doc.text('FIANZA REEMBOLSABLE (no incluida en el total)',M+4,y+4);
   doc.setFontSize(13);doc.setFont('jbm','bold');doc.setTextColor(...PDFS.T);
@@ -13173,9 +13173,9 @@ function generateQuotePDF(id){
   kmRows.push(['Km sueltos prepago (contrataci\u00f3n anticipada)',kmPreRate]);
   kmRows.forEach(([lbl,val],i)=>{
     doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(M,y+4,W-M,y+4);doc.setLineWidth(0.2);
-    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(50,40,80);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
     doc.text(lbl,M+2,y+2);
-    doc.setFont('helvetica','bold');doc.setTextColor(80,40,140);
+    doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.P);
     doc.text(val,W-M-2,y+2,{align:'right'});
     y+=7;
   });
@@ -13191,7 +13191,7 @@ function generateQuotePDF(id){
     doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.35);doc.line(M,y,W-M,y);doc.setLineWidth(0.2);y+=4;
     nls.forEach(l=>{
       if(y>272){doc.addPage();y=PDFS.TOP;}
-      doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(60,55,80);
+      doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T2);
       doc.text(l,M,y);y+=4;
     });
     y+=5;
@@ -13213,7 +13213,7 @@ function generateQuotePDF(id){
   doc.setFontSize(7.5);doc.setFont('jbm','bold');doc.setTextColor(...PDFS.P);
   doc.text('CONDICIONES GENERALES',M,y);y+=2.5;
   doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.35);doc.line(M,y,W-M,y);doc.setLineWidth(0.2);y+=4;
-  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(80,75,100);
+  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T2);
   _cl.forEach(ls=>{doc.text(ls,M,y);y+=ls.length*4.2;});
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -13223,7 +13223,7 @@ function generateQuotePDF(id){
   let u=0;
 
   // ── Header ───────────────────────────────────────────────────────────────
-  doc.setDrawColor(212,168,0);doc.setLineWidth(1.2);doc.line(M,PDFS.TOP-4,M+10,PDFS.TOP-4);doc.setLineWidth(0.2);
+  doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(M,PDFS.TOP-4,M+10,PDFS.TOP-4);doc.setLineWidth(0.2);
   doc.setFontSize(17);doc.setFont('syne','bold');doc.setTextColor(...PDFS.K);
   doc.text('PERSONALIZA TU ALQUILER',M,PDFS.TOP+5);
   doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T2);
