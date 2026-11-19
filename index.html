@@ -2211,10 +2211,10 @@ function renderClientsBody(){
     // Cuadrícula: tarjetas compactas con ficha técnica de 2 datos
     h+=`<div class="cl-g">`;
     filtered.forEach(cl=>{
-      const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
+      const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(b.cancelled||b.cancellation?_bookingRealTotal(b):Number(b.amount)||0),0);const nBk=bks.filter(b=>!b.cancelled&&!b.cancellation).length; // cancelado: no cuenta como alquiler; suma su penalización neta (_bookingRealTotal), como el informe PDF
       h+=`<div class="d-card s cl-gc" onclick="${open(cl)}">
         <div><div class="cl-gn">${esc(cl.name||'Sin nombre')}</div><div class="d-meta cl-gm">${esc(cl.dni||cl.phone||'Sin datos')}</div></div>
-        <div class="spec cl-gs"><div>Total<b class="cl-in">${fmt(total)}</b></div><div>Alq.<b>${bks.length}</b></div></div>
+        <div class="spec cl-gs"><div>Total<b class="cl-in">${fmt(total)}</b></div><div>Alq.<b>${nBk}</b></div></div>
         <div class="cl-gr">${ico('star',null,'ico-fill').repeat(cl.rating||0)+ico('star').repeat(5-(cl.rating||0))}</div>
       </div>`;
     });
@@ -2223,12 +2223,12 @@ function renderClientsBody(){
     // Lista técnica (como el FAQ de la web): «01» · nombre / DNI y teléfono / último alquiler · total y nº de alquileres
     h+=`<div class="d-list cl-l">`;
     filtered.forEach((cl,i)=>{
-      const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
+      const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(b.cancelled||b.cancellation?_bookingRealTotal(b):Number(b.amount)||0),0);const nBk=bks.filter(b=>!b.cancelled&&!b.cancellation).length; // cancelado: no cuenta como alquiler; suma su penalización neta (_bookingRealTotal), como el informe PDF
       const ids=[cl.dni,cl.phone].filter(Boolean).map(x=>esc(x)).join(' · ');
       h+=`<div class="d-row cl-r${_clientsMode==='compact'?' cl-rc':''}" onclick="${open(cl)}">
         <span class="q">${String(i+1).padStart(2,'0')}</span>
         <div class="al-b"><div class="t ell">${esc(cl.name||'Sin nombre')}</div><div class="s ell">${ids||'Sin datos'}${_clientsMode==='compact'?'':' '+stars(cl)}</div>${_clientsMode!=='compact'&&bks.length?`<div class="s ell">Último ${esc(fmtDMY(bks[0].startDate))} · ${esc(bks[0].vname)}</div>`:''}${_clientsMode!=='compact'&&cl.notes?`<div class="cl-nt">${esc(cl.notes)}</div>`:''}</div>
-        <div class="r"><b class="cl-in">${fmt(total)}</b><span class="mono2">${bks.length} ${_clientsMode==='compact'?'alq.':'alquiler'+(bks.length!==1?'es':'')}</span></div>
+        <div class="r"><b class="cl-in">${fmt(total)}</b><span class="mono2">${nBk} ${_clientsMode==='compact'?'alq.':'alquiler'+(nBk!==1?'es':'')}</span></div>
       </div>`;
     });
     h+=`</div>`;
@@ -2259,8 +2259,8 @@ function renderClientDetail(el){
   const bks=[];
   V.forEach(v=>(v.bookings||[]).forEach(b=>{if(ids.has(b.id))bks.push({...b,vname:v.name,vcolor:v.color,vid:v.id});}));
   bks.sort((a,b)=>b.startDate.localeCompare(a.startDate));
-  const total=bks.reduce((s,b)=>s+(Number(b.amount)||0),0);
-  const avgAmount=bks.length?Math.round(total/bks.length):0;
+  const total=bks.reduce((s,b)=>s+(b.cancelled||b.cancellation?_bookingRealTotal(b):Number(b.amount)||0),0);const nBk=bks.filter(b=>!b.cancelled&&!b.cancellation).length; // cancelado: no cuenta como alquiler; suma su penalización neta (_bookingRealTotal), como el informe PDF
+  const avgAmount=nBk?Math.round(total/nBk):0;
   const _tS=fmt(total).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
   const _sp=(l,v,w)=>v?`<div${w?' class="w2"':''}>${l}<b>${esc(v)}</b></div>`:'';
 
@@ -2278,9 +2278,9 @@ function renderClientDetail(el){
     ${_waBtns(cl.phone,'c',cl.id)}
     <div class="cl-rate"><span class="q">Valoración</span><div class="cl-stars">${[1,2,3,4,5].map(i=>`<span class="tap44" onclick="setClientRating('${escJs(cl.id)}',${i})">${i<=(cl.rating||0)?ico('star',null,'ico-fill'):ico('star')}</span>`).join('')}</div></div>
     ${cl.notes?`<p class="d-note">${esc(cl.notes)}</p>`:''}
-    <div class="d-tot"><span class="q">Total facturado</span><div class="d-n n2">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${bks.length} alquiler${bks.length!==1?'es':''} · IVA incluido</p></div>
+    <div class="d-tot"><span class="q">Total facturado</span><div class="d-n n2">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${nBk} alquiler${nBk!==1?'es':''} · IVA incluido</p></div>
   </div>
-  <div class="d-kpi cl-k"><div><b>${bks.length}</b><span>Alquileres</span></div><div><b>${fmt(avgAmount)}</b><span>Ticket medio</span></div><div><b>${cl.rating||0}/5</b><span>Valoración</span></div></div>
+  <div class="d-kpi cl-k"><div><b>${nBk}</b><span>Alquileres</span></div><div><b>${fmt(avgAmount)}</b><span>Ticket medio</span></div><div><b>${cl.rating||0}/5</b><span>Valoración</span></div></div>
   <div class="d-sh al-sh"><h2>Historial</h2><span class="q">${String(bks.length).padStart(2,'0')}</span></div>`;
 
   if(!bks.length){h+=`<div class="d-empty cl-e">${ico('calendar')}<h3>Sin alquileres</h3><p>Aparecerán aquí al asignarle un alquiler</p></div>`;}
@@ -2291,8 +2291,8 @@ function renderClientDetail(el){
       const pc={amovens:'var(--plat-amovens)',getaround:'var(--plat-getaround)',sinapp:'var(--plat-sinapp)'}[b.platform]||'var(--plat-otra)';
       h+=`<div class="d-row cl-h" onclick="openV('${escJs(b.vid)}')">
         <i class="dh-dot"${b.vcolor?' style="background:'+safeColor(b.vcolor)+'"':''}></i>
-        <div class="al-b"><div class="t ell">${esc(b.vname)}</div><div class="s">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}</div>${b.notes?`<div class="s ell">${esc(b.notes)}</div>`:''}</div>
-        <div class="r"><b class="cl-in">${fmt(b.amount)}</b><span class="chip cl-pl" style="--pc:${pc}">${esc(p?p.label:b.platform)}</span></div>
+        <div class="al-b"><div class="t ell">${esc(b.vname)}</div><div class="s">${esc(fmtDMY(b.startDate))} → ${esc(fmtDMY(b.endDate))}${b.cancelled||b.cancellation?' · Cancelado':''}</div>${b.notes?`<div class="s ell">${esc(b.notes)}</div>`:''}</div>
+        <div class="r"><b class="cl-in">${fmt((b.cancelled||b.cancellation?_bookingRealTotal(b):Number(b.amount)||0))}</b><span class="chip cl-pl" style="--pc:${pc}">${esc(p?p.label:b.platform)}</span></div>
       </div>`;
     });
     h+='</div>';
@@ -6579,7 +6579,7 @@ function getAlerts(){
   const dateAlerts=V.filter(v=>!v.archived).flatMap(v=>
     [...ALERT_FIELDS,['maint_date','Revisión','wrench']].map(([f,l,ic])=>{
       if(!v[f])return null;
-      const days=Math.ceil((new Date(v[f])-now)/864e5);
+      const days=_daysUntil(v[f]);
       if(days>60)return null;
       return{vid:v.id,vname:v.name,label:l,ico:ic,days,urgent:days<=30,expired:days<0};
     }).filter(Boolean)
@@ -7123,7 +7123,7 @@ function renderListBody(){
         const inProgress=bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
         if(inProgress)return{chip:`<span class="chip chip-amber">${ico('key')}<span>${esc(inProgress.clientName||'En alquiler')}</span></span>`,row:`<span class="chip chip-amber">Alquilado</span><span class="fl-cl">${esc(inProgress.clientName||'En alquiler')}</span>`,sort:1};
         const nextB=bks.filter(b=>b.startDate>hoy).sort((a,b2)=>a.startDate.localeCompare(b2.startDate))[0];
-        if(nextB){const dUntil=Math.ceil((new Date(nextB.startDate)-new Date())/864e5);return{chip:`<span class="chip chip-blue">${ico('calendar')}<span>En ${dUntil}d</span></span>`,row:`<span class="chip chip-blue">En ${dUntil}d</span><span class="fl-cl">Libre hasta ${esc(fmtDMY(nextB.startDate))}</span>`,sort:2};}
+        if(nextB){const dUntil=_daysUntil(nextB.startDate);return{chip:`<span class="chip chip-blue">${ico('calendar')}<span>En ${dUntil}d</span></span>`,row:`<span class="chip chip-blue">En ${dUntil}d</span><span class="fl-cl">Libre hasta ${esc(fmtDMY(nextB.startDate))}</span>`,sort:2};}
         return{chip:`<span class="chip chip-green">${ico('check')}<span>Disponible</span></span>`,row:`<span class="chip chip-green">Disponible</span>`,sort:3};
       };
       const drawCompactSection=(list,t)=>{
@@ -7831,6 +7831,7 @@ function editBooking(id){
 function _localDateStr(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
 function _parseDateLocal(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
 function _daysInRange(aDate,bDate){return Math.round((bDate-aDate)/864e5)+1;}
+function _daysUntil(s){const d=safeDate(s);return d?Math.round((_parseDateLocal(d)-_parseDateLocal(todayStr()))/864e5):NaN;} // días de calendario de hoy a la fecha 'aaaa-mm-dd', en hora local (new Date('aaaa-mm-dd') es medianoche UTC)
 
 function proRataEntries(sd, ed, amt, platform, notes, bookingId){
   const startStr=safeDate(sd), endStr=safeDate(ed);
@@ -8676,7 +8677,7 @@ function renderInfo(v){
   const kmDiff=curKm&&maintKm?curKm-maintKm:null;
   const kmExpired=kmDiff!==null&&kmDiff>=10000;const kmUrgent=kmDiff!==null&&kmDiff>=9000&&!kmExpired;
   const maintDateVal=v.maint_date||'';
-  const maintDays=maintDateVal?Math.ceil((new Date(maintDateVal)-new Date())/864e5):null;
+  const maintDays=maintDateVal?_daysUntil(maintDateVal):null;
   const maintDateExpired=maintDays!==null&&maintDays<0;
   const maintDateUrgent=maintDays!==null&&maintDays<=30&&!maintDateExpired;
   // Estado del mantenimiento: rojo si algo ha vencido, acento si está cerca (chip con punto + texto, sin cajas de color)
@@ -8705,7 +8706,7 @@ function renderInfo(v){
   <div class="fl-vls">
     ${ALERT_FIELDS.map(([field,label,ic])=>{
       const val=v[field]||'';
-      const days=val?Math.ceil((new Date(val)-new Date())/864e5):null;
+      const days=val?_daysUntil(val):null;
       const urgent=days!==null&&days<=30;
       const expired=days!==null&&days<0;
       const st=days===null?_chip('chip-gray','Sin fecha'):_chip(expired?'chip-red':urgent?'chip-amber':'chip-green',expired?'Vencido hace '+Math.abs(days)+'d':days===0?'Vence HOY':'Vence en '+days+'d');
@@ -9412,8 +9413,9 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     if(fromMonth&&m<fromMonth)return;if(toMonth&&m>toMonth)return;
     if(!vExps[v.id])vExps[v.id]=0;vExps[v.id]+=Number(e.amount)||0;
   }));
+  const vIncP={};activeV.forEach(v=>{vIncP[v.id]=_getVehicleAllFinances(v).filter(e=>{if(e.type!=='income'||typeof e.date!=='string')return false;const m=e.date.slice(0,7);return(!fromMonth||m>=fromMonth)&&(!toMonth||m<=toMonth);}).reduce((s,e)=>s+(Number(e.amount)||0),0);}); // €/DÍA: ingresos del coche dentro del periodo con el prorrateo por mes de siempre (como los KPI), entre sus días ocupados en el periodo
   const vList=activeV.map(v=>({...v,...(vStats[v.id]||{bks:0,amt:0,days:0,name:v.name,color:v.color||'#8B5CF6'}),exp:vExps[v.id]||0}))
-    .map(v=>({...v,days:vDays[v.id]||0})).map(v=>({...v,profit:v.amt-v.exp,rpd:v.days>0?v.amt/v.days:0}))
+    .map(v=>({...v,days:vDays[v.id]||0})).map(v=>({...v,profit:v.amt-v.exp,rpd:v.days>0?(vIncP[v.id]||0)/v.days:0}))
     .filter(v=>v.bks>0||v.exp>0||v.days>0).sort((a,b)=>b.amt-a.amt);
   const maxAmt=Math.max(1,...vList.map(v=>v.amt));
 
@@ -9443,7 +9445,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
   y+=6;
 
   // ── Top bookings ──────────────────────────────────────────────────────
-  const topBks=[...periodBks].sort((a,b)=>(Number(b.amount)||0)-(Number(a.amount)||0)).slice(0,12);
+  const topBks=[...periodBks].filter(b=>!b.cancelled&&!b.cancellation).sort((a,b)=>(Number(b.amount)||0)-(Number(a.amount)||0)).slice(0,12);
   if(topBks.length){
     if(y>230)y=newPage();
     y=secTitle('Top alquileres del período',y);
@@ -10391,7 +10393,7 @@ function renderRentals(el){
   const recent=all.filter(b=>b.endDate<hoy).sort((a,b)=>b.endDate.localeCompare(a.endDate)).slice(0,6);
 
   const statusChip=b=>{
-    const dEnd=Math.ceil((new Date(b.endDate)-today)/864e5);
+    const dEnd=_daysUntil(b.endDate);
     if(dEnd<=1)return `<span class="chip chip-red">${ico('alert')} Termina hoy</span>`;
     if(dEnd<=2)return `<span class="chip chip-amber">Termina en ${dEnd}d</span>`;
     return `<span class="chip chip-green">${ico('check')} En curso · ${dEnd}d</span>`;
@@ -10423,7 +10425,7 @@ function renderRentals(el){
   // ── Próximos (30 días)
   h+=`<div class="d-sh al-sh"><h2>Próximos</h2><span class="q">30 días · ${_n2(upcoming.length)}</span></div>`;
   if(upcoming.length){
-    h+=`<div class="d-list">${upcoming.map(b=>{const daysUntil=Math.ceil((new Date(b.startDate)-today)/864e5);return bookingRow(b,`<span class="chip chip-blue">En ${daysUntil}d</span>`);}).join('')}</div>`;
+    h+=`<div class="d-list">${upcoming.map(b=>{const daysUntil=_daysUntil(b.startDate);return bookingRow(b,`<span class="chip chip-blue">En ${daysUntil}d</span>`);}).join('')}</div>`;
   } else {
     h+=`<div class="d-empty al-e">${ico('clipboard')}<h3>Sin alquileres próximos</h3><p>Pulsa «Nuevo alquiler» para crear uno</p></div>`;
   }
@@ -11269,8 +11271,9 @@ function buildMonthlyChart(v){
     </div>`;
   }
   // Pending: unpaid bookings for THIS vehicle only
-  const pendingBks=(v.bookings||[]).filter(b=>!b.paid&&Number(b.amount)>0);
-  const totalPending=pendingBks.reduce((s,b)=>s+(Number(b.amount)||0),0);
+  const _pAmt=b=>(b.cancelled||b.cancellation?_bookingRealTotal(b):Number(b.amount)||0); // cancelado: solo su penalización a favor de DEIROS (si la paga DEIROS, sale ≤ 0 y no queda pendiente)
+  const pendingBks=(v.bookings||[]).filter(b=>!b.paid&&_pAmt(b)>0);
+  const totalPending=pendingBks.reduce((s,b)=>s+_pAmt(b),0);
   const pendingRow=totalPending>0
     ?`<div class="d-card s hl fl-pd">
         <div><span class="q ac">Pendiente de cobro</span><div class="d-meta">${pendingBks.length} alquiler${pendingBks.length!==1?'es':''} sin cobrar</div></div>
