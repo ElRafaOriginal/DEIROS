@@ -2039,6 +2039,8 @@ function _clientsMergeBookings(){
     }
   }));
 }
+function _clActiveBkIds(){const s=new Set();V.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&!b.cancellation)s.add(b.id);}));return s;} // ids de los alquileres no cancelados (como #100)
+function _clNBk(cl,act){act=act||_clActiveBkIds();let n=0;new Set(cl.bookingIds||[]).forEach(id=>{if(act.has(id))n++;});return n;} // nº de alquileres de la ficha sin los cancelados
 function _clientsGetBks(cl){
   const ids=new Set(cl.bookingIds||[]);const bks=[];
   V.forEach(v=>(v.bookings||[]).forEach(b=>{if(ids.has(b.id))bks.push({...b,vname:v.name,vcolor:v.color});}));
@@ -2183,7 +2185,7 @@ function _clMoreHtml(cl,pre,sinEmail){
 }
 function _ctClCardHtml(cl){
   if(!cl)return ico('user')+' Sin ficha: se creará al generar el contrato';
-  const n=(cl.bookingIds||[]).length;
+  const n=_clNBk(cl);
   return ico('user')+' Ficha: <b>'+esc(cl.name||'Sin nombre')+'</b>'+(n?' · '+n+' alquiler'+(n!==1?'es':''):'');
 }
 function _ctClPickToggle(){
@@ -2202,7 +2204,7 @@ function renderClientsBody(){
   _clientsMergeBookings();
   const q=_searchClients.toLowerCase();
   const filtered=CL.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.dni||'').toLowerCase().includes(q)||(c.phone||'').includes(q));
-  filtered.sort((a,b)=>(b.bookingIds||[]).length-(a.bookingIds||[]).length);
+  const _act=_clActiveBkIds(),_nb=new Map(filtered.map(c=>[c,_clNBk(c,_act)]));filtered.sort((a,b)=>_nb.get(b)-_nb.get(a)); // «Por alquileres»: sin cancelados
   if(!filtered.length){res.innerHTML=`<div class="d-empty cl-e">${ico(CL.length?'search':'user')}<h3>${CL.length?'Sin resultados':'Sin clientes aún'}</h3><p>${CL.length?'Prueba con otro nombre, DNI o teléfono':'Los clientes se crean automáticamente al añadir alquileres con DNI o nombre'}</p></div>`;return;}
   const open=(cl)=>`_clientDetail='${escJs(cl.id)}';renderClientDetail(document.getElementById('PC'))`;
   const stars=(cl)=>(cl.rating?'<span class="cl-rt">'+ico('star',null,'ico-fill')+' '+esc(cl.rating)+'</span>':'');
@@ -2224,10 +2226,10 @@ function renderClientsBody(){
     h+=`<div class="d-list cl-l">`;
     filtered.forEach((cl,i)=>{
       const bks=_clientsGetBks(cl);const total=bks.reduce((s,b)=>s+(b.cancelled||b.cancellation?_bookingRealTotal(b):Number(b.amount)||0),0);const nBk=bks.filter(b=>!b.cancelled&&!b.cancellation).length; // cancelado: no cuenta como alquiler; suma su penalización neta (_bookingRealTotal), como el informe PDF
-      const ids=[cl.dni,cl.phone].filter(Boolean).map(x=>esc(x)).join(' · ');
+      const ids=[cl.dni,cl.phone].filter(Boolean).map(x=>esc(x)).join(' · ');const ult=bks.find(b=>!b.cancelled&&!b.cancellation); // «Último»: el último no cancelado
       h+=`<div class="d-row cl-r${_clientsMode==='compact'?' cl-rc':''}" onclick="${open(cl)}">
         <span class="q">${String(i+1).padStart(2,'0')}</span>
-        <div class="al-b"><div class="t ell">${esc(cl.name||'Sin nombre')}</div><div class="s ell">${ids||'Sin datos'}${_clientsMode==='compact'?'':' '+stars(cl)}</div>${_clientsMode!=='compact'&&bks.length?`<div class="s ell">Último ${esc(fmtDMY(bks[0].startDate))} · ${esc(bks[0].vname)}</div>`:''}${_clientsMode!=='compact'&&cl.notes?`<div class="cl-nt">${esc(cl.notes)}</div>`:''}</div>
+        <div class="al-b"><div class="t ell">${esc(cl.name||'Sin nombre')}</div><div class="s ell">${ids||'Sin datos'}${_clientsMode==='compact'?'':' '+stars(cl)}</div>${_clientsMode!=='compact'&&ult?`<div class="s ell">Último ${esc(fmtDMY(ult.startDate))} · ${esc(ult.vname)}</div>`:''}${_clientsMode!=='compact'&&cl.notes?`<div class="cl-nt">${esc(cl.notes)}</div>`:''}</div>
         <div class="r"><b class="cl-in">${fmt(total)}</b><span class="mono2">${nBk} ${_clientsMode==='compact'?'alq.':'alquiler'+(nBk!==1?'es':'')}</span></div>
       </div>`;
     });
@@ -2281,7 +2283,7 @@ function renderClientDetail(el){
     <div class="d-tot"><span class="q">Total facturado</span><div class="d-n n2">${esc(_tE)}<small>${esc(_tD)}</small></div><p>${nBk} alquiler${nBk!==1?'es':''} · IVA incluido</p></div>
   </div>
   <div class="d-kpi cl-k"><div><b>${nBk}</b><span>Alquileres</span></div><div><b>${fmt(avgAmount)}</b><span>Ticket medio</span></div><div><b>${cl.rating||0}/5</b><span>Valoración</span></div></div>
-  <div class="d-sh al-sh"><h2>Historial</h2><span class="q">${String(bks.length).padStart(2,'0')}</span></div>`;
+  <div class="d-sh al-sh"><h2>Historial</h2><span class="q">${String(nBk).padStart(2,'0')}</span></div>`;
 
   if(!bks.length){h+=`<div class="d-empty cl-e">${ico('calendar')}<h3>Sin alquileres</h3><p>Aparecerán aquí al asignarle un alquiler</p></div>`;}
   else{
@@ -3652,7 +3654,7 @@ function _clPickerFilter(inputId){
   const list=document.getElementById(inputId+'_list');
   if(!inp||!list)return;
   const q=(inp.value||'').toLowerCase();
-  const items=[...CL].sort((a,b)=>(b.bookingIds||[]).length-(a.bookingIds||[]).length);
+  const _act=_clActiveBkIds(),_nb=new Map(CL.map(c=>[c,_clNBk(c,_act)]));const items=[...CL].sort((a,b)=>_nb.get(b)-_nb.get(a)); // más alquileres (sin cancelados) primero
   const filtered=q?items.filter(c=>c.name.toLowerCase().includes(q)||(c.dni||'').toLowerCase().includes(q)||(c.phone||'').includes(q)):items;
   if(!filtered.length&&!q){list.style.display='none';return;}
   let html='';
@@ -8983,7 +8985,7 @@ function dlMaintReport(vId){
     doc.text('MANTENIMIENTO VENCIDO — '+(curKm-nextKm).toLocaleString('es-ES')+' km desde el último previsto',mg+4,y+7);
     y+=14;
   } else if(nextDate){
-    const daysToNext=Math.ceil((new Date(nextDate)-now)/864e5);
+    const daysToNext=_daysUntil(nextDate);
     if(daysToNext<30&&daysToNext>0){
       doc.setDrawColor(245,158,11);doc.setLineWidth(0.8);doc.line(mg,y,mg,y+10);doc.setLineWidth(0.2);
       doc.setFontSize(8);doc.setFont(undefined,'bold');doc.setTextColor(146,64,14);
