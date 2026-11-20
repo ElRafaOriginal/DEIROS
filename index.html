@@ -215,7 +215,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* SHEET */
 .ov{position:fixed;inset:0;background:#000c;z-index:500;opacity:0;transition:opacity 0.25s;pointer-events:none;}
 .ov.open{opacity:1;pointer-events:all;}
-.sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:var(--bg2);border-radius:var(--r-sheet) var(--r-sheet) 0 0;border:1px solid var(--border2);border-bottom:0;padding:0 16px calc(28px + var(--sb));max-height:94dvh;overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);will-change:transform;}
+.sheet{position:fixed;bottom:var(--kb,0px);left:0;right:0;z-index:501;background:var(--bg2);border-radius:var(--r-sheet) var(--r-sheet) 0 0;border:1px solid var(--border2);border-bottom:0;padding:0 16px calc(28px + var(--sb));max-height:calc(94dvh - var(--kb,0px));overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);will-change:transform;}
 .sheet.open{transform:translateY(0);}
 .sh{width:36px;height:4px;background:var(--border2);border-radius:var(--r-pill);margin:12px auto 20px;}
 .stitle{font-size:var(--fs-h3);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-bottom:6px;}
@@ -12806,6 +12806,30 @@ function _shTryClose(){if(_shG&&_shDirty&&!confirm('¿Descartar cambios?\n\nLo q
   const f=window[n];if(typeof f!=='function')return;
   window[n]=function(){const s=_shSeq,r=f.apply(this,arguments);if(_shSeq!==s)_shG=true;return r;}; // arma el aviso solo si de verdad abrió su hoja
 });
+// ── Teclado del móvil (#108): Android (Chrome 108+, «resizes-visual») e iOS no encogen el viewport de diseño al abrir el teclado,
+//    así que una hoja fixed con bottom:0 queda debajo. --kb = alto tapado abajo (viewport de diseño − visualViewport): todas las hojas
+//    (.sheet: #SH y la de WhatsApp) se apoyan encima del teclado y el campo enfocado se centra dentro de su hoja. Listeners una sola vez.
+(function(){
+  const vv=window.visualViewport;if(!vv)return;
+  const de=document.documentElement;let raf=0;
+  function kb(){
+    const k=vv.scale>1.01?0:Math.round(Math.max(window.innerHeight,de.clientHeight)-vv.height-vv.offsetTop);
+    de.style.setProperty('--kb',(k>50?k:0)+'px');
+  }
+  function show(){
+    raf=0;kb();
+    const a=document.activeElement,sh=a&&a.closest?a.closest('.sheet.open'):null;
+    if(!sh||!/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
+    const r=a.getBoundingClientRect(),s=sh.getBoundingClientRect();
+    const t=Math.max(s.top,vv.offsetTop),bt=Math.min(s.bottom,vv.offsetTop+vv.height);
+    if(r.height<=bt-t){if(r.top<t||r.bottom>bt)sh.scrollTop+=(r.top+r.bottom-t-bt)/2;}
+    else if(r.top>t||r.bottom<bt)sh.scrollTop+=r.top-t;
+  }
+  const later=()=>{if(!raf)raf=requestAnimationFrame(show);};
+  vv.addEventListener('resize',later);
+  vv.addEventListener('scroll',kb);
+  document.addEventListener('focusin',later);
+})();
 
 // ═══════════════════════════════════════════════════════════ AUTH
 function doLogin(){
