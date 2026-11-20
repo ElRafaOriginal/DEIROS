@@ -2093,6 +2093,7 @@ function _clientsMergeBookings(){
   V.forEach(v=>(v.bookings||[]).forEach(b=>{
     if(b.id&&_enl.has(b.id))return;
     if(b.clientDni||b.clientName){
+      if(!_clKey(b.clientDni)&&_clIsAnonName(b.clientName))return;
       const key=(b.clientDni||b.clientName||'').trim().toUpperCase();
       let cl=CL.find(c=>(c.dni&&c.dni.toUpperCase()===key)||(c.name&&c.name.toUpperCase()===(b.clientName||'').toUpperCase()&&!b.clientDni));
       if(!cl){cl={id:uid(),name:b.clientName||'',dni:b.clientDni||'',phone:b.clientPhone||'',email:'',notes:'',rating:0,bookingIds:[]};CL.push(cl);}
@@ -2114,6 +2115,13 @@ function _clientsGetBks(cl){
 function _clKey(s){return String(s==null?'':s).replace(/[\s.\-]/g,'').toUpperCase();}
 function _clTel(s){let t=String(s==null?'':s).replace(/\D/g,'').replace(/^00/,'');if(t.length===11&&t.startsWith('34'))t=t.slice(2);return t;}
 function _clName(s){return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toUpperCase();}
+const _CL_ANON='Cliente anonimizado';
+function _clIsAnonName(s){return _clName(s)===_clName(_CL_ANON);}
+function _clAnonText(s,oldName){
+  s=String(s==null?'':s);const n=String(oldName==null?'':oldName).trim();
+  if(!n||n.length<3||!s)return s;
+  return s.split(n).join(_CL_ANON);
+}
 function _clSame(k,a,b){return k==='phone'?_clTel(a)===_clTel(b):(k==='name'||k==='address'||k==='nationality')?_clName(a)===_clName(b):_clKey(a)===_clKey(b);}
 // Orden: ficha elegida (d.id) → ficha que ya tiene este alquiler (si no es claramente otra persona) → DNI → teléfono →
 // nombre (solo si hay UNA ficha con ese nombre y no tiene otro DNI ni otro teléfono). Sin coincidencia: null.
@@ -2141,6 +2149,7 @@ function _clUpsert(d,opt){
   d=d||{};opt=opt||{};
   const nv=k=>{const s=String(d[k]==null?'':d[k]).trim();return (k==='dni'||k==='license')?s.toUpperCase():s;};
   if(!d.id&&!nv('name')&&!nv('dni')&&!nv('phone'))return null; // sin cliente escrito: nada que buscar ni enlazar
+  if(!d.id&&!nv('dni')&&!nv('phone')&&_clIsAnonName(nv('name')))return null;
   let cl=_clFind({id:d.id,name:nv('name'),dni:nv('dni'),phone:nv('phone')},opt.bId);
   if(!cl){
     if(!nv('name')&&!nv('dni'))return null;
@@ -2441,7 +2450,36 @@ function submitEditClient(id){
 }
 
 function deleteClient(id){
-  if(!confirm('¿Eliminar este cliente? Sus alquileres no se borrarán.'))return;
+  if(!confirm('¿Eliminar este cliente? Sus alquileres y cifras no se borrarán. Se anonimizarán los datos personales (nombre, DNI, teléfono y, si corresponde, el conductor adicional) en esos alquileres y presupuestos, y la ficha no reaparecerá.'))return;
+  const cl=CL.find(c=>c.id===id);if(!cl)return;
+  const ids=new Set(cl.bookingIds||[]);
+  const dni=_clKey(cl.dni),tel=_clTel(cl.phone),nom=_clName(cl.name),oldName=String(cl.name||'').trim();
+  const otherIds=new Set();
+  CL.forEach(c=>{if(c.id!==id)(c.bookingIds||[]).forEach(x=>otherIds.add(x));});
+  const esTitular=b=>ids.has(b.id)||!otherIds.has(b.id)&&((dni&&_clKey(b.clientDni)===dni)||(tel.length>=6&&_clTel(b.clientPhone)===tel&&(!dni||!_clKey(b.clientDni)||_clKey(b.clientDni)===dni))||(!dni&&!_clKey(b.clientDni)&&nom&&!_clIsAnonName(b.clientName)&&_clName(b.clientName)===nom));
+  const esExtra=b=>(b.extraDriverId&&b.extraDriverId===id)||(dni&&_clKey(b.extraDriverDni)===dni);
+  const anonE=e=>{
+    if(!e||oldName.length<3)return;
+    if(e.description)e.description=_clAnonText(e.description,oldName);
+    if(e._bookingRef)e._bookingRef=_clAnonText(e._bookingRef,oldName);
+  };
+  const anonFin=(list,bId)=>(list||[]).forEach(e=>{if(!e)return;const bid=e._bookingId||e.bookingId;if(bid&&bid!==bId)return;anonE(e);});
+  const anonExtra=b=>{b.extraDriverName=_CL_ANON;b.extraDriverDni='';b.extraDriverLicense='';b.extraDriverLicenseExp='';b.extraDriverBirth='';b.extraDriverId='';};
+  const titIds=new Set();
+  V.forEach(v=>(v.bookings||[]).forEach(b=>{
+    if(esTitular(b)){
+      titIds.add(b.id);
+      b.clientName=_CL_ANON;b.clientPhone='';b.clientDni='';
+      if(esExtra(b))anonExtra(b);
+      anonFin(b.finance,b.id);anonFin(b.finances,b.id);
+    }else if(esExtra(b))anonExtra(b);
+  }));
+  V.forEach(v=>(v.finances||[]).forEach(e=>{const bid=e&&(e._bookingId||e.bookingId);if(bid&&titIds.has(bid))anonE(e);}));
+  (BF||[]).forEach(e=>{const bid=e&&(e._bookingId||e.bookingId);if(bid&&titIds.has(bid))anonE(e);});
+  (QT||[]).forEach(q=>{
+    if(!q)return;
+    if(q.clientId===id||(!q.clientId&&nom&&_clName(q.clientName)===nom&&!CL.some(c=>c.id!==id&&_clName(c.name)===nom))){q.clientName=_CL_ANON;q.clientId='';}
+  });
   CL=CL.filter(c=>c.id!==id);
   save();renderClientsBody();
 }
@@ -4953,7 +4991,7 @@ function _ctFold(k){
   if(btn)btn.textContent=open?'Confirmar':'Editar';
   if(!open)_ctSumUpd(k);
 }
-function _ctAgeCheck(sd){const v=id=>(document.getElementById(id)?.value||'').trim();const nac=v('ctClNac');if(!nac)return 'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';let e=_clAge(nac,sd);if(e!=null&&e<26)return _clWarn({birthdate:nac},sd,'')[0];if(document.getElementById('ctHasExtra')?.checked){if(!v('ctEx2Nombre')||!v('ctEx2Nif'))return 'Conductor adicional: faltan el nombre y el NIF/DNI.';const n2=v('ctEx2Birth');if(!n2)return 'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).';e=_clAge(n2,sd);if(e!=null&&e<26)return 'Conductor adicional: '+_clWarn({birthdate:n2},sd,'')[0];}return '';}
+function _ctAgeCheck(sd){const v=id=>(document.getElementById(id)?.value||'').trim();const nac=v('ctClNac');if(!nac)return 'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';let e=_clAge(nac,sd);if(e!=null&&e<26)return _clWarn({birthdate:nac},sd,'')[0];if(document.getElementById('ctHasExtra')?.checked){const n1=v('ctEx2Nombre'),f1=v('ctEx2Nif');if(!n1&&!f1)return 'Conductor adicional: faltan el nombre y el NIF/DNI.';if(!n1)return 'Conductor adicional: falta el nombre.';if(!f1)return _clIsAnonName(n1)?'Conductor adicional: falta el NIF/DNI (el conductor adicional fue borrado).':'Conductor adicional: falta el NIF/DNI.';const n2=v('ctEx2Birth');if(!n2)return 'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).';e=_clAge(n2,sd);if(e!=null&&e<26)return 'Conductor adicional: '+_clWarn({birthdate:n2},sd,'')[0];}return '';}
 function _ctValidate(cur){
   if(cur===2){const _am=_ctAgeCheck(document.getElementById('ctClStatus')?.dataset?.sd||'');if(_am){alert(_am);return false;}}
   const need=cur===1?[['ctArNombre','ctFldAr','Ar'],['ctArNif','ctFldAr','Ar'],['ctArDir','ctFldAr','Ar']]
