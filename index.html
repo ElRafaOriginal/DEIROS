@@ -11831,7 +11831,7 @@ function exportExcel(vId){
 //   users/{uid}/actas/{idAlquiler}__entrega|__devolucion  → acta: km, combustible, notas y miniaturas (240 px)
 //   users/{uid}/actas/{idActa}/fotos/{idFoto}             → una foto comprimida (1280 px, JPEG) por documento
 // Cola sin conexión en IndexedDB («deiros-fotos»): cada foto se guarda primero en el móvil y se sube sola al volver la red.
-// Del alquiler solo se escriben campos que ya existen (delivered, deliveredAt, kmStart, deliveredFuelLevel, deliveryPlace).
+// Del alquiler solo se escriben campos que ya existen (delivered, deliveredAt, kmStart, deliveredFuelLevel, deliveryPlace y returnPlace).
 // Limpieza: 6 meses después de devolver el coche y cerrar la fianza, con aviso antes y «Conservar». El acta se queda.
 const FX_T=[['frontal','Frontal','Frontal'],['lat_der','Lat. dcho.','Lateral derecho'],['trasera','Trasera','Trasera'],['lat_izq','Lat. izdo.','Lateral izquierdo'],['interior','Interior','Interior'],['cuadro','Cuadro','Cuadro']];
 const FX_DMAX=6,FX_KEEP_DAYS=183,FX_FREE_KB=1048576;
@@ -12073,7 +12073,7 @@ function _fxConfirmDelivery(){
   b.delivered=true;if(!b.deliveredAt)b.deliveredAt=new Date().toISOString();
   if(km>0)b.kmStart=km;
   if(fu)b.deliveredFuelLevel=fu;
-  if(pl||b.deliveryPlace!=null)b.deliveryPlace=pl;
+  const _oldPl=b.deliveryPlace||'';if(pl||b.deliveryPlace!=null)b.deliveryPlace=pl;if(pl&&(b.returnPlace||'')===_oldPl)b.returnPlace=pl;
   save();
   _fxActa(bid,'entrega').then(a=>{a.at=new Date().toISOString();a.km=km||null;a.combustible=fu;a.lugar=pl;a.nota=nota;return _fxSaveActa(a);}).then(()=>_fxKick(true)).catch(e=>console.warn('[fotos]',e));
   closeSheet();renderDetail(document.getElementById('PC'));
