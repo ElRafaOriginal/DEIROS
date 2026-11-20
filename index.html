@@ -6106,9 +6106,9 @@ function _emptyCloudState(){
 function _saveToast(text,bg){
   const toast=document.createElement('div');
   // Aviso de cristal: error (rojo) o, si se pasa color, advertencia (acento)
-  toast.className='d-toast d-fl '+(bg?'warn':'err');
+  toast.className='d-toast d-fl '+(bg==='ok'?'ok':bg?'warn':'err');
   toast.setAttribute('role','alert');
-  toast.innerHTML=ico('alert','20');
+  toast.innerHTML=ico(bg==='ok'?'check-circle':'alert','20');
   const _tx=document.createElement('span');_tx.className='grow';_tx.textContent=text;toast.appendChild(_tx);
   document.body.appendChild(toast);
   setTimeout(()=>toast.remove(),6000);
@@ -11912,7 +11912,9 @@ async function _fxFlush(){
         else if(it.t==='x')await _fxT(_fxRef(it.id,it.fid).delete(),20000);
         else if(it.t==='X'){const s=await _fxT(_fxRef(it.id).collection('fotos').get(),20000);for(const d of s.docs)await _fxT(d.ref.delete(),20000);await _fxT(_fxRef(it.id).delete(),20000);}
         await _fxDone(it.k,it.ts);
-      }catch(e){if(!_fxErr(e))console.warn('[fotos] se reintentará:',e&&(e.code||e.message));break;}
+      }catch(e){
+        if(String(e&&e.code)==='invalid-argument'){console.warn('[fotos] descartado (no válido):',it.k);await _fxDone(it.k,it.ts).catch(()=>{});continue;}
+        if(!_fxErr(e))console.warn('[fotos] se reintentará:',e&&(e.code||e.message));break;}
     }
   }catch(e){console.warn('[fotos]',e);}
   finally{_fx.busy=false;await _fxPendRefresh();_fxSched();}
@@ -12291,13 +12293,13 @@ function _fxBackupNote(){
   return '<div id="fxBk">'+_fxBackupNoteIn(st)+'</div>';
 }
 function _fxBackupNoteIn(st){
-  const tot=st&&st.by?(Number(st.by)||0)+(Number(st.main)||0):0,pc=Math.round(tot/FX_FREE_BYTES*100);
+  const calc=!!(st&&st.by!=null),tot=calc?(Number(st.by)||0)+(Number(st.main)||0):0,pc=Math.round(tot/FX_FREE_BYTES*100);
   const d=st&&st.at?new Date(st.at):null,fe=d&&!isNaN(d)?d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
-  const txt=st&&st.by
-    ?'Fotos de entrega y devolución en la nube: ≈'+esc(_fxMB(tot/1024))+' de 1 GB (estimado: base64, miniaturas, índices y datos del negocio) · '+(Number(st.f)||0)+' fotos de '+(Number(st.n)||0)+(Number(st.n)===1?' alquiler':' alquileres')+(fe?' · calculado el '+esc(fe):'')+'.'
+  const txt=calc
+    ?'Fotos de entrega y devolución en la nube: ≈'+esc(_fxMB(tot/1024))+' de 1 GB (estimado: base64, miniaturas, índices y datos del negocio) · '+(Number(st.f)||0)+(Number(st.f)===1?' foto':' fotos')+' de '+(Number(st.n)||0)+(Number(st.n)===1?' alquiler':' alquileres')+(fe?' · calculado el '+esc(fe):'')+'.'
     :'Espacio de las fotos sin calcular.';
   return '<p class="d-hint aj-h fx-bk">'+ico('camera')+' <span>'+txt+' Se borran 6 meses después de cerrar cada alquiler, siempre con aviso antes.'+(pc>=70?' <b>Queda poco espacio gratuito ('+pc+' %).</b>':'')+'</span></p>'
-    +'<button type="button" class="btn-txt" onclick="_fxCalcUi(this)">'+ico('repeat')+' '+(st&&st.by?'Actualizar':'Calcular ahora')+'</button>';
+    +'<button type="button" class="btn-txt" onclick="_fxCalcUi(this)">'+ico('repeat')+' '+(calc?'Actualizar':'Calcular ahora')+'</button>';
 }
 async function _fxCalcUi(btn){
   if(btn){btn.disabled=true;btn.textContent='Calculando…';}
@@ -12318,7 +12320,11 @@ async function _fxCalc(){
   const main=_jsonBytes(_cloudPayload((_loadedRev||0)+1));
   try{localStorage.setItem('deiros_fx_stats',JSON.stringify({kb:kb,n:bids.size,f:f,by:by,main:main,at:new Date().toISOString()}));}catch(e){}
 }
-function _fxBackupToast(){_saveToast('Copia descargada. Las fotos de entrega y devolución no van en esta copia: usa «Exportar copia con fotos» si las quieres.','w');}
+function _fxBackupToast(){
+  let st=null;try{st=JSON.parse(localStorage.getItem('deiros_fx_stats')||'null');}catch(e){}
+  const hay=st&&st.by!=null?Number(st.f)>0:st&&st.n!=null?Number(st.n)>0:Object.values(_fx.A||{}).some(a=>a&&!a.borradas&&(a.fotos||[]).length)||(V||[]).some(v=>(v.bookings||[]).some(b=>b.delivered));
+  if(!hay)return;
+  _saveToast('Copia descargada. Las fotos de entrega y devolución no van en esta copia: usa «Exportar copia con fotos» si las quieres.','w');}
 // Copia con fotos: cada elemento {id, acta, imgs:{idFoto:dataURL}}; devuelve {list,fotos,falta}
 async function _fxBackupActas(){
   const s=await _fxT(db.collection('users').doc(_uid).collection('actas').get(),60000);
@@ -12349,7 +12355,7 @@ async function exportDataConFotos(btn){
     _downloadBackup(obj,'DEIROS_backup_fotos_'+todayStr()+'.json');
     try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
     const bn=document.getElementById('backupReminder');if(bn)bn.remove();
-    _saveToast('Copia con fotos descargada ('+r.fotos+' fotos)'+(r.falta?'; '+r.falta+' fotos no se pudieron leer y no van en la copia.':'.'),r.falta?'w':undefined);
+    _saveToast('Copia con fotos descargada ('+r.fotos+(r.fotos===1?' foto)':' fotos)')+(r.falta?'; '+r.falta+(r.falta===1?' foto no se pudo leer y no va':' fotos no se pudieron leer y no van')+' en la copia.':'.'),r.falta?'w':'ok');
   }catch(e){console.warn('[fotos]',e);_saveToast('No se pudo preparar la copia con fotos. Prueba de nuevo.','w');}
   finally{if(btn){btn.disabled=false;btn.innerHTML=tx;}}
 }
@@ -12360,9 +12366,10 @@ async function _fxRestoreActas(L){
     try{
       if(!_isPlainObject(e)||!_isPlainObject(e.acta)){skip++;continue;}
       const bid=String(e.acta.bid||''),fase=e.acta.fase;
-      if(!bid||(fase!=='entrega'&&fase!=='devolucion')){skip++;continue;}
+      if(!bid||(fase!=='entrega'&&fase!=='devolucion')||!(/^[A-Za-z0-9_-]{1,120}$/.test(bid)||_fxVB(bid))){skip++;continue;}
       const aid=_fxAid(bid,fase),imgs=_isPlainObject(e.imgs)?e.imgs:{};
       const doc=JSON.parse(JSON.stringify(e.acta));delete doc.subida;doc.bid=bid;doc.fase=fase;
+      if(!doc.borradas)doc.borradas=null;
       doc.fotos=Array.isArray(doc.fotos)?doc.fotos.filter(f=>_isPlainObject(f)&&/^[A-Za-z0-9_-]{1,40}$/.test(String(f.id))&&(doc.borradas||_fxSrc(imgs[f.id]))):[];
       doc.fotos.forEach(f=>{if(f.th&&!_fxSrc(f.th))delete f.th;});
       doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);
@@ -12601,11 +12608,11 @@ function _replacePhotos(photos){
   }catch(e){skipped++;}
   return skipped;
 }
-function exportData(){
+function exportData(silent){
   _downloadBackup(_backupObject(),'DEIROS_backup_'+todayStr()+'.json');
   try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
   const _bn=document.getElementById('backupReminder');if(_bn)_bn.remove();
-  _fxBackupToast();
+  if(!silent)_fxBackupToast();
 }
 // Altura real de #BN -> --bn-h (ya incluye padding y safe-area). Solo se mide si #BN es visible.
 // Además recoloca #backupReminder por encima de #QA mientras #QA sea visible.
@@ -12680,7 +12687,7 @@ function importData(event){
         ?'Esto reemplazará vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos. Antes se descargará una copia del estado actual. ¿Continuar?'
         :'Este fichero es una copia antigua (solo vehículos y finanzas). Se sustituirán solo esos datos y NO se borrarán propietarios, clientes, recurrentes, presupuestos, empresa ni fotos. Antes se descargará una copia del estado actual. ¿Continuar?';
       if(!confirm(msg+(full&&Array.isArray(data.fotosActas)&&data.fotosActas.length?' También se restaurarán las fotos de entrega y devolución (se subirán a la nube en segundo plano).':'')))return;
-      exportData();
+      exportData(1);
       if(full){
         V=data.vehicles;
         BF=Array.isArray(data.bizFinances)?data.bizFinances:[];
@@ -12705,7 +12712,7 @@ function importData(event){
       if(full&&Array.isArray(data.fotosActas)&&_uid){
         try{
           const fx=await _fxRestoreActas(data.fotosActas);
-          if(fx.n||fx.skip)_saveToast('Fotos restauradas: '+fx.n+(fx.skip?' ('+fx.skip+' omitidas)':'')+'. Se suben a la nube en segundo plano.','w');
+          if(fx.n||fx.skip)_saveToast('Fotos restauradas: '+fx.n+(fx.skip?' ('+fx.skip+' omitidas)':'')+'. Se suben a la nube en segundo plano.',fx.skip?'w':'ok');
         }catch(e){console.warn('[fotos]',e);}
       }
       closeSheet();nav('dashboard');
