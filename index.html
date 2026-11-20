@@ -3767,6 +3767,11 @@ function _clPickerClear(inputId){
 
 
 function toggleDelivery(bookingId){
+  // #105: sin entregar, abre «Entregar coche» (km, combustible y fotos); quien llama cierra su hoja y repinta como siempre.
+  // Deshacer «Entregado» sigue siendo un toque y no borra las fotos.
+  const _fxB=_fxVB(bookingId);
+  if(_fxB&&!_fxB.b.delivered){closeSheet();setTimeout(function(){_fxDeliver(bookingId);},200);return;}
+  if(_fxB&&_fxCount(bookingId,'entrega'))_saveToast('Las fotos de la entrega se conservan en el alquiler.','w');
   V.forEach(v=>{const b=(v.bookings||[]).find(b=>b.id===bookingId);if(b){
     b.delivered=!b.delivered;
     if(b.delivered&&!b.deliveredAt)b.deliveredAt=new Date().toISOString();
@@ -4071,10 +4076,12 @@ function openReturnModal(bookingId){
     +'<div>Combustible entrega<b>'+(delivFuel?esc(delivFuel):'no registrado')+'</b></div>'
     +'<div class="w2">Km incluidos<b>'+(isIlim?'Ilimitados':kmLimit.toLocaleString('es-ES')+' km')+'</b></div>'
     +'</div>'
-    +'<div class="al-h"><span class="q ac">01</span><h3>Kilómetros</h3></div>'
+    +'<div class="al-h"><span class="q ac">01</span><h3>Fotos de devolución</h3><span class="q">Opcionales</span></div>'
+    +'<div id="fxGrid" data-bid="'+esc(bookingId)+'"><p class="d-hint">Cargando fotos…</p></div>'
+    +'<div class="al-h"><span class="q ac">02</span><h3>Kilómetros</h3></div>'
     +'<div class="d-f"><label class="q" for="retKm">Km actuales *</label>'
     +'<input id="retKm" type="number" inputmode="numeric" placeholder="Ej: 141200" oninput="_calcReturnSummary()"/></div>'
-    +'<div class="al-h"><span class="q ac">02</span><h3>Combustible</h3></div>'
+    +'<div class="al-h"><span class="q ac">03</span><h3>Combustible</h3></div>'
     +(delivFuel?'':'<div class="d-f"><span class="q">Nivel en entrega</span>'+_fuSeg('retDeliv','Lleno (100%)')
     +'<select id="retDeliv" class="al-hid" onchange="_calcReturnSummary()">'
     +fuelOpts.map(f=>'<option'+(f==='Lleno (100%)'?' selected':'')+'>'+f+'</option>').join('')+'</select>'
@@ -4085,7 +4092,7 @@ function openReturnModal(bookingId){
     +fuelOpts.map(f=>'<option>'+f+'</option>').join('')
     +'</select></div>'
     +'<div id="retSummary" class="al-rs" style="display:none"></div>'
-    +'<div class="al-h"><span class="q ac">03</span><h3>Cargos</h3></div>'
+    +'<div class="al-h"><span class="q ac">04</span><h3>Cargos</h3></div>'
     +'<div class="d-2"><div class="d-f"><label class="q" for="retKmExtra">Km extra</label><input id="retKmExtra" type="number" min="0" inputmode="numeric" value="0" oninput="_retKmAmtSync()"/></div>'
     +'<div class="d-f"><label class="q" for="retKmAmt">Importe km</label><div class="d-pre"><span>€</span><input id="retKmAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0" oninput="_retTotUpd()"/></div></div></div>'
     +(fuelProd==='elec'
@@ -4102,6 +4109,7 @@ function openReturnModal(bookingId){
     +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmReturn()">'+ico('check-circle')+' Confirmar devolución</button>')
     +'<button class="btn-sec" onclick="closeSheet()">Cancelar</button></div>');
   if(fuelProd!=='elec')_retLoadMunis();
+  _fxMount(bookingId,'devolucion');
 }
 
 // Fracción del depósito por nivel. Reserva = 10 %.
@@ -4181,6 +4189,7 @@ function _confirmReturn(){
     if(kmAmt>0)b.finance.push({id:uid(),type:'income',concept:'Exceso de km',amount:kmAmt,date:todayStr(),notes:kmEx+' km extra en devolución',_returnCharge:true});
     if(fuAmt>0)b.finance.push({id:uid(),type:'income',concept:'Combustible faltante',amount:fuAmt,date:todayStr(),notes:(fuL>0?'Faltan '+fuL+' L ('+(b.deliveredFuelLevel||'?')+' → '+retFuel+')'+(fuP>0?' · '+fuP+' €/L + '+(window._retRecargo??2)+' €/L de recargo':''):'Combustible en devolución: '+retFuel),_returnCharge:true});
     if(kmEnd>Number(v.km||0))v.km=String(kmEnd);
+    _fxOnReturn(b.id,kmEnd,retFuel);
     save();closeSheet();renderDetail(document.getElementById('PC'));
   }});});
 }
@@ -7625,6 +7634,7 @@ function showBooking(k,_overrideId){
       h+='<button class="_bfbtn btn-sec" data-bfid="'+esc(b.id)+'" data-bftype="expense">+ Gasto</button>';
       h+='</div></div></section>';return h;
     })()}
+    ${b.delivered?`<section class="al-s" id="fxSec" data-bid="${esc(b.id)}"></section>`:''}
     <section class="al-s">
       <div class="al-h"><h3>Más acciones</h3></div>
       <div class="d-acts"><div class="two al-two">
@@ -7640,6 +7650,7 @@ function showBooking(k,_overrideId){
         <button class="btn-txt err" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">${ico('trash')} Eliminar</button>
       </div>
     </section>`);
+  if(b.delivered)_fxFichaFill(b.id);
 }
 
 // ─── CANCELACIÓN DE ALQUILER ──────────────────────────────────────────────
@@ -8078,6 +8089,8 @@ function submitEditBooking(id){
 }
 
 function deleteBooking(id){
+  const _fxN=_fxCount(id);
+  if(_fxN&&!confirm('Se borrarán también las '+_fxN+' fotos de entrega y devolución.\n\n¿Eliminar el alquiler?'))return;
   const v=gV();if(!v)return;
   const b=(v.bookings||[]).find(b=>b.id===id);
   if(b){
@@ -8086,6 +8099,7 @@ function deleteBooking(id){
     v.finances=(v.finances||[]).filter(f=>!ids.includes(f.id)&&f.bookingId!==id&&f._bookingId!==id);
   }
   v.bookings=(v.bookings||[]).filter(b=>b.id!==id);
+  _fxDropBooking([id]);
   save();renderDetail(document.getElementById('PC'));
 }
 
@@ -11099,7 +11113,7 @@ function deleteV(id){
     <div class="d-acts al-end"><button class="btn-dang" onclick="confirmDelete('${escJs(id)}')">${ico('trash')} Eliminar definitivamente</button>
     <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
 }
-function confirmDelete(id){V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
+function confirmDelete(id){_fxDropBooking(((V.find(v=>v.id===id)||{}).bookings||[]).map(b=>b.id));V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
 
 // ═══════════════════════════════════════════════════════════ ADD VEHICLE
 function openAddV(){
@@ -12284,6 +12298,7 @@ function openBackup(){
     </div>
     <button class="btn-pri" onclick="exportData()">${ico('download')} Exportar copia completa (JSON)</button>
     <p class="d-hint aj-h">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</p>
+    ${_fxBackupNote()}
     <div class="al-h"><h3>Importar</h3><span class="q">JSON</span></div>
     <label class="btn-sec aj-up">
       ${ico('upload')} Seleccionar fichero JSON
@@ -12479,6 +12494,7 @@ function exportData(){
   _downloadBackup(_backupObject(),'DEIROS_backup_'+todayStr()+'.json');
   try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
   const _bn=document.getElementById('backupReminder');if(_bn)_bn.remove();
+  _fxBackupToast();
 }
 // Altura real de #BN -> --bn-h (ya incluye padding y safe-area). Solo se mide si #BN es visible.
 // Además recoloca #backupReminder por encima de #QA mientras #QA sea visible.
@@ -13880,6 +13896,7 @@ auth.onAuthStateChanged(async user=>{
     nav('dashboard');
     initNotifications();
     setTimeout(checkBackupReminder,4000);
+    setTimeout(_fxBoot,2500);
   }else{
     clearTimeout(_saveTimer);
     _saveTimer=null;
