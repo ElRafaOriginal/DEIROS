@@ -2186,7 +2186,7 @@ function _clDniChange(curId,nuevoDni,opt){
 }
 // Avisos (no bloquean): 26 años cumplidos el día de inicio; carnet en vigor hasta la devolución
 // Puerta al guardar un alquiler: devuelve el texto de error o '' si tiene 26 cumplidos el día de inicio
-function _clAgeGate(nac,sd,extra){const e=_clAge(nac,sd);if(e==null)return extra?'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).':'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';if(e<26)return (extra?'Conductor adicional: ':'')+'Menor de 26 en la fecha de inicio: no se puede alquilar';return '';}
+function _clAgeGate(nac,sd,extra){const e=_clAge(nac,sd);if(e==null)return extra?'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).':'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';if(e<26)return (extra?'Conductor adicional: menor':'Menor')+' de 26 en la fecha de inicio: no se puede alquilar';return '';}
 function _clAge(nac,dia){const a=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(nac||'')),b=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(dia||''));if(!a||!b)return null;let e=+b[1]-+a[1];if(b[2]+b[3]<a[2]+a[3])e--;return e;}
 function _clWarn(d,sd,ed){
   const w=[];const e=_clAge(d.birthdate,sd);
@@ -2200,7 +2200,7 @@ function _clStatusHtml(d,sd,ed,warnOnly){
   const row=(c,i,t)=>'<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;line-height:1.4;margin-top:4px;color:'+c+'">'+ico(i)+'<span>'+esc(t)+'</span></div>';
   let h='';
   if(!warnOnly){const miss=_CL_NEED.filter(x=>!String(d[x[0]]||'').trim()).map(x=>x[1]);h+=miss.length?row('var(--amber)','id-card','Faltan: '+miss.join(', ')):row('var(--green)','id-card','Ficha completa');}
-  _clWarn(d,sd,ed).forEach(t=>{h+=row('var(--red)','alert',(warnOnly||'')+t);});
+  _clWarn(d,sd,ed).forEach(t=>{h+=row('var(--red)','alert',(warnOnly||'')+(warnOnly?t.replace(/^Menor/,'menor'):t));});
   return h;
 }
 // Formularios con buscador de clientes: campo de cada dato (f), copias ocultas (mirror) y línea de estado (st)
@@ -4953,7 +4953,7 @@ function _ctFold(k){
   if(btn)btn.textContent=open?'Confirmar':'Editar';
   if(!open)_ctSumUpd(k);
 }
-function _ctAgeCheck(sd){const v=id=>(document.getElementById(id)?.value||'').trim();const nac=v('ctClNac');if(!nac)return 'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';let e=_clAge(nac,sd);if(e!=null&&e<26)return _clWarn({birthdate:nac},sd,'')[0];if(document.getElementById('ctHasExtra')?.checked){if(!v('ctEx2Nombre')||!v('ctEx2Nif'))return 'Conductor adicional: faltan el nombre y el NIF/DNI.';const n2=v('ctEx2Birth');if(!n2)return 'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).';e=_clAge(n2,sd);if(e!=null&&e<26)return 'Conductor adicional: '+_clWarn({birthdate:n2},sd,'')[0];}return '';}
+function _ctAgeCheck(sd){const v=id=>(document.getElementById(id)?.value||'').trim();const nac=v('ctClNac');if(!nac)return 'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';let e=_clAge(nac,sd);if(e!=null&&e<26)return _clWarn({birthdate:nac},sd,'')[0];if(document.getElementById('ctHasExtra')?.checked){if(!v('ctEx2Nombre')||!v('ctEx2Nif'))return 'Conductor adicional: faltan el nombre y el NIF/DNI.';const n2=v('ctEx2Birth');if(!n2)return 'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).';e=_clAge(n2,sd);if(e!=null&&e<26)return 'Conductor adicional: '+_clWarn({birthdate:n2},sd,'')[0].replace(/^Menor/,'menor');}return '';}
 function _ctValidate(cur){
   if(cur===2){const _am=_ctAgeCheck(document.getElementById('ctClStatus')?.dataset?.sd||'');if(_am){alert(_am);return false;}}
   const need=cur===1?[['ctArNombre','ctFldAr','Ar'],['ctArNif','ctFldAr','Ar'],['ctArDir','ctFldAr','Ar']]
@@ -8006,8 +8006,11 @@ function submitEditBooking(id){
   const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
   if(ne<=ns){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
-  {const _eg=_clAge(_clFormVals('rClientPicker').birthdate,sd);if(_eg!=null&&_eg<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}
-   if(b.hasExtraDriver||b.extraDriverName){const _xg=_clAge(b.extraDriverBirth,sd);if(_xg!=null&&_xg<26){alert('Conductor adicional: Menor de 26 en la fecha de inicio: no se puede alquilar');return;}}}
+  const _clD=_clFormVals('rClientPicker');_clD.dni=(_clD.dni||'').toUpperCase();
+  const _pkE=document.getElementById('rClientPicker')?.dataset?.clId||'';
+  const _curE=(_pkE&&CL.find(x=>x.id===_pkE))||CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(id))||null;
+  {const _eg=_clAge(String(_clD.birthdate||'').trim()||(_curE&&_curE.birthdate)||'',sd);if(_eg!=null&&_eg<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}
+   if(b.hasExtraDriver||b.extraDriverName){const _xf=b.extraDriverId&&CL.find(x=>x.id===b.extraDriverId);const _xg=_clAge(b.extraDriverBirth||(_xf&&_xf.birthdate)||'',sd);if(_xg!=null&&_xg<26){alert('Conductor adicional: menor de 26 en la fecha de inicio: no se puede alquilar');return;}}}
 
   const newVehicleId=document.getElementById('rNewVehicle')?.value||v.id;
   const targetV=V.find(x=>x.id===newVehicleId)||v;
@@ -8021,9 +8024,6 @@ function submitEditBooking(id){
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
 
   // DNI escrito: si es de otra ficha, se decide ANTES de tocar el alquiler (cancelar = no cambia nada)
-  const _clD=_clFormVals('rClientPicker');_clD.dni=(_clD.dni||'').toUpperCase();
-  const _pkE=document.getElementById('rClientPicker')?.dataset?.clId||'';
-  const _curE=(_pkE&&CL.find(x=>x.id===_pkE))||CL.find(x=>Array.isArray(x.bookingIds)&&x.bookingIds.includes(id))||null;
   const _chgE=_clDniChange(_curE?_curE.id:_pkE,_clD.dni,{bId:id,startDate:sd,requireBirth:false});
   if(!_chgE.ok)return;
 
