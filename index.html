@@ -2187,12 +2187,15 @@ function _clDniChange(curId,nuevoDni,opt){
   if(!confirm(msg))return {ok:false};
   if(opt.startDate){
     const e=_clAge(other.birthdate,opt.startDate);
-    if(e!=null&&e<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return {ok:false};}
+    if(e==null){alert('La ficha elegida no tiene fecha de nacimiento: es obligatoria para comprobar la edad mínima (26 años). Complétala en la ficha del cliente.');return {ok:false};}
+    if(e<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return {ok:false};}
   }
   if(opt.bId)_clUpsert({id:other.id},{bId:opt.bId,linkOnly:true});
   return {ok:true,other};
 }
 // Avisos (no bloquean): 26 años cumplidos el día de inicio; carnet en vigor hasta la devolución
+// Puerta al guardar un alquiler: devuelve el texto de error o '' si tiene 26 cumplidos el día de inicio
+function _clAgeGate(nac,sd,extra){const e=_clAge(nac,sd);if(e==null)return extra?'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).':'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';if(e<26)return (extra?'Conductor adicional: ':'')+'Menor de 26 en la fecha de inicio: no se puede alquilar';return '';}
 function _clAge(nac,dia){const a=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(nac||'')),b=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(dia||''));if(!a||!b)return null;let e=+b[1]-+a[1];if(b[2]+b[3]<a[2]+a[3])e--;return e;}
 function _clWarn(d,sd,ed){
   const w=[];const e=_clAge(d.birthdate,sd);
@@ -6144,9 +6147,9 @@ function _emptyCloudState(){
 function _saveToast(text,bg){
   const toast=document.createElement('div');
   // Aviso de cristal: error (rojo) o, si se pasa color, advertencia (acento)
-  toast.className='d-toast d-fl '+(bg?'warn':'err');
+  toast.className='d-toast d-fl '+(bg==='ok'?'ok':bg?'warn':'err');
   toast.setAttribute('role','alert');
-  toast.innerHTML=ico('alert','20');
+  toast.innerHTML=ico(bg==='ok'?'check-circle':'alert','20');
   const _tx=document.createElement('span');_tx.className='grow';_tx.textContent=text;toast.appendChild(_tx);
   document.body.appendChild(toast);
   setTimeout(()=>toast.remove(),6000);
@@ -8041,7 +8044,8 @@ function submitEditBooking(id){
   const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
   if(ne<=ns){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
-  {const _ea=_clAge(_clFormVals('rClientPicker').birthdate,sd);if(_ea!=null&&_ea<26)alert('Aviso: el titular es menor de 26 en la fecha de inicio. Se guarda la edición del alquiler existente.');}
+  {const _eg=_clAgeGate(_clFormVals('rClientPicker').birthdate,sd,false);if(_eg){alert(_eg);return;}
+   if(b.hasExtraDriver||b.extraDriverName){const _xg=_clAgeGate(b.extraDriverBirth,sd,true);if(_xg){alert(_xg+'\nSe completa en el contrato, donde están los datos del conductor adicional.');return;}}}
 
   const newVehicleId=document.getElementById('rNewVehicle')?.value||v.id;
   const targetV=V.find(x=>x.id===newVehicleId)||v;
@@ -8401,7 +8405,7 @@ function submitRental(){
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
   const conflict=_findBookingConflict(v,sd,st,ed,et);
   if(conflict){alert('Conflicto:\n'+_conflictText(conflict));return;}
-  {const _ea=_clAge(_clD.birthdate,sd);if(_ea!=null&&_ea<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}}
+  {const _eg=_clAgeGate(_clD.birthdate,sd,false);if(_eg){alert(_eg);return;}}
   const bId=uid();
   // Ficha única (antes de crear nada): DNI de otra ficha → confirma y enlaza; si se cancela algo, no se crea el alquiler
   {
@@ -11872,7 +11876,11 @@ function exportExcel(vId){
 // Del alquiler solo se escriben campos que ya existen (delivered, deliveredAt, kmStart, deliveredFuelLevel, deliveryPlace y returnPlace).
 // Limpieza: 6 meses después de devolver el coche y cerrar la fianza, con aviso antes y «Conservar». El acta se queda.
 const FX_T=[['frontal','Frontal','Frontal'],['lat_der','Lat. dcho.','Lateral derecho'],['trasera','Trasera','Trasera'],['lat_izq','Lat. izdo.','Lateral izquierdo'],['interior','Interior','Interior'],['cuadro','Cuadro','Cuadro']];
-const FX_DMAX=6,FX_KEEP_DAYS=183,FX_FREE_KB=1048576;
+const FX_DMAX=6,FX_KEEP_DAYS=183,FX_FREE_BYTES=1073741824,FX_OVH=6144; // FX_OVH: estimación de bytes de índices y metadatos por documento de foto
+// Lista local de actas ya limpias (sin fotos o ya borradas): la tarea diaria no las vuelve a pedir
+function _fxCleanGet(){try{const a=JSON.parse(localStorage.getItem('deiros_fx_clean')||'[]');return new Set(Array.isArray(a)?a:[]);}catch(e){return new Set();}}
+function _fxCleanSet(s){try{localStorage.setItem('deiros_fx_clean',JSON.stringify([...s].slice(-3000)));}catch(e){}}
+function _fxCleanDel(aid){const s=_fxCleanGet();if(s.delete(aid))_fxCleanSet(s);}
 const FX_NOTAS=['Arañazo','Golpe','Roce','Llanta','Cristal','Tapicería','Suciedad'];
 const FX_FUEL=['Reserva','1/4','1/2','3/4','Lleno (100%)'];
 let _fx={db:null,uid:null,A:{},unk:new Set(),pend:new Set(),qn:0,sig:'',busy:false,timer:null,kt:null,stop:false,toastP:false,toastF:false,bid:null,fase:null,tipo:null,rep:null,skip:[],old:[],vl:[],vi:0,ve:false,cl:[],cb:null,cm:'cmp'};
@@ -11946,7 +11954,9 @@ async function _fxFlush(){
         else if(it.t==='x')await _fxT(_fxRef(it.id,it.fid).delete(),20000);
         else if(it.t==='X'){const s=await _fxT(_fxRef(it.id).collection('fotos').get(),20000);for(const d of s.docs)await _fxT(d.ref.delete(),20000);await _fxT(_fxRef(it.id).delete(),20000);}
         await _fxDone(it.k,it.ts);
-      }catch(e){if(!_fxErr(e))console.warn('[fotos] se reintentará:',e&&(e.code||e.message));break;}
+      }catch(e){
+        if(String(e&&e.code)==='invalid-argument'){console.warn('[fotos] descartado (no válido):',it.k);await _fxDone(it.k,it.ts).catch(()=>{});continue;}
+        if(!_fxErr(e))console.warn('[fotos] se reintentará:',e&&(e.code||e.message));break;}
     }
   }catch(e){console.warn('[fotos]',e);}
   finally{_fx.busy=false;await _fxPendRefresh();_fxSched();}
@@ -11973,6 +11983,7 @@ async function _fxSaveActa(a){
   a.kb=a.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);
   _fx.A[id]=a;
   const doc=JSON.parse(JSON.stringify(a));delete doc.subida;
+  _fxCleanDel(id);
   await _fxPut('acta',doc,_uid+'|'+id);
   await _fxQ('a:'+id,{t:'a',id:id,doc:doc,m:_fx.unk.has(id)?1:0});
 }
@@ -12244,10 +12255,26 @@ async function _fxDaily(force){
   if(!_uid)return;
   const day=_uid+'|'+todayStr();
   try{if(!force&&localStorage.getItem('deiros_fx_day')===day)return;}catch(e){}
-  let s;try{s=await _fxT(db.collection('users').doc(_uid).collection('actas').get(),20000);}catch(e){_fxErr(e);return;}
+  // Candidatos en local (sin red): alquileres devueltos, con fianza cerrada y de hace más de 6 meses
+  const lim=Date.now()-FX_KEEP_DAYS*864e5,clean=_fxCleanGet(),ids=[];
+  (V||[]).forEach(v=>(v.bookings||[]).forEach(b=>{
+    if(!b.returned||_fianzaStatus(b)==='pending')return;
+    const t=Math.max(Date.parse(b.returnedAt||'')||0,Date.parse(b.fianzaReturnedAt||'')||0);
+    if(!t||t>lim)return;
+    ['entrega','devolucion'].forEach(fase=>{const aid=_fxAid(b.id,fase);if(!clean.has(aid))ids.push(aid);});
+  }));
+  const docs=[];
+  try{
+    for(let i=0;i<ids.length;i+=30){
+      const s=await _fxT(db.collection('users').doc(_uid).collection('actas').where(firebase.firestore.FieldPath.documentId(),'in',ids.slice(i,i+30)).get(),20000);
+      s.docs.forEach(x=>docs.push({aid:x.id,a:x.data()||{}}));
+    }
+  }catch(e){_fxErr(e);return;}
   try{localStorage.setItem('deiros_fx_day',day);}catch(e){}
-  let kb=0;const bids=new Set(),by={},lim=Date.now()-FX_KEEP_DAYS*864e5;
-  s.docs.forEach(x=>{const a=x.data()||{},F=Array.isArray(a.fotos)?a.fotos:[];kb+=Number(a.kb)||0;if(F.length&&!a.borradas){bids.add(a.bid);(by[a.bid]=by[a.bid]||[]).push(a);}});
+  const bids=new Set(),by={},seen=new Set();
+  docs.forEach(({aid,a})=>{seen.add(aid);const F=Array.isArray(a.fotos)?a.fotos:[];if(F.length&&!a.borradas){bids.add(a.bid);(by[a.bid]=by[a.bid]||[]).push(a);if(!a.keep)return;}if(!a.keep)clean.add(aid);});
+  ids.forEach(aid=>{if(!seen.has(aid))clean.add(aid);});
+  _fxCleanSet(clean);
   const old=[];
   Object.keys(by).forEach(bid=>{
     const L=by[bid];if(L.some(a=>a.keep))return;
@@ -12257,7 +12284,6 @@ async function _fxDaily(force){
     if(!t||t>lim)return;
     old.push({bid:bid,kb:L.reduce((n,a)=>n+(Number(a.kb)||0),0),n:L.reduce((n,a)=>n+a.fotos.length,0)});
   });
-  try{localStorage.setItem('deiros_fx_stats',JSON.stringify({kb:kb,n:bids.size,at:new Date().toISOString()}));}catch(e){}
   _fx.old=old;
   if(old.length)_fxOldNotice(force);
 }
@@ -12297,6 +12323,7 @@ async function _fxPurge(){
     const aid=_fxAid(o.bid,fase);
     for(const f of a.fotos){await _fxDropFoto(aid,f.id);delete f.th;f.kb=0;}
     a.borradas=new Date().toISOString();await _fxSaveActa(a);
+    const cl=_fxCleanGet();cl.add(aid);_fxCleanSet(cl);
   }
   try{localStorage.removeItem('deiros_fx_day');}catch(e){}
   _saveToast('Fotos antiguas borradas: '+L.length+(L.length===1?' alquiler':' alquileres')+'. Las actas se conservan.','w');
@@ -12305,10 +12332,101 @@ async function _fxPurge(){
 // ── Copia de seguridad v4: no incluye estas fotos (se avisa en la hoja y al exportar)
 function _fxBackupNote(){
   let st=null;try{st=JSON.parse(localStorage.getItem('deiros_fx_stats')||'null');}catch(e){}
-  const k=st&&Number(st.kb)||0,pc=Math.round(k/FX_FREE_KB*100);
-  return '<p class="d-hint aj-h fx-bk">'+ico('camera')+' <span>No incluye las fotos de entrega y devolución de los alquileres: se quedan en la nube'+(st&&st.n?' ('+esc(_fxMB(k))+' de 1 GB · '+st.n+(st.n===1?' alquiler':' alquileres')+')':'')+' y se borran 6 meses después de cerrar cada alquiler, siempre con aviso antes.'+(pc>=70?' <b>Queda poco espacio gratuito ('+pc+' %).</b>':'')+'</span></p>';
+  return '<div id="fxBk">'+_fxBackupNoteIn(st)+'</div>';
 }
-function _fxBackupToast(){let st=null;try{st=JSON.parse(localStorage.getItem('deiros_fx_stats')||'null');}catch(e){}if(st&&st.n)_saveToast('Copia descargada. No incluye las fotos de entrega y devolución: siguen en la nube.','w');}
+function _fxBackupNoteIn(st){
+  const calc=!!(st&&st.by!=null),tot=calc?(Number(st.by)||0)+(Number(st.main)||0):0,pc=Math.round(tot/FX_FREE_BYTES*100);
+  const d=st&&st.at?new Date(st.at):null,fe=d&&!isNaN(d)?d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+  const txt=calc
+    ?'Fotos de entrega y devolución en la nube: ≈'+esc(_fxMB(tot/1024))+' de 1 GB (estimado: base64, miniaturas, índices y datos del negocio) · '+(Number(st.f)||0)+(Number(st.f)===1?' foto':' fotos')+' de '+(Number(st.n)||0)+(Number(st.n)===1?' alquiler':' alquileres')+(fe?' · calculado el '+esc(fe):'')+'.'
+    :'Espacio de las fotos sin calcular.';
+  return '<p class="d-hint aj-h fx-bk">'+ico('camera')+' <span>'+txt+' Se borran 6 meses después de cerrar cada alquiler, siempre con aviso antes.'+(pc>=70?' <b>Queda poco espacio gratuito ('+pc+' %).</b>':'')+'</span></p>'
+    +'<button type="button" class="btn-txt" onclick="_fxCalcUi(this)">'+ico('repeat')+' '+(calc?'Actualizar':'Calcular ahora')+'</button>';
+}
+async function _fxCalcUi(btn){
+  if(btn){btn.disabled=true;btn.textContent='Calculando…';}
+  try{await _fxCalc();}catch(e){_saveToast('No se pudo calcular el espacio de las fotos.','w');}
+  const el=document.getElementById('fxBk');
+  if(el){let st=null;try{st=JSON.parse(localStorage.getItem('deiros_fx_stats')||'null');}catch(e){}el.innerHTML=_fxBackupNoteIn(st);}
+}
+// Calcula el espacio que ocupan las fotos en la nube (solo lo pide el usuario: descarga todas las actas)
+async function _fxCalc(){
+  const s=await _fxT(db.collection('users').doc(_uid).collection('actas').get(),60000);
+  let kb=0,f=0,by=0;const bids=new Set();
+  s.docs.forEach(x=>{
+    const a=x.data()||{};if(a.borradas)return;
+    const F=Array.isArray(a.fotos)?a.fotos:[];
+    kb+=Number(a.kb)||0;if(F.length)bids.add(a.bid);by+=3072;
+    F.forEach(p=>{f++;by+=Math.ceil((Number(p.kb)||0)*1024/3)*4+FX_OVH+(_fxSrc(p.th)||'').length;});
+  });
+  const main=_jsonBytes(_cloudPayload((_loadedRev||0)+1));
+  try{localStorage.setItem('deiros_fx_stats',JSON.stringify({kb:kb,n:bids.size,f:f,by:by,main:main,at:new Date().toISOString()}));}catch(e){}
+}
+function _fxBackupToast(){
+  let st=null;try{st=JSON.parse(localStorage.getItem('deiros_fx_stats')||'null');}catch(e){}
+  const hay=st&&st.by!=null?Number(st.f)>0:st&&st.n!=null?Number(st.n)>0:Object.values(_fx.A||{}).some(a=>a&&!a.borradas&&(a.fotos||[]).length)||(V||[]).some(v=>(v.bookings||[]).some(b=>b.delivered));
+  if(!hay)return;
+  _saveToast('Copia descargada. Las fotos de entrega y devolución no van en esta copia: usa «Exportar copia con fotos» si las quieres.','w');}
+// Copia con fotos: cada elemento {id, acta, imgs:{idFoto:dataURL}}; devuelve {list,fotos,falta}
+async function _fxBackupActas(){
+  const s=await _fxT(db.collection('users').doc(_uid).collection('actas').get(),60000);
+  const A={};s.docs.forEach(x=>{A[x.id]=x.data()||{};});
+  const Q=(await _fxAll('q')).filter(i=>i.uid===_uid),QI={};
+  Q.forEach(it=>{if(it.t==='a'&&it.doc){const o=A[it.id];if(it.m&&o){const m=Object.assign({},it.doc),ids=new Set((it.doc.fotos||[]).map(p=>p.id));m.fotos=(it.doc.fotos||[]).concat((o.fotos||[]).filter(p=>!ids.has(p.id)));A[it.id]=m;}else A[it.id]=it.doc;}else if(it.t==='f'&&it.doc)QI[it.fid]=it.doc.img;});
+  const list=[];let fotos=0,falta=0;
+  for(const aid of Object.keys(A)){
+    const acta=JSON.parse(JSON.stringify(A[aid]));delete acta.subida;
+    const imgs={};
+    if(!acta.borradas)for(const p of (Array.isArray(acta.fotos)?acta.fotos:[])){
+      let im=_fxSrc(QI[p.id]);
+      if(!im){try{im=_fxSrc(await _fxGet('img',p.id));}catch(e){}}
+      if(!im){const d=await _fxT(_fxRef(aid,p.id).get(),20000).catch(()=>null);im=d?_fxSrc((d.data()||{}).img):'';}
+      if(im){imgs[p.id]=im;fotos++;}else falta++;
+    }
+    list.push({id:aid,acta:acta,imgs:imgs});
+  }
+  return {list:list,fotos:fotos,falta:falta};
+}
+async function exportDataConFotos(btn){
+  if(!_uid||navigator.onLine===false){_saveToast('Hace falta conexión para incluir las fotos.','w');return;}
+  const tx=btn?btn.innerHTML:'';
+  if(btn){btn.disabled=true;btn.textContent='Preparando fotos…';}
+  try{
+    const obj=_backupObject(),r=await _fxBackupActas();
+    obj.fotosActas=r.list;
+    _downloadBackup(obj,'DEIROS_backup_fotos_'+todayStr()+'.json');
+    try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
+    const bn=document.getElementById('backupReminder');if(bn)bn.remove();
+    _saveToast('Copia con fotos descargada ('+r.fotos+(r.fotos===1?' foto)':' fotos)')+(r.falta?'; '+r.falta+(r.falta===1?' foto no se pudo leer y no va':' fotos no se pudieron leer y no van')+' en la copia.':'.'),r.falta?'w':'ok');
+  }catch(e){console.warn('[fotos]',e);_saveToast('No se pudo preparar la copia con fotos. Prueba de nuevo.','w');}
+  finally{if(btn){btn.disabled=false;btn.innerHTML=tx;}}
+}
+// Restaura las fotos de una copia: van a IndexedDB y a la cola de subida (se unen con las de la nube)
+async function _fxRestoreActas(L){
+  let n=0,skip=0;
+  for(const e of L){
+    try{
+      if(!_isPlainObject(e)||!_isPlainObject(e.acta)){skip++;continue;}
+      const bid=String(e.acta.bid||''),fase=e.acta.fase;
+      if(!bid||(fase!=='entrega'&&fase!=='devolucion')||!(/^[A-Za-z0-9_-]{1,120}$/.test(bid)||_fxVB(bid))){skip++;continue;}
+      const aid=_fxAid(bid,fase),imgs=_isPlainObject(e.imgs)?e.imgs:{};
+      const doc=JSON.parse(JSON.stringify(e.acta));delete doc.subida;doc.bid=bid;doc.fase=fase;
+      if(!doc.borradas)doc.borradas=null;
+      doc.fotos=Array.isArray(doc.fotos)?doc.fotos.filter(f=>_isPlainObject(f)&&/^[A-Za-z0-9_-]{1,40}$/.test(String(f.id))&&(doc.borradas||_fxSrc(imgs[f.id]))):[];
+      doc.fotos.forEach(f=>{if(f.th&&!_fxSrc(f.th))delete f.th;});
+      doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);
+      if(!doc.borradas)for(const f of doc.fotos){
+        await _fxPut('img',imgs[f.id],f.id);
+        await _fxQ('f:'+aid+'/'+f.id,{t:'f',id:aid,fid:f.id,doc:{v:1,bid:bid,fase:fase,tipo:String(f.tipo||''),at:String(f.at||''),kb:Number(f.kb)||0,img:imgs[f.id]}});
+        n++;
+      }
+      _fx.A[aid]=doc;await _fxPut('acta',JSON.parse(JSON.stringify(doc)),_uid+'|'+aid);await _fxQ('a:'+aid,{t:'a',id:aid,doc:JSON.parse(JSON.stringify(doc)),m:1});
+      _fxCleanDel(aid);
+    }catch(er){console.warn('[fotos]',er);skip++;}
+  }
+  await _fxPendRefresh();_fxKick(true);
+  return {n:n,skip:skip};
+}
 // ── Arranque: sube lo pendiente y revisa la limpieza; al volver la red, se sube solo
 function _fxBoot(){
   if(!_uid)return;
@@ -12336,6 +12454,8 @@ function openBackup(){
       </div>
     </div>
     <button class="btn-pri" onclick="exportData()">${ico('download')} Exportar copia completa (JSON)</button>
+    <button class="btn-sec" onclick="exportDataConFotos(this)">${ico('download')} Exportar copia con fotos de entrega y devolución</button>
+    <p class="d-hint aj-h">Además del JSON normal incluye las fotos de las actas. Se descargan de la nube y el fichero puede pesar decenas de MB.</p>
     <p class="d-hint aj-h">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</p>
     ${_fxBackupNote()}
     <div class="al-h"><h3>Importar</h3><span class="q">JSON</span></div>
@@ -12453,6 +12573,7 @@ function _validateBackup(data){
     err=_listError(data[k],k);
     if(err)return err;
   }
+  if('fotosActas' in data&&data.fotosActas!=null&&!Array.isArray(data.fotosActas))return '«fotosActas» tiene que ser una lista.';
   if(Array.isArray(data.bizFinances)){
     for(let i=0;i<data.bizFinances.length;i++){err=_checkEntry(data.bizFinances[i],'bizFinances nº '+(i+1));if(err)return err;}
   }
@@ -12529,11 +12650,11 @@ function _replacePhotos(photos){
   }catch(e){skipped++;}
   return skipped;
 }
-function exportData(){
+function exportData(silent){
   _downloadBackup(_backupObject(),'DEIROS_backup_'+todayStr()+'.json');
   try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
   const _bn=document.getElementById('backupReminder');if(_bn)_bn.remove();
-  _fxBackupToast();
+  if(!silent)_fxBackupToast();
 }
 // Altura real de #BN -> --bn-h (ya incluye padding y safe-area). Solo se mide si #BN es visible.
 // Además recoloca #backupReminder por encima de #QA mientras #QA sea visible.
@@ -12607,8 +12728,8 @@ function importData(event){
       const msg=full
         ?'Esto reemplazará vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos. Antes se descargará una copia del estado actual. ¿Continuar?'
         :'Este fichero es una copia antigua (solo vehículos y finanzas). Se sustituirán solo esos datos y NO se borrarán propietarios, clientes, recurrentes, presupuestos, empresa ni fotos. Antes se descargará una copia del estado actual. ¿Continuar?';
-      if(!confirm(msg))return;
-      exportData();
+      if(!confirm(msg+(full&&Array.isArray(data.fotosActas)&&data.fotosActas.length?' También se restaurarán las fotos de entrega y devolución (se subirán a la nube en segundo plano).':'')))return;
+      exportData(1);
       if(full){
         V=data.vehicles;
         BF=Array.isArray(data.bizFinances)?data.bizFinances:[];
@@ -12630,6 +12751,12 @@ function importData(event){
       if(_normFixes)_showNormNotice(_normFixes,'import');
       _invalidateRsCache();
       await _saveToCloud({skipDropCheck:true,force:true});
+      if(full&&Array.isArray(data.fotosActas)&&_uid){
+        try{
+          const fx=await _fxRestoreActas(data.fotosActas);
+          if(fx.n||fx.skip)_saveToast('Fotos restauradas: '+fx.n+(fx.skip?' ('+fx.skip+' omitidas)':'')+'. Se suben a la nube en segundo plano.',fx.skip?'w':'ok');
+        }catch(e){console.warn('[fotos]',e);}
+      }
       closeSheet();nav('dashboard');
     }catch(err){alert('Error al leer el fichero.');}
   };
@@ -13563,10 +13690,12 @@ function convertQuoteToBooking(id){
     kmStart:Number(v.km)||0,
     finance:[],financeIds:[],financeId:null,
   };
+  {const _fq=_qCl||_clFind({id:'',name:b.clientName,dni:b.clientDni,phone:b.clientPhone},null);
+   if(!_fq||_clAge(_fq.birthdate,b.startDate)==null){alert('No se ha creado el alquiler: falta la fecha de nacimiento del cliente (obligatoria para comprobar la edad mínima de 26 años). Complétala en la ficha del cliente y vuelve a convertir.');return;}
+   if(_clAge(_fq.birthdate,b.startDate)<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return;}}
   const _chgQ=_clDniChange(_qCl?_qCl.id:'',b.clientDni,{bId,startDate:b.startDate});
   if(!_chgQ.ok)return;
   if(_chgQ.other){b.clientName=_chgQ.other.name||'';b.clientPhone=_chgQ.other.phone||'';b.clientDni=(_chgQ.other.dni||'').toUpperCase();}
-  {const _fq=_chgQ.other||_clFind({id:_qCl?_qCl.id:'',name:b.clientName,dni:b.clientDni,phone:b.clientPhone},null);const _eq=_fq?_clAge(_fq.birthdate,b.startDate):null;if(_eq!=null&&_eq<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return;}}
   // ProRata entries for vehicle finances
   const fEntries=proRataEntries(b.startDate,b.endDate,b.amount,b.platform,b.notes,bId);
   fEntries.forEach(e=>(v.finances=v.finances||[]).push(e));
