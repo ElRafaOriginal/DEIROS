@@ -11962,11 +11962,11 @@ async function _fxCompress(file,stamp){
   const th=_fxCanvas(c,c.width,c.height,240).toDataURL('image/jpeg',0.6);
   return {img:img,th:th,kb:Math.round((img.length-23)*3/4/1024)};
 }
-// ── Hacer una foto: <input type=file capture> abre la cámara trasera; vive fuera de la hoja (no marca «cambios sin guardar»)
+// ── Hacer o elegir una foto: <input type=file> sin «capture» deja elegir cámara o galería; vive fuera de la hoja (no marca «cambios sin guardar»)
 function _fxShoot(tipo){
   _fx.tipo=tipo;
   let i=document.getElementById('fxFile');
-  if(!i){i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.id='fxFile';i.style.display='none';
+  if(!i){i=document.createElement('input');i.type='file';i.accept='image/*';i.id='fxFile';i.style.display='none';
     i.onchange=function(){const f=i.files&&i.files[0];i.value='';if(f)_fxAdd(f);};document.body.appendChild(i);}
   i.click();
 }
@@ -11976,7 +11976,7 @@ async function _fxAdd(file){
   try{
     const a=await _fxActa(bid,fase),aid=_fxAid(bid,fase),isD=tipo==='dano';
     if(isD&&!rep&&a.fotos.filter(f=>f.tipo==='dano').length>=FX_DMAX){_saveToast('Como máximo '+FX_DMAX+' fotos de daños por acta.','w');return;}
-    const now=new Date(),c=await _fxCompress(file,_fxStampTxt(now,fase,vb.v.plate));
+    const lm=Number(file.lastModified)||0,now=(lm>0&&lm<=Date.now())?new Date(lm):new Date(),c=await _fxCompress(file,_fxStampTxt(now,fase,vb.v.plate)); // foto de la galería: fecha y hora en que se hizo
     const old=rep?a.fotos.find(f=>f.id===rep):(isD?null:a.fotos.find(f=>f.tipo===tipo));
     const f={id:uid(),tipo:tipo,n:isD?0:FX_T.findIndex(t=>t[0]===tipo)+1,at:now.toISOString(),nota:old&&old.nota||'',kb:c.kb,th:c.th};
     if(isD&&fase==='devolucion')f.nuevo=old?old.nuevo!==false:true;
