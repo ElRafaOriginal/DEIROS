@@ -11962,12 +11962,13 @@ async function _fxCompress(file,stamp){
   const th=_fxCanvas(c,c.width,c.height,240).toDataURL('image/jpeg',0.6);
   return {img:img,th:th,kb:Math.round((img.length-23)*3/4/1024)};
 }
-// ── Hacer o elegir una foto: <input type=file> sin «capture» deja elegir cámara o galería; vive fuera de la hoja (no marca «cambios sin guardar»)
-function _fxShoot(tipo){
+// ── Hacer una foto (con «capture», abre la cámara) o elegirla de la galería (gal=1, sin «capture»); el input vive fuera de la hoja (no marca «cambios sin guardar»)
+function _fxShoot(tipo,gal){
   _fx.tipo=tipo;
   let i=document.getElementById('fxFile');
   if(!i){i=document.createElement('input');i.type='file';i.accept='image/*';i.id='fxFile';i.style.display='none';
     i.onchange=function(){const f=i.files&&i.files[0];i.value='';if(f)_fxAdd(f);};document.body.appendChild(i);}
+  if(gal)i.removeAttribute('capture');else i.setAttribute('capture','environment'); // botón principal: cámara; «Galería»: fotos ya hechas
   i.click();
 }
 async function _fxAdd(file){
@@ -12015,7 +12016,7 @@ function _fxGridHtml(a,fase,g){
   FX_T.forEach((t,i)=>{const f=F.find(x=>x.tipo===t[0]),gf=G.find(x=>x.tipo===t[0]);h+=_fxTile(aid,f,String(i+1).padStart(2,'0'),t[1],f?'ok':(nx&&nx[0]===t[0]?'nx':''),gf&&gf.th,t[0]);});
   h+='</div>';
   if(D.length)h+='<div class="ph-g fx-mt">'+D.map(f=>_fxTile(aid,f,'D'+f.n,fase==='devolucion'?(f.nuevo===false?'Ya existía':'Nuevo'):'Daño',fase==='devolucion'&&f.nuevo!==false?'dn':'dm')).join('')+'</div>';
-  h+='<div class="ph-dm">'+(D.length<FX_DMAX?'<button type="button" class="ph-add" onclick="_fxShoot(\'dano\')">'+ico('camera')+' '+(fase==='devolucion'?'Daño nuevo':'Foto de un daño')+'</button>':'')
+  h+='<div class="ph-dm">'+(D.length<FX_DMAX?'<button type="button" class="ph-add" onclick="_fxShoot(\'dano\')">'+ico('camera')+' '+(fase==='devolucion'?'Daño nuevo':'Foto de un daño')+'</button><button type="button" class="ph-add" onclick="_fxShoot(\'dano\',1)">'+ico('upload')+' Galería</button>':'')
     +(fase==='devolucion'?'<button type="button" class="ph-add" onclick="_fxCompare(\''+escJs(_fx.bid)+'\')">'+ico('eye')+' Comparar</button>':'')+'</div>';
   if(fase==='devolucion'&&done<6)h+='<p class="ph-w">'+ico('alert')+'<span>Faltan '+(6-done)+' foto'+(6-done===1?'':'s')+'. Puedes confirmar igual; la ficha del alquiler lo recordará.</span></p>';
   return h;
@@ -12032,7 +12033,7 @@ function _fxBar(){
   const i=nx?FX_T.indexOf(nx):-1;
   el.innerHTML=(nx?'<button type="button" class="btn-pri" onclick="_fxShoot(\''+nx[0]+'\')">'+ico('camera')+' Foto '+(i+1)+' de 6 · '+esc(nx[2])+'</button>'
       :(ent?'<button type="button" class="btn-pri" onclick="_fxConfirmDelivery()">'+ico('check-circle')+' Confirmar entrega</button>':'<button type="button" class="btn-pri" onclick="'+bk+'">'+ico('check')+' Listo</button>'))
-    +'<div class="row">'+(nx?'<button type="button" class="btn-txt" onclick="_fxSkip(\''+nx[0]+'\')">Saltar esta</button>':'<span></span>')
+    +'<div class="row">'+(nx?'<button type="button" class="btn-txt" onclick="_fxSkip(\''+nx[0]+'\')">Saltar esta</button><button type="button" class="btn-txt" onclick="_fxShoot(\''+nx[0]+'\',1)">'+ico('upload')+' Galería</button>':'<span></span>')
     +(ent?(nx?'<button type="button" class="btn-txt" onclick="_fxConfirmDelivery()">Confirmar entrega ya</button>':'<button type="button" class="btn-txt" onclick="closeSheet()">Cancelar</button>')
       :(nx?'<button type="button" class="btn-txt" onclick="'+bk+'">Listo</button>':''))+'</div>';
 }
