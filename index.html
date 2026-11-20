@@ -2178,12 +2178,15 @@ function _clDniChange(curId,nuevoDni,opt){
   if(!confirm(msg))return {ok:false};
   if(opt.startDate){
     const e=_clAge(other.birthdate,opt.startDate);
-    if(e!=null&&e<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return {ok:false};}
+    if(e==null){alert('La ficha elegida no tiene fecha de nacimiento: es obligatoria para comprobar la edad mínima (26 años). Complétala en la ficha del cliente.');return {ok:false};}
+    if(e<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return {ok:false};}
   }
   if(opt.bId)_clUpsert({id:other.id},{bId:opt.bId,linkOnly:true});
   return {ok:true,other};
 }
 // Avisos (no bloquean): 26 años cumplidos el día de inicio; carnet en vigor hasta la devolución
+// Puerta al guardar un alquiler: devuelve el texto de error o '' si tiene 26 cumplidos el día de inicio
+function _clAgeGate(nac,sd,extra){const e=_clAge(nac,sd);if(e==null)return extra?'Conductor adicional: falta la fecha de nacimiento (obligatoria para comprobar la edad mínima).':'Falta la fecha de nacimiento del cliente: es obligatoria para comprobar la edad mínima (26 años).';if(e<26)return (extra?'Conductor adicional: ':'')+'Menor de 26 en la fecha de inicio: no se puede alquilar';return '';}
 function _clAge(nac,dia){const a=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(nac||'')),b=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(dia||''));if(!a||!b)return null;let e=+b[1]-+a[1];if(b[2]+b[3]<a[2]+a[3])e--;return e;}
 function _clWarn(d,sd,ed){
   const w=[];const e=_clAge(d.birthdate,sd);
@@ -8003,7 +8006,8 @@ function submitEditBooking(id){
   const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
   if(ne<=ns){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
-  {const _ea=_clAge(_clFormVals('rClientPicker').birthdate,sd);if(_ea!=null&&_ea<26)alert('Aviso: el titular es menor de 26 en la fecha de inicio. Se guarda la edición del alquiler existente.');}
+  {const _eg=_clAgeGate(_clFormVals('rClientPicker').birthdate,sd,false);if(_eg){alert(_eg);return;}
+   if(b.hasExtraDriver||b.extraDriverName){const _xg=_clAgeGate(b.extraDriverBirth,sd,true);if(_xg){alert(_xg+'\nSe completa en el contrato, donde están los datos del conductor adicional.');return;}}}
 
   const newVehicleId=document.getElementById('rNewVehicle')?.value||v.id;
   const targetV=V.find(x=>x.id===newVehicleId)||v;
@@ -8363,7 +8367,7 @@ function submitRental(){
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
   const conflict=_findBookingConflict(v,sd,st,ed,et);
   if(conflict){alert('Conflicto:\n'+_conflictText(conflict));return;}
-  {const _ea=_clAge(_clD.birthdate,sd);if(_ea!=null&&_ea<26){alert('Menor de 26 en la fecha de inicio: no se puede alquilar');return;}}
+  {const _eg=_clAgeGate(_clD.birthdate,sd,false);if(_eg){alert(_eg);return;}}
   const bId=uid();
   // Ficha única (antes de crear nada): DNI de otra ficha → confirma y enlaza; si se cancela algo, no se crea el alquiler
   {
@@ -13525,10 +13529,12 @@ function convertQuoteToBooking(id){
     kmStart:Number(v.km)||0,
     finance:[],financeIds:[],financeId:null,
   };
+  {const _fq=_qCl||_clFind({id:'',name:b.clientName,dni:b.clientDni,phone:b.clientPhone},null);
+   if(!_fq||_clAge(_fq.birthdate,b.startDate)==null){alert('No se ha creado el alquiler: falta la fecha de nacimiento del cliente (obligatoria para comprobar la edad mínima de 26 años). Complétala en la ficha del cliente y vuelve a convertir.');return;}
+   if(_clAge(_fq.birthdate,b.startDate)<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return;}}
   const _chgQ=_clDniChange(_qCl?_qCl.id:'',b.clientDni,{bId,startDate:b.startDate});
   if(!_chgQ.ok)return;
   if(_chgQ.other){b.clientName=_chgQ.other.name||'';b.clientPhone=_chgQ.other.phone||'';b.clientDni=(_chgQ.other.dni||'').toUpperCase();}
-  {const _fq=_chgQ.other||_clFind({id:_qCl?_qCl.id:'',name:b.clientName,dni:b.clientDni,phone:b.clientPhone},null);const _eq=_fq?_clAge(_fq.birthdate,b.startDate):null;if(_eq!=null&&_eq<26){alert('La ficha elegida es menor de 26 en la fecha de inicio: no se puede alquilar.');return;}}
   // ProRata entries for vehicle finances
   const fEntries=proRataEntries(b.startDate,b.endDate,b.amount,b.platform,b.notes,bId);
   fEntries.forEach(e=>(v.finances=v.finances||[]).push(e));
