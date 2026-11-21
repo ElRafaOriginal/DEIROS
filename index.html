@@ -7696,7 +7696,7 @@ function showBooking(k,_overrideId){
       </div></div>
       <div class="al-dz">
         ${!b.cancelled?`<button class="btn-txt err" onclick="openCancelBooking('${escJs(b.id)}')">${ico('ban')} Cancelar alquiler</button>`:''}
-        <button class="btn-txt err" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">${ico('trash')} Eliminar</button>
+        <button class="btn-txt err" onclick="deleteBooking('${escJs(b.id)}',this)">${ico('trash')} Eliminar</button>
       </div>
     </section>`);
   if(b.delivered)_fxFichaFill(b.id);
@@ -8139,10 +8139,18 @@ function submitEditBooking(id){
   }
 }
 
-function deleteBooking(id){
-  const _fxN=_fxCount(id);
-  if(_fxN&&!confirm('Se borrarán también las '+_fxN+' fotos de entrega y devolución.\n\n¿Eliminar el alquiler?'))return;
+async function deleteBooking(id,btn){
+  // #105: las fotos se cuentan también en la nube y en el móvil (aunque no se hayan abierto en esta sesión), con tiempo límite
   const v=gV();if(!v)return;
+  const _b0=(v.bookings||[]).find(b=>b.id===id);
+  if(btn){btn.disabled=true;btn.textContent='Comprobando fotos…';}
+  let _fx0={n:0,ok:false};try{_fx0=await _fxCountAll([id]);}catch(e){}
+  if(btn){if(!document.body.contains(btn)||!document.getElementById('SH').classList.contains('open'))return; // ficha cerrada mientras se comprobaba: no se borra
+    btn.disabled=false;btn.innerHTML=ico('trash')+' Eliminar';}
+  const _fxN=Math.max(_fx0.n,_fxCount(id));
+  if(_fxN&&!confirm('Se borrarán también las '+_fxN+' fotos de entrega y devolución.\n\n¿Eliminar el alquiler?'))return;
+  if(!_fxN&&!_fx0.ok&&_b0&&(_b0.delivered||_b0.returned)&&!confirm('No se ha podido comprobar si tiene fotos de entrega o devolución (sin conexión o la nube no responde). Si las tiene, se borrarán también.\n\n¿Eliminar el alquiler?'))return;
+  if(btn)closeSheet();
   const b=(v.bookings||[]).find(b=>b.id===id);
   if(b){
     // Remove all linked finance entries (single financeId or array financeIds)
@@ -11161,8 +11169,10 @@ function deleteV(id){
   openSheet(`<div class="stitle">Eliminar definitivamente</div>
     <p class="ssub">Se eliminarán todos los datos. Esta acción no se puede deshacer.</p>
     <div class="d-kv ar-kv"><span>${esc(v.name)}</span><b>${esc(v.plate)}</b></div>
+    <p class="d-hint" id="fxDelV" data-vid="${esc(id)}" role="status">${ico('camera')} Comprobando las fotos de entrega y devolución…</p>
     <div class="d-acts al-end"><button class="btn-dang" onclick="confirmDelete('${escJs(id)}')">${ico('trash')} Eliminar definitivamente</button>
     <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
+  _fxDelVNote(id);
 }
 function confirmDelete(id){_fxDropBooking(((V.find(v=>v.id===id)||{}).bookings||[]).map(b=>b.id));V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
 
@@ -12136,9 +12146,10 @@ function _fxConfirmDelivery(){
   save();
   _fxActa(bid,'entrega').then(a=>{a.at=new Date().toISOString();a.km=km||null;a.combustible=fu;a.lugar=pl;a.nota=nota;return _fxSaveActa(a);}).then(()=>_fxKick(true)).catch(e=>console.warn('[fotos]',e));
   closeSheet();renderDetail(document.getElementById('PC'));
+  _actaOffer(bid,'entrega');
 }
 // Devolución confirmada (_confirmReturn): copia del momento en el acta. No cambia nada del alquiler.
-function _fxOnReturn(bid,km,fu){_fxActa(bid,'devolucion').then(a=>{a.at=new Date().toISOString();a.km=km||null;a.combustible=fu||'';return _fxSaveActa(a);}).then(()=>_fxKick(true)).catch(e=>console.warn('[fotos]',e));}
+function _fxOnReturn(bid,km,fu){_actaOffer(bid,'devolucion');_fxActa(bid,'devolucion').then(a=>{a.at=new Date().toISOString();a.km=km||null;a.combustible=fu||'';return _fxSaveActa(a);}).then(()=>_fxKick(true)).catch(e=>console.warn('[fotos]',e));}
 // Hoja de fotos desde la ficha (entrega ya hecha o devolución ya registrada)
 function _fxPhotos(bid,fase){
   const vb=_fxVB(bid);if(!vb)return;
@@ -12167,7 +12178,8 @@ async function _fxFichaFill(bid){
       +'<div class="s">'+esc(meta||'—')+'</div>'
       +(th.length?'<div class="ac-th">'+th.map(f=>'<img src="'+esc(f.th)+'" alt="">').join('')+(n>6?'<span class="mas">+'+(n-6)+'</span>':'')+'</div>':'')
       +(a&&a.borradas?'<div class="s ac-w">Fotos borradas el '+esc(fmtDMY(String(a.borradas).slice(0,10)))+'</div>':'')
-      +((fase==='entrega'||b.returned)&&!(a&&a.borradas)?'<div class="ac-b"><button type="button" class="btn-sec" onclick="_fxPhotos(\''+escJs(bid)+'\',\''+fase+'\')">'+ico('camera')+' '+(n?'Ver y añadir fotos':'Hacer fotos')+'</button></div>':'')+'</div>';
+      +((fase==='entrega'||b.returned)&&!(a&&a.borradas)?'<div class="ac-b"><button type="button" class="btn-sec" onclick="_fxPhotos(\''+escJs(bid)+'\',\''+fase+'\')">'+ico('camera')+' '+(n?'Ver y añadir fotos':'Hacer fotos')+'</button></div>':'')
+      +(fase==='entrega'||b.returned?'<div class="ac-b"><button type="button" class="btn-sec" onclick="_actaGo(\''+escJs(bid)+'\',\''+fase+'\',0,this)">'+ico('doc')+' Generar acta</button><button type="button" class="btn-sec" onclick="_actaGo(\''+escJs(bid)+'\',\''+fase+'\',1,this)">'+ico('send')+' Enviar acta</button></div>':'')+'</div>';
   };
   const any=[e,d].some(a=>a&&!a.borradas&&(a.fotos||[]).length),keep=[e,d].some(a=>a&&a.keep);
   s.innerHTML='<div class="al-h"><h3>Fotos y actas</h3></div>'
@@ -12445,6 +12457,222 @@ function _fxBoot(){
   setTimeout(function(){_fxDaily().catch(e=>console.warn('[fotos]',e));},6000);
 }
 window.addEventListener('online',function(){_fx.stop=false;_fxFlush();});
+// ── Actas en PDF (#105, PR 2): página 1, el acta completa para firmar en papel; página 2 y siguientes, las fotos con su hora.
+// Solo lee (no escribe nada): el alquiler, el acta de la subcolección «actas» y cada foto, primero de este móvil
+// (cola sin subir y caché «img») y, si no está, de la nube. Si una foto no se puede leer: su miniatura o «SIN FOTO».
+// El texto de conformidad va aquí, en el código (no en los datos). Lo aprobó Rafael en #105.
+const ACTA_TX={
+  entrega:'El cliente declara haber recibido el vehículo en el estado descrito en esta acta{F}, con los kilómetros y el nivel de combustible indicados.',
+  devolucion:'El cliente declara haber devuelto el vehículo en el estado descrito en esta acta{F}, con los kilómetros y el nivel de combustible indicados. Ambas partes lo han revisado juntas.'
+};
+let _actaBusy=false;
+// Km incluidos: la misma regla que la hoja de devolución (openReturnModal). null = ilimitados
+function _actaKmInc(v,b){
+  const isF=(v.vehicle_type||'turismo').startsWith('l'),ex=b.extras||[];
+  if(b.kmIlimitados||ex.some(e=>e.id==='exKmIlimitados'))return null;
+  const dur=Math.max(1,Math.round((new Date(b.endDate)-new Date(b.startDate))/864e5));
+  return calcKmInc(dur,isF)+(Number(b.kmContracted)||0)+(ex.some(e=>e.id==='exBolsa1000')?1000:0)+(ex.some(e=>e.id==='exBolsa500')?500:0)+(ex.some(e=>e.id==='exBolsa200')?200:0)+_kmPrepagoOf(b);
+}
+// Foto para el PDF: lado largo 1024 px y JPEG 0,6; si pasa del cupo por foto, 800 px / 0,5 y luego 640 px / 0,45 (8 fotos < 1 MB)
+function _actaJpg(src,L,q){return new Promise(ok=>{const i=new Image();i.onload=()=>{try{const c=_fxCanvas(i,i.naturalWidth,i.naturalHeight,L);ok({d:c.toDataURL('image/jpeg',q),w:c.width,h:c.height});}catch(e){ok(null);}};i.onerror=()=>ok(null);i.src=src;});}
+async function _actaFoto(src,cap){
+  let r=await _actaJpg(src,1024,0.6);
+  if(r&&r.d.length*0.75>cap)r=(await _actaJpg(src,800,0.5))||r;
+  if(r&&r.d.length*0.75>cap)r=(await _actaJpg(src,640,0.45))||r;
+  return r;
+}
+async function _actaFotos(aid,F){
+  const Q={};try{(await _fxAll('q')).forEach(i=>{if(i.uid===_uid&&i.t==='f'&&i.id===aid&&i.doc)Q[i.fid]=i.doc.img;});}catch(e){}
+  const cap=Math.max(45000,Math.min(140000,880000/Math.max(1,F.length)));
+  return Promise.all(F.map(async f=>{
+    let s=_fxSrc(Q[f.id]),th=false;
+    if(!s){try{s=_fxSrc(await _fxGet('img',f.id));}catch(e){}}
+    if(!s&&navigator.onLine!==false){try{s=_fxSrc(await _fxImg(aid,f.id));}catch(e){}}
+    if(!s&&_fxSrc(f.th)){s=f.th;th=true;}
+    const r=s?await _actaFoto(s,cap):null;
+    return {f:f,img:r,th:th&&!!r};
+  }));
+}
+async function _actaPDF(bid,fase){
+  const vb=_fxVB(bid);if(!vb)return null;
+  const v=vb.v,b=vb.b,dev=fase==='devolucion',co=getCompanyData(),aid=_fxAid(bid,fase);
+  let a=null,e=null,sinRed=false;
+  try{a=await _fxLoad(bid,fase);}catch(x){sinRed=true;}
+  if(dev){try{e=await _fxLoad(bid,'entrega');}catch(x){}}
+  const borr=!!(a&&a.borradas),ord=(p,q)=>(p.tipo==='dano')-(q.tipo==='dano')||(p.n||0)-(q.n||0);
+  const FA=(a&&Array.isArray(a.fotos)?a.fotos:[]).slice().sort(ord),F=borr?[]:FA,nF=F.length;
+  const P=nF?await _actaFotos(aid,F):[];
+  const at=(a&&a.at)||(dev?b.returnedAt:b.deliveredAt)||'',atD=new Date(at||''),okD=!!at&&!isNaN(atD);
+  const dia=okD?ymd(atD):((dev?b.endDate:b.startDate)||todayStr()),hora=okD?_fxHM(at):((dev?b.endTime:b.startTime)||'');
+  const lugar=String((a&&a.lugar)||(dev?(b.returnPlace||b.deliveryPlace):b.deliveryPlace)||'').trim();
+  const fuE=b.deliveredFuelLevel||(dev?(e&&e.combustible):(a&&a.combustible))||'';
+  const km=dev?(Number(b.kmEnd)||Number(a&&a.km)||0):(Number(b.kmStart)||Number(a&&a.km)||0);
+  const doc=_pdfSetup(),W=210,mg=PDFS.MG,R=W-mg,L=mg+34,INK=PDFS.T,MID=PDFS.T2;
+  const D=s=>fmtDMY(String(s||'').slice(0,10)),fu=s=>s==='Lleno (100%)'?'Lleno':(s||'-'),nm=n=>String(Math.round(Number(n)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.'),kmS=n=>n?nm(n)+' km':'-';
+  const num='ACT-'+(dev?'D':'E')+'-'+String(bid).replace(/[^A-Za-z0-9]/g,'').slice(-6).toUpperCase();
+  const DN=FA.filter(f=>f.tipo==='dano'),nN=dev?DN.filter(f=>f.nuevo!==false).length:0;
+  const top=()=>{doc.addPage();return PDFS.TOP+4;};
+  // Título, sello y línea del momento
+  let y=_pdfTitle(doc,PDFS.TOP,dev?'Acta de devolución':'Acta de entrega',dev?(nF||DN.length?(nN?'DAÑOS NUEVOS: '+nN:'SIN DAÑOS NUEVOS'):'ESTADO DE LLEGADA'):'ESTADO DE SALIDA');
+  const fl=borr?'FOTOS BORRADAS EL '+D(a.borradas):sinRed?'FOTOS NO DISPONIBLES (SIN CONEXIÓN)':nF?nF+(nF===1?' FOTO':' FOTOS'):'SIN FOTOS';
+  doc.setFont('jbm','normal');doc.setFontSize(6.8);doc.setTextColor(...MID);
+  doc.text(_pdfFit(doc,[(dev?'DEVUELTO EL ':'ENTREGADO EL ')+D(dia)+(hora?' A LAS '+hora:''),lugar.toUpperCase(),fl].filter(Boolean).join('  ·  '),R-mg),mg,y);
+  y+=11;
+  // 01 Partes (con el conductor adicional si lo hay)
+  _pdfLbl(doc,y,1,'Partes');
+  const cW=(R-L)/2-6,L2=L+(R-L)/2+4,sm=(t,x,yy)=>{doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MID);doc.text(_pdfFit(doc,t,cW),x,yy);};
+  _pdfField(doc,L,y,'Arrendador',co.nombre||'DEIROS',cW);_pdfField(doc,L2,y,'Cliente',b.clientName||'-',cW);
+  [co.nif?'NIF/CIF: '+co.nif:'',co.telefono?'Tel.: '+co.telefono:''].filter(Boolean).forEach((t,i)=>sm(t,L,y+10+i*4));
+  [b.clientDni?'DNI/NIE: '+b.clientDni:'',b.clientPhone?'Tel.: '+b.clientPhone:''].filter(Boolean).forEach((t,i)=>sm(t,L2,y+10+i*4));
+  y+=21;
+  if(String(b.extraDriverName||'').trim()){_pdfField(doc,L2,y,'Conductor adicional',b.extraDriverName,cW);if(b.extraDriverDni)sm('DNI/NIE: '+b.extraDriverDni,L2,y+10);y+=16;}
+  y+=2;
+  // 02 Vehículo
+  _pdfLbl(doc,y,2,'Vehículo');
+  const pl=String(v.plate||'').toUpperCase();doc.setFont('jbm','bold');doc.setFontSize(11);const pw=pl?doc.getTextWidth(pl)+8:0;
+  doc.setFont('syne','bold');doc.setFontSize(13);doc.setTextColor(...INK);doc.text(_pdfFit(doc,v.name||'',R-L-pw-6),L,y+0.5);
+  if(pl){doc.setFont('jbm','bold');doc.setFontSize(11);doc.setDrawColor(...INK);doc.setLineWidth(0.35);doc.roundedRect(R-pw,y-3.4,pw,7.6,1,1,'S');doc.setLineWidth(0.2);doc.text(pl,R-pw/2,y+1.6,{align:'center'});}
+  doc.setFont('jbm','normal');doc.setFontSize(7);doc.setTextColor(...MID);
+  doc.text(_pdfFit(doc,'ALQUILER DEL '+D(b.startDate)+(b.startTime?' '+b.startTime:'')+' AL '+D(b.endDate)+(b.endTime?' '+b.endTime:''),R-L-pw-6),L,y+6);
+  y+=15;
+  // 03 Km y combustible (cifras en mono; en la devolución, entrega y devolución con la diferencia en color y con palabra)
+  _pdfLbl(doc,y,3,'Km y combustible');
+  const cw=(R-L)/3,cell=(x,lb,val,sub,vc,sc)=>{doc.setFont('jbm','normal');doc.setFontSize(6);doc.setTextColor(...MID);doc.text(lb,x,y);
+    doc.setFont('jbm','bold');doc.setFontSize(13);doc.setTextColor(...(vc||INK));doc.text(_pdfFit(doc,val,cw-3),x,y+6.5);
+    if(sub){doc.setFont('jbm','normal');doc.setFontSize(6.8);doc.setTextColor(...(sc||MID));doc.text(_pdfFit(doc,sub,cw-3),x,y+11);}};
+  const inc=_actaKmInc(v,b),incS=inc===null?'Ilimitados':kmS(inc);
+  if(dev){
+    const kmE=Number(b.kmStart)||Number(e&&e.km)||0,rec=kmE&&km?km-kmE:null,exc=rec!=null&&inc!==null?Math.max(0,rec-inc):0;
+    cell(L,'KM ENTREGA',kmS(kmE),'');cell(L+cw,'KM DEVOLUCIÓN',kmS(km),rec!=null?nm(rec)+' km recorridos':'');
+    cell(L+2*cw,'KM INCLUIDOS',incS,rec==null?'':exc>0?'exceso: '+nm(exc)+' km':'sin exceso',null,rec==null?null:exc>0?PDFS.KO:PDFS.OK);
+    y+=17;
+    const fD=b.returnedFuelLevel||(a&&a.combustible)||'',dif=fuE&&fD?Math.round((_fuelFrac(fuE)-_fuelFrac(fD))*100):null;
+    const tk=Number(v.tankL)>0?Number(v.tankL):0,lt=dif>0&&tk?Math.round(tk*dif/10)/10:0,dc=dif==null?null:dif>0?PDFS.KO:PDFS.OK;
+    cell(L,'COMBUSTIBLE ENTREGA',fu(fuE),'');cell(L+cw,'COMBUSTIBLE DEVOLUCIÓN',fu(fD),'');
+    cell(L+2*cw,'DIFERENCIA',dif==null?'-':dif>0?'-'+dif+' %':dif<0?'+'+(-dif)+' %':'0 %',dif==null?'':dif>0?(lt?'faltan '+lt.toLocaleString('es-ES')+' L':'falta combustible'):'sin falta',dc,dc);
+  }else{cell(L,'KM EN LA ENTREGA',kmS(km),'');cell(L+cw,'COMBUSTIBLE',fu(fuE),'');cell(L+2*cw,'KM INCLUIDOS',incS,'');}
+  y+=18;
+  // 04 Daños (en la devolución, «NUEVO» o «YA EXISTÍA»; también los anotados en la entrega) y notas
+  _pdfLbl(doc,y,4,'Daños y notas');
+  const lines=DN.map(f=>[dev?(f.nuevo!==false?'NUEVO':'YA EXISTÍA'):'DAÑO',(f.nota||'Sin nota')+'  (foto D'+f.n+')',dev&&f.nuevo!==false?PDFS.KO:PDFS.GT]);
+  if(dev&&e)(e.fotos||[]).filter(f=>f.tipo==='dano').forEach(f=>lines.push(['YA EXISTÍA',(f.nota||'Daño')+'  (anotado en la entrega, D'+f.n+')',MID]));
+  if(!lines.length)lines.push(['-','Sin daños anotados.',MID]);
+  lines.forEach(([t,tx,c])=>{if(y>PDFS.BOT-8)y=top();
+    doc.setFont('jbm','bold');doc.setFontSize(6.5);doc.setTextColor(...c);doc.text(t,L,y);
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...INK);doc.text(_pdfFit(doc,tx,R-L-24),L+24,y);
+    doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(L,y+2.4,R,y+2.4);y+=6.5;});
+  const nota=String(a&&a.nota||'').trim();
+  if(nota){doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MID);const sl=doc.splitTextToSize('Notas: '+nota,R-L).slice(0,4);doc.text(sl,L,y+1);y+=sl.length*3.6+3;}
+  y+=5;
+  // 05 Cargos y fianza (devolución): lo que ya guarda la devolución (cobros «_returnCharge») y el estado de la fianza
+  if(dev){
+    if(y+30>PDFS.BOT)y=top();
+    _pdfLbl(doc,y,5,'Cargos y fianza');
+    const C=(b.finance||[]).filter(f=>f&&f._returnCharge&&Number(f.amount)>0);
+    C.forEach(f=>{doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...INK);doc.text(_pdfFit(doc,String(f.concept||'Cargo'),46),L,y);
+      if(f.notes){doc.setFontSize(7);doc.setTextColor(...MID);doc.text(_pdfFit(doc,String(f.notes).replace(/→/g,'>'),R-L-48-28),L+48,y);}
+      doc.setFont('jbm','bold');doc.setFontSize(8.5);doc.setTextColor(...INK);doc.text(fmtF(Number(f.amount)||0),R,y,{align:'right'});
+      doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(L,y+2.4,R,y+2.4);y+=6.5;});
+    if(C.length){doc.setFont('jbm','normal');doc.setFontSize(6);doc.setTextColor(...MID);doc.text('TOTAL CARGOS (DETALLE EN EL RECIBO)',L,y);
+      doc.setFont('jbm','bold');doc.setFontSize(9);doc.setTextColor(...INK);doc.text(fmtF(C.reduce((s,f)=>s+(Number(f.amount)||0),0)),R,y,{align:'right'});y+=7;}
+    else{doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...PDFS.OK);doc.text('Sin cargos de km ni de combustible.',L,y);y+=7;}
+    const fz=Number(b.fianza)||0;
+    if(fz>0){const st=_fianzaStatus(b),rt=Math.min(fz,Number(b.fianzaRetainedAmount)||0);
+      const lb={pending:'PENDIENTE DE DEVOLVER',returned:'DEVUELTA',retained:'RETENIDA',partial:'RETENIDOS '+fmtF(rt)+', SE DEVUELVEN '+fmtF(fz-rt)}[st];
+      doc.setFont('jbm','bold');doc.setFontSize(7.5);doc.setTextColor(...({pending:PDFS.GT,returned:PDFS.OK,retained:PDFS.KO,partial:PDFS.GT}[st]));
+      doc.text(_pdfFit(doc,'FIANZA '+fmtF(fz)+': '+lb,R-L),L,y+1);y+=5;
+      if((st==='partial'||st==='retained')&&b.fianzaRetainedReason){sm('Motivo: '+b.fianzaRetainedReason,L,y+1);y+=5;}}
+    else{doc.setFont('jbm','normal');doc.setFontSize(7);doc.setTextColor(...MID);doc.text('SIN FIANZA',L,y+1);y+=5;}
+    y+=6;
+  }
+  // Conformidad y firmas en papel (el acta se firma entera: si no cabe, pasa a la página siguiente junta)
+  const txt=ACTA_TX[fase].replace('{F}',nF?(nF===1?' y en su foto':' y en sus '+nF+' fotos'):'');
+  doc.setFont('helvetica','normal');doc.setFontSize(8);const tl=doc.splitTextToSize(txt,R-L);
+  if(y+tl.length*3.8+36>PDFS.BOT)y=top();
+  _pdfLbl(doc,y,dev?6:5,'Conformidad');
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...INK);doc.text(tl,L,y);y+=tl.length*3.8+2;
+  _pdfSign(doc,y-4,['Por el arrendador',co.nombre||'DEIROS',co.nif?'NIF '+co.nif:''],['El cliente',b.clientName||'',b.clientDni?'DNI/NIE '+b.clientDni:''],L);
+  // Fotos: página propia, 3 columnas a todo el ancho (12 por página), «01 FRONTAL · 09:30» y su nota; daños con borde rojo (nuevo) o dorado
+  if(P.length){
+    y=top();const gap=5,fw=(R-mg-2*gap)/3,fh=fw*0.75,rowH=fh+14,sec=dev?7:6;
+    _pdfLbl(doc,y,sec,'Fotos de '+(dev?'la devolución':'la entrega')+' · '+D(dia));y+=4;
+    P.forEach((p,i)=>{
+      if(i%3===0&&i>0){y+=rowH;if(y+rowH>PDFS.BOT){y=top();_pdfLbl(doc,y,sec,'Fotos (sigue)');y+=4;}}
+      const x=mg+(i%3)*(fw+gap),f=p.f,isD=f.tipo==='dano',t=FX_T.find(z=>z[0]===f.tipo),nu=isD&&dev&&f.nuevo!==false;
+      doc.setFillColor(242,242,242);doc.rect(x,y,fw,fh,'F');
+      if(p.img){const k=Math.min(fw/p.img.w,fh/p.img.h),iw=p.img.w*k,ih=p.img.h*k;try{doc.addImage(p.img.d,'JPEG',x+(fw-iw)/2,y+(fh-ih)/2,iw,ih,undefined,'FAST');}catch(er){}}
+      else{doc.setFont('jbm','bold');doc.setFontSize(7);doc.setTextColor(...MID);doc.text('SIN FOTO',x+fw/2,y+fh/2+1,{align:'center'});}
+      if(p.th){doc.setFillColor(255,255,255);doc.rect(x+1.5,y+1.5,17,4.4,'F');doc.setFont('jbm','normal');doc.setFontSize(5.5);doc.setTextColor(...MID);doc.text('MINIATURA',x+2.6,y+4.6);}
+      if(isD){doc.setDrawColor(...(nu?PDFS.KO:PDFS.GD));doc.setLineWidth(0.7);doc.rect(x,y,fw,fh,'S');doc.setLineWidth(0.2);}
+      const fd=new Date(f.at||''),hh=isNaN(fd)?'':(ymd(fd)===dia?'':fmtDMY(ymd(fd)).slice(0,5)+' ')+_fxHM(f.at);
+      doc.setFont('jbm','bold');doc.setFontSize(6.5);doc.setTextColor(...PDFS.P);doc.text(isD?'D'+f.n:String(f.n||0).padStart(2,'0'),x,y+fh+4);
+      doc.setFont('jbm','normal');doc.setTextColor(...(nu?PDFS.KO:INK));doc.text(_pdfFit(doc,(isD?(dev?(nu?'Daño nuevo':'Ya existía'):'Daño'):(t?t[2]:String(f.tipo||''))).toUpperCase(),fw-24),x+5.5,y+fh+4);
+      doc.setTextColor(...MID);doc.text(hh,x+fw,y+fh+4,{align:'right'});
+      if(f.nota){doc.setFont('helvetica',isD?'bold':'normal');doc.setFontSize(6.8);doc.setTextColor(...(nu?PDFS.KO:MID));doc.text(doc.splitTextToSize(String(f.nota),fw).slice(0,2),x,y+fh+7.6);}
+    });
+    y+=rowH;
+    doc.setFont('jbm','normal');doc.setFontSize(6);doc.setTextColor(...MID);
+    doc.text('La fecha y la hora de cada foto son las del móvil al hacerla y van impresas en ella.',mg,Math.min(y+2,PDFS.BOT));
+  }
+  _pdfBrand(doc,dev?'ACTA DE DEVOLUCIÓN':'ACTA DE ENTREGA',[num,D(dia)]);
+  const Fn=s=>String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9-]+/g,'_').replace(/^_+|_+$/g,'');
+  return {doc:doc,name:(dev?'Acta-devolucion-':'Acta-entrega-')+(Fn(v.plate)||'coche')+'-'+dia+'.pdf',n:nF,sinRed:sinRed};
+}
+// «Generar acta» (abre o descarga, como el recibo) y «Enviar acta» (menú de compartir del móvil con el PDF, como «Enviar» #99)
+async function _actaGo(bid,fase,send,btn){
+  if(!window.jspdf){alert('PDF no disponible. Verifica tu conexión.');return;}
+  if(_actaBusy)return;_actaBusy=true;
+  const tx=btn?btn.innerHTML:'';if(btn){btn.disabled=true;btn.textContent='Preparando…';}
+  try{
+    const r=await _actaPDF(bid,fase);if(!r)return;
+    if(r.sinRed)_saveToast('Sin conexión: el acta sale sin las fotos que no están en este móvil.','w');
+    // Preparar el PDF lleva unos segundos: si el navegador ya no deja abrir o compartir sin otro toque, se pide ese toque
+    const ua=navigator.userActivation;
+    if(ua&&ua.isActive===false)_actaReady(r,send);else _actaDo(r,send);
+  }catch(e){console.warn('[acta]',e);_saveToast('No se ha podido preparar el acta: '+(e&&e.message?e.message:e));}
+  finally{_actaBusy=false;if(btn&&document.body.contains(btn)){btn.disabled=false;btn.innerHTML=tx;}}
+}
+function _actaDo(r,send){if(send){_pdfSendName=r.name;try{_savePDF(r.doc,r.name);}finally{_pdfSendName=null;}}else _savePDF(r.doc,r.name);}
+function _actaToast(msg,acts,ms){
+  const o=document.getElementById('actaOf');if(o)o.remove();
+  const el=document.createElement('div');el.id='actaOf';el.className='d-toast d-fl ok';el.setAttribute('role','status');el.innerHTML=ico('doc','20');
+  const t=document.createElement('span');t.className='grow';t.textContent=msg;
+  const r=document.createElement('div');r.className='acts';
+  acts.forEach(([x,i,c,fn])=>{const b=document.createElement('button');b.type='button';b.className=c;b.innerHTML=ico(i)+' '+esc(x);b.onclick=()=>fn(b,el);r.appendChild(b);});
+  el.append(t,r);document.body.appendChild(el);setTimeout(()=>el.remove(),ms);
+}
+function _actaReady(r,send){_actaToast('Acta lista: '+r.name,[[send?'Enviar acta':'Abrir acta',send?'send':'doc','btn-pri',(b,el)=>{el.remove();_actaDo(r,send);}]],30000);}
+// Al confirmar la entrega o la devolución: acción secundaria durante 12 s (no tapa la barra de abajo)
+function _actaOffer(bid,fase){
+  _actaToast((fase==='entrega'?'Entrega':'Devolución')+' guardada. El acta está lista para firmar o enviar.',
+    [['Enviar acta','send','btn-pri',(b,el)=>_actaGo(bid,fase,1,b).then(()=>el.remove())],['Ver acta','doc','btn-sec',(b,el)=>_actaGo(bid,fase,0,b).then(()=>el.remove())]],12000);
+}
+// ── Antes de borrar: cuántas fotos tienen estos alquileres en la sesión, en la nube (con tiempo límite, 6 s) y en este móvil.
+// ok=false: no se pudo preguntar a la nube (sin red, lento o caché). k: alquileres con fotos.
+async function _fxCountAll(bids){
+  const ids=[];bids.forEach(b=>['entrega','devolucion'].forEach(f=>ids.push(_fxAid(b,f))));
+  const N={};let ok=!!_uid&&navigator.onLine!==false;
+  const put=(aid,a)=>{if(a&&!a.borradas&&Array.isArray(a.fotos))N[aid]=Math.max(N[aid]||0,a.fotos.length);};
+  ids.forEach(aid=>put(aid,_fx.A[aid]));
+  if(ok&&ids.length){
+    try{const C=db.collection('users').doc(_uid).collection('actas'),P=[];
+      for(let i=0;i<ids.length;i+=30)P.push(C.where(firebase.firestore.FieldPath.documentId(),'in',ids.slice(i,i+30)).get());
+      (await _fxT(Promise.all(P),6000)).forEach(s=>{if(s.metadata&&s.metadata.fromCache)ok=false;s.docs.forEach(x=>put(x.id,x.data()||{}));});
+    }catch(e){ok=false;_fxErr(e);}
+  }
+  for(const aid of ids){try{put(aid,await _fxGet('acta',_uid+'|'+aid));}catch(e){}}
+  const K=new Set(Object.keys(N).filter(k=>N[k]>0).map(k=>k.replace(/__(entrega|devolucion)$/,'')));
+  return {n:Object.values(N).reduce((s,x)=>s+x,0),k:K.size,ok:ok};
+}
+// Hoja «Eliminar definitivamente» del coche: dice cuántas fotos se borrarán
+async function _fxDelVNote(vid){
+  const v=V.find(x=>x.id===vid);if(!v)return;
+  let r={n:0,k:0,ok:false};try{r=await _fxCountAll((v.bookings||[]).map(b=>b.id));}catch(e){}
+  const el=document.getElementById('fxDelV');if(!el||el.dataset.vid!==vid)return;
+  el.className=r.n||!r.ok?'ph-w':'d-hint';
+  el.innerHTML=ico(r.n||!r.ok?'alert':'camera')+'<span>'+esc(r.n?'Se borrarán también '+r.n+(r.n===1?' foto':' fotos')+' de entrega y devolución ('+r.k+(r.k===1?' alquiler':' alquileres')+').'
+    :r.ok?'No tiene fotos de entrega ni de devolución.':'No se ha podido comprobar si tiene fotos (sin conexión o la nube no responde). Si las tiene, se borrarán también.')+'</span>';
+}
 
 // ═══════════════════════════════════════════════════════════ BACKUP
 function openBackup(){
