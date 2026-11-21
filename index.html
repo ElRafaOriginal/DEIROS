@@ -12636,6 +12636,7 @@ async function _gxMigrate(v){
   _gx.mg=true;
   try{
     const ng=g||(_fx.A[id]=_gxNew(v.id));
+    _fx.unk.add(id); // por si otro móvil subió portada después de leer la nube: al subir, unir con la nube en vez de pisarla
     await _gxPut(ng,1,_gxBlob(v.photo));await _gxSave(ng);_gxMigSet(v.id);
     _gxRepaint();_fxStat();_fxKick(true);
     _saveToast('La foto que tenía el coche es ahora la portada de su galería.','ok');
