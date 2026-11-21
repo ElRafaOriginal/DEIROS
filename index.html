@@ -1676,6 +1676,26 @@ label.btn-sec.aj-up{width:100%;}
 .ph-bar .row{display:flex;justify-content:space-between;}
 .ph-w{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35;color:var(--amber);margin:10px 0 0;}
 .ph-w .ico{flex:none;margin-top:1px;}
+/* Galería del coche (#123): portada, 8 huecos con icono de posición, visor y «Enviar fotos». Iconos .vx: punto de la foto en el acento */
+.ph-t .f>.ico.vx{width:34px;height:34px;}
+.ico.vx .f{fill:var(--amber);}
+.gx{margin-bottom:8px;}
+.gx-cv{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;aspect-ratio:16/10;margin-bottom:4px;border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;background:var(--bg3);}
+.gx-cv img{display:block;width:100%;height:100%;object-fit:cover;}
+.gx-h{margin-top:16px;align-items:center;}
+.gx-g{grid-template-columns:repeat(4,minmax(0,1fr));}
+.gx-b{display:grid;margin-top:12px;}
+.gx-b .btn-sec:disabled,#gxSB .btn-pri:disabled,#gxV button:disabled{opacity:.45;cursor:default;}
+.gx-ve{aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;border:1px dashed var(--border2);border-radius:12px;background:var(--bg3);color:var(--text2);font-size:14px;line-height:1.4;text-align:center;}
+.gx-ck{position:relative;}
+.gx-ck input{position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;}
+.gx-ck input:not(:checked)~.f{opacity:.4;}
+.gx-ck input:not(:checked)~.f .phk{background:var(--bg2);color:transparent;border:1px solid var(--border2);}
+.gx-ck input:focus-visible~.f{outline:2px solid var(--amber);outline-offset:2px;}
+.gx-ck input:disabled~.f{opacity:.2;}
+.fl-k.cv .d-ct,.fl-k.cv .fl-p{margin-right:108px;}
+.fl-cv{position:absolute;top:58px;right:20px;width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);}
+.vg-cv{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;margin-bottom:10px;border-radius:10px;background:var(--bg3);}
 .ac-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
 .ac-r .t{display:flex;align-items:center;gap:8px;min-width:0;font-weight:700;font-size:15px;color:var(--text);}
 .ac-r .s{grid-column:1/3;font-family:var(--mono);font-size:12px;color:var(--text2);}
@@ -2039,6 +2059,15 @@ paw:'<path d="M12 12.8c-2.7 0-5 2.6-5 4.8 0 1.7 1.2 2.6 2.8 2.6h4.4c1.6 0 2.8-.9
 infinity:'<path d="M12 12c-1.8-2.4-3.2-4-5.2-4a4 4 0 0 0 0 8c2 0 3.4-1.6 5.2-4s3.2-4 5.2-4a4 4 0 0 1 0 8c-2 0-3.4-1.6-5.2-4z"/>'
 };
 function ico(n,s,c){const p=ICONS[n];if(!p)return '';s=s||'1.2em';return '<svg class="ico'+(c?' '+c:'')+'" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+p+'</svg>';}
+// Iconos de posición de las fotos (#123): coche visto desde arriba (morro arriba, retrovisores delante) con el punto desde el que se hace la foto; interior: asientos
+(function(){
+  const B='<path d="M10 4.5h4l2 2.3v11.4L15 19.5H9L8 18.2V6.8z"/><path d="M8.6 9.6h6.8M9.2 16.6h5.6M8 10.2H6.6M16 10.2h1.4"/>';
+  const P=(x,y,l)=>B+(l?'<path d="'+l+'"/>':'')+'<circle class="f" cx="'+x+'" cy="'+y+'" r="1.7"/>';
+  const S='<rect class="f" x="6" y="3" width="3" height="2.5"/><path d="M4.5 6.5h6l-.6 9H5.1zM3.8 15.5h7.4v4H3.8z"/><rect class="f" x="15" y="3" width="3" height="2.5"/><path d="M13.5 6.5h6l-.6 9h-4.8zM12.8 15.5h7.4v4h-7.4z"/>';
+  const T='<rect class="f" x="4.5" y="3" width="3" height="2.5"/><rect class="f" x="10.5" y="3" width="3" height="2.5"/><rect class="f" x="16.5" y="3" width="3" height="2.5"/><path d="M3 6.5h18l-.6 9H3.6zM9 6.5v9M15 6.5v9M2.5 15.5h19v4h-19zM9 15.5v4M15 15.5v4"/>';
+  Object.assign(ICONS,{'vx-di':P(3.8,3.3,'M5.2 4.7l2 2'),'vx-dd':P(20.2,3.3,'M18.8 4.7l-2 2'),'vx-li':P(2.8,12,'M4.6 12h1.8'),'vx-ld':P(21.2,12,'M19.4 12h-1.8'),
+    'vx-ti':P(3.8,20.7,'M5.2 19.3l2-2'),'vx-td':P(20.2,20.7,'M18.8 19.3l-2-2'),'vx-fr':P(12,2.2,''),'vx-tr':P(12,21.8,''),'vx-id':S,'vx-it':T});
+})();
 // Iconos del HTML estático: <i data-ico="nombre"></i> → <svg> (el HTML está antes de este script)
 document.querySelectorAll('[data-ico]').forEach(e=>{e.outerHTML=ico(e.dataset.ico);});
 const VTYPES=[
@@ -7158,7 +7187,8 @@ function vcardH(v){
   const share=isM?_settleTotals(v,_getVehicleAllFinances(v)).mgr:null;
   // Balance en Doto: entero sin separador de miles + céntimos en mono (mismo importe que antes: vP)
   const _bS=fmtF(vP).split(','),_bE=(vP>=0?'+':'')+_bS[0].replace(/\./g,''),_bD=_bS.length>1?','+_bS.slice(1).join(','):'';
-  return `<div class="vcard vk fl-k" onclick="openV('${escJs(v.id)}')">
+  const _cv=_gxCover(v); // portada de la galería (#123) o, si no hay, la foto antigua
+  return `<div class="vcard vk fl-k${_cv?' cv':''}" onclick="openV('${escJs(v.id)}')">${_cv?'<img class="fl-cv" src="'+esc(_cv)+'" alt="">':''}
     <div class="d-ch"><span class="dh-cl"><i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i><span class="q">${vtypeLabel(v.vehicle_type||'turismo')}</span></span>${isM?'<span class="chip">'+ico('handshake')+' Gestión</span>':''}</div>
     <div class="d-ct fl-n">${esc(v.name)}</div>
     <div class="d-meta fl-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}${v.year?' · '+esc(v.year):''}</div>
@@ -7227,7 +7257,7 @@ function renderListBody(){
         h+=_sh(t,list.length)+`<div class="vg-g">`;
         list.forEach(v=>{
           const vI=tInc(v),vE=tExp(v),vP=vI-vE;
-          h+=`<div class="vg" onclick="openV('${escJs(v.id)}')">
+          h+=`<div class="vg" onclick="openV('${escJs(v.id)}')">${(c=>c?'<img class="vg-cv" src="'+esc(c)+'" alt="">':'')(_gxCover(v))}
             <div class="vg-n">${_dot(v)}<span>${esc(v.name)}</span></div>
             <div class="vk-p">${esc(v.plate)}${v.model?' · '+esc(v.model):''}</div>
             <div class="spec"><div class="w2">INGRESOS<b>${fmt(vI)}</b></div><div class="w2">BALANCE<b style="color:${vP>=0?'var(--text)':'var(--red)'}">${fmt(vP)}</b></div></div>
@@ -7355,6 +7385,7 @@ function renderDetail(el){
   else if(AT==='finances')h+=renderFin(v);
   else h+=renderInfo(v);
   h+='</div>';el.innerHTML=h;
+  _gxMount(v.id);
 }
 function switchTab(t){AT=t;renderDetail(document.getElementById('PC'));document.getElementById('mainPage').scrollTop=0;}
 
@@ -8800,14 +8831,7 @@ function renderInfo(v){
   const _w=['Km últ. mant.','Nº bastidor','Notas']; // datos largos: a todo el ancho de la ficha técnica
   const _chip=(c,t)=>'<span class="chip '+c+'">'+t+'</span>';
   let h=`<div class="fl-inf">
-  ${v.photo?`<div class="fl-ph">
-    <img src="${esc(v.photo)}" alt=""/>
-    <button class="fl-phx" onclick="removeVPhoto('${escJs(v.id)}')">${ico('trash')} Quitar</button>
-  </div>`:`<button class="fl-pha" onclick="pickVPhoto('${escJs(v.id)}')">
-    ${ico('camera')}
-    <span>Añadir foto del vehículo</span>
-    <small>Solo visible en la ficha</small>
-  </button>`}
+  ${_gxSecH(v)}
   <div class="al-h fl-ih"><h3>Ficha del vehículo</h3><button class="btn-sec fl-ed" onclick="openEditV('${escJs(v.id)}')">${ico('edit')} Editar</button></div>
   ${(()=>{const isD=window.innerWidth>=768;
   const curKm=Number(v.km)||0;const maintKm=Number(v.maint_km)||0;
@@ -11174,7 +11198,7 @@ function deleteV(id){
     <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
   _fxDelVNote(id);
 }
-function confirmDelete(id){_fxDropBooking(((V.find(v=>v.id===id)||{}).bookings||[]).map(b=>b.id));V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
+function confirmDelete(id){_fxDropBooking(((V.find(v=>v.id===id)||{}).bookings||[]).map(b=>b.id));_gxDrop(id);V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
 
 // ═══════════════════════════════════════════════════════════ ADD VEHICLE
 function openAddV(){
@@ -11221,7 +11245,7 @@ function openAddV(){
       <button type="button" onclick="pickNewVPhoto()" id="photoLabel" class="fl-pha">
         <span id="photoPreview">${ico('camera')} Pulsa para seleccionar foto</span>
       </button>
-      <div class="d-hint">Opcional · solo visible en la ficha</div>
+      <div class="d-hint">Opcional · será la portada (foto 1) de la galería</div>
     </div>
     <div class="d-acts al-end"><button class="btn-pri" onclick="submitV()">${ico('save')} Crear vehículo</button>
     <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div></div>`);
@@ -11895,6 +11919,7 @@ function exportExcel(vId){
 // Del alquiler solo se escriben campos que ya existen (delivered, deliveredAt, kmStart, deliveredFuelLevel, deliveryPlace y returnPlace).
 // Limpieza: 6 meses después de devolver el coche y cerrar la fianza, con aviso antes y «Conservar». El acta se queda.
 const FX_T=[['frontal','Frontal','Frontal'],['lat_der','Lat. dcho.','Lateral derecho'],['trasera','Trasera','Trasera'],['lat_izq','Lat. izdo.','Lateral izquierdo'],['interior','Interior','Interior'],['cuadro','Cuadro','Cuadro']];
+const FX_ICO={frontal:'vx-fr',lat_der:'vx-ld',trasera:'vx-tr',lat_izq:'vx-li',interior:'vx-id',cuadro:'odometer'}; // iconos de los huecos vacíos (#123)
 const FX_DMAX=6,FX_KEEP_DAYS=183,FX_FREE_BYTES=1073741824,FX_OVH=6144; // FX_OVH: estimación de bytes de índices y metadatos por documento de foto
 // Lista local de actas ya limpias (sin fotos o ya borradas): la tarea diaria no las vuelve a pedir
 function _fxCleanGet(){try{const a=JSON.parse(localStorage.getItem('deiros_fx_clean')||'[]');return new Set(Array.isArray(a)?a:[]);}catch(e){return new Set();}}
@@ -11922,7 +11947,7 @@ function _fxAll(st){return _fxTx(st,'readonly',s=>s.getAll());}
 function _fxT(p,ms){return Promise.race([p,new Promise((_,ko)=>setTimeout(()=>ko(Object.assign(new Error('Sin respuesta de la nube'),{code:'timeout'})),ms))]);}
 // ── Referencias de Firestore (mismo SDK compat y misma db que data/main)
 function _fxAid(bid,fase){return String(bid).replace(/\//g,'_')+'__'+fase;}
-function _fxRef(aid,fid){const a=db.collection('users').doc(_uid).collection('actas').doc(aid);return fid?a.collection('fotos').doc(fid):a;}
+function _fxRef(aid,fid){const g=_gxIs(aid),a=db.collection('users').doc(_uid).collection(g?'vehiculos':'actas').doc(g?String(aid).slice(4):aid);return fid?a.collection('fotos').doc(fid):a;}
 function _fxVB(bid){let r=null;(V||[]).forEach(v=>(v.bookings||[]).forEach(b=>{if(b.id===bid)r={v:v,b:b};}));return r;}
 function _fxNew(bid,fase){const vb=_fxVB(bid);return {v:1,bid:bid,vid:vb?vb.v.id:'',fase:fase,at:'',km:null,combustible:'',lugar:'',nota:'',keep:false,kb:0,fotos:[]};}
 function _fxSrc(s){return /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(String(s||''))?s:'';}
@@ -11966,7 +11991,10 @@ async function _fxFlush(){
         else if(it.t==='a'){
           let doc=it.doc;
           if(it.m){const c=await _fxT(_fxRef(it.id).get(),20000),o=c.exists?(c.data()||{}):null;
-            if(o){const ids=new Set((doc.fotos||[]).map(f=>f.id));doc=Object.assign({},o,doc,{at:doc.at||o.at||'',km:doc.km||o.km||null,combustible:doc.combustible||o.combustible||'',lugar:doc.lugar||o.lugar||'',nota:doc.nota||o.nota||'',keep:!!(doc.keep||o.keep),fotos:(Array.isArray(o.fotos)?o.fotos.filter(f=>f&&!ids.has(f.id)):[]).concat(doc.fotos||[])});delete doc.subida;doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);}}
+            if(o&&_gxIs(it.id)){const P=new Set((doc.fotos||[]).map(f=>f.pos)),ids=new Set((doc.fotos||[]).map(f=>f.id)),O=Array.isArray(o.fotos)?o.fotos.filter(f=>f&&f.id&&!ids.has(f.id)):[];
+              for(const f of O)if(P.has(f.pos))await _fxT(_fxRef(it.id,f.id).delete(),20000);
+              doc=Object.assign({},o,doc,{fotos:O.filter(f=>!P.has(f.pos)).concat(doc.fotos||[]).sort((p,q)=>p.pos-q.pos)});delete doc.subida;doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);}
+            else if(o){const ids=new Set((doc.fotos||[]).map(f=>f.id));doc=Object.assign({},o,doc,{at:doc.at||o.at||'',km:doc.km||o.km||null,combustible:doc.combustible||o.combustible||'',lugar:doc.lugar||o.lugar||'',nota:doc.nota||o.nota||'',keep:!!(doc.keep||o.keep),fotos:(Array.isArray(o.fotos)?o.fotos.filter(f=>f&&!ids.has(f.id)):[]).concat(doc.fotos||[])});delete doc.subida;doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);}}
           await _fxT(_fxRef(it.id).set(Object.assign({},doc,{subida:st()})),20000);
           if(it.m){_fx.unk.delete(it.id);if(_fx.A[it.id]&&doc!==it.doc&&!(await _fxGet('q',it.k).then(r=>r&&r.ts!==it.ts))){_fx.A[it.id]=JSON.parse(JSON.stringify(doc));await _fxPut('acta',JSON.parse(JSON.stringify(doc)),it.k.replace('|a:','|'));}}
         }
@@ -12013,6 +12041,7 @@ async function _fxBitmap(file){
 }
 function _fxCanvas(src,w,h,L){const k=Math.min(1,L/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));c.getContext('2d').drawImage(src,0,0,c.width,c.height);return c;}
 function _fxStamp(c,t){
+  if(!t)return; // galería (#123): sin sello
   const x=c.getContext('2d'),k=Math.max(c.width,c.height)/1280,fs=Math.max(12,Math.round(24*k)),p=Math.round(14*k);
   x.font='700 '+fs+'px "JetBrains Mono",monospace';const w=x.measureText(t).width;
   x.fillStyle='rgba(0,0,0,.6)';x.fillRect(c.width-w-p*2,c.height-fs-p*1.6,w+p*2,fs+p*1.6);
@@ -12072,7 +12101,7 @@ function _fxNext(a){const F=(a&&a.fotos)||[];return FX_T.find(t=>!F.some(f=>f.ti
 function _fxTile(aid,f,num,lbl,cls,ghost,tipo){
   const im=f?_fxSrc(f.th):'',gh=!f&&ghost?_fxSrc(ghost):'',pend=f&&_fx.pend.has(f.id);
   return '<button type="button" class="ph-t '+cls+'" onclick="'+(f?"_fxViewAt('"+escJs(aid)+"','"+escJs(f.id)+"',1)":"_fxShoot('"+escJs(tipo)+"')")+'" aria-label="'+esc(num+' '+lbl+(f?'':' · hacer foto'))+'">'
-    +'<span class="f">'+(im?'<img src="'+esc(im)+'" alt="">':'')+(gh?'<img class="gh" src="'+esc(gh)+'" alt="">':'')+(f?'':ico('camera'))
+    +'<span class="f">'+(im?'<img src="'+esc(im)+'" alt="">':'')+(gh?'<img class="gh" src="'+esc(gh)+'" alt="">':'')+(f?'':ico(FX_ICO[tipo]||'camera',null,'vx'))
     +(f?'<span class="phk'+(pend?' p':'')+'">'+ico(pend?'clock':'check')+'</span><span class="phr">'+esc(_fxHM(f.at))+'</span>':'')+'</span>'
     +'<span class="l"><em>'+esc(num)+'</em>'+esc(lbl)+'</span>'+(f&&f.nota?'<span class="ph-n">'+esc(f.nota)+'</span>':'')+'</button>';
 }
@@ -12094,6 +12123,7 @@ function _fxRepaint(){
   if(el&&_fx.bid&&el.dataset.bid===_fx.bid&&el.dataset.ok==='1')el.innerHTML=_fxGridHtml(_fx.A[_fxAid(_fx.bid,_fx.fase)],_fx.fase,_fx.fase==='devolucion'?_fx.A[_fxAid(_fx.bid,'entrega')]:null);
   _fxBar();
   const s=document.getElementById('fxSec');if(s&&s.dataset.ok==='1')_fxFichaFill(s.dataset.bid);
+  _gxRepaint();
 }
 function _fxBar(){
   const el=document.getElementById('fxBar');if(!el)return;
@@ -12385,14 +12415,15 @@ async function _fxCalc(){
 }
 function _fxBackupToast(){
   let st=null;try{st=JSON.parse(localStorage.getItem('deiros_fx_stats')||'null');}catch(e){}
-  const hay=st&&st.by!=null?Number(st.f)>0:st&&st.n!=null?Number(st.n)>0:Object.values(_fx.A||{}).some(a=>a&&!a.borradas&&(a.fotos||[]).length)||(V||[]).some(v=>(v.bookings||[]).some(b=>b.delivered));
-  if(!hay)return;
-  _saveToast('Copia descargada. Las fotos de entrega y devolución no van en esta copia: usa «Exportar copia con fotos» si las quieres.','w');}
+  const hay=st&&st.by!=null?Number(st.f)>0:st&&st.n!=null?Number(st.n)>0:Object.keys(_fx.A||{}).some(k=>{const a=_fx.A[k];return !_gxIs(k)&&a&&!a.borradas&&(a.fotos||[]).length;})||(V||[]).some(v=>(v.bookings||[]).some(b=>b.delivered));
+  const gal=Object.keys(_fx.A||{}).some(k=>_gxIs(k)&&_fx.A[k]&&(_fx.A[k].fotos||[]).length);
+  if(!hay&&!gal)return;
+  _saveToast(hay?'Copia descargada. Las fotos de entrega y devolución no van en esta copia: usa «Exportar copia con fotos» si las quieres.'+(gal?' Las de la galería de los coches no van en ninguna copia (siguen en la nube).':''):'Copia descargada. Las fotos de la galería de los coches no van en esta copia (siguen en la nube).','w');}
 // Copia con fotos: cada elemento {id, acta, imgs:{idFoto:dataURL}}; devuelve {list,fotos,falta}
 async function _fxBackupActas(){
   const s=await _fxT(db.collection('users').doc(_uid).collection('actas').get(),60000);
   const A={};s.docs.forEach(x=>{A[x.id]=x.data()||{};});
-  const Q=(await _fxAll('q')).filter(i=>i.uid===_uid),QI={};
+  const Q=(await _fxAll('q')).filter(i=>i.uid===_uid&&!_gxIs(i.id)),QI={};
   Q.forEach(it=>{if(it.t==='a'&&it.doc){const o=A[it.id];if(it.m&&o){const m=Object.assign({},it.doc),ids=new Set((it.doc.fotos||[]).map(p=>p.id));m.fotos=(it.doc.fotos||[]).concat((o.fotos||[]).filter(p=>!ids.has(p.id)));A[it.id]=m;}else A[it.id]=it.doc;}else if(it.t==='f'&&it.doc)QI[it.fid]=it.doc.img;});
   const list=[];let fotos=0,falta=0;
   for(const aid of Object.keys(A)){
@@ -12454,6 +12485,7 @@ function _fxBoot(){
   if(_fx.uid!==_uid){_fx.uid=_uid;_fx.A={};_fx.pend=new Set();_fx.sig='';}
   _fx.stop=false;
   _fxPendRefresh().then(_fxFlush).catch(e=>console.warn('[fotos]',e));
+  _gxBoot().catch(e=>console.warn('[galería]',e));
   setTimeout(function(){_fxDaily().catch(e=>console.warn('[fotos]',e));},6000);
 }
 window.addEventListener('online',function(){_fx.stop=false;_fxFlush();});
@@ -12667,11 +12699,12 @@ async function _fxCountAll(bids){
 // Hoja «Eliminar definitivamente» del coche: dice cuántas fotos se borrarán
 async function _fxDelVNote(vid){
   const v=V.find(x=>x.id===vid);if(!v)return;
-  let r={n:0,k:0,ok:false};try{r=await _fxCountAll((v.bookings||[]).map(b=>b.id));}catch(e){}
+  let r={n:0,k:0,ok:false},gc={n:0,ok:false};try{[r,gc]=await Promise.all([_fxCountAll((v.bookings||[]).map(b=>b.id)),_gxCount(vid)]);}catch(e){}
   const el=document.getElementById('fxDelV');if(!el||el.dataset.vid!==vid)return;
-  el.className=r.n||!r.ok?'ph-w':'d-hint';
-  el.innerHTML=ico(r.n||!r.ok?'alert':'camera')+'<span>'+esc(r.n?'Se borrarán también '+r.n+(r.n===1?' foto':' fotos')+' de entrega y devolución ('+r.k+(r.k===1?' alquiler':' alquileres')+').'
-    :r.ok?'No tiene fotos de entrega ni de devolución.':'No se ha podido comprobar si tiene fotos (sin conexión o la nube no responde). Si las tiene, se borrarán también.')+'</span>';
+  if(!gc.ok&&!gc.n)r.ok=false; // galería sin comprobar: «No se ha podido comprobar si tiene fotos…»
+  el.className=r.n||gc.n||!r.ok?'ph-w':'d-hint';
+  el.innerHTML=ico(r.n||gc.n||!r.ok?'alert':'camera')+'<span>'+esc((gc.n?(gc.n===1?'Se borrará la foto de la galería del coche. ':'Se borrarán las '+gc.n+' fotos de la galería del coche. '):'')+(r.n?'Se borrarán también '+r.n+(r.n===1?' foto':' fotos')+' de entrega y devolución ('+r.k+(r.k===1?' alquiler':' alquileres')+').'
+    :r.ok?'No tiene fotos de entrega ni de devolución.':'No se ha podido comprobar si tiene fotos (sin conexión o la nube no responde). Si las tiene, se borrarán también.'))+'</span>';
 }
 
 // ═══════════════════════════════════════════════════════════ BACKUP
@@ -12695,6 +12728,7 @@ function openBackup(){
     <p class="d-hint aj-h">Además del JSON normal incluye las fotos de las actas. Se descargan de la nube y el fichero puede pesar decenas de MB.</p>
     <p class="d-hint aj-h">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</p>
     ${_fxBackupNote()}
+    <p class="d-hint aj-h fx-bk">${ico('camera')} <span>Las fotos de la galería de cada coche (hasta 8) están en la nube y no van en ninguna copia JSON. La foto antigua del coche de este dispositivo sí va.</span></p>
     <div class="al-h"><h3>Importar</h3><span class="q">JSON</span></div>
     <label class="btn-sec aj-up">
       ${ico('upload')} Seleccionar fichero JSON
