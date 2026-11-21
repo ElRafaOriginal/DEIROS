@@ -4697,6 +4697,14 @@ function _kmToggle(id,dur){
   _calcExtrasTotal(dur);
 }
 
+// #121 Entrega: un solo extra con importe libre (vacío o 0 → 50 €; admite coma decimal). Reutiliza el id exEntregaDomicilio y su {label, amount}: sin campos nuevos.
+// En un alquiler o presupuesto antiguo se rellena el importe y la etiqueta guardados (49 € «Entrega a domicilio»), para que al guardar sin tocar nada no cambie.
+function _entregaAmt(s){const n=parseFloat(String(s==null?'':s).trim().replace(',','.'));return Number.isFinite(n)&&n>0?Math.round(n*100)/100:50;}
+function _entregaVal(a){const n=Number(a);return Number.isFinite(n)&&n>0?String(n).replace('.',','):'';}
+function _exEntregaRow(dur,isFurg){return '<div class="_exrow al-ex" data-exid="exEntregaDomicilio" data-dur="'+dur+'" id="row_ex_exEntregaDomicilio"><span class="i">'+ico('home')+'</span><span class="t">Entrega<small>domicilio o lugar acordado</small></span><input id="exEntregaImp" class="al-kmn" type="text" inputmode="decimal" autocomplete="off" placeholder="50 €" aria-label="Importe de la entrega en euros" onclick="event.stopPropagation()" oninput="_exEntregaInp(this,'+(isFurg?'true':'false')+')"/><div id="chk_ex_exEntregaDomicilio" class="al-ck">&nbsp;</div><input type="checkbox" id="ex_exEntregaDomicilio" style="display:none"/></div>';}
+function _exEntregaInp(inp,isFurg){const row=inp.closest('._exrow');const dur=parseInt(row&&row.getAttribute('data-dur'))||1;const cb=document.getElementById('ex_exEntregaDomicilio');if(cb&&!cb.checked&&String(inp.value).trim()!=='')_toggleExtra('exEntregaDomicilio',dur,isFurg);else _calcExtrasTotal(dur,isFurg);}
+function _exEntregaFill(ex){const i=document.getElementById('exEntregaImp');if(i&&ex){i.value=_entregaVal(ex.amount);if(ex.label)i.dataset.lbl=ex.label;}}
+function _qEntregaInp(inp){const row=inp.closest('._qex');if(row&&row.dataset.active!=='1'&&String(inp.value).trim()!=='')_toggleQExtra(row);else _calcQuoteTotal();}
 function _calcExtrasTotal(dur,isFurg){
   const chk=id=>document.getElementById('ex_'+id)?.checked||false;
   const e={};let total=0;
@@ -4708,7 +4716,7 @@ function _calcExtrasTotal(dur,isFurg){
   if(chk('exSillaBebe')){const a=fixedPlus(39,dur);e.exSillaBebe={label:'Silla de bebé suelta',amt:a};total+=a;}
   if(chk('exFueraComunidad')){const a=scale(9.99,dur);e.exFueraComunidad={label:'Fuera de comunidad autónoma',amt:a};total+=a;}
   if(chk('exFueraNacional')){const a=scale(69,dur);e.exFueraNacional={label:'Fuera de territorio nacional',amt:a};total+=a;}
-  if(chk('exEntregaDomicilio')){e.exEntregaDomicilio={label:'Entrega a domicilio',amt:49};total+=49;}
+  if(chk('exEntregaDomicilio')){const _ei=document.getElementById('exEntregaImp');const a=_entregaAmt(_ei&&_ei.value);e.exEntregaDomicilio={label:(_ei&&_ei.dataset.lbl)||'Entrega a domicilio / lugar acordado',amt:a};total+=a;}
   if(chk('exEntregaAeropuerto')){e.exEntregaAeropuerto={label:'Entrega aeropuerto/hotel/estación',amt:59};total+=59;}
   if(chk('exDevolucionFueraHorario')){const a=fixedPlus(14.99,dur);e.exDevolucionFueraHorario={label:'Devolución fuera de horario',amt:a};total+=a;}
   if(chk('exSeguroLimpieza')){e.exSeguroLimpieza={label:'Seguro de limpieza (prepago)',amt:24.99};total+=24.99;}
@@ -4896,8 +4904,7 @@ function openContractForm(vId,bookingId){
       ['exSillaBebe','child-seat','Silla de bebé suelta','39€','precio fijo (exceso proporcional >30d)'],
       ['exFueraComunidad','map','Fuera de comunidad autónoma','9,99€','escala ×2 si >15 días'],
       ['exFueraNacional','globe','Fuera de territorio nacional','69€','escala ×2 si >15 días'],
-      ['exEntregaDomicilio','home','Entrega a domicilio','49€','cobro único'],
-      ['exEntregaAeropuerto','plane','Entrega en aeropuerto/hotel/estación','59€','cobro único'],
+    ].map(([id,icon,label,price,note])=>_exC(id,icon,label,price,note)).join('')}${_exEntregaRow(dur,isFurgoneta)}${(b.extras||[]).some(x=>x&&x.id==='exEntregaAeropuerto')?_exC('exEntregaAeropuerto','plane','Entrega en aeropuerto/hotel/estación','59€','tarifa anterior · cobro único'):''}${[
       ['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€',''],
       ['exSeguroLimpieza','broom','Seguro de limpieza (prepago)','24,99€','cobro único'],
       ['exRotulacion','tag','Rotulación temporal empresa','49€',''],
@@ -4961,6 +4968,7 @@ function openContractForm(vId,bookingId){
       const cb=document.getElementById('ex_'+ex.id);
       if(cb&&!cb.checked){
         if(ex.id==='exKmPrepago'){const _n=document.getElementById('exKmPrepagoN');if(_n)_n.value=String(_kmPrepagoOf(b)||'');}
+        if(ex.id==='exEntregaDomicilio')_exEntregaFill(ex);
         if(_kmIds.includes(ex.id))_kmToggleStyled(ex.id,dur);
         else _toggleExtra(ex.id,dur,isFurgoneta);
       }
@@ -7906,7 +7914,7 @@ function editBooking(id){
     </div>
     <span class="q al-q">Fijo por alquiler</span>
     <div class="al-exl">
-      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€'],['exEntregaDomicilio','home','Entrega a domicilio','49€'],['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel','59€'],['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([eid,icon,label,price])=>_exR(eid,icon,label,price)).join('')}
+      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€']].map(([eid,icon,label,price])=>_exR(eid,icon,label,price)).join('')}${_exEntregaRow(dur,isFurgEdit)}${(b.extras||[]).some(x=>x&&x.id==='exEntregaAeropuerto')?_exR('exEntregaAeropuerto','plane','Entrega aeropuerto/hotel (anterior)','59€'):''}${[['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([eid,icon,label,price])=>_exR(eid,icon,label,price)).join('')}
     </div>
     <span class="q al-q">Packs</span>
     <div class="al-exl">
@@ -7934,6 +7942,7 @@ function editBooking(id){
       const cb=document.getElementById('ex_'+ex.id);
       if(cb&&!cb.checked){
         if(ex.id==='exKmPrepago'){const _n=document.getElementById('exKmPrepagoN');const _m=/\((\d+)\s*km/.exec(ex.label||'');if(_n)_n.value=_m?_m[1]:String(Math.round((Number(ex.amount)||0)/0.15));}
+        if(ex.id==='exEntregaDomicilio')_exEntregaFill(ex);
         if(_kmIds.includes(ex.id))_kmToggleStyled(ex.id,dur);
         else _toggleExtra(ex.id,dur,false);
       }
@@ -8273,7 +8282,7 @@ function openNewRental(){
     </div>
     <span class="q al-q">Fijo por alquiler</span>
     <div class="al-exl">
-      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€'],['exEntregaDomicilio','home','Entrega a domicilio','49€'],['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel','59€'],['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([id,icon,label,price])=>_exR(id,icon,label,price)).join('')}
+      ${[['exSillaBebe','child-seat','Silla de bebé','39€'],['exFueraComunidad','map','Fuera de comunidad','9,99€'],['exFueraNacional','globe','Fuera de nacional','69€']].map(([id,icon,label,price])=>_exR(id,icon,label,price)).join('')}${_exEntregaRow(durNR,isFurgNR)}${[['exDevolucionFueraHorario','clock','Devolución fuera de horario','14,99€'],['exSeguroLimpieza','broom','Seguro de limpieza','24,99€'],['exRotulacion','tag','Rotulación empresa','49€']].map(([id,icon,label,price])=>_exR(id,icon,label,price)).join('')}
     </div>
     <span class="q al-q">Packs</span>
     <div class="al-exl">
@@ -13282,8 +13291,8 @@ function _openQuoteForm(q){
     ['exSillaBebe','child-seat','Silla de bebé suelta','39','fixedPlus','cobro único/escalado'],
     ['exFueraComunidad','map','Fuera de comunidad autónoma','9.99','scale_fixed','por alquiler'],
     ['exFueraNacional','globe','Fuera de territorio nacional','69','scale_fixed','por alquiler'],
-    ['exEntregaDomicilio','home','Entrega a domicilio','49','fixed','cobro único'],
-    ['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel/estación','59','fixed','cobro único'],
+    ['exEntregaDomicilio','home','Entrega a domicilio / lugar acordado','50','fixed','por defecto 50 €'],
+    ...(((q&&q.extras)||[]).some(e=>e&&e.id==='exEntregaAeropuerto')?[['exEntregaAeropuerto','plane','Entrega aeropuerto/hotel/estación','59','fixed','tarifa anterior · cobro único']]:[]),
     ['exDevolucionFueraHorario','clock','Devolución fuera de horario','14.99','fixedPlus','cobro único/escalado'],
     ['exSeguroLimpieza','broom','Seguro de limpieza (prepago)','24.99','fixed','cobro único'],
     ['exRotulacion','tag','Rotulación temporal empresa','49','fixedPlus','cobro único/escalado'],
@@ -13296,6 +13305,7 @@ function _openQuoteForm(q){
     const chk=isChecked(id);
     const _pdisp={'day':price+'€/día','km':price+'€/km','scale_dur':'desde '+price+'€/día','scale_fixed':'desde '+price+'€','fixedPlus':price+'€','fixed':price+'€','fixed_cond':price+'€','free':'Gratis'};
     let priceDisp=_pdisp[type]||price+'€';
+    if(id==='exEntregaDomicilio'){const _se=savedExtras.find(e=>e&&e.id===id);return _qR(id,icon,esc((_se&&_se.label)||label),price,type,chk,note,'<input id="qamt_'+id+'" class="al-kmn" type="text" inputmode="decimal" autocomplete="off" placeholder="50 €" aria-label="Importe de la entrega en euros" value="'+(_se?_entregaVal(_se.amount):'')+'" onclick="event.stopPropagation()" oninput="_qEntregaInp(this)"/>');}
     return _qR(id,icon,label,price,type,chk,priceDisp+' · '+note,type==='km'?`<input id="qkm_${id}" class="al-kmn" type="number" min="0" step="50" placeholder="km" inputmode="numeric" onclick="event.stopPropagation()" oninput="_calcQuoteTotal()"/>`:'');
   }).join('');
   const _ph=(()=>{const _vq=V.find(v=>v.id===(q&&q.vehicleId));return (_vq?.vehicle_type||'turismo').startsWith('l')?45:30;})();
@@ -13548,7 +13558,7 @@ function _calcQuoteTotal(){
     else if(type==='scale_fixed')amt=Math.round(_qscale(price,dur)*100)/100;
     else if(type==='fixedPlus')amt=_qfixedPlus(price,dur);
     else if(type==='km'){km=parseInt(document.getElementById('qkm_'+id)?.value)||0;amt=Math.round(km*price*100)/100;}
-    else if(type==='fixed'||type==='fixed_cond')amt=price;
+    else if(type==='fixed'||type==='fixed_cond'){const _ai=document.getElementById('qamt_'+id);amt=_ai?_entregaAmt(_ai.value):price;}
     else if(type==='fixed_km'){const parts=row.dataset.price.split('|');const tp=parts[0],fp=parts[1];amt=isFurg?parseFloat(fp||tp)||0:parseFloat(tp)||0;}
     else if(type==='km_cond'){const parts=row.dataset.price.split('|');const rate=isFurg?parseFloat(parts[1]||parts[0])||0:parseFloat(parts[0])||0;km=parseInt(document.getElementById('qkm_'+id)?.value)||0;amt=Math.round(km*rate*100)/100;}
     else if(type==='free')return;
