@@ -12080,7 +12080,7 @@ async function _fxAdd(file){
     if(isD&&fase==='devolucion')f.nuevo=old?old.nuevo!==false:true;
     await _fxPut('img',c.img,f.id);
     await _fxQ('f:'+aid+'/'+f.id,{t:'f',id:aid,fid:f.id,doc:{v:1,bid:bid,fase:fase,tipo:tipo,at:f.at,kb:c.kb,img:c.img}});
-    _fx.pend.add(f.id);
+    _fx.pend.add(f.id);_fx.sig='*';
     if(old){a.fotos=a.fotos.map(x=>x.id===old.id?f:x);await _fxDropFoto(aid,old.id);}else a.fotos.push(f);
     await _fxSaveActa(a);
     _fxRepaint();_fxStat();_fxKick(true);
