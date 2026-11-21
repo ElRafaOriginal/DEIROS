@@ -7696,7 +7696,7 @@ function showBooking(k,_overrideId){
       </div></div>
       <div class="al-dz">
         ${!b.cancelled?`<button class="btn-txt err" onclick="openCancelBooking('${escJs(b.id)}')">${ico('ban')} Cancelar alquiler</button>`:''}
-        <button class="btn-txt err" onclick="deleteBooking('${escJs(b.id)}');closeSheet()">${ico('trash')} Eliminar</button>
+        <button class="btn-txt err" onclick="deleteBooking('${escJs(b.id)}',this)">${ico('trash')} Eliminar</button>
       </div>
     </section>`);
   if(b.delivered)_fxFichaFill(b.id);
@@ -8139,10 +8139,18 @@ function submitEditBooking(id){
   }
 }
 
-function deleteBooking(id){
-  const _fxN=_fxCount(id);
-  if(_fxN&&!confirm('Se borrarán también las '+_fxN+' fotos de entrega y devolución.\n\n¿Eliminar el alquiler?'))return;
+async function deleteBooking(id,btn){
+  // #105: las fotos se cuentan también en la nube y en el móvil (aunque no se hayan abierto en esta sesión), con tiempo límite
   const v=gV();if(!v)return;
+  const _b0=(v.bookings||[]).find(b=>b.id===id);
+  if(btn){btn.disabled=true;btn.textContent='Comprobando fotos…';}
+  let _fx0={n:0,ok:false};try{_fx0=await _fxCountAll([id]);}catch(e){}
+  if(btn){if(!document.body.contains(btn)||!document.getElementById('SH').classList.contains('open'))return; // ficha cerrada mientras se comprobaba: no se borra
+    btn.disabled=false;btn.innerHTML=ico('trash')+' Eliminar';}
+  const _fxN=Math.max(_fx0.n,_fxCount(id));
+  if(_fxN&&!confirm('Se borrarán también las '+_fxN+' fotos de entrega y devolución.\n\n¿Eliminar el alquiler?'))return;
+  if(!_fxN&&!_fx0.ok&&_b0&&(_b0.delivered||_b0.returned)&&!confirm('No se ha podido comprobar si tiene fotos de entrega o devolución (sin conexión o la nube no responde). Si las tiene, se borrarán también.\n\n¿Eliminar el alquiler?'))return;
+  if(btn)closeSheet();
   const b=(v.bookings||[]).find(b=>b.id===id);
   if(b){
     // Remove all linked finance entries (single financeId or array financeIds)
@@ -11161,8 +11169,10 @@ function deleteV(id){
   openSheet(`<div class="stitle">Eliminar definitivamente</div>
     <p class="ssub">Se eliminarán todos los datos. Esta acción no se puede deshacer.</p>
     <div class="d-kv ar-kv"><span>${esc(v.name)}</span><b>${esc(v.plate)}</b></div>
+    <p class="d-hint" id="fxDelV" data-vid="${esc(id)}" role="status">${ico('camera')} Comprobando las fotos de entrega y devolución…</p>
     <div class="d-acts al-end"><button class="btn-dang" onclick="confirmDelete('${escJs(id)}')">${ico('trash')} Eliminar definitivamente</button>
     <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
+  _fxDelVNote(id);
 }
 function confirmDelete(id){_fxDropBooking(((V.find(v=>v.id===id)||{}).bookings||[]).map(b=>b.id));V=V.filter(v=>v.id!==id);save();closeSheet();if(AV===id){AV=null;document.getElementById('BN').style.display='flex';}nav(CV);}
 
