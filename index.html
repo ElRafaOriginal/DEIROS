@@ -11991,9 +11991,10 @@ async function _fxFlush(){
         else if(it.t==='a'){
           let doc=it.doc;
           if(it.m){const c=await _fxT(_fxRef(it.id).get(),20000),o=c.exists?(c.data()||{}):null;
-            if(o&&_gxIs(it.id)){const P=new Set((doc.fotos||[]).map(f=>f.pos)),ids=new Set((doc.fotos||[]).map(f=>f.id)),O=Array.isArray(o.fotos)?o.fotos.filter(f=>f&&f.id&&!ids.has(f.id)):[];
-              for(const f of O)if(P.has(f.pos))await _fxT(_fxRef(it.id,f.id).delete(),20000);
-              doc=Object.assign({},o,doc,{fotos:O.filter(f=>!P.has(f.pos)).concat(doc.fotos||[]).sort((p,q)=>p.pos-q.pos)});delete doc.subida;doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);}
+            if(o&&_gxIs(it.id)){const r=_gxMerge(o,doc,it.r);
+              for(const f of r.del)await _fxT(_fxRef(it.id,f.id).delete(),20000);
+              for(const f of r.lo){await _fxT(_fxRef(it.id,f.id).delete(),20000);_fx.pend.delete(f.id);delete _gx.full[f.id];await _fxDel('img',f.id).catch(()=>{});}
+              doc=r.doc;if(r.lo.length)_gxLostToast(it.id,r.lo.length);}
             else if(o){const ids=new Set((doc.fotos||[]).map(f=>f.id));doc=Object.assign({},o,doc,{at:doc.at||o.at||'',km:doc.km||o.km||null,combustible:doc.combustible||o.combustible||'',lugar:doc.lugar||o.lugar||'',nota:doc.nota||o.nota||'',keep:!!(doc.keep||o.keep),fotos:(Array.isArray(o.fotos)?o.fotos.filter(f=>f&&!ids.has(f.id)):[]).concat(doc.fotos||[])});delete doc.subida;doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);}}
           await _fxT(_fxRef(it.id).set(Object.assign({},doc,{subida:st()})),20000);
           if(it.m){_fx.unk.delete(it.id);if(_fx.A[it.id]&&doc!==it.doc&&!(await _fxGet('q',it.k).then(r=>r&&r.ts!==it.ts))){_fx.A[it.id]=JSON.parse(JSON.stringify(doc));await _fxPut('acta',JSON.parse(JSON.stringify(doc)),it.k.replace('|a:','|'));}}
@@ -12418,7 +12419,7 @@ function _fxBackupToast(){
   const hay=st&&st.by!=null?Number(st.f)>0:st&&st.n!=null?Number(st.n)>0:Object.keys(_fx.A||{}).some(k=>{const a=_fx.A[k];return !_gxIs(k)&&a&&!a.borradas&&(a.fotos||[]).length;})||(V||[]).some(v=>(v.bookings||[]).some(b=>b.delivered));
   const gal=Object.keys(_fx.A||{}).some(k=>_gxIs(k)&&_fx.A[k]&&(_fx.A[k].fotos||[]).length);
   if(!hay&&!gal)return;
-  _saveToast(hay?'Copia descargada. Las fotos de entrega y devolución no van en esta copia: usa «Exportar copia con fotos» si las quieres.'+(gal?' Las de la galería de los coches no van en ninguna copia (siguen en la nube).':''):'Copia descargada. Las fotos de la galería de los coches no van en esta copia (siguen en la nube).','w');}
+  _saveToast(hay?'Copia descargada. Las fotos de entrega y devolución'+(gal?' y las de la galería de los coches':'')+' no van en esta copia: usa «Exportar copia con fotos» si las quieres.':'Copia descargada. Las fotos de la galería de los coches no van en esta copia: usa «Exportar copia con fotos» si las quieres.','w');}
 // Copia con fotos: cada elemento {id, acta, imgs:{idFoto:dataURL}}; devuelve {list,fotos,falta}
 async function _fxBackupActas(){
   const s=await _fxT(db.collection('users').doc(_uid).collection('actas').get(),60000);
@@ -12445,11 +12446,13 @@ async function exportDataConFotos(btn){
   if(btn){btn.disabled=true;btn.textContent='Preparando fotos…';}
   try{
     const obj=_backupObject(),r=await _fxBackupActas();
-    obj.fotosActas=r.list;
+    let gr=null;try{gr=await _gxBackupGal();}catch(e){console.warn('[galería]',e);}
+    obj.fotosActas=r.list;if(gr)obj.fotosGaleria=gr.list;
     _downloadBackup(obj,'DEIROS_backup_fotos_'+todayStr()+'.json');
     try{localStorage.setItem('deiros_lastBackupAt',new Date().toISOString());}catch(e){}
     const bn=document.getElementById('backupReminder');if(bn)bn.remove();
-    _saveToast('Copia con fotos descargada ('+r.fotos+(r.fotos===1?' foto)':' fotos)')+(r.falta?'; '+r.falta+(r.falta===1?' foto no se pudo leer y no va':' fotos no se pudieron leer y no van')+' en la copia.':'.'),r.falta?'w':'ok');
+    const sz=L=>L.reduce((s,e)=>s+Object.keys(e.imgs).reduce((t,k)=>t+e.imgs[k].length,0),0),mb=_fxMB((sz(r.list)+(gr?sz(gr.list):0))/1024),fa=r.falta+(gr?gr.falta:0),nc=gr?gr.list.length:0;
+    _saveToast('Copia con fotos descargada (≈'+mb+'): '+r.fotos+' de entrega y devolución'+(gr?' y '+gr.fotos+' de la galería de '+nc+(nc===1?' coche':' coches'):'')+'.'+(fa?' '+fa+(fa===1?' foto no se pudo leer y no va':' fotos no se pudieron leer y no van')+' en la copia.':'')+(gr?'':' La galería de los coches no se pudo leer de la nube y no va en esta copia.'),fa||!gr?'w':'ok');
   }catch(e){console.warn('[fotos]',e);_saveToast('No se pudo preparar la copia con fotos. Prueba de nuevo.','w');}
   finally{if(btn){btn.disabled=false;btn.innerHTML=tx;}}
 }
@@ -12539,8 +12542,9 @@ async function _gxSave(g){
   g.fotos.sort((p,q)=>p.pos-q.pos);g.kb=g.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);
   _fx.A[id]=g;_gx.ld.add(id);
   const doc=JSON.parse(JSON.stringify(g));delete doc.subida;
+  const q=await _fxGet('q',_uid+'|a:'+id).catch(()=>null); // índice aún sin subir: se conservan su «m» y las fotos restauradas de una copia (#126)
   await _fxPut('acta',doc,_uid+'|'+id);
-  await _fxQ('a:'+id,{t:'a',id:id,doc:doc,m:_fx.unk.has(id)?1:0});
+  await _fxQ('a:'+id,Object.assign({t:'a',id:id,doc:doc,m:_fx.unk.has(id)||(q&&q.m)?1:0},q&&q.r?{r:q.r}:{}));
 }
 // Una foto en su posición (si ya había una, la sustituye): imagen en el móvil + cola de subida. Fecha: la de la foto (galería) o ahora (cámara).
 async function _gxPut(g,pos,file){
@@ -12730,6 +12734,85 @@ async function _gxCount(vid){
   if(!ok&&_uid&&navigator.onLine!==false){try{const s=await _fxT(_fxRef(id).get(),6000);if(!(s.metadata&&s.metadata.fromCache)){ok=true;n=Math.max(n,s.exists?cnt(s.data()||{}):0);}}catch(e){_fxErr(e);}}
   try{n=Math.max(n,cnt(await _fxGet('acta',_uid+'|'+id)));}catch(e){}
   return {n:n,ok:ok};
+}
+// ── Copia con fotos (#126): la galería de cada coche va también en «Exportar copia con fotos» y se restaura al importarla.
+// Formato (solo de esa copia; la v4 no cambia): fotosGaleria = [{id:'veh:<idCoche>', galeria:{v,vid,kb,fotos:[{id,pos,at,kb,th}]}, imgs:{idFoto:dataURL}}].
+// Une el índice del móvil (d) con el de la nube (o): en cada posición manda la foto del móvil y la de la nube sustituida se borra (del),
+// salvo las fotos restauradas de una copia (R), que ceden ante la de la nube y se quitan (lo).
+function _gxMerge(o,d,R){
+  const L=Array.isArray(d.fotos)?d.fotos:[],ids=new Set(L.map(f=>f.id)),O=(Array.isArray(o.fotos)?o.fotos:[]).filter(f=>f&&f.id&&!ids.has(f.id)),OP=new Set(O.map(f=>f.pos)),RS=new Set(R||[]);
+  const lo=L.filter(f=>RS.has(f.id)&&OP.has(f.pos)),K=L.filter(f=>lo.indexOf(f)<0),P=new Set(K.map(f=>f.pos)),del=O.filter(f=>P.has(f.pos));
+  const doc=Object.assign({},o,d,{fotos:O.filter(f=>!P.has(f.pos)).concat(K).sort((a,b)=>a.pos-b.pos)});delete doc.subida;doc.kb=doc.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);
+  return {doc:doc,del:del,lo:lo};
+}
+function _gxLostToast(gid,n){const v=(V||[]).find(x=>_gxId(x.id)===gid);_saveToast((n===1?'Una foto':n+' fotos')+' de la copia no '+(n===1?'se ha':'se han')+' restaurado en la galería'+(v?' de '+v.name:'')+': en la nube ya había foto en esa posición y se conserva.','w');}
+// Tamaño de la galería de la flota (aviso de la hoja de copia): miniaturas aparte, en base64 ≈ 4/3 de lo comprimido
+function _gxSizeTxt(){const kb=(V||[]).reduce((s,v)=>{const g=_fx.A[_gxId(v.id)];return s+(g&&Number(g.kb)||0);},0);return kb>0?'; ahora la galería suma ≈'+_fxMB(kb*4/3):'';}
+// Exportar: galería de cada coche de la flota, de la nube y de la cola de este móvil (lo que aún no se ha subido); devuelve {list,fotos,falta}
+async function _gxBackupGal(){
+  const s=await _fxT(db.collection('users').doc(_uid).collection('vehiculos').get(),60000);
+  const A={};s.docs.forEach(x=>{A['veh:'+x.id]=x.data()||{};});
+  const Q=(await _fxAll('q')).filter(i=>i.uid===_uid&&_gxIs(i.id)),QI={};
+  Q.forEach(it=>{if(it.t==='a'&&it.doc)A[it.id]=it.m&&A[it.id]?_gxMerge(A[it.id],it.doc,it.r).doc:it.doc;else if(it.t==='f'&&it.doc)QI[it.fid]=it.doc.img;else if(it.t==='X')delete A[it.id];});
+  const list=[];let fotos=0,falta=0;
+  for(const v of (V||[])){
+    const gid=_gxId(v.id),g=A[gid];if(!g||!Array.isArray(g.fotos)||!g.fotos.length)continue;
+    const gal=JSON.parse(JSON.stringify(g));delete gal.subida;gal.vid=v.id;const imgs={};
+    for(const p of gal.fotos){
+      let im=_fxSrc(QI[p.id]);
+      if(!im){try{im=_fxSrc(await _fxGet('img',p.id));}catch(e){}}
+      if(!im){const d=await _fxT(_fxRef(gid,p.id).get(),20000).catch(()=>null);im=d?_fxSrc((d.data()||{}).img):'';}
+      if(im){imgs[p.id]=im;fotos++;}else falta++;
+    }
+    list.push({id:gid,galeria:gal,imgs:imgs});
+  }
+  return {list:list,fotos:fotos,falta:falta};
+}
+// Importar: solo en los coches que existen. Imágenes a este móvil y a la cola de subida. No duplica (misma foto ya en la galería)
+// ni sustituye: si una posición ya tiene foto, se conserva la que hay. Sin saber lo que hay en la nube (sin conexión), el índice se une
+// con el de la nube al subir (m=1) y ahí tampoco pisa: «r» lista las fotos restauradas, que ceden ante la nube (_gxMerge).
+async function _gxRestore(L){
+  let n=0,ya=0,ocu=0,skip=0,off=false;const cs=new Set();
+  for(const e of L){
+    try{
+      const g0=_isPlainObject(e)&&_isPlainObject(e.galeria)?e.galeria:null,F=g0&&Array.isArray(g0.fotos)?g0.fotos:[],vid=g0?String(g0.vid||''):'';
+      if(!g0){skip++;continue;}
+      if(!vid||!(V||[]).some(v=>v.id===vid)){skip+=F.length;continue;}
+      const gid=_gxId(vid),imgs=_isPlainObject(e.imgs)?e.imgs:{};
+      let q=null,g=null;
+      try{q=await _fxGet('q',_uid+'|a:'+gid)||null;}catch(er){}
+      if(!q)_gx.net.delete(gid); // solo vale lo que diga ahora la nube
+      try{g=await _gxLoad(vid,true);}catch(er){}
+      const m=q?(q.m?1:0):(_gx.net.has(gid)?0:1),G=g&&Array.isArray(g.fotos)?JSON.parse(JSON.stringify(g)):_gxNew(vid);
+      const ids=new Set(G.fotos.map(f=>f.id)),P=new Set(G.fotos.map(f=>f.pos)),R=[];
+      for(const f of F){
+        const ok=_isPlainObject(f),id=ok?String(f.id):'',pos=ok?Number(f.pos):0,th=ok?_fxSrc(f.th):'',im=_fxSrc(imgs[id]);
+        if(!/^[A-Za-z0-9_-]{1,40}$/.test(id)||!(pos>=1&&pos<=8&&pos%1===0)||!th||!im){skip++;continue;}
+        if(ids.has(id)){ya++;continue;}
+        if(P.has(pos)){ocu++;continue;}
+        const at=isNaN(Date.parse(f.at))?new Date().toISOString():new Date(f.at).toISOString(),kb=Number(f.kb)||0;
+        await _fxPut('img',im,id);
+        await _fxQ('f:'+gid+'/'+id,{t:'f',id:gid,fid:id,doc:{v:1,vid:vid,pos:pos,at:at,kb:kb,img:im}});
+        G.fotos.push({id:id,pos:pos,at:at,kb:kb,th:th});ids.add(id);P.add(pos);R.push(id);n++;cs.add(vid);
+      }
+      if(!R.length)continue;
+      delete G.subida;G.v=1;G.vid=vid;G.fotos.sort((a,b)=>a.pos-b.pos);G.kb=G.fotos.reduce((s,f)=>s+(Number(f.kb)||0),0);
+      _fx.A[gid]=G;_gx.ld.add(gid);delete _gx.err[gid];if(m){_fx.unk.add(gid);off=true;}
+      const doc=JSON.parse(JSON.stringify(G));
+      await _fxPut('acta',doc,_uid+'|'+gid);
+      await _fxQ('a:'+gid,{t:'a',id:gid,doc:doc,m:m,r:((q&&q.r)||[]).concat(R)});
+    }catch(er){console.warn('[galería]',er);skip++;}
+  }
+  await _fxPendRefresh();_gxRepaint();_fxKick(true);
+  return {n:n,ya:ya,ocu:ocu,skip:skip,coches:cs.size,off:off};
+}
+function _gxRestoreTxt(r){
+  if(!r.n&&!r.ya&&!r.ocu&&!r.skip)return '';
+  return 'Galería: '+r.n+(r.n===1?' foto restaurada':' fotos restauradas')+(r.coches?' en '+r.coches+(r.coches===1?' coche':' coches'):'')
+    +(r.ya?'; '+r.ya+' ya '+(r.ya===1?'estaba':'estaban'):'')
+    +(r.ocu?'; '+(r.ocu===1?'1 no, porque esa posición ya tenía foto (se conserva la que había)':r.ocu+' no, porque esas posiciones ya tenían foto (se conservan las que había)'):'')
+    +(r.skip?'; '+r.skip+' '+(r.skip===1?'omitida':'omitidas')+' (coche que no existe o foto no válida)':'')+'.'
+    +(r.off?' Sin conexión: al subir se unirán con la nube sin sustituir las fotos que ya tenga.':'')+' ';
 }
 // ── Arranque: portadas de Flota, primero de este móvil y luego de la nube (una vez por sesión)
 async function _gxBoot(){
@@ -12982,11 +13065,11 @@ function openBackup(){
       </div>
     </div>
     <button class="btn-pri" onclick="exportData()">${ico('download')} Exportar copia completa (JSON)</button>
-    <button class="btn-sec" onclick="exportDataConFotos(this)">${ico('download')} Exportar copia con fotos de entrega y devolución</button>
-    <p class="d-hint aj-h">Además del JSON normal incluye las fotos de las actas. Se descargan de la nube y el fichero puede pesar decenas de MB.</p>
+    <button class="btn-sec" onclick="exportDataConFotos(this)">${ico('download')} Exportar copia con fotos de actas y galería</button>
+    <p class="d-hint aj-h">Además del JSON normal incluye las fotos de entrega y devolución y la galería de cada coche (unos 2,5 MB por coche con sus 8 fotos${_gxSizeTxt()}). Se descargan de la nube y el fichero puede pesar decenas de MB.</p>
     <p class="d-hint aj-h">La exportación incluye vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos de este dispositivo.</p>
     ${_fxBackupNote()}
-    <p class="d-hint aj-h fx-bk">${ico('camera')} <span>Las fotos de la galería de cada coche (hasta 8) están en la nube y no van en ninguna copia JSON. La foto antigua del coche de este dispositivo sí va.</span></p>
+    <p class="d-hint aj-h fx-bk">${ico('camera')} <span>Las fotos de la galería de cada coche (hasta 8) están en la nube: no van en la copia completa, solo en la copia con fotos. La foto antigua del coche de este dispositivo va en las dos.</span></p>
     <div class="al-h"><h3>Importar</h3><span class="q">JSON</span></div>
     <label class="btn-sec aj-up">
       ${ico('upload')} Seleccionar fichero JSON
@@ -13257,7 +13340,8 @@ function importData(event){
       const msg=full
         ?'Esto reemplazará vehículos, finanzas, propietarios, clientes, gastos recurrentes, presupuestos, datos de empresa y fotos. Antes se descargará una copia del estado actual. ¿Continuar?'
         :'Este fichero es una copia antigua (solo vehículos y finanzas). Se sustituirán solo esos datos y NO se borrarán propietarios, clientes, recurrentes, presupuestos, empresa ni fotos. Antes se descargará una copia del estado actual. ¿Continuar?';
-      if(!confirm(msg+(full&&Array.isArray(data.fotosActas)&&data.fotosActas.length?' También se restaurarán las fotos de entrega y devolución (se subirán a la nube en segundo plano).':'')))return;
+      const nA=full&&Array.isArray(data.fotosActas)?data.fotosActas.length:0,nG=full&&Array.isArray(data.fotosGaleria)?data.fotosGaleria.length:0;
+      if(!confirm(msg+(nA||nG?' También se restaurarán las fotos '+(nA?'de entrega y devolución':'')+(nA&&nG?' y ':'')+(nG?'de la galería de los coches, sin sustituir las que ya haya en la nube':'')+' (se subirán a la nube en segundo plano).':'')))return;
       exportData(1);
       if(full){
         V=data.vehicles;
@@ -13280,10 +13364,12 @@ function importData(event){
       if(_normFixes)_showNormNotice(_normFixes,'import');
       _invalidateRsCache();
       await _saveToCloud({skipDropCheck:true,force:true});
-      if(full&&Array.isArray(data.fotosActas)&&_uid){
+      if(full&&(Array.isArray(data.fotosActas)||Array.isArray(data.fotosGaleria))&&_uid){
         try{
-          const fx=await _fxRestoreActas(data.fotosActas);
-          if(fx.n||fx.skip)_saveToast('Fotos restauradas: '+fx.n+(fx.skip?' ('+fx.skip+' omitidas)':'')+'. Se suben a la nube en segundo plano.',fx.skip?'w':'ok');
+          const fx=Array.isArray(data.fotosActas)?await _fxRestoreActas(data.fotosActas):{n:0,skip:0};
+          let gx=null;if(Array.isArray(data.fotosGaleria)){try{gx=await _gxRestore(data.fotosGaleria);}catch(e){console.warn('[galería]',e);}}
+          const gt=gx?_gxRestoreTxt(gx):'';
+          if(fx.n||fx.skip||gt)_saveToast((fx.n||fx.skip?(gt?'Fotos de entrega y devolución':'Fotos')+' restauradas: '+fx.n+(fx.skip?' ('+fx.skip+' omitidas)':'')+'. ':'')+gt+'Se suben a la nube en segundo plano.',fx.skip||(gx&&(gx.ocu||gx.skip||gx.off))?'w':'ok');
         }catch(e){console.warn('[fotos]',e);}
       }
       closeSheet();nav('dashboard');
