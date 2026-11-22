@@ -3838,9 +3838,10 @@ function _clPickerClear(inputId){
 
 function toggleDelivery(bookingId){
   // #105: sin entregar, abre «Entregar coche» (km, combustible y fotos); quien llama cierra su hoja y repinta como siempre.
-  // Deshacer «Entregado» sigue siendo un toque y no borra las fotos.
+  // Deshacer «Entregado» pide confirmación (#136; si se cancela devuelve false y no cambia nada) y no borra las fotos.
   const _fxB=_fxVB(bookingId);
   if(_fxB&&!_fxB.b.delivered){closeSheet();setTimeout(function(){_fxDeliver(bookingId);},200);return;}
+  if(_fxB&&!confirm('¿Deshacer «Entregado»?\n\nEl alquiler volverá a estar sin entregar y se borrará la hora de entrega. Los km, el combustible y las fotos de la entrega se conservan.'))return false;
   if(_fxB&&_fxCount(bookingId,'entrega'))_saveToast('Las fotos de la entrega se conservan en el alquiler.','w');
   V.forEach(v=>{const b=(v.bookings||[]).find(b=>b.id===bookingId);if(b){
     b.delivered=!b.delivered;
@@ -3853,6 +3854,8 @@ function toggleReturn(bookingId){
   let _bv=null,_bb=null;
   V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){_bv=v;_bb=b;}});});
   if(!_bv||!_bb)return;
+  if(_bb.returned){const _rc=(Array.isArray(_bb.finance)?_bb.finance:[]).filter(f=>f&&f._returnCharge&&Number(f.amount)>0); // #136: confirmar antes de deshacer; dice qué cargos se borran
+    if(!confirm('¿Deshacer «Devuelto»?\n\n'+(_rc.length?'Se borrarán los cargos de la devolución: '+_rc.map(f=>(f.concept||'Cargo')+' '+fmtF(f.amount)).join(' y ')+(_rc.length>1?' (total '+fmtF(_rc.reduce((s,f)=>s+Number(f.amount),0))+')':'')+'. Si vuelves a registrar la devolución, se calculan de nuevo.':'No hay cargos de km ni de combustible que borrar.')+'\n\nEl alquiler volverá a estar sin devolver. Los km y el combustible anotados y las fotos se conservan.'))return;}
   if(_bb.returned){_bb.returned=false;delete _bb.returnedAt;if(Array.isArray(_bb.finance))_bb.finance=_bb.finance.filter(f=>!f._returnCharge);save();closeSheet();renderDetail(document.getElementById('PC'));return;}
   closeSheet();
   setTimeout(function(){openReturnModal(bookingId);},200);
@@ -4320,8 +4323,10 @@ function delBookingFinance(bookingId,fid){
 }
 
 function togglePayStatus(bookingId){
+  const _pb=_fxVB(bookingId); // #136: quitar «Cobrado» pide confirmación; si se cancela devuelve false y no cambia nada
+  if(_pb&&(_pb.b.cobrado||_pb.b.paid)&&!confirm('¿Quitar «Cobrado»?\n\nEl alquiler volverá a «Por cobrar».'+(Number(_pb.b.abonoReserva)>0?' La cantidad recibida ('+fmtF(_pb.b.abonoReserva)+') no se borra.':'')))return false;
   V.forEach(v=>{const b=(v.bookings||[]).find(b=>b.id===bookingId);if(b){
-    b.cobrado=!b.cobrado;
+    b.cobrado=!(b.cobrado||b.paid);
     b.paid=b.cobrado; // keep legacy field in sync
     save();
     renderDetail(document.getElementById('PC'));
@@ -7628,9 +7633,9 @@ function showBooking(k,_overrideId){
     </div>
     ${_pri?`<button class="btn-pri al-pri" onclick="${_pri[0]}">${ico(_pri[1])} ${_pri[2]}</button>`:''}
     <div class="al-tg" role="group" aria-label="Estado">
-      <button class="${b.delivered?'on':''}" onclick="toggleDelivery('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
+      <button class="${b.delivered?'on':''}" onclick="if(toggleDelivery('${escJs(b.id)}')!==false){closeSheet();renderDetail(document.getElementById('PC'))}">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
       <button class="${b.returned?'on':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?(ico('check-circle')+' Devuelto '+ico('check')):(ico('key')+' Marcar devuelto')}</button>
-      <button class="${b.paid?'on':''}" onclick="togglePayStatus('${escJs(b.id)}');closeSheet();renderDetail(document.getElementById('PC'))">${b.paid?(ico('check-circle')+' Cobrado'):(ico('hourglass')+' Marcar cobrado')}</button>
+      <button class="${b.paid?'on':''}" onclick="if(togglePayStatus('${escJs(b.id)}')!==false){closeSheet();renderDetail(document.getElementById('PC'))}">${b.paid?(ico('check-circle')+' Cobrado'):(ico('hourglass')+' Marcar cobrado')}</button>
     </div>
     ${(()=>{
       const _abono=Number(b.abonoReserva||0);
