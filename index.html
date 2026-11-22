@@ -12101,7 +12101,7 @@ async function _fxImg(aid,fid){
 function _fxNext(a){const F=(a&&a.fotos)||[];return FX_T.find(t=>!F.some(f=>f.tipo===t[0])&&_fx.skip.indexOf(t[0])<0)||null;}
 function _fxTile(aid,f,num,lbl,cls,ghost,tipo){
   const im=f?_fxSrc(f.th):'',gh=!f&&ghost?_fxSrc(ghost):'',pend=f&&_fx.pend.has(f.id);
-  return '<button type="button" class="ph-t '+cls+'" onclick="'+(f?"_fxViewAt('"+escJs(aid)+"','"+escJs(f.id)+"',1)":"_fxShoot('"+escJs(tipo)+"')")+'" aria-label="'+esc(num+' '+lbl+(f?'':' · hacer foto'))+'">'
+  return '<button type="button" class="ph-t '+cls+'" onclick="'+(f?"_fxViewAt('"+escJs(aid)+"','"+escJs(f.id)+"',1)":"_fxPick('"+escJs(tipo)+"')")+'" aria-label="'+esc(num+' '+lbl+(f?'':' · hacer o elegir foto'))+'">'
     +'<span class="f">'+(im?'<img src="'+esc(im)+'" alt="">':'')+(gh?'<img class="gh" src="'+esc(gh)+'" alt="">':'')+(f?'':ico(FX_ICO[tipo]||'camera',null,'vx'))
     +(f?'<span class="phk'+(pend?' p':'')+'">'+ico(pend?'clock':'check')+'</span><span class="phr">'+esc(_fxHM(f.at))+'</span>':'')+'</span>'
     +'<span class="l"><em>'+esc(num)+'</em>'+esc(lbl)+'</span>'+(f&&f.nota?'<span class="ph-n">'+esc(f.nota)+'</span>':'')+'</button>';
@@ -12245,7 +12245,7 @@ function _fxView(){
     +(ed?((isD&&fase==='devolucion'?'<div class="d-seg" role="group" aria-label="Tipo de daño"><button type="button" aria-pressed="'+(f.nuevo!==false)+'" onclick="_fxSetNuevo(\''+A+'\',\''+F+'\',1)">'+ico('alert')+' Nuevo</button><button type="button" aria-pressed="'+(f.nuevo===false)+'" onclick="_fxSetNuevo(\''+A+'\',\''+F+'\',0)">'+ico('check')+' Ya existía</button></div>':'')
       +'<div class="d-f"><label class="q" for="fxVNota">Nota</label><input id="fxVNota" type="text" maxlength="200" autocomplete="off" value="'+esc(f.nota||'')+'" placeholder="'+(isD?'Ej: arañazo de 8 cm en el paragolpes trasero':'Opcional')+'" onchange="_fxSetNota(\''+A+'\',\''+F+'\',this.value)"/>'
       +(isD?'<div class="fx-qn">'+FX_NOTAS.map(q=>'<button type="button" onclick="_fxQuick(\''+A+'\',\''+F+'\',\''+escJs(q)+'\')">'+esc(q)+'</button>').join('')+'</div>':'')+'</div>'
-      +'<div class="d-acts"><div class="two"><button type="button" class="btn-sec" onclick="_fxVClose();_fx.rep=\''+F+'\';_fxShoot(\''+escJs(f.tipo)+'\')">'+ico('camera')+' Repetir</button><button type="button" class="btn-dang" onclick="_fxRemove(\''+A+'\',\''+F+'\')">'+ico('trash')+' Borrar</button></div>'
+      +'<div class="d-acts"><div class="two"><button type="button" class="btn-sec" onclick="_fxVClose();_fx.rep=\''+F+'\';_fxShoot(\''+escJs(f.tipo)+'\')">'+ico('camera')+' Repetir</button><button type="button" class="btn-sec" onclick="_fxVClose();_fx.rep=\''+F+'\';_fxShoot(\''+escJs(f.tipo)+'\',1)">'+ico('upload')+' Galería</button></div><button type="button" class="btn-dang" onclick="_fxRemove(\''+A+'\',\''+F+'\')">'+ico('trash')+' Borrar</button>'
       +'<button type="button" class="btn-pri" onclick="_fxSetNota(\''+A+'\',\''+F+'\',document.getElementById(\'fxVNota\').value);_fxVClose()">'+ico('check')+' Hecho</button></div>')
       :(f.nota?'<p class="fx-vn">'+esc(f.nota)+'</p>':''))+'</div>';
   _fxImg(aid,fid).then(s=>{const i=document.getElementById('fxVImg');if(i&&s&&_fx.vl[_fx.vi]&&_fx.vl[_fx.vi][1]===fid)i.src=s;}).catch(()=>{});
@@ -12351,6 +12351,18 @@ function _fxOldNotice(force){
   const mk=(x,fn,c)=>{const b=document.createElement('button');b.type='button';b.textContent=x;b.className=c;b.onclick=fn;return b;};
   r.appendChild(mk('Revisar',()=>{el.remove();_fxOldSheet();},'btn-pri'));
   r.appendChild(mk('Más tarde',()=>{el.remove();_fxLater();},'btn-sec'));
+  el.appendChild(t);el.appendChild(r);document.body.appendChild(el);
+}
+function _fxPick(tipo){
+  const old=document.getElementById('fxPick');if(old)old.remove();
+  const i=FX_T.findIndex(t=>t[0]===tipo);if(i<0){_fxShoot(tipo);return;}
+  const el=document.createElement('div');el.id='fxPick';el.className='d-toast d-fl';el.setAttribute('role','dialog');
+  const t=document.createElement('div');t.className='grow';t.textContent='Foto '+String(i+1).padStart(2,'0')+' · '+FX_T[i][2];
+  const r=document.createElement('div');r.className='acts';
+  const mk=(h,fn,c)=>{const b=document.createElement('button');b.type='button';b.innerHTML=h;b.className=c;b.onclick=()=>{el.remove();if(fn)fn();};return b;};
+  r.appendChild(mk(ico('camera')+' Cámara',()=>_fxShoot(tipo),'btn-pri'));
+  r.appendChild(mk(ico('upload')+' Galería',()=>_fxShoot(tipo,1),'btn-sec'));
+  r.appendChild(mk('Cancelar',null,'btn-txt'));
   el.appendChild(t);el.appendChild(r);document.body.appendChild(el);
 }
 function _fxLater(){try{localStorage.setItem('deiros_fx_later',new Date(Date.now()+7*864e5).toISOString());}catch(e){}}
