@@ -5068,14 +5068,18 @@ function _ctGo(n){
 }
 
 // ── Helper universal de guardado PDF (móvil + escritorio) ────────────────────
-function _savePDF(doc, filename){
+function _pdfIfNoGesture(doc,filename,retry){
   const ua=navigator.userActivation;
   if(ua&&ua.isActive===false){
     const send=!!_pdfSendName,n=_pdfSendName||filename;
     const lab=send?'Enviar':(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)?'Abrir':'Descargar');
-    _actaToast('PDF listo: '+n,[[lab,send?'send':'doc','btn-pri',(b,el)=>{el.remove();_pdfSendName=send?n:null;try{_savePDF(doc,filename);}finally{_pdfSendName=null;}}]],30000);
-    return;
+    _actaToast('PDF listo: '+n,[[lab,send?'send':'doc','btn-pri',(b,el)=>{el.remove();_pdfSendName=send?n:null;try{retry();}finally{_pdfSendName=null;}}]],30000);
+    return true;
   }
+  return false;
+}
+function _savePDF(doc, filename){
+  if(_pdfIfNoGesture(doc,filename,()=>_savePDF(doc,filename)))return;
   if(_pdfShareTry(doc,d=>_savePDF(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{
     const blob=doc.output('blob');
@@ -11706,7 +11710,8 @@ function _pdfRegisterFonts(){try{
   }catch(e){}}]);
 }catch(e){}}
 // Carga jsPDF o xlsx solo cuando hace falta (con SRI). Promesa cacheada; si falla se borra para poder reintentar.
-var _libP={};
+var _libP={},_libS={},_libAt={},_libGen={};
+var _LIB_MS=15000;
 function ensureLib(name){
   if(_libP[name])return _libP[name];
   const L={
@@ -11717,18 +11722,33 @@ function ensureLib(name){
   const p=new Promise((res,rej)=>{
     if(L.ok()){if(name==='jspdf')_pdfRegisterFonts();res();return;}
     const s=document.createElement('script');
-    s.src=L.src;s.integrity=L.sri;s.crossOrigin='anonymous';
+    const g=_libGen[name]||0;
+    s.src=g?L.src+(L.src.indexOf('?')>=0?'&':'?')+'_='+g:L.src;
+    s.integrity=L.sri;s.crossOrigin='anonymous';
     s.onload=()=>{
+      if(s._abandoned||_libS[name]!==s){s.remove();return;}
+      delete _libS[name];
       if(!L.ok()){s.remove();rej(new Error('global ausente'));return;}
       if(name==='jspdf')_pdfRegisterFonts();
       res();
     };
-    s.onerror=()=>{s.remove();rej(new Error('carga fallida'));};
+    s.onerror=()=>{
+      if(s._abandoned||_libS[name]!==s){s.remove();return;}
+      delete _libS[name];s.remove();rej(new Error('carga fallida'));
+    };
+    _libS[name]=s;_libAt[name]=Date.now();
     document.head.appendChild(s);
   });
   _libP[name]=p;
   p.catch(()=>{if(_libP[name]===p)delete _libP[name];});
   return p;
+}
+function _libAbandon(name){
+  const s=_libS[name];
+  if(s){s._abandoned=true;s.onload=null;s.onerror=null;if(s.parentNode)s.remove();delete _libS[name];}
+  if(_libP[name])delete _libP[name];
+  delete _libAt[name];
+  _libGen[name]=(_libGen[name]||0)+1;
 }
 function _libReady(name){return name==='xlsx'?!!window.XLSX:!!(window.jspdf&&window.jspdf.jsPDF);}
 var _libLoadN=0;
@@ -11747,17 +11767,29 @@ async function _libNeed(name){
   const isX=name==='xlsx';
   const err=isX?'No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.':'No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.';
   const errT=isX?'La librería de Excel está tardando demasiado. Comprueba la conexión e inténtalo de nuevo.':'La librería de PDF está tardando demasiado. Comprueba la conexión e inténtalo de nuevo.';
+  if(_libP[name]&&!_libReady(name)&&_libAt[name]&&Date.now()-_libAt[name]>=_LIB_MS)_libAbandon(name);
   const hide=_libReady(name)?null:_libLoadingShow();
   let timedOut=false;
   try{
+    const load=ensureLib(name);
     await Promise.race([
-      ensureLib(name),
-      new Promise((_,rej)=>setTimeout(()=>{timedOut=true;rej(new Error('timeout'));},15000))
+      load,
+      new Promise((_,rej)=>setTimeout(()=>{timedOut=true;rej(new Error('timeout'));},_LIB_MS))
     ]);
-  }catch(e){if(hide)hide();alert(timedOut?errT:err);throw e;}
+  }catch(e){
+    if(timedOut&&!_libReady(name))_libAbandon(name);
+    if(hide)hide();alert(timedOut?errT:err);throw e;
+  }
   if(hide)hide();
 }
-function _libPreload(){ensureLib('jspdf').catch(()=>{});ensureLib('xlsx').catch(()=>{});}
+function _libPreload(){
+  ['jspdf','xlsx'].forEach(name=>{
+    const p=ensureLib(name);
+    let done=false;
+    const t=setTimeout(()=>{if(!done&&!_libReady(name))_libAbandon(name);},_LIB_MS);
+    p.then(()=>{done=true;clearTimeout(t);},()=>{done=true;clearTimeout(t);});
+  });
+}
 function _libSchedulePreload(){
   const go=()=>{if(typeof requestIdleCallback==='function')requestIdleCallback(()=>_libPreload(),{timeout:2000});else _libPreload();};
   setTimeout(go,4000);
@@ -11847,6 +11879,7 @@ function _pdfField(doc,x,y,lbl,val,w,font){
   doc.text(w?_pdfFit(doc,String(val),w):String(val),x,y+4.8);
 }
 function _pdfDownload(doc,filename){
+  if(_pdfIfNoGesture(doc,filename,()=>_pdfDownload(doc,filename)))return;
   if(_pdfShareTry(doc,d=>_pdfDownload(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{const blob=doc.output('blob');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);}
   catch(e){const a=document.createElement('a');a.href=doc.output('datauristring');a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),2000);}
