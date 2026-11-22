@@ -2091,13 +2091,15 @@ const KM_RATE_CFG={
 };
 const MON_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MON_S=['En','Fe','Ma','Ab','My','Jn','Jl','Ag','Se','Oc','No','Di'];
-const INC_CATS=['Alquiler','Venta','Seguro','Depósito','Extra km','Limpieza','Otros ingresos'];
+const INC_CATS=['Alquiler','Venta','Seguro','Extra km','Limpieza','Otros ingresos'];
 const EXP_CATS=['Combustible','Mantenimiento periódico','Mantenimiento','Seguro','ITV','Reparación','Daño cliente','Franquicia','Lavado','Limpieza','Plataforma','Parking','Suscripción','Multa','Amortización','Otros gastos'];
 // Cláusula Quinta (5.2): gastos que paga directamente EL PROPIETARIO (incluye los recurrentes Seguro, Impuesto y Mantenimiento). Neumáticos y frenos → Mantenimiento. Franquicia y Daño cliente: categorías propias que no se cargan al propietario (las paga el cliente).
 const OWNER_PAID_CATS=['Seguro','Mantenimiento','Mantenimiento periódico','Reparación','ITV','Impuesto'];
 // Cláusula Quinta (5.3): LISTA PERMITIDA de gastos que se descuentan al propietario. El resto no se le descuenta. Peajes → Parking
 const OWNER_DEDUCT_CATS=['Combustible','Lavado','Limpieza','Plataforma','Parking','Suscripción'];
 // Clave de categoría sin mayúsculas, acentos ni espacios sobrantes (solo para comparar; no cambia lo guardado)
+// Ingreso antiguo con categoría (o, sin categoría, concepto) «Depósito»: la fianza no es facturación (5.1); no suma.
+function _isDepositInc(e){return !!e&&e.type==='income'&&_catKey(e.category||e.concept||e.description)==='deposito';}
 function _catKey(c){return String(c||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
 const OWNER_DEDUCT_KEYS=OWNER_DEDUCT_CATS.map(_catKey);
 // Cláusula Quinta (#90): desde este mes (incluido) la comisión de los coches con propietario va sobre (facturado − gastos 5.3); los meses anteriores siguen con la regla antigua (sobre lo facturado). No es retroactivo. Constante de código, no es un dato guardado.
@@ -4238,11 +4240,14 @@ function _calcReturnSummary(){
   else html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>Combustible: '+esc(delivFuel)+' \u2192 '+esc(retFuel)+'</span><span style="color:'+(fuelDiff>0?'var(--red)':'var(--green)')+';font-weight:700">'+(isElec?'El\u00e9ctrico: sin cargo':fuelDiff>0?(ico('alert')+' Faltan ')+fuelDiff+'%'+(fuelL>0?' \u00b7 '+fuelL.toLocaleString('es-ES')+' L':''):(ico('check-circle')+' OK'))+'</span></div>';
   el.innerHTML=html;el.style.display='block';
 }
+// Km de fin menores que los de inicio (solo si ambos están rellenos). Solo se usa al guardar; abrir/ver nunca bloquea.
+function _kmEndBelowStart(s,e){const a=parseInt(s),z=parseInt(e);return Number.isFinite(a)&&Number.isFinite(z)&&z<a;}
 function _confirmReturn(){
   const bookingId=window._retBookingId;
   const kmEnd=parseInt(document.getElementById('retKm')?.value)||0;
   const retFuel=document.getElementById('retFuel')?.value||'';
   if(!kmEnd){alert('Introduce los km actuales del vehículo.');return;}
+  if(_kmEndBelowStart(window._retKmStart||'',kmEnd)){alert('Los km de fin no pueden ser menores que los de inicio');return;}
   if(!retFuel){alert('Selecciona el nivel de combustible.');return;}
   V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){
     b.returned=true;b.returnedAt=new Date().toISOString();
@@ -4688,7 +4693,7 @@ function submitRecurring(editId,vId){
   const name=(document.getElementById('rrName')?.value||'').trim();
   const amt=parseFloat(document.getElementById('rrAmt')?.value);
   if(!name||isNaN(amt)||amt<=0){alert('Nombre e importe son obligatorios');return;}
-  const startDate=(document.getElementById('rrStart')?.value||new Date().toISOString().slice(0,7))+'-01';
+  const startDate=(document.getElementById('rrStart')?.value||todayStr().slice(0,7))+'-01';
   const data={name,category:document.getElementById('rrCat')?.value||'',freq:document.getElementById('rrFreq')?.value||'monthly',amount:amt,notes:(document.getElementById('rrNotes')?.value||'').trim(),active:true,vId,startDate};
   if(editId){
     const r=RR.find(r=>r.id===editId);
@@ -6688,7 +6693,7 @@ function rentedSet(v){
 }
 function dayStatus(v,k){if(rentedSet(v).has(k))return'rented';return v.calendar?.[k]||'available';}
 function bookingForDay(v,k){return(v.bookings||[]).find(b=>!b.returned&&k>=b.startDate&&k<=b.endDate);}
-function tInc(v){return _getVehicleAllFinances(v).filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);}
+function tInc(v){return _getVehicleAllFinances(v).filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);}
 function tExp(v){return _plFins(v,_getVehicleAllFinances(v)).filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);}
 // Gasto pagado por el propietario: SOLO coches en gestión con propietario asignado. Coches propios o sin propietario: sin cambios.
 function _isOwnerPaid(v,e){return !!(v&&v.vtype==='managed'&&v.ownerId&&e&&e.type==='expense'&&OWNER_PAID_CATS.includes(e.category));}
@@ -6701,7 +6706,7 @@ function _isOwnerDeduct(v,e){if(!e||e.type!=='expense')return false;if(v&&v.vtyp
 // toOwner = max(0, facturado − comisión − gastos 5.3); si saldría negativo, el déficit lo asume el gestor: mgr = comisión − déficit.
 function _ownerSettle(v,fins,ym){
   const sum=a=>a.reduce((s,e)=>s+(Number(e.amount)||0),0);
-  const tI=sum(fins.filter(e=>e.type==='income'));
+  const tI=sum(fins.filter(e=>e.type==='income'&&!_isDepositInc(e)));
   const paid=sum(fins.filter(e=>_isOwnerPaid(v,e)));
   const tE=sum(fins.filter(e=>_isOwnerDeduct(v,e)));
   const other=sum(fins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)&&!_isOwnerDeduct(v,e))); // no se descuentan al propietario
@@ -8100,6 +8105,8 @@ function submitEditBooking(id){
 
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
+  // Km de fin < inicio: se bloquea solo si el par ha cambiado (un alquiler antiguo con el par ya guardado puede seguir editándose)
+  if(_kmEndBelowStart(kmStart,kmEnd)&&!(kmStart===(b.kmStart==null?null:parseInt(b.kmStart))&&kmEnd===(b.kmEnd==null?null:parseInt(b.kmEnd)))){alert('Los km de fin no pueden ser menores que los de inicio');return;}
 
   // DNI escrito: si es de otra ficha, se decide ANTES de tocar el alquiler (cancelar = no cambia nada)
   const _chgE=_clDniChange(_curE?_curE.id:_pkE,_clD.dni,{bId:id,startDate:sd,requireBirth:false});
@@ -8448,6 +8455,7 @@ function submitRental(){
   const kmStart=document.getElementById('rKmStart')?.value?parseInt(document.getElementById('rKmStart').value):null;
   const kmEnd=document.getElementById('rKmEnd')?.value?parseInt(document.getElementById('rKmEnd').value):null;
   if(!sd||!ed||!st||!et){alert('Completa las fechas y horas');return;}
+  if(_kmEndBelowStart(kmStart,kmEnd)){alert('Los km de fin no pueden ser menores que los de inicio');return;}
   const ns=new Date(sd+'T'+st),ne=new Date(ed+'T'+et);
   if(ne<=ns){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
   if(isNaN(amt)||amt<0){alert('Introduce un importe válido');return;}
@@ -9870,7 +9878,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
   const toOwner=totalP*(1-avgComm/100);
   const totalDays=vehicles.reduce((s,v)=>s+tDays(v),0);
   const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0);
-  const now=new Date().toISOString().slice(0,7);
+  const now=todayStr().slice(0,7);
 
   let h=`<div class="stitle">${ico('user')} ${esc(owner.name)}</div>
   <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px">
@@ -9894,7 +9902,7 @@ function openOwnerProfileOLD_UNUSED(ownerId_UNUSED){
     const comm=(v.commission==null||v.commission===''?30:Number(v.commission));
     const vOwner=vP-vI*comm/100;
     const mFins=_getVehicleAllFinances(v).filter(e=>e.date.slice(0,7)===now);
-    const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const mI=mFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mE=mFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     return `<div style="background:var(--bg2);border:1.5px solid ${safeColor(v.color)}44;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="closeSheet();openV('${escJs(v.id)}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
@@ -9940,7 +9948,7 @@ function renderOwnerProfile(el){
   const avgComm=vehicles.length?Math.round(vehicles.reduce((s,v)=>s+((v.commission==null||v.commission===''?30:Number(v.commission))),0)/vehicles.length):0;
   const toOwner=vehicles.reduce((s,v)=>s+_settleTotals(v,_getVehicleAllFinances(v)).toOwner,0); // mismo cálculo que la lista de propietarios (cláusula Quinta)
   const totalBk=vehicles.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0);
-  const now=new Date().toISOString().slice(0,7);
+  const now=todayStr().slice(0,7);
   const isD=window.innerWidth>=768;
 
   // Build per-vehicle data
@@ -9949,7 +9957,7 @@ function renderOwnerProfile(el){
     const mFins=fins.filter(e=>e.date.slice(0,7)===now);
     const vI=tInc(v),vE=tExp(v),vP=vI-vE;
     const comm=(v.commission==null||v.commission===''?30:Number(v.commission));
-    const mI=mFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const mI=mFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mE=mFins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const recentBk=[...(v.bookings||[])].sort((a,b)=>b.startDate.localeCompare(a.startDate)).slice(0,5);
     return{v,vI,vE,vP,comm,vOwner:_settleTotals(v,fins).toOwner,mI,mE,recentBk};
@@ -11508,7 +11516,7 @@ function genReport(vId){
   if(!month){alert('Selecciona un mes');return;}
   // Usa _getVehicleAllFinancesDisplay para incluir extras de b.finance; excluye _bfEntry (ampliaciones ya proRata'd)
   const fins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)));
-  const tI=fins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const tI=fins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=fins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tP=tI-tE;
   const [yr,mo]=month.split('-');
@@ -11793,7 +11801,7 @@ function dlReport(vId,month){
   if(!window.jspdf){alert('PDF no disponible. Verifica tu conexión.');return;}
   // Incluye extras b.finance; excluye _bfEntry (ampliaciones ya proRata'd en v.finances)
   const fins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)));
-  const tI=fins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const tI=fins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=fins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tP=tI-tE;
   const [yr,mo]=month.split('-');
