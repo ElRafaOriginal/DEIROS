@@ -2895,7 +2895,7 @@ function openAnalyticsReportPicker(){
 }
 
 async function generateAnalyticsPDF(fromMonth,toMonth){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // ══ SETUP ════════════════════════════════════════════════════════════════
   const now=new Date();
@@ -5069,6 +5069,13 @@ function _ctGo(n){
 
 // ── Helper universal de guardado PDF (móvil + escritorio) ────────────────────
 function _savePDF(doc, filename){
+  const ua=navigator.userActivation;
+  if(ua&&ua.isActive===false){
+    const send=!!_pdfSendName,n=_pdfSendName||filename;
+    const lab=send?'Enviar':(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)?'Abrir':'Descargar');
+    _actaToast('PDF listo: '+n,[[lab,send?'send':'doc','btn-pri',(b,el)=>{el.remove();_pdfSendName=send?n:null;try{_savePDF(doc,filename);}finally{_pdfSendName=null;}}]],30000);
+    return;
+  }
   if(_pdfShareTry(doc,d=>_savePDF(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{
     const blob=doc.output('blob');
@@ -5240,7 +5247,7 @@ function _pdfShareTry(doc,fallback){
 }
 
 async function generateReceiptPDF(bookingId){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // ── Buscar alquiler ───────────────────────────────────────────────────────
   let _bv=null,_bb=null;
@@ -5457,7 +5464,7 @@ const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la 
 
 // ── Anexo de Ampliación PDF ───────────────────────────────────────────────
 async function generateExtensionPDF(bookingId){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // Anexo de la última «Ampliación» registrada en b.finance del alquiler indicado (o del de la última ampliación confirmada)
   const _last=window._extLastData;
@@ -5581,7 +5588,7 @@ let y=_pdfTitle(doc,PDFS.TOP,'Anexo','AMPLIACIÓN');
 async function generateContractPDF(vId,bookingId){
   const v=V.find(x=>x.id===vId);if(!v)return;
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const g=id=>document.getElementById(id)?.value||'';
   if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato.');return;}
   if(!g('ctClNombre').trim()||!g('ctClNif').trim()){alert('Faltan el nombre y el NIF/DNI del cliente. Complétalos en el paso 2 antes de generar el contrato.');if(typeof _ctGo==='function')_ctGo(2);return;}
@@ -5963,7 +5970,7 @@ function openMgmtContractForm(ownerId,vId){
 
 async function generateMgmtContractPDF(ownerId,vIdParam){
   const owner=OW.find(o=>o.id===ownerId);if(!owner)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const g=id=>document.getElementById(id)?.value||'';
   const resolvedVId=vIdParam||g('mgVehId')||g('mgVehSel');
   const veh=V.find(v=>v.id===resolvedVId);
@@ -9092,7 +9099,7 @@ function saveDate(id,field,val){const v=V.find(v=>v.id===id);if(!v)return;v[fiel
 
 async function dlMaintReport(vId){
   const v=V.find(v=>v.id===vId);if(!v)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const maints=(v.finances||[]).filter(e=>(e.category==='Mantenimiento periódico'||e.category==='Mantenimiento')).sort((a,b)=>a.date.localeCompare(b.date));
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
@@ -9281,7 +9288,7 @@ function openBizReportPicker(){
 async function dlBizReport(fromMonth,toMonth,periodLabel){
   fromMonth=fromMonth||null;toMonth=toMonth||null;periodLabel=periodLabel||'Todo el período';
   closeSheet();
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
@@ -10178,7 +10185,7 @@ function genOwnerReport(ownerId){
 
 async function dlOwnerReport(ownerId,month){
   const o=OW.find(o=>o.id===ownerId);if(!o)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const vehicles=V.filter(v=>!v.archived&&v.ownerId===ownerId);
   const [yr,mo]=month.split('-');
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
@@ -10981,7 +10988,7 @@ function renderBizMgmt(){
   el.innerHTML=h;
 }
 async function exportGlobalExcel(){
-  try{await ensureLib('xlsx');}catch(e){alert('No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('xlsx');}catch(e){return;}
   const wb=XLSX.utils.book_new();
   const activeV=V.filter(v=>!v.archived);
 
@@ -11723,6 +11730,39 @@ function ensureLib(name){
   p.catch(()=>{if(_libP[name]===p)delete _libP[name];});
   return p;
 }
+function _libReady(name){return name==='xlsx'?!!window.XLSX:!!(window.jspdf&&window.jspdf.jsPDF);}
+var _libLoadN=0;
+function _libLoadingShow(){
+  _libLoadN++;
+  let el=document.getElementById('libLoad');
+  if(!el){
+    el=document.createElement('div');el.id='libLoad';el.className='d-toast d-fl';el.setAttribute('role','status');
+    el.innerHTML=ico('clock','20');
+    const t=document.createElement('span');t.className='grow';t.textContent='Cargando…';el.appendChild(t);
+    document.body.appendChild(el);
+  }
+  return ()=>{_libLoadN=Math.max(0,_libLoadN-1);if(!_libLoadN){const x=document.getElementById('libLoad');if(x)x.remove();}};
+}
+async function _libNeed(name){
+  const isX=name==='xlsx';
+  const err=isX?'No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.':'No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.';
+  const errT=isX?'La librería de Excel está tardando demasiado. Comprueba la conexión e inténtalo de nuevo.':'La librería de PDF está tardando demasiado. Comprueba la conexión e inténtalo de nuevo.';
+  const hide=_libReady(name)?null:_libLoadingShow();
+  let timedOut=false;
+  try{
+    await Promise.race([
+      ensureLib(name),
+      new Promise((_,rej)=>setTimeout(()=>{timedOut=true;rej(new Error('timeout'));},15000))
+    ]);
+  }catch(e){if(hide)hide();alert(timedOut?errT:err);throw e;}
+  if(hide)hide();
+}
+function _libPreload(){ensureLib('jspdf').catch(()=>{});ensureLib('xlsx').catch(()=>{});}
+function _libSchedulePreload(){
+  const go=()=>{if(typeof requestIdleCallback==='function')requestIdleCallback(()=>_libPreload(),{timeout:2000});else _libPreload();};
+  setTimeout(go,4000);
+}
+_libSchedulePreload();
 // Cabecera y pie «Ficha suiza» en todas las páginas: fondo blanco, logo dorado, filete negro y datos en mono (sin bloques de color)
 function _pdfBrand(doc,title,sub){
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),m=PDFS.MG,co=getCompanyData();
@@ -11814,7 +11854,7 @@ function _pdfDownload(doc,filename){
 
 async function dlReport(vId,month){
   const v=V.find(x=>x.id===vId);if(!v)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   // Incluye extras b.finance; excluye _bfEntry (ampliaciones ya proRata'd en v.finances)
   const fins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)));
   const tI=fins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -11914,7 +11954,7 @@ async function dlReport(vId,month){
 async function exportExcel(vId){
   const v=V.find(x=>x.id===vId);
   if(!v){alert('Vehículo no encontrado');return;}
-  try{await ensureLib('xlsx');}catch(e){alert('No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('xlsx');}catch(e){return;}
   const wb=XLSX.utils.book_new();
   const _xlsFins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).sort((a,b)=>a.date.localeCompare(b.date));
   const finRows=[['Fecha','Tipo','Categoría','Importe €','Descripción']];
@@ -13017,7 +13057,7 @@ async function _actaPDF(bid,fase){
 }
 // «Generar acta» (abre o descarga, como el recibo) y «Enviar acta» (menú de compartir del móvil con el PDF, como «Enviar» #99)
 async function _actaGo(bid,fase,send,btn){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   if(_actaBusy)return;_actaBusy=true;
   const tx=btn?btn.innerHTML:'';if(btn){btn.disabled=true;btn.textContent='Preparando…';}
   try{
@@ -14364,7 +14404,7 @@ function convertQuoteToBooking(id){
 async function generateQuotePDF(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const v=V.find(v=>v.id===q.vehicleId);
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librer\u00eda de PDF. Comprueba la conexi\u00f3n e int\u00e9ntalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
   const W=210,M=16,CW=W-M*2;
