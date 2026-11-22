@@ -2895,7 +2895,7 @@ function openAnalyticsReportPicker(){
 }
 
 async function generateAnalyticsPDF(fromMonth,toMonth){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // ══ SETUP ════════════════════════════════════════════════════════════════
   const now=new Date();
@@ -2909,8 +2909,7 @@ async function generateAnalyticsPDF(fromMonth,toMonth){
   });
   if(!filtered.length){alert('No hay vehículos con los filtros seleccionados.');return;}
 
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const doc=_pdfNew({unit:'mm',format:'a4',compress:true});
   const W=210,mg=PDFS.MG,cW=W-2*mg; // 178mm ancho de contenido
 
   // Formato moneda
@@ -5068,7 +5067,18 @@ function _ctGo(n){
 }
 
 // ── Helper universal de guardado PDF (móvil + escritorio) ────────────────────
+function _pdfIfNoGesture(doc,filename,retry,asDownload){
+  const ua=navigator.userActivation;
+  if(ua&&ua.isActive===false){
+    const send=!!_pdfSendName,n=_pdfSendName||filename;
+    const lab=send?'Enviar':(asDownload||!/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)?'Descargar':'Abrir');
+    _actaToast('PDF listo: '+n,[[lab,send?'send':'doc','btn-pri',(b,el)=>{el.remove();_pdfSendName=send?n:null;try{retry();}finally{_pdfSendName=null;}}]],30000);
+    return true;
+  }
+  return false;
+}
 function _savePDF(doc, filename){
+  if(_pdfIfNoGesture(doc,filename,()=>_savePDF(doc,filename)))return;
   if(_pdfShareTry(doc,d=>_savePDF(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{
     const blob=doc.output('blob');
@@ -5240,7 +5250,7 @@ function _pdfShareTry(doc,fallback){
 }
 
 async function generateReceiptPDF(bookingId){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // ── Buscar alquiler ───────────────────────────────────────────────────────
   let _bv=null,_bb=null;
@@ -5257,8 +5267,7 @@ async function generateReceiptPDF(bookingId){
   const arEmail=co.email||'';
 
   // ── jsPDF setup ───────────────────────────────────────────────────────────
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const doc=_pdfNew({unit:'mm',format:'a4',compress:true});
   const W=210;
   const PURPLE=PDFS.P,DARK=PDFS.K,GRAY=PDFS.T2,LGRAY=PDFS.T2,LINEC=PDFS.LN;
   const mg=16,cW=W-2*mg;
@@ -5457,7 +5466,7 @@ const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la 
 
 // ── Anexo de Ampliación PDF ───────────────────────────────────────────────
 async function generateExtensionPDF(bookingId){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // Anexo de la última «Ampliación» registrada en b.finance del alquiler indicado (o del de la última ampliación confirmada)
   const _last=window._extLastData;
@@ -5473,8 +5482,7 @@ async function generateExtensionPDF(bookingId){
   const _cur=Number.isFinite(_cur0)?_cur0:Math.max(0,_bookingClientTotal(_bb)-_ext);
   const d={bookingId:_bb.id,origEnd:_am[1],newEnd:_am[2],newTime:(_last&&_last.bookingId===_bb.id&&_last.newEnd===_am[2])?_last.newTime:(_bb.endDate===_am[2]?(_bb.endTime||''):''),curTotal:_cur,extraPrice:_ext,newTotal:Number.isFinite(_new0)&&_new0>0?_new0:_cur+_ext};
   const co=getCompanyData();
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const doc=_pdfNew({unit:'mm',format:'a4',compress:true});
   const W=210,mg=16,cW=W-2*mg;
   const PURPLE=PDFS.P,DARK=PDFS.K,GRAY=PDFS.T2,LGRAY=PDFS.T2,LINEC=PDFS.LN;
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
@@ -5581,7 +5589,7 @@ let y=_pdfTitle(doc,PDFS.TOP,'Anexo','AMPLIACIÓN');
 async function generateContractPDF(vId,bookingId){
   const v=V.find(x=>x.id===vId);if(!v)return;
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const g=id=>document.getElementById(id)?.value||'';
   if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato.');return;}
   if(!g('ctClNombre').trim()||!g('ctClNif').trim()){alert('Faltan el nombre y el NIF/DNI del cliente. Complétalos en el paso 2 antes de generar el contrato.');if(typeof _ctGo==='function')_ctGo(2);return;}
@@ -5660,8 +5668,7 @@ async function generateContractPDF(vId,bookingId){
     save();
   }
   closeSheet();
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const doc=_pdfNew({unit:'mm',format:'a4',compress:true});
   const W=210,mg=16,cW=W-mg*2;
   const fmtDate=d=>d?d.split('-').reverse().join('/'):'—';
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
@@ -5963,7 +5970,7 @@ function openMgmtContractForm(ownerId,vId){
 
 async function generateMgmtContractPDF(ownerId,vIdParam){
   const owner=OW.find(o=>o.id===ownerId);if(!owner)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const g=id=>document.getElementById(id)?.value||'';
   const resolvedVId=vIdParam||g('mgVehId')||g('mgVehSel');
   const veh=V.find(v=>v.id===resolvedVId);
@@ -5981,8 +5988,7 @@ async function generateMgmtContractPDF(ownerId,vIdParam){
   if(document.getElementById('mgSaveDefaults')?.checked){const co=getCompanyData();saveCompanyData({...co,nombre:gestor.nombre,nif:gestor.nif,direccion:gestor.dir,telefono:gestor.tel,email:gestor.email,ciudad});}
   if(ownerDir&&owner)owner.address=ownerDir;
   closeSheet();
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const doc=_pdfNew({unit:'mm',format:'a4',compress:true});
   const W=210,mg=16,cW=W-mg*2;
   const fmtDate=d=>d?d.split('-').reverse().join('/'):'—';
   const fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
@@ -9092,10 +9098,9 @@ function saveDate(id,field,val){const v=V.find(v=>v.id===id);if(!v)return;v[fiel
 
 async function dlMaintReport(vId){
   const v=V.find(v=>v.id===vId);if(!v)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const maints=(v.finances||[]).filter(e=>(e.category==='Mantenimiento periódico'||e.category==='Mantenimiento')).sort((a,b)=>a.date.localeCompare(b.date));
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const doc=_pdfNew({unit:'mm',format:'a4',compress:true});
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
   const mg=16,cW=W-mg*2;
   const now=new Date();const dateStr=now.toLocaleDateString('es-ES');
@@ -9281,10 +9286,9 @@ function openBizReportPicker(){
 async function dlBizReport(fromMonth,toMonth,periodLabel){
   fromMonth=fromMonth||null;toMonth=toMonth||null;periodLabel=periodLabel||'Todo el período';
   closeSheet();
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const doc=_pdfNew({unit:'mm',format:'a4',compress:true});
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
   const mg=16,cW=W-mg*2;
   const now=new Date();
@@ -10178,7 +10182,7 @@ function genOwnerReport(ownerId){
 
 async function dlOwnerReport(ownerId,month){
   const o=OW.find(o=>o.id===ownerId);if(!o)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const vehicles=V.filter(v=>!v.archived&&v.ownerId===ownerId);
   const [yr,mo]=month.split('-');
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
@@ -10981,7 +10985,7 @@ function renderBizMgmt(){
   el.innerHTML=h;
 }
 async function exportGlobalExcel(){
-  try{await ensureLib('xlsx');}catch(e){alert('No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('xlsx');}catch(e){return;}
   const wb=XLSX.utils.book_new();
   const activeV=V.filter(v=>!v.archived);
 
@@ -11589,10 +11593,18 @@ function genReport(vId){
 // ═══════════════════════════════════════════════════════════ PDF DOWNLOAD
 
 // ── Shared PDF helpers ──────────────────────────────────────────────────────
+function _pdfNew(opts){
+  _pdfRegisterFonts();
+  const doc=new window.jspdf.jsPDF(opts);
+  try{
+    const fl=doc.getFontList(),has=(f,s)=>!!(fl[f]&&fl[f].indexOf(s)>=0);
+    if(has('syne','bold')&&has('jbm','normal')&&has('jbm','bold'))return doc;
+  }catch(e){}
+  _pdfRegisterFonts();
+  return new window.jspdf.jsPDF(opts);
+}
 function _pdfSetup(){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-  return doc;
+  return _pdfNew({orientation:'portrait',unit:'mm',format:'a4',compress:true});
 }
 // Draw logo + header bar on page
 function _pdfHeader(doc,W,margin,cW,titleLine1,titleLine2,subtitleLine,dateStr){
@@ -11686,7 +11698,9 @@ const PDF_FONT_JBM_B='AAEAAAAMAIAAAwBAT1MvMhUC+akAAD10AAAAYFNUQVTrJ8wpAABCOAAAAE
 const PDF_LOGO_GOLD='data:image/png;base64,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';
 // Registra Syne y JetBrains Mono en jsPDF una sola vez: todos los documentos creados después las tienen ('syne','jbm')
 function _pdfRegisterFonts(){try{
-  const A=window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API;if(!A||A._deirosFonts)return;A._deirosFonts=true;
+  const ns=window.jspdf,A=ns&&ns.jsPDF&&ns.jsPDF.API;if(!A)return;
+  if(ns._deirosFonts&&A._deirosFonts)return;
+  A._deirosFonts=true;ns._deirosFonts=true;
   A.events.push(['addFonts',function(){try{
     this.addFileToVFS('Syne-Bold.ttf',PDF_FONT_SYNE_B);this.addFont('Syne-Bold.ttf','syne','bold');
     this.addFileToVFS('JetBrainsMono-Regular.ttf',PDF_FONT_JBM_R);this.addFont('JetBrainsMono-Regular.ttf','jbm','normal');
@@ -11699,7 +11713,8 @@ function _pdfRegisterFonts(){try{
   }catch(e){}}]);
 }catch(e){}}
 // Carga jsPDF o xlsx solo cuando hace falta (con SRI). Promesa cacheada; si falla se borra para poder reintentar.
-var _libP={};
+var _libP={},_libS={},_libAt={},_libGen={},_libPre={};
+var _LIB_MS=15000;
 function ensureLib(name){
   if(_libP[name])return _libP[name];
   const L={
@@ -11710,19 +11725,83 @@ function ensureLib(name){
   const p=new Promise((res,rej)=>{
     if(L.ok()){if(name==='jspdf')_pdfRegisterFonts();res();return;}
     const s=document.createElement('script');
-    s.src=L.src;s.integrity=L.sri;s.crossOrigin='anonymous';
+    const g=_libGen[name]||0;
+    s.src=g?L.src+(L.src.indexOf('?')>=0?'&':'?')+'_='+g:L.src;
+    s.integrity=L.sri;s.crossOrigin='anonymous';
     s.onload=()=>{
+      if(s._abandoned||_libS[name]!==s){s.remove();return;}
+      delete _libS[name];
       if(!L.ok()){s.remove();rej(new Error('global ausente'));return;}
       if(name==='jspdf')_pdfRegisterFonts();
       res();
     };
-    s.onerror=()=>{s.remove();rej(new Error('carga fallida'));};
+    s.onerror=()=>{
+      if(s._abandoned||_libS[name]!==s){s.remove();return;}
+      delete _libS[name];s.remove();rej(new Error('carga fallida'));
+    };
+    _libS[name]=s;_libAt[name]=Date.now();
     document.head.appendChild(s);
   });
   _libP[name]=p;
   p.catch(()=>{if(_libP[name]===p)delete _libP[name];});
   return p;
 }
+function _libAbandon(name){
+  const s=_libS[name];
+  if(s){s._abandoned=true;s.onload=null;s.onerror=null;if(s.parentNode)s.remove();delete _libS[name];}
+  if(_libP[name])delete _libP[name];
+  delete _libAt[name];delete _libPre[name];
+  _libGen[name]=(_libGen[name]||0)+1;
+}
+function _libReady(name){return name==='xlsx'?!!window.XLSX:!!(window.jspdf&&window.jspdf.jsPDF);}
+var _libLoadN=0;
+function _libLoadingShow(){
+  _libLoadN++;
+  let el=document.getElementById('libLoad');
+  if(!el){
+    el=document.createElement('div');el.id='libLoad';el.className='d-toast d-fl';el.setAttribute('role','status');
+    el.innerHTML=ico('clock','20');
+    const t=document.createElement('span');t.className='grow';t.textContent='Cargando…';el.appendChild(t);
+    document.body.appendChild(el);
+  }
+  return ()=>{_libLoadN=Math.max(0,_libLoadN-1);if(!_libLoadN){const x=document.getElementById('libLoad');if(x)x.remove();}};
+}
+async function _libNeed(name){
+  const isX=name==='xlsx';
+  const err=isX?'No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.':'No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.';
+  const errT=isX?'La librería de Excel está tardando demasiado. Comprueba la conexión e inténtalo de nuevo.':'La librería de PDF está tardando demasiado. Comprueba la conexión e inténtalo de nuevo.';
+  if(_libP[name]&&!_libReady(name)&&_libPre[name])_libAbandon(name);
+  if(_libP[name]&&!_libReady(name)&&_libAt[name]&&Date.now()-_libAt[name]>=_LIB_MS)_libAbandon(name);
+  const hide=_libReady(name)?null:_libLoadingShow();
+  let timedOut=false;
+  try{
+    const load=ensureLib(name);
+    await Promise.race([
+      load,
+      new Promise((_,rej)=>setTimeout(()=>{timedOut=true;rej(new Error('timeout'));},_LIB_MS))
+    ]);
+  }catch(e){
+    if(timedOut&&!_libReady(name))_libAbandon(name);
+    if(hide)hide();alert(timedOut?errT:err);throw e;
+  }
+  if(hide)hide();
+  if(name==='jspdf')_pdfRegisterFonts();
+}
+function _libPreload(){
+  ['jspdf','xlsx'].forEach(name=>{
+    if(_libReady(name))return;
+    if(!_libP[name])_libPre[name]=true;
+    const p=ensureLib(name);
+    let done=false;
+    const t=setTimeout(()=>{if(!done&&!_libReady(name)&&_libP[name]===p)_libAbandon(name);},_LIB_MS);
+    p.then(()=>{done=true;clearTimeout(t);delete _libPre[name];},()=>{done=true;clearTimeout(t);delete _libPre[name];});
+  });
+}
+function _libSchedulePreload(){
+  const go=()=>{if(typeof requestIdleCallback==='function')requestIdleCallback(()=>_libPreload(),{timeout:2000});else _libPreload();};
+  setTimeout(go,4000);
+}
+_libSchedulePreload();
 // Cabecera y pie «Ficha suiza» en todas las páginas: fondo blanco, logo dorado, filete negro y datos en mono (sin bloques de color)
 function _pdfBrand(doc,title,sub){
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),m=PDFS.MG,co=getCompanyData();
@@ -11807,6 +11886,7 @@ function _pdfField(doc,x,y,lbl,val,w,font){
   doc.text(w?_pdfFit(doc,String(val),w):String(val),x,y+4.8);
 }
 function _pdfDownload(doc,filename){
+  if(_pdfIfNoGesture(doc,filename,()=>_pdfDownload(doc,filename),true))return;
   if(_pdfShareTry(doc,d=>_pdfDownload(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{const blob=doc.output('blob');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);}
   catch(e){const a=document.createElement('a');a.href=doc.output('datauristring');a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),2000);}
@@ -11814,7 +11894,7 @@ function _pdfDownload(doc,filename){
 
 async function dlReport(vId,month){
   const v=V.find(x=>x.id===vId);if(!v)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   // Incluye extras b.finance; excluye _bfEntry (ampliaciones ya proRata'd en v.finances)
   const fins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)));
   const tI=fins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -11914,7 +11994,7 @@ async function dlReport(vId,month){
 async function exportExcel(vId){
   const v=V.find(x=>x.id===vId);
   if(!v){alert('Vehículo no encontrado');return;}
-  try{await ensureLib('xlsx');}catch(e){alert('No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('xlsx');}catch(e){return;}
   const wb=XLSX.utils.book_new();
   const _xlsFins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).sort((a,b)=>a.date.localeCompare(b.date));
   const finRows=[['Fecha','Tipo','Categoría','Importe €','Descripción']];
@@ -13017,7 +13097,7 @@ async function _actaPDF(bid,fase){
 }
 // «Generar acta» (abre o descarga, como el recibo) y «Enviar acta» (menú de compartir del móvil con el PDF, como «Enviar» #99)
 async function _actaGo(bid,fase,send,btn){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   if(_actaBusy)return;_actaBusy=true;
   const tx=btn?btn.innerHTML:'';if(btn){btn.disabled=true;btn.textContent='Preparando…';}
   try{
@@ -14364,9 +14444,8 @@ function convertQuoteToBooking(id){
 async function generateQuotePDF(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const v=V.find(v=>v.id===q.vehicleId);
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librer\u00eda de PDF. Comprueba la conexi\u00f3n e int\u00e9ntalo de nuevo.');return;}
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+  try{await _libNeed('jspdf');}catch(e){return;}
+  const doc=_pdfNew({orientation:'portrait',unit:'mm',format:'a4',compress:true});
   const W=210,M=16,CW=W-M*2;
   let y=M;
 
