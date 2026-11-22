@@ -2526,7 +2526,7 @@ function _calcOcc(v, monthKey){
     (b.startDate<monthKey+'-01'&&b.endDate>monthKey+'-'+String(dim).padStart(2,'0'))));
   const days=new Set(bks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)===monthKey)).size;
   const pct=Math.round(days/dim*100);
-  const inc=_getVehicleAllFinances(v).filter(e=>e.type==='income'&&e.date.startsWith(monthKey))
+  const inc=_getVehicleAllFinances(v).filter(e=>e.type==='income'&&!_isDepositInc(e)&&e.date.startsWith(monthKey))
     .reduce((s,e)=>s+Number(e.amount),0);
   return {days,dim,pct,inc};
 }
@@ -2714,7 +2714,7 @@ function renderAnalytics(el){
   _allBks.forEach(b=>{const d=daysBetween(b.startDate,b.endDate);if(d<=3)_durGroups.short.push(b);else if(d<=7)_durGroups.med.push(b);else _durGroups.long.push(b);});
   const _durAvg=g=>g.length?Math.round(g.reduce((s,b)=>s+(Number(b.amount)||0),0)/g.length):0;
   // Proyección anual (basada en el mes actual)
-  const _curMInc=activeV.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&e.date.startsWith(_curM2)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
+  const _curMInc=activeV.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&!_isDepositInc(e)&&e.date.startsWith(_curM2)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
   const _curMExp=activeV.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&e.date.startsWith(_curM2)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
   const _projInc=Math.round(_curMInc*12);const _projExp=Math.round(_curMExp*12);const _projProfit=_projInc-_projExp;
   // Mantenimiento ratio
@@ -2968,7 +2968,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   // Metricas por vehiculo del periodo
   const metrics=filtered.map(v=>{
     const pFins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.date>=curM+'-01'&&e.date<=toM+'-31'));
-    const pInc=pFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const pInc=pFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const pExp=pFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const pBks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM);
     const pDays=new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size;
@@ -2977,7 +2977,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     const avgP=pBks.length>0?Math.round(pInc/pBks.length*100)/100:0;
     const avgDur=pBks.length>0?Math.round(pDays/pBks.length*10)/10:0;
     const allFins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry));
-    const allInc=allFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const allInc=allFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const allExp=allFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const allProfit=allInc-allExp;
     const pp=Number(v.purchase_price)||0;
@@ -3063,7 +3063,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
   const furgos=filtered.filter(v=>(v.vehicle_type||'turismo').startsWith('l'));
   const typeM=(vs)=>{
     const bks=vs.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM));
-    const inc=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
+    const inc=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&!_isDepositInc(e)&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
     const exp=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
     const days=vs.reduce((s,v)=>s+new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size,0)||1;
     return{cnt:vs.length,bks:bks.length,inc,exp,profit:inc-exp,days,rpd:days>0?Math.round(inc/days*100)/100:0,avgP:bks.length>0?Math.round(inc/bks.length*100)/100:0};
@@ -3717,7 +3717,7 @@ function generateAnalyticsPDF(fromMonth,toMonth){
     months.forEach((mk,i)=>{
       _safeAddPage(8,'MENSUAL');
       const [yr2,mo2]=mk.split('-');
-      const mI=filtered.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&e.date.startsWith(mk)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
+      const mI=filtered.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&!_isDepositInc(e)&&e.date.startsWith(mk)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
       const mE=filtered.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&e.date.startsWith(mk)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
       const mBk=filtered.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.startsWith(mk)).length,0);
       const mP=mI-mE;
@@ -6886,7 +6886,7 @@ function renderDash(el){
   // Vehículos: proRata + extras de alquiler (b.finance) del mes, excluyendo ampliaciones ya proRata'd
   activeV.forEach(v=>{
     const mF=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>e.date&&e.date.startsWith(curM)&&!e._bfEntry));
-    mI+=mF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    mI+=mF.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     mE+=mF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   });
   const mP=mI-mE;
@@ -6944,7 +6944,7 @@ function renderDash(el){
       yrE+=BF.filter(e=>e.type==='expense'&&e.date.startsWith(yrStr)).reduce((s,e)=>s+(Number(e.amount)||0),0);
       activeV.forEach(v=>{
         const yF=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.date&&e.date.startsWith(yrStr)));
-        yrI+=yF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+        yrI+=yF.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
         yrE+=yF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
       });
       const yrP=yrI-yrE;
@@ -8689,7 +8689,7 @@ function renderFin(v){
     return true;
   }).sort((a,b)=>b.date.localeCompare(a.date));
   // Totals: exclude _bfEntry (extension entries already proRata'd — avoid double counting)
-  const tI=filtered.filter(e=>e.type==='income'&&!e._bfEntry).reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const tI=filtered.filter(e=>e.type==='income'&&!e._bfEntry&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=filtered.filter(e=>e.type==='expense'&&!e._bfEntry&&!_isOwnerPaid(v,e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tP=tI-tE;
   // KPIs
@@ -9346,7 +9346,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
     if(!b.cancelled&&!b.cancellation){if(b.clientDni)periodClients.add(b.clientDni);
     else if(b.clientName)periodClients.add(b.clientName);}
   }));
-  const totalI=allE.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const totalI=allE.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const totalEx=allE.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
   const totalP=totalI-totalEx;
   const totalBk=periodBks.filter(b=>!b.cancelled).length;
@@ -9358,7 +9358,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
 
   // byMonth (only keys in range)
   const byMonth={};
-  allE.forEach(e=>{const m=e.date.slice(0,7);if(!byMonth[m])byMonth[m]={inc:0,exp:0};if(e.type==='income')byMonth[m].inc+=Number(e.amount)||0;else byMonth[m].exp+=Number(e.amount)||0;});
+  allE.forEach(e=>{const m=e.date.slice(0,7);if(!byMonth[m])byMonth[m]={inc:0,exp:0};if(e.type==='income'){if(!_isDepositInc(e))byMonth[m].inc+=Number(e.amount)||0;}else byMonth[m].exp+=Number(e.amount)||0;});
   const byMonthBks={};
   periodBks.forEach(b=>{const m=b.startDate.slice(0,7);if(!byMonthBks[m])byMonthBks[m]=0;byMonthBks[m]++;});
   const chartKeys=mthKeys.length?mthKeys:Object.keys(byMonth).sort();
@@ -9507,7 +9507,7 @@ function dlBizReport(fromMonth,toMonth,periodLabel){
 
   // Group income entries by source type
   const incSources={};
-  allE.filter(e=>e.type==='income').forEach(e=>{
+  allE.filter(e=>e.type==='income'&&!_isDepositInc(e)).forEach(e=>{
     // Classify by category
     let src;
     if(e.category&&e.category.startsWith('Comisión'))src='Comisiones de gestión';
@@ -9689,7 +9689,7 @@ function runComparison(){
     const entries=allE.filter(e=>e.date.startsWith(m));
     const bks=[];
     V.filter(v=>!v.archived).forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate.startsWith(m)&&!b.cancelled&&!b.cancellation)bks.push(b);}));
-    const inc=entries.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const inc=entries.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const exp=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const days=V.filter(v=>!v.archived).reduce((s,v)=>s+new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.startsWith(m))).size,0); // días ocupados de cada coche en este mes (incluido el de devolución), como la ocupación de Analítica
     const clients=new Set(bks.map(b=>b.clientDni||b.clientName).filter(Boolean)).size;
@@ -10786,7 +10786,7 @@ function renderBiz(el){
   const allEntries=_getBizEntries();
   const filtered=allEntries.filter(e=>{if(bizFilter!=='all'&&e.type!==bizFilter)return false;if(bizMonth&&!e.date.startsWith(bizMonth))return false;return true;}).sort((a,b)=>b.date.localeCompare(a.date));
   // Totals exclude b.finance entries (_bfEntry) to avoid double counting with proRata
-  const tI=filtered.filter(e=>e.type==='income'&&!e._bfEntry).reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const tI=filtered.filter(e=>e.type==='income'&&!e._bfEntry&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=filtered.filter(e=>e.type==='expense'&&!e._bfEntry).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tP=tI-tE;
   const bizRightPanel=isD?`
@@ -11356,7 +11356,7 @@ function buildChart(fins,year,selKey,onSelFn,prevFn,nextFn,title,hero){
   const months=MON_S.map((label,i)=>({key:year+'-'+String(i+1).padStart(2,'0'),label}));
   const data=months.map(m=>{
     const mF=fins.filter(e=>typeof e.date==='string'&&e.date.slice(0,7)===m.key);
-    const inc=mF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const inc=mF.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const exp=mF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     return{...m,inc,exp,profit:inc-exp};
   });
@@ -11428,7 +11428,7 @@ function buildMonthlyChart(v){
     const now=new Date();
     const sk=selKey||(chartYear+'-'+String(now.getMonth()+1).padStart(2,'0'));
     const mF=fins.filter(e=>typeof e.date==='string'&&e.date.slice(0,7)===sk);
-    const mInc=mF.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const mInc=mF.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const mExp=mF.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const _ms=_ownerSettle(v,mF,sk),mComm=_ms.commAmt; // cláusula Quinta: desde COMM_RULE_FROM, max(0, facturado − gastos 5.3) × %; antes, facturado × %
     const mOwner=_ms.toOwner; // mínimo 0 si tiene propietario
@@ -11571,7 +11571,7 @@ function genReport(vId){
         const pp=Number(v.purchase_price);
         // All-time P&L for ROI — incluye extras b.finance
         const allFins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry);
-        const allI=allFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+        const allI=allFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
         const allE=allFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
         const allP=allI-allE;
         const roi=allP/pp*100;
@@ -11858,7 +11858,7 @@ function dlReport(vId,month){
   if(!isM&&v.purchase_price){
     const pp=Number(v.purchase_price);
     const allFins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry);
-    const allI=allFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+    const allI=allFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
     const allE=allFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
     const allP=allI-allE;
     const roi=allP/pp*100;
@@ -11909,7 +11909,7 @@ function exportExcel(vId){
   [...(v.bookings||[])].sort((a,b)=>a.startDate.localeCompare(b.startDate)).forEach(b=>{bkRows.push([fmtDMY(b.startDate),b.startTime,fmtDMY(b.endDate),b.endTime,daysBetween(b.startDate,b.endDate),PLATS[b.platform]?.label||b.platform,_bookingClientTotal(b),b.clientName||'',b.clientPhone||'',b.clientDni||'',b.notes||'',b.cancelled?'Cancelado':'']);});
   const ws2=XLSX.utils.aoa_to_sheet(bkRows);ws2['!cols']=[{wch:12},{wch:8},{wch:12},{wch:8},{wch:6},{wch:12},{wch:12},{wch:20},{wch:14},{wch:12},{wch:30},{wch:11}];
   XLSX.utils.book_append_sheet(wb,ws2,'Alquileres');
-  const tI=_xlsFins.filter(e=>e.type==='income').reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const tI=_xlsFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const tE=_xlsFins.filter(e=>e.type==='expense'&&!_isOwnerPaid(v,e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const resRows=[['RESUMEN',v.name],['Matrícula',v.plate],['Modelo',v.model||''],['Combustible',v.fuel||''],['Km',v.km||''],[''],['Ingresos totales',tI],['Gastos totales',tE],['Beneficio neto',tI-tE],[''],['Alquileres totales',(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length],['Días alquilados',tDays(v)]];
   const ws3=XLSX.utils.aoa_to_sheet(resRows);ws3['!cols']=[{wch:20},{wch:20}];
