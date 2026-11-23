@@ -1041,8 +1041,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .al-h .bk-sync{align-self:center;margin:-12px -10px -12px 0;}
 .al-q{display:block;margin:18px 0 8px;}
 .al-q0{display:block;margin-bottom:6px;}
-/* Estado (entregado / devuelto / cobrado): tira de 3 con líneas de 1 px, como la ficha técnica; el estado hecho en verde con su icono */
-.al-tg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:12px;background:var(--border2);border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;}
+/* Estado (entregado / devuelto): tira de 2 con líneas de 1 px, como la ficha técnica; el estado hecho en verde con su icono. El cobro va en «Cobros y fianza» (#137) */
+.al-tg{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;margin-top:12px;background:var(--border2);border:1px solid var(--border2);border-radius:var(--r-card);overflow:hidden;}
 .al-tg button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;align-content:center;gap:6px 4px;min-height:72px;padding:10px 6px;background:var(--bg2);text-align:center;font-family:var(--font);font-size:13px;font-weight:600;line-height:1.2;color:var(--text2);}
 .al-tg button>.ico:first-child{flex:0 0 100%;height:20px;}
 .al-tg button.on{color:var(--green);}
@@ -1070,6 +1070,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 /* Cobros y fianza: campo con «€», estado de la fianza segmentado, retención parcial plegada */
 .al-in{display:grid;grid-template-columns:1fr auto;gap:8px;}
 .al-in .btn-sec{width:auto;padding:0 22px;}
+.al-cq{margin-top:8px;} /* #137 atajos «Todo» / «Solo alquiler» y «Quitar cobro» (44 px); el importe en mono */
+.al-cq b{font-family:var(--mono);font-weight:500;}
+.al-h>.chip{align-self:center;flex-shrink:0;}
 .al-fz{margin-top:28px;}
 .al-fzs{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
 .al-sm{margin:-4px 0 12px;font-family:var(--mono);font-size:12px;color:var(--text2);}
@@ -4324,24 +4327,61 @@ function delBookingFinance(bookingId,fid){
   save();renderDetail(document.getElementById('PC'));
 }
 
-function togglePayStatus(bookingId){
-  const _pb=_fxVB(bookingId); // #136: quitar «Cobrado» pide confirmación; si se cancela devuelve false y no cambia nada
-  if(_pb&&(_pb.b.cobrado||_pb.b.paid)&&!confirm('¿Quitar «Cobrado»?\n\nEl alquiler volverá a «Por cobrar».'+(Number(_pb.b.abonoReserva)>0?' La cantidad recibida ('+fmtF(_pb.b.abonoReserva)+') no se borra.':'')))return false;
-  V.forEach(v=>{const b=(v.bookings||[]).find(b=>b.id===bookingId);if(b){
-    b.cobrado=!(b.cobrado||b.paid);
-    b.paid=b.cobrado; // keep legacy field in sync
-    save();
-    renderDetail(document.getElementById('PC'));
-  }});
+// #137 Cobro de un alquiler: una sola fuente, la cantidad recibida (b.abonoReserva), frente al total del cliente (_bookingClientTotal, el «Total» de la ficha;
+// cancelado: su penalización neta, si es a favor). «Cobrado» = lo recibido cubre el alquiler; la fianza va aparte (no cuenta para «Cobrado» ni para «Por cobrar»).
+// Antiguo marcado cobrado (o paid) sin cantidad: sigue cobrado. plat: Amovens/Getaround (cobra la plataforma; no entra en «Por cobrar»).
+// st: cob (cobrado), par (parcial), pen (pendiente), nada (sin importe que cobrar). Solo lee: no cambia datos.
+function _bkCobro(b){
+  const canc=!!(b.cancelled||b.cancellation);
+  const alq=Math.max(0,Math.round((Number(_bookingClientTotal(b))||0)*100)/100);
+  const fz=canc?0:Math.max(0,Number(b.fianza)||0);
+  const rec=Math.max(0,Number(b.abonoReserva)||0);
+  const old=!!(b.cobrado||b.paid)&&!(rec>0);
+  const falta=old?0:Math.max(0,Math.round((alq-rec)*100)/100);
+  const pk=_platK(b.platform),plat=(pk==='amovens'||pk==='getaround')?PLATS[pk].label:'';
+  const st=(old||(rec>0&&falta===0))?'cob':rec>0?'par':alq>0?'pen':'nada';
+  return {canc:canc,alq:alq,fz:fz,rec:rec,old:old,falta:falta,plat:plat,st:st};
 }
-
+// Única escritura del cobro: la cantidad recibida, con cobrado y paid (campo antiguo) coherentes (cobrado = lo recibido cubre el alquiler) para todo lo que ya los lee.
+// Quitar «Cobrado» o poner a 0 lo recibido pide confirmación (como #136); si se cancela devuelve false y no cambia nada.
+function _bkSetRec(bookingId,amt){
+  const _pb=_fxVB(bookingId);if(!_pb)return false;
+  const b=_pb.b;amt=Math.round(Number(amt)*100)/100;
+  if(!isFinite(amt)||amt<0){alert('Importe no válido');return false;}
+  const c=_bkCobro(b),cob=amt>=c.alq;
+  if((c.st==='cob'&&!cob)||(amt===0&&c.rec>0)){
+    const msg=amt===0?('¿Quitar el cobro?\n\n'+(c.rec>0?'La cantidad recibida ('+fmtF(c.rec)+') pasará a 0 € y el alquiler':'El alquiler')+' volverá a «Por cobrar».')
+      :('¿Quitar «Cobrado»?\n\nLo recibido pasará de '+(c.rec>0?fmtF(c.rec):'«Cobrado» sin cantidad')+' a '+fmtF(amt)+' y faltarán '+fmtF(c.alq-amt)+' del alquiler.');
+    if(!confirm(msg))return false;
+  }
+  b.abonoReserva=amt;b.cobrado=cob;b.paid=cob;
+  save();return true;
+}
+// Botón «Cobrar / Cobrado» de la lista de alquileres del coche: también por la cantidad recibida (cobrar = cubrir lo que falta del alquiler; quitar pide confirmación)
+function togglePayStatus(bookingId){
+  const _pb=_fxVB(bookingId);if(!_pb)return false;
+  const c=_bkCobro(_pb.b);
+  return _bkSetRec(bookingId,c.st==='cob'?0:Math.max(c.rec,c.alq));
+}
+// Ficha del alquiler: «Todo» (alquiler + fianza), «Solo alquiler» y «Quitar cobro» guardan al momento y la ficha sigue abierta
+function _bkCobrar(bookingId,mode){
+  const _pb=_fxVB(bookingId);if(!_pb)return;
+  const c=_bkCobro(_pb.b);
+  _bkSetRec(bookingId,mode==='todo'?c.alq+c.fz:mode==='alq'?c.alq:0);
+  _bkRepaint(bookingId);
+}
 function setBookingAbono(bookingId){
   const inp=document.getElementById('abonoInput_'+bookingId);
   if(!inp)return;
   const amt=parseFloat(inp.value||'0');
   if(isNaN(amt)||amt<0){alert('Importe no válido');return;}
-  V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){b.abonoReserva=amt;}});});
-  save();closeSheet();renderDetail(document.getElementById('PC'));
+  _bkSetRec(bookingId,amt);_bkRepaint(bookingId); // si se cancela la confirmación, la ficha vuelve a mostrar lo guardado
+}
+// Repinta lo que hay detrás (ficha del coche o Inicio) y vuelve a abrir la ficha del alquiler
+function _bkRepaint(bookingId){
+  const pc=document.getElementById('PC');
+  if(pc&&pc.querySelector('.fl-tabs'))renderDetail(pc);else if(pc&&CV==='dashboard')renderDash(pc);
+  showBookingById(bookingId);
 }
 
 // ─── CONTROL DE FIANZAS ───────────────────────────────────────────────────
@@ -7482,6 +7522,7 @@ function renderCal(v){
     allBk.forEach(b=>{
       const dur=daysBetween(b.startDate,b.endDate);
       if(b.paid&&!b.cobrado)b.cobrado=true; // normalize legacy field
+      const _cb=_bkCobro(b); // #137: estado del cobro (cantidad recibida frente al total), el mismo de la ficha y de «Por cobrar»
       const p=PLATS[b.platform]||{label:b.platform||'Sin app',icon:ico('handshake')};
       // ── Estado basado en toggles reales ──────────────────────────────────
       const _todayS=todayStr();
@@ -7492,7 +7533,7 @@ function renderCal(v){
       } else if(!b.delivered){
         col='var(--blue)';lbl=(ico('calendar')+' Programado');
       } else if(b.returned){
-        if(!b.cobrado){col='var(--amber)';lbl=(ico('hourglass')+' Pendiente de cobro');}
+        if(_cb.falta>0&&!_cb.plat){col='var(--amber)';lbl=(ico('hourglass')+(_cb.st==='par'?' Parcial':' Pendiente de cobro'));}
         else{col='var(--text3)';lbl=(ico('check-circle')+' Finalizado');}
       } else {
         // Entregado pero no devuelto = en curso
@@ -7516,8 +7557,8 @@ function renderCal(v){
             (b.delivered?(ico('car')+' Entregado'):(ico('car')+' Entregar'))+'</button>'+
           '<button class="tap44'+(b.returned?' on':'')+'" onclick="event.stopPropagation();toggleReturn(\''+escJs(bId)+'\')">'+
             (b.returned?(ico('check-circle')+' Devuelto'):(ico('key')+' Devolver'))+'</button>'+
-          '<button class="tap44'+(b.cobrado?' on':'')+'" onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
-            (b.cobrado?(ico('coins')+' Cobrado'):(ico('coins')+' Cobrar'))+'</button>'+
+          '<button class="tap44'+(_cb.st==='cob'?' on':'')+'" onclick="event.stopPropagation();togglePayStatus(\''+escJs(bId)+'\');renderDetail(document.getElementById(\'PC\'))">'+
+            (_cb.st==='cob'?(ico('coins')+' Cobrado'):(ico('coins')+' Cobrar'))+'</button>'+
         '</div>'+
         // Km, fianza y cobros: líneas mono finas
         (kmInfo?('<div class="fl-bl"><span>'+ico('odometer')+' ')+kmInfo+' recorridos</span></div>':'')+
@@ -7526,7 +7567,7 @@ function renderCal(v){
           const _fi=Number(b.fianza||0);
           if(!_ab&&!_fi)return '';
           const _tt=_bookingClientTotal(b)+_fi;
-          const _pd=Math.max(0,_tt-_ab);
+          const _pd=_cb.falta; // #137: lo que falta del alquiler (la fianza va aparte), como la ficha y «Por cobrar»
           let row='';
           if(_fi>0)row+='<div class="fl-bl">'
             +('<span>'+ico('lock')+' Fianza: ')+fmtF(_fi)+'</span>'
@@ -7596,12 +7637,13 @@ function showBooking(k,_overrideId){
   const p=PLATS[b.platform];const dur=daysBetween(b.startDate,b.endDate);
   // Estado → chip y UN botón principal (D5). Solo presentación: los onclick son los mismos de los botones de siempre
   const _id=escJs(b.id),_hoy=todayStr();
-  const _st=b.cancelled?'can':b.returned?((b.paid||b.cobrado)?'fin':'cob'):(b.startDate>_hoy?'pro':(!b.delivered&&b.startDate===_hoy)?'ent':'cur');
+  const _cb=_bkCobro(b); // #137: «Por cobrar» si falta cobro del alquiler (no en Amovens/Getaround, que cobra la plataforma)
+  const _st=b.cancelled?'can':b.returned?((_cb.falta>0&&!_cb.plat)?'cob':'fin'):(b.startDate>_hoy?'pro':(!b.delivered&&b.startDate===_hoy)?'ent':'cur');
   const _stChip={pro:'<span class="chip chip-blue">Próximo</span>',ent:'<span class="chip chip-amber">Entrega hoy</span>',cur:'<span class="chip chip-green">En curso</span>',cob:'<span class="chip chip-amber">Por cobrar</span>',fin:'<span class="chip chip-gray">Terminado</span>',can:'<span class="chip chip-red">Cancelado</span>'}[_st];
   const _pri={pro:[`closeSheet();openContractForm('${escJs(v.id)}','${_id}')`,'doc','Contrato'],
     ent:[`toggleDelivery('${_id}');closeSheet();renderDetail(document.getElementById('PC'))`,'car','Marcar entregado'],
     cur:[`toggleReturn('${_id}')`,'key','Registrar devolución'],
-    cob:[`togglePayStatus('${_id}');closeSheet();renderDetail(document.getElementById('PC'))`,'coins','Marcar cobrado'],
+    cob:[`_bkCobrar('${_id}','alq')`,'coins','Cobrar '+fmtF(_cb.falta)], // #137: cubre lo que falta del alquiler y la ficha sigue abierta
     fin:[`generateReceiptPDF('${_id}')`,'receipt','Recibo']}[_st];
   // Total (Doto): el mismo _bookingClientTotal que antes se mostraba como «total» en Ingresos y gastos; céntimos en mono
   const _tV=_bookingClientTotal(b),_tS=fmtF(_tV).split(','),_tE=_tS[0].replace(/\./g,''),_tD=_tS.length>1?','+_tS.slice(1).join(','):'';
@@ -7637,42 +7679,45 @@ function showBooking(k,_overrideId){
     <div class="al-tg" role="group" aria-label="Estado">
       <button class="${b.delivered?'on':''}" onclick="if(toggleDelivery('${escJs(b.id)}')!==false){closeSheet();renderDetail(document.getElementById('PC'))}">${b.delivered?(ico('car')+' Entregado '+ico('check')):(ico('car')+' Marcar entregado')}</button>
       <button class="${b.returned?'on':''}" onclick="toggleReturn('${escJs(b.id)}')">${b.returned?(ico('check-circle')+' Devuelto '+ico('check')):(ico('key')+' Marcar devuelto')}</button>
-      <button class="${b.paid?'on':''}" onclick="if(togglePayStatus('${escJs(b.id)}')!==false){closeSheet();renderDetail(document.getElementById('PC'))}">${b.paid?(ico('check-circle')+' Cobrado'):(ico('hourglass')+' Marcar cobrado')}</button>
     </div>
     ${(()=>{
-      const _abono=Number(b.abonoReserva||0);
-      const _cobSinImp=!!(b.cobrado||b.paid)&&!_abono;
-      const _fianza=Number(b.fianza||0);
-      const _totAlq=_bookingClientTotal(b);
-      const _totTotal=_totAlq+_fianza;
-      const _pend=Math.max(0,_totTotal-_abono);
+      const _c=_bkCobro(b),_bid=escJs(b.id); // #137: una sola forma de cobrar, la cantidad recibida; «Todo» y «Solo alquiler» la escriben de un toque
+      const _abono=_c.rec;
+      const _cobSinImp=_c.old;
+      const _fianza=_c.fz;
+      const _totAlq=_c.alq;
+      const _todo=Math.round((_totAlq+_fianza)*100)/100;
       const _hasFianza=_fianza>0;
-      const _hasAbono=_abono>0||_hasFianza||_cobSinImp;
+      const _hasAbono=_abono>0||_hasFianza||_cobSinImp||(!!_c.plat&&_c.st==='pen');
+      const _chip={cob:'<span class="chip chip-green">'+ico('check-circle')+' Cobrado</span>',par:'<span class="chip chip-amber">'+ico('hourglass')+' Parcial</span>',
+        pen:_c.plat?'<span class="chip chip-gray">'+ico('card')+' Lo cobra '+esc(_c.plat)+'</span>':'<span class="chip chip-amber">'+ico('hourglass')+' Pendiente</span>',nada:'<span class="chip chip-gray">Sin importe</span>'}[_c.st];
       return `<section class="al-s">
-        <div class="al-h"><h3>Cobros y fianza</h3></div>
+        <div class="al-h"><h3>Cobros y fianza</h3>${_chip}</div>
         <div class="d-f"><label class="q" for="abonoInput_${esc(b.id)}">Cantidad recibida</label>
-          <div class="al-in"><div class="d-pre"><span>€</span><input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(_abono||'')}" placeholder="0,00"/></div>
-          <button class="tap44 btn-sec" onclick="setBookingAbono('${escJs(b.id)}')">Guardar</button></div>
+          <div class="al-in"><div class="d-pre"><span>€</span><input id="abonoInput_${esc(b.id)}" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(_abono||'')}" placeholder="0,00" onkeydown="if(event.key==='Enter'){event.preventDefault();setBookingAbono('${_bid}')}"/></div>
+          <button class="tap44 btn-sec" onclick="setBookingAbono('${_bid}')">Guardar</button></div>
+          ${_todo>0?`<div class="r2 al-two al-cq">
+            <button type="button" class="tap44 btn-sec${_abono===_todo?' on-green':''}" aria-pressed="${_abono===_todo}" onclick="_bkCobrar('${_bid}','todo')">Todo <b>${fmtF(_todo)}</b></button>
+            ${_hasFianza&&_totAlq>0?`<button type="button" class="tap44 btn-sec${_abono===_totAlq?' on-green':''}" aria-pressed="${_abono===_totAlq}" onclick="_bkCobrar('${_bid}','alq')">Solo alquiler <b>${fmtF(_totAlq)}</b></button>`:''}
+          </div>`:''}
         </div>
         ${_hasAbono?`${(()=>{
-          // Distribución: primero cubre alquiler, luego fianza
-          const _alqPag=Math.min(_abono,_totAlq);
-          const _alqPend=Math.max(0,_totAlq-_alqPag);
-          const _fiaPag=_hasFianza?Math.max(0,Math.min(_abono-_alqPag,_fianza)):0;
+          // Distribución: primero cubre el alquiler y luego la fianza; la fianza no cuenta para «Cobrado» ni para «Por cobrar»
+          const _alqPend=_c.falta;
+          const _fiaPag=_hasFianza?Math.max(0,Math.min(_abono-Math.min(_abono,_totAlq),_fianza)):0;
           const _fiaPend=Math.max(0,_fianza-_fiaPag);
-          let _concepto='';
-          if(_alqPend>0&&_fiaPend>0)_concepto='alquiler y fianza';
-          else if(_alqPend>0)_concepto='alquiler';
-          else if(_fiaPend>0)_concepto='fianza';
+          const _plat0=!!_c.plat&&_c.st==='pen';
           return `<div class="spec al-sp">
-              <div>Alquiler<b>${fmtF(_totAlq)}</b><span class="dh-sub" style="color:${_alqPend===0?'var(--green)':'var(--amber)'}">${_cobSinImp?'sin importe':_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}</span></div>
-              ${_hasFianza?`<div>Fianza<b>${fmtF(_fianza)}</b><span class="dh-sub" style="color:${_fiaPend===0?'var(--green)':'var(--amber)'}">${_cobSinImp?'sin importe':_fiaPend===0?(ico('check')+' cubierta'):'falta '+fmtF(_fiaPend)}</span></div>`:''}
+              <div>Alquiler<b>${fmtF(_totAlq)}</b><span class="dh-sub" style="color:${_cobSinImp||_plat0?'var(--text2)':_alqPend===0?'var(--green)':'var(--amber)'}">${_cobSinImp?'sin cantidad':_plat0?'lo cobra '+esc(_c.plat):_alqPend===0?(ico('check')+' cubierto'):'falta '+fmtF(_alqPend)}</span></div>
+              ${_hasFianza?`<div>Fianza<b>${fmtF(_fianza)}</b><span class="dh-sub" style="color:${_fiaPend===0?'var(--green)':'var(--text2)'}">${_fiaPend===0?(ico('check')+' incluida'):_fiaPag>0?'incluida '+fmtF(_fiaPag):'no incluida'}</span></div>`:''}
               <div${_hasFianza?' class="w2"':''}>Recibido<b style="color:var(--green)">${_cobSinImp?'Cobrado':fmtF(_abono)}</b></div>
             </div>
-            <div class="d-tot al-pd"><span class="q">Pendiente</span><b style="color:${_cobSinImp?'var(--text2)':_pend>0?'var(--amber)':'var(--green)'}">${_cobSinImp?'—':fmtF(_pend)}</b>
-              ${_pend>0&&_concepto&&!_cobSinImp?`<p>En concepto de: <strong>${_concepto}</strong></p>`:''}
-              ${_cobSinImp?`<p>Marcado como cobrado sin cantidad registrada. Escríbela arriba y pulsa Guardar.</p>`:''}
-            </div>`;
+            <div class="d-tot al-pd"><span class="q">Falta por cobrar</span><b style="color:${_cobSinImp||_plat0?'var(--text2)':_alqPend>0?'var(--amber)':'var(--green)'}">${_cobSinImp||_plat0?'—':fmtF(_alqPend)}</b>
+              ${_cobSinImp?`<p>Marcado como cobrado sin cantidad. Toca «Todo» o escribe la cantidad y pulsa Guardar para registrarla.</p>`:''}
+              ${_plat0?`<p>Lo cobra ${esc(_c.plat)}: no cuenta en «Por cobrar».</p>`:''}
+              ${_hasFianza&&_fiaPend>0&&!_cobSinImp&&_fianzaStatus(b)==='pending'?`<p>Fianza: ${fmtF(_fiaPend)} no incluida en lo recibido. Si la cobras aparte, no hace falta apuntarla aquí.</p>`:''}
+            </div>
+            ${_abono>0||_cobSinImp?`<button type="button" class="tap44 btn-sec al-cq" onclick="_bkCobrar('${_bid}','cero')">${ico('undo')} Quitar cobro</button>`:''}`;
         })()}`:''}
         ${_hasFianza?(()=>{
           const _st=_fianzaStatus(b);
