@@ -510,8 +510,10 @@ select option{background:var(--bg);}
 .spec.c3{grid-template-columns:1fr 1fr 1fr;margin-top:0;border-top:0;}
 .spec.c3>div{padding:0 8px 0 0;border:0;}
 .spec.c3 b{font-size:15px;}
-/* Accesos: Coches libres y Fianzas */
+/* Accesos: Coches libres, Fianzas y Por cobrar (#137: en móvil, Coches libres a lo ancho y debajo Fianzas | Por cobrar; en escritorio, los 3 en fila) */
 .dh-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.dh-acts>.dh-act:first-child{grid-column:1/-1;min-height:64px;flex-direction:row;align-items:center;}
+@media(min-width:768px){.dh-acts{grid-template-columns:repeat(3,1fr);}.dh-acts>.dh-act:first-child{grid-column:auto;min-height:104px;flex-direction:column;align-items:stretch;}}
 .dh-act{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:104px;padding:16px 18px;border:1px solid var(--border2);border-radius:var(--r-card);background:var(--bg2);transition:transform .3s var(--ease),border-color .3s;}
 .dh-act:active{transform:scale(.97);}
 .dh-act.on{border-color:var(--acc-b);}
@@ -4455,6 +4457,39 @@ function openPendingDeposits(filter){
   window._depOpen=filter;
 }
 
+// #137 «Por cobrar» (Inicio y finanzas del coche): alquileres ya empezados o terminados (o entregados) a los que les falta cobro, con lo que falta del alquiler
+// (sin la fianza y restando lo recibido). Cancelado: su penalización a favor, aunque la fecha sea futura (ya se debe). Sin Amovens/Getaround. Sin vid: coches no archivados.
+function _porCobrar(vid){
+  const hoy=todayStr(),rows=[];
+  V.forEach(v=>{if(vid?v.id!==vid:v.archived)return;(v.bookings||[]).forEach(b=>{
+    const c=_bkCobro(b);
+    if(c.plat||!(c.falta>0))return;
+    if(!c.canc&&!b.delivered&&String(b.startDate||'')>hoy)return;
+    rows.push({v:v,b:b,c:c});
+  });});
+  rows.sort((x,y)=>String(x.b.endDate||'').localeCompare(String(y.b.endDate||'')));
+  return {rows:rows,tot:Math.round(rows.reduce((s,r)=>s+r.c.falta,0)*100)/100};
+}
+function openPorCobrar(vid){
+  const P=_porCobrar(vid),v1=vid?V.find(v=>v.id===vid):null;
+  let h='<div class="stitle">'+ico('coins')+' Por cobrar</div><div class="ssub">'+(v1?esc(v1.name)+' · ':'')+'Lo que falta del alquiler en los ya empezados o terminados. Sin fianzas ni Amovens/Getaround.</div>';
+  if(!P.rows.length)h+='<div class="d-empty fz-e">'+ico('check-circle')+'<h3>Nada por cobrar</h3><p>Los alquileres empezados o terminados están cobrados</p></div>';
+  else{
+    h+='<div class="d-tot al-pd"><span class="q">Total · '+P.rows.length+' alquiler'+(P.rows.length!==1?'es':'')+'</span><b style="color:var(--amber)">'+fmtF(P.tot)+'</b></div><div class="d-list fz-l">';
+    P.rows.forEach(({v,b,c})=>{
+      const lb=c.canc?'Cancelado · penalización':c.st==='par'?'Parcial · recibido '+fmtF(c.rec):b.returned?'Devuelto sin cobrar':'Sin cobrar';
+      h+='<div class="fz-r">'
+        +'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>'
+        +'<div class="al-b"><div class="t ell">'+esc(b.clientName||'Sin cliente')+'</div>'
+        +'<div class="s ell">'+esc(v.name)+' <span class="mono2">'+esc(v.plate||'')+'</span></div><div class="s">'+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
+        +'<span class="chip chip-amber">'+lb+'</span></div>'
+        +'<div class="r"><b>'+fmtF(c.falta)+'</b><button class="btn-sec fz-v" onclick="showBookingById(\''+escJs(b.id)+'\')">Ver alquiler</button></div></div>';
+    });
+    h+='</div>';
+  }
+  openSheet(h);
+}
+
 function unlinkBookingClient(bookingId){
   const v=gV();if(!v)return;
   const b=(v.bookings||[]).find(b=>b.id===bookingId);if(!b)return;
@@ -6975,11 +7010,13 @@ function renderDash(el){
       <div class="w2">VEHÍCULOS ACTIVOS<b>${activeV.length}</b></div>
     </div>
   </section>`;
-  // Accesos (Coches libres · Fianzas) y año acumulado: piezas sueltas para ordenarlas en móvil y escritorio
+  // Accesos (Coches libres · Fianzas · Por cobrar) y año acumulado: piezas sueltas para ordenarlas en móvil y escritorio
   const _acts=(()=>{let n=0;activeV.forEach(v=>(v.bookings||[]).forEach(b=>{if(!b.cancelled&&_fianzaStatus(b)==='pending')n++;}));
+    const _pc=_porCobrar(),_pn=_pc.rows.length; // #137: lo que falta por cobrar (euros redondeados hacia arriba; la lista da los céntimos)
     return `<div class="dh-acts">
       <button type="button" class="dh-act" onclick="openFreeVehiclesSearch()"><span class="q">Disponibilidad</span><b>Coches libres ${ico('search')}</b></button>
       <button type="button" class="dh-act${n?' on':''}" onclick="openPendingDeposits()"><span class="q${n?' ac':''}">Fianzas</span><b><span class="n">${n}</span><span class="u">pendientes</span>${_ARR}</b></button>
+      <button type="button" class="dh-act${_pn?' on':''}" onclick="openPorCobrar()" aria-label="Por cobrar: ${esc(fmtF(_pc.tot))}, ${_pn} alquiler${_pn!==1?'es':''}"><span class="q${_pn?' ac':''}">Por cobrar${_pn?' · '+_pn:''}</span><b><span class="n">${Math.ceil(_pc.tot-0.005).toLocaleString('es-ES')}</span><span class="u">€</span>${_ARR}</b></button>
     </div>`;})();
   const _yr=`<details class="dh-yr">
     <summary><span class="q">Año ${now.getFullYear()} · acumulado</span>${_PLUS}</summary>
@@ -11495,13 +11532,11 @@ function buildMonthlyChart(v){
       <div class="fl-own"><span>Queda para el propietario</span><b style="color:${mOwner>=0?'var(--green)':'var(--red)'}">${fmtF(mOwner)}</b></div>
     </div>`;
   }
-  // Pending: unpaid bookings for THIS vehicle only
-  const _pAmt=b=>(b.cancelled||b.cancellation?_bookingRealTotal(b):Number(b.amount)||0); // cancelado: solo su penalización a favor de DEIROS (si la paga DEIROS, sale ≤ 0 y no queda pendiente)
-  const pendingBks=(v.bookings||[]).filter(b=>!b.paid&&_pAmt(b)>0);
-  const totalPending=pendingBks.reduce((s,b)=>s+_pAmt(b),0);
+  // #137 Por cobrar de este coche: el mismo cálculo que el Inicio (_porCobrar: sin futuros ni Amovens/Getaround, restando lo recibido); al tocarlo, la lista
+  const _pcV=_porCobrar(v.id),pendingBks=_pcV.rows,totalPending=_pcV.tot;
   const pendingRow=totalPending>0
-    ?`<div class="d-card s hl fl-pd">
-        <div><span class="q ac">Pendiente de cobro</span><div class="d-meta">${pendingBks.length} alquiler${pendingBks.length!==1?'es':''} sin cobrar</div></div>
+    ?`<div class="d-card s hl fl-pd" role="button" tabindex="0" style="cursor:pointer" onclick="openPorCobrar('${escJs(v.id)}')">
+        <div><span class="q ac">Por cobrar</span><div class="d-meta">${pendingBks.length} alquiler${pendingBks.length!==1?'es':''} con cobro pendiente</div></div>
         <b>${fmtF(totalPending)}</b>
       </div>`:''
   return buildChart(fins,chartYear,selKey,'setFM','prevChartYr','nextChartYr','')+pendingRow+commRow;
