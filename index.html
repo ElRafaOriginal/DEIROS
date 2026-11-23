@@ -1823,6 +1823,7 @@ label.btn-sec.aj-up{width:100%;}
     <div class="desk-footer-btn" onclick="toggleTheme()" id="deskThemeBtn"><i data-ico="moon"></i> <span id="deskThemeLbl">Modo claro</span></div>
     <div class="desk-footer-btn" onclick="openNotifSettings()"><i data-ico="bell"></i> <span>Notificaciones</span></div>
     <div class="desk-footer-btn" onclick="openBackup()"><i data-ico="save"></i> <span>Copia de seguridad</span></div>
+    <div class="desk-footer-btn" onclick="openReviewSettings()"><i data-ico="star"></i> <span>Reseñas de Google</span></div>
     <div class="desk-footer-btn" onclick="doLogout()" style="color:var(--red)"><i data-ico="logout"></i> <span>Cerrar sesión</span></div>
   </div>
 </div>
@@ -1902,6 +1903,9 @@ label.btn-sec.aj-up{width:100%;}
   </div>
   <div onclick="closeHamburger();openBackup()" class="hmenu-item" data-n="12">
     <span class="hmenu-icon"><i data-ico="save"></i></span><span class="hmenu-lbl">Copia de seguridad</span>
+  </div>
+  <div onclick="closeHamburger();openReviewSettings()" class="hmenu-item" data-n="13">
+    <span class="hmenu-icon"><i data-ico="star"></i></span><span class="hmenu-lbl">Reseñas de Google</span>
   </div>
   <div onclick="closeHamburger();doLogout()" class="hmenu-item err">
     <span class="hmenu-icon"><i data-ico="logout"></i></span><span class="hmenu-lbl">Cerrar sesión</span>
@@ -6380,7 +6384,7 @@ function _countMovements(){
 }
 function _snapshotCounts(){_cloudCounts={vehicles:(V||[]).length,movements:_countMovements()};}
 function _emptyCloudState(){
-  V=[];BF=[];OW=[];CL=[];RR=[];QT=[];
+  V=[];BF=[];OW=[];CL=[];RR=[];QT=[];AJ=_ajNorm(); // #139
   _invalidateRsCache();
 }
 function _saveToast(text,bg){
@@ -6409,7 +6413,7 @@ function _showLoadError(){
 function _cloudPayload(rev){
   const clean=_stripPhotos(JSON.parse(JSON.stringify(V)));
   const _safeJSON=x=>JSON.parse(JSON.stringify(x??[]));
-  return {vehicles:clean,bizFinances:_safeJSON(BF),owners:_safeJSON(OW),clients:_safeJSON(CL),recurring:_safeJSON(RR),quotes:_safeJSON(QT),rev:rev,updatedAt:new Date().toISOString()};
+  return {vehicles:clean,bizFinances:_safeJSON(BF),owners:_safeJSON(OW),clients:_safeJSON(CL),recurring:_safeJSON(RR),quotes:_safeJSON(QT),settings:_ajNorm(AJ),rev:rev,updatedAt:new Date().toISOString()};
 }
 function _jsonBytes(obj){return new Blob([JSON.stringify(obj)]).size;}
 function _setSaveStatus(state,msg){
@@ -6499,6 +6503,7 @@ async function _saveToCloudBody(opts){
       tx.set(_docRef(),payload,{merge:true});
     });
     _loadedRev=nextRev;
+    _rvDropLocal(); // #139 la nube ya tiene el enlace de reseñas: fuera la copia local antigua (migración)
     _snapshotCounts();
     _setSaveStatus('saved');
     console.log('[save] OK — vehículos:',V.length,'rev:',nextRev);
@@ -6542,6 +6547,7 @@ async function _loadFromCloud(){
       CL=d.clients||[];
       RR=d.recurring||[];
       QT=d.quotes||[];
+      AJ=_ajNorm(d.settings); // #139
       _normalizeState();
       if(_normFixes){_holdCloudWrite=true;_showNormNotice(_normFixes,'local');}
       _loadedRev=Number(d.rev)||0;
@@ -6586,6 +6592,7 @@ let OW=[];
 let QT=[]; // Owners / Propietarios
 let CL=[]; // Clients
 let RR=[]; // Recurring expenses
+let AJ={resenasUrl:''}; // #139 ajustes sincronizados entre dispositivos: Firestore data/main → settings (y copia v4 → settings)
 
 // ═══════════════════════════════════════════════════════════ STATE
 let CV='dashboard',AV=null,AT='calendar';
@@ -13396,6 +13403,7 @@ function _backupObject(){
     clients:JSON.parse(JSON.stringify(CL||[])),
     recurring:JSON.parse(JSON.stringify(RR||[])),
     quotes:JSON.parse(JSON.stringify(QT||[])),
+    settings:_ajNorm(AJ), // #139 ajustes sincronizados (enlace de reseñas)
     company:getCompanyData(),
     photos
   };
@@ -13474,6 +13482,7 @@ function _validateBackup(data){
     if(err)return err;
   }
   if('fotosActas' in data&&data.fotosActas!=null&&!Array.isArray(data.fotosActas))return '«fotosActas» tiene que ser una lista.';
+  if('settings' in data&&data.settings!=null){if(!_isPlainObject(data.settings))return '«settings» tiene que ser un objeto.';err=_expectStr(data.settings,'resenasUrl','settings · enlace de reseñas');if(err)return err;} // #139 copias antiguas sin él: válidas
   if(Array.isArray(data.bizFinances)){
     for(let i=0;i<data.bizFinances.length;i++){err=_checkEntry(data.bizFinances[i],'bizFinances nº '+(i+1));if(err)return err;}
   }
@@ -13636,6 +13645,7 @@ function importData(event){
         BF=Array.isArray(data.bizFinances)?data.bizFinances:[];
         OW=data.owners;CL=data.clients;RR=data.recurring;QT=data.quotes;
         if(_isPlainObject(data.company))saveCompanyData(data.company);
+        if(_isPlainObject(data.settings))AJ=_ajNorm(Object.assign(_ajNorm(AJ),data.settings)); // #139 sin «settings» (copia antigua): se conservan los actuales
         if(_isPlainObject(data.photos)){
           const skipped=_replacePhotos(data.photos);
           if(skipped)alert('Algunas fotos no cabían en este navegador y no se han restaurado.');
@@ -13753,6 +13763,55 @@ function checkAlertNotifs(){
   }
 }
 
+// #139 Ajustes → «Reseñas de Google»: enlace de la empresa para el WhatsApp «Gracias + reseña». Sincronizado entre dispositivos:
+// Firestore data/main → settings.resenasUrl (en memoria AJ; viaja y se resuelve como el resto de data/main) y copia v4 → settings.
+// Al guardar: sin espacios ni parámetros de seguimiento y con https:// si no empieza por http. Si no parece de Google, avisa pero lo guarda.
+const _RV_TRK=/^(utm_.+|fbclid|gclid|gbraid|wbraid|dclid|msclkid|yclid|mc_cid|mc_eid|igshid|igsh|_ga|_gl|g_st|g_ep|entry|ved|ei|sca_esv|sxsrf|sa|usg|si)$/i;
+function _ajNorm(s){const o=_isPlainObject(s)?s:{};return {resenasUrl:typeof o.resenasUrl==='string'?o.resenasUrl.trim():''};}
+function _rvUrl(){return _ajNorm(AJ).resenasUrl;}
+// Migración: un dispositivo que guardó el enlace en sus datos de empresa (localStorage deiros_company.resenasUrl) lo sube si la nube no tiene;
+// tras el primer guardado correcto en la nube (o al guardar en Ajustes) esa copia local se borra, para que no vuelva a subirse.
+function _rvMigrate(){
+  if(_rvUrl())return;const u=_rvClean((getCompanyData()||{}).resenasUrl);
+  if(u){AJ=Object.assign(_ajNorm(AJ),{resenasUrl:u});save();}
+}
+function _rvDropLocal(){try{const c=getCompanyData();if(_isPlainObject(c)&&'resenasUrl' in c){delete c.resenasUrl;saveCompanyData(c);}}catch(e){}}
+function _rvClean(s){
+  let t=(typeof s==='string'?s:'').replace(/\s+/g,'');if(!t)return '';
+  if(!/^https?:\/\//i.test(t))t='https://'+t.replace(/^\/+/,'');
+  try{const u=new URL(t);[...u.searchParams.keys()].filter(k=>_RV_TRK.test(k)).forEach(k=>u.searchParams.delete(k));return u.href;}catch(e){return t;}
+}
+function _rvIsGoogle(s){
+  try{const u=new URL(s),h=u.hostname.toLowerCase();
+    return /^https?:$/.test(u.protocol)&&(h==='g.page'||h==='maps.app.goo.gl'||h==='g.co'||(h==='goo.gl'&&/^\/maps(\/|$)/.test(u.pathname))||/(^|\.)google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(h));
+  }catch(e){return false;}
+}
+function _rvSt(){
+  const i=document.getElementById('rvUrl'),e=document.getElementById('rvSt');if(!i||!e)return;
+  const u=_rvClean(i.value);
+  if(!u){e.className='rv-st';e.innerHTML=_rvUrl()?ico('info')+'<span>Vacío: al guardar se quita el enlace.</span>':'';return;}
+  const g=_rvIsGoogle(u);e.className='rv-st '+(g?'ok':'w');
+  e.innerHTML=ico(g?'check-circle':'alert')+'<span>'+(g?'Enlace de Google':'No parece un enlace de Google: revísalo (se puede guardar igual)')+(u!==i.value.trim()?'. Se guardará: <b>'+esc(u)+'</b>':'')+'</span>';
+}
+function openReviewSettings(){
+  openSheet(`<div class="stitle">${ico('star')} Reseñas de Google</div>
+    <div class="ssub">Ajustes · para el WhatsApp «Gracias + reseña»</div>
+    <div class="d-f"><label class="q" for="rvUrl">Enlace de reseñas de Google</label>
+      <input id="rvUrl" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://g.page/r/…/review" value="${esc(_rvUrl())}" oninput="_rvSt()"/>
+      <span class="d-hint">En tu Perfil de Empresa de Google → Pedir reseñas → copia el enlace corto.</span>
+      <div id="rvSt" class="rv-st" aria-live="polite"></div></div>
+    <p class="d-hint aj-h">Se guarda en la nube: lo verás en todos tus dispositivos y va en la copia de seguridad.</p>
+    <div class="d-acts al-end"><button class="btn-pri" onclick="_rvSave()">${ico('save')} Guardar</button>
+    <button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>`);
+  _rvSt();
+}
+function _rvSave(){
+  const u=_rvClean(document.getElementById('rvUrl')?.value),had=!!_rvUrl();
+  AJ=Object.assign(_ajNorm(AJ),{resenasUrl:u});_rvDropLocal();save();closeSheet();
+  if(!u){if(had)_saveToast('Enlace de reseñas quitado','ok');return;}
+  if(_rvIsGoogle(u))_saveToast('Enlace de reseñas guardado','ok');
+  else _saveToast('Guardado, pero no parece un enlace de reseñas de Google: revísalo antes de enviarlo a un cliente','warn');
+}
 function openNotifSettings(){
   const perm=('Notification' in window)?Notification.permission:'no-soportado';
   const permLabel={granted:(ico('check-circle')+' Activadas'),denied:(ico('ban')+' Bloqueadas (actívalas en ajustes del navegador)'),default:(ico('hourglass')+' Pendiente de permiso')}[perm]||'No soportado';
@@ -14977,6 +15036,7 @@ auth.onAuthStateChanged(async user=>{
     showLoading(true);
     const _loadResult=await _loadFromCloud();
     if(_loadResult==='error')return;
+    _rvMigrate(); // #139
     V.forEach(v=>{v.color=v.vtype==='managed'?COLOR_MAN:COLOR_OWN;});
     showLoading(false);
     // Desktop: wire up layout
