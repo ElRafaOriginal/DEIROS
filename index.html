@@ -14437,6 +14437,8 @@ function _kmDia(d, cfg){
   if(d<1)d=1;
   return Math.max(15, Math.round(cfg.base - cfg.b * Math.log(d)));
 }
+// #150 Minutos de reloj (hora de pared) entre dos fechas+horas locales: el cambio de hora no suma ni resta (10:00 → 10:00 del día siguiente = 1440 siempre)
+function _wallMins(sd,st,ed,et){const w=s=>{const d=new Date(s);return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours(),d.getMinutes(),d.getSeconds());};return Math.round((w(ed+'T'+et)-w(sd+'T'+st))/60000);}
 /**
  * calcRentalPrice(sd, st, ed, et, pricePerDay)
  * Precio de alquiler con facturación por bloques de 24h.
@@ -14451,8 +14453,7 @@ function calcRentalPrice(sd, st, ed, et, pricePerDay){
   const pd=Number(pricePerDay)||0;
   let fullDays, extraHours, chargeDays, total, breakdown;
   if(sd&&st&&ed&&et){
-    const dtS=new Date(sd+'T'+st), dtE=new Date(ed+'T'+et);
-    const totalMins=Math.round((dtE-dtS)/60000);
+    const totalMins=_wallMins(sd,st,ed,et); // #150
     if(totalMins<=0){return{total:0,fullDays:0,extraHours:0,chargeDays:0,breakdown:''};}
     fullDays=Math.floor(totalMins/1440);
     extraHours=(totalMins%1440)/60;
@@ -14484,7 +14485,7 @@ function calcKmInc(dur, isFurg){
 function calcKmIncExacto(sd, st, ed, et, isFurg){
   if(!sd||!st||!ed||!et) return calcKmInc(Math.max(1,daysBetween(sd,ed)), isFurg);
   const cfg=isFurg?KM_RATE_CFG.furgoneta:KM_RATE_CFG.turismo;
-  const totalMins=Math.round((new Date(ed+'T'+et)-new Date(sd+'T'+st))/60000);
+  const totalMins=_wallMins(sd,st,ed,et); // #150
   if(totalMins<=0)return 0;
   const fullDays=Math.floor(totalMins/1440);
   const extraHours=(totalMins%1440)/60;
