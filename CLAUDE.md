@@ -16,6 +16,7 @@ Rafael la usa sobre todo **en el móvil y en modo oscuro**.
 5. **Sin secretos en el código.** Nada de claves, tokens ni datos de clientes reales.
 6. **Cambios mínimos.** Nada de refactorizar, renombrar o cambiar estilos fuera del alcance pedido. Una PR = un tema.
 7. **Edita con la herramienta Edit**, no con scripts que reescriban el fichero entero.
+8. **Pruebas:** antes de abrir cada PR que toque `index.html`, ejecuta `python3 tests/run_all.py` (o `--rapido` en arreglos pequeños, más la prueba del tema) y no abras la PR si no termina en `RESULTADO: TODO OK`; QA lo vuelve a ejecutar al revisar. Si un cambio aprobado modifica a propósito un comportamiento que una prueba comprueba, actualiza esa prueba en la misma PR. Ver `tests/README.md`.
 
 ## Reglas de negocio (confirmadas por Rafael)
 

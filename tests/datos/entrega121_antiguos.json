@@ -1,0 +1,431 @@
+{
+ "_nota": "Datos FICTICIOS de prueba: dos alquileres y dos presupuestos guardados con la app anterior a #121 (commit 4c2b7d9), con «Entrega a domicilio» 49 € y «Entrega aeropuerto/hotel/estación» 59 €. M = cómo quedaron (sin ids de movimientos). Los usa test_entrega_extra.py.",
+ "ids": [
+  "mwor0go43iws",
+  "mwor0iig33nl",
+  "mwor0k4npbsl",
+  "mwor0lvrqp17"
+ ],
+ "bookings": [
+  {
+   "id": "mwor0go43iws",
+   "startDate": "2026-12-30",
+   "startTime": "10:00",
+   "endDate": "2027-01-02",
+   "endTime": "10:00",
+   "platform": "amovens",
+   "amount": 100,
+   "notes": "",
+   "clientName": "Alejandro José Martínez de la Fuente",
+   "clientPhone": "600 000 002",
+   "clientDni": "00000001R",
+   "kmStart": null,
+   "kmEnd": null,
+   "financeIds": [
+    "mwor0go5gxmf",
+    "mwor0go5zs6v"
+   ],
+   "financeId": "mwor0go5gxmf",
+   "paid": false,
+   "extras": [
+    {
+     "id": "exSillaBebe",
+     "label": "Silla de bebé suelta",
+     "amount": 39
+    },
+    {
+     "id": "exEntregaDomicilio",
+     "label": "Entrega a domicilio",
+     "amount": 49
+    }
+   ],
+   "finance": [
+    {
+     "id": "mwor0go65fpg",
+     "type": "income",
+     "concept": "Silla de bebé suelta",
+     "amount": 39,
+     "date": "2026-12-30",
+     "notes": "Extra contratado",
+     "_autoExtra": true
+    },
+    {
+     "id": "mwor0go6qh74",
+     "type": "income",
+     "concept": "Entrega a domicilio",
+     "amount": 49,
+     "date": "2026-12-30",
+     "notes": "Extra contratado",
+     "_autoExtra": true
+    }
+   ],
+   "priceDay": null,
+   "fianza": 0,
+   "deliveryPlace": "",
+   "returnPlace": ""
+  },
+  {
+   "id": "mwor0iig33nl",
+   "startDate": "2027-01-09",
+   "startTime": "10:00",
+   "endDate": "2027-01-12",
+   "endTime": "10:00",
+   "platform": "amovens",
+   "amount": 100,
+   "notes": "",
+   "clientName": "Alejandro José Martínez de la Fuente",
+   "clientPhone": "600 000 002",
+   "clientDni": "00000001R",
+   "kmStart": null,
+   "kmEnd": null,
+   "financeIds": [
+    "mwor0iiglx4j"
+   ],
+   "financeId": "mwor0iiglx4j",
+   "paid": false,
+   "extras": [
+    {
+     "id": "exEntregaAeropuerto",
+     "label": "Entrega aeropuerto/hotel/estación",
+     "amount": 59
+    },
+    {
+     "id": "exSeguroLimpieza",
+     "label": "Seguro de limpieza (prepago)",
+     "amount": 24.99
+    }
+   ],
+   "finance": [
+    {
+     "id": "mwor0iigr0sq",
+     "type": "income",
+     "concept": "Entrega aeropuerto/hotel/estación",
+     "amount": 59,
+     "date": "2027-01-09",
+     "notes": "Extra contratado",
+     "_autoExtra": true
+    },
+    {
+     "id": "mwor0iig9atd",
+     "type": "income",
+     "concept": "Seguro de limpieza (prepago)",
+     "amount": 24.99,
+     "date": "2027-01-09",
+     "notes": "Extra contratado",
+     "_autoExtra": true
+    }
+   ],
+   "priceDay": null,
+   "fianza": 0,
+   "deliveryPlace": "",
+   "returnPlace": ""
+  }
+ ],
+ "finances": [
+  {
+   "id": "mwor0go5gxmf",
+   "type": "income",
+   "date": "2026-12-30",
+   "category": "Alquiler",
+   "amount": 66.6666666667,
+   "description": "Amovens · 30/12→02/01 (3d, 2d en Diciembre 2026)",
+   "autoFromBooking": true,
+   "bookingId": "mwor0go43iws"
+  },
+  {
+   "id": "mwor0go5zs6v",
+   "type": "income",
+   "date": "2027-01-01",
+   "category": "Alquiler",
+   "amount": 33.333333333300004,
+   "description": "Amovens · 30/12→02/01 (3d, 2d en Enero 2027)",
+   "autoFromBooking": true,
+   "bookingId": "mwor0go43iws"
+  },
+  {
+   "id": "mwor0go6m9eg",
+   "type": "income",
+   "date": "2026-12-01",
+   "category": "Silla de bebé suelta",
+   "amount": 39,
+   "description": "Silla de bebé suelta · Alejandro José Martínez de la Fuente · 0000AAA",
+   "_bookingId": "mwor0go43iws",
+   "_autoExtra": true
+  },
+  {
+   "id": "mwor0go64vce",
+   "type": "income",
+   "date": "2026-12-01",
+   "category": "Entrega a domicilio",
+   "amount": 49,
+   "description": "Entrega a domicilio · Alejandro José Martínez de la Fuente · 0000AAA",
+   "_bookingId": "mwor0go43iws",
+   "_autoExtra": true
+  },
+  {
+   "id": "mwor0iiglx4j",
+   "type": "income",
+   "date": "2027-01-09",
+   "category": "Alquiler",
+   "amount": 100,
+   "description": "Amovens · 09/01→12/01 (3d, 4d en Enero 2027)",
+   "autoFromBooking": true,
+   "bookingId": "mwor0iig33nl"
+  },
+  {
+   "id": "mwor0iig2t7b",
+   "type": "income",
+   "date": "2027-01-01",
+   "category": "Entrega aeropuerto/hotel/estación",
+   "amount": 59,
+   "description": "Entrega aeropuerto/hotel/estación · Alejandro José Martínez de la Fuente · 0000AAA",
+   "_bookingId": "mwor0iig33nl",
+   "_autoExtra": true
+  },
+  {
+   "id": "mwor0iig10mm",
+   "type": "income",
+   "date": "2027-01-01",
+   "category": "Seguro de limpieza (prepago)",
+   "amount": 24.99,
+   "description": "Seguro de limpieza (prepago) · Alejandro José Martínez de la Fuente · 0000AAA",
+   "_bookingId": "mwor0iig33nl",
+   "_autoExtra": true
+  }
+ ],
+ "quotes": [
+  {
+   "id": "mwor0lvrqp17",
+   "num": "P-2026-002",
+   "createdAt": "2026-11-20T09:00:11.079Z",
+   "status": "pendiente",
+   "vehicleId": "v4",
+   "startDate": "2027-02-28",
+   "endDate": "2027-03-04",
+   "startTime": "09:00",
+   "endTime": "09:00",
+   "clientName": "Alejandro José Martínez de la Fuente",
+   "clientId": "c1",
+   "dur": 4,
+   "dailyRate": 30,
+   "baseAmount": 120,
+   "extras": [
+    {
+     "id": "exEntregaAeropuerto",
+     "label": "Entrega aeropuerto/hotel/estación",
+     "amount": 59,
+     "type": "fixed"
+    },
+    {
+     "id": "exSeguroLimpieza",
+     "label": "Seguro de limpieza (prepago)",
+     "amount": 24.99,
+     "type": "fixed"
+    }
+   ],
+   "extrasAmount": 83.99,
+   "discount": 0,
+   "customRate": null,
+   "basePriceBreakdown": "4d × 30€",
+   "kmIncTotal": 672,
+   "fianza": 200,
+   "totalAmount": 203.99,
+   "notes": ""
+  },
+  {
+   "id": "mwor0k4npbsl",
+   "num": "P-2026-001",
+   "createdAt": "2026-11-20T09:00:08.808Z",
+   "status": "pendiente",
+   "vehicleId": "v4",
+   "startDate": "2027-02-18",
+   "endDate": "2027-02-22",
+   "startTime": "09:00",
+   "endTime": "09:00",
+   "clientName": "Alejandro José Martínez de la Fuente",
+   "clientId": "c1",
+   "dur": 4,
+   "dailyRate": 30,
+   "baseAmount": 120,
+   "extras": [
+    {
+     "id": "exEntregaDomicilio",
+     "label": "Entrega a domicilio",
+     "amount": 49,
+     "type": "fixed"
+    }
+   ],
+   "extrasAmount": 49,
+   "discount": 0,
+   "customRate": null,
+   "basePriceBreakdown": "4d × 30€",
+   "kmIncTotal": 672,
+   "fianza": 200,
+   "totalAmount": 169,
+   "notes": ""
+  }
+ ],
+ "M": {
+  "mwor0go43iws": {
+   "b": {
+    "id": "mwor0go43iws",
+    "startDate": "2026-12-30",
+    "startTime": "10:00",
+    "endDate": "2027-01-02",
+    "endTime": "10:00",
+    "platform": "amovens",
+    "amount": 100,
+    "notes": "",
+    "clientName": "Alejandro José Martínez de la Fuente",
+    "clientPhone": "600 000 002",
+    "clientDni": "00000001R",
+    "kmStart": null,
+    "kmEnd": null,
+    "paid": false,
+    "extras": [
+     {
+      "id": "exSillaBebe",
+      "label": "Silla de bebé suelta",
+      "amount": 39
+     },
+     {
+      "id": "exEntregaDomicilio",
+      "label": "Entrega a domicilio",
+      "amount": 49
+     }
+    ],
+    "finance": [
+     {
+      "type": "income",
+      "concept": "Silla de bebé suelta",
+      "amount": 39,
+      "date": "2026-12-30",
+      "notes": "Extra contratado",
+      "_autoExtra": true
+     },
+     {
+      "type": "income",
+      "concept": "Entrega a domicilio",
+      "amount": 49,
+      "date": "2026-12-30",
+      "notes": "Extra contratado",
+      "_autoExtra": true
+     }
+    ],
+    "priceDay": null,
+    "fianza": 0,
+    "deliveryPlace": "",
+    "returnPlace": ""
+   },
+   "vf": [
+    {
+     "t": "income",
+     "c": "Alquiler",
+     "a": 66.6666666667,
+     "d": "2026-12-30",
+     "x": false
+    },
+    {
+     "t": "income",
+     "c": "Alquiler",
+     "a": 33.333333333300004,
+     "d": "2027-01-01",
+     "x": false
+    },
+    {
+     "t": "income",
+     "c": "Silla de bebé suelta",
+     "a": 39,
+     "d": "2026-12-01",
+     "x": true
+    },
+    {
+     "t": "income",
+     "c": "Entrega a domicilio",
+     "a": 49,
+     "d": "2026-12-01",
+     "x": true
+    }
+   ],
+   "tot": 188,
+   "real": 188
+  },
+  "mwor0iig33nl": {
+   "b": {
+    "id": "mwor0iig33nl",
+    "startDate": "2027-01-09",
+    "startTime": "10:00",
+    "endDate": "2027-01-12",
+    "endTime": "10:00",
+    "platform": "amovens",
+    "amount": 100,
+    "notes": "",
+    "clientName": "Alejandro José Martínez de la Fuente",
+    "clientPhone": "600 000 002",
+    "clientDni": "00000001R",
+    "kmStart": null,
+    "kmEnd": null,
+    "paid": false,
+    "extras": [
+     {
+      "id": "exEntregaAeropuerto",
+      "label": "Entrega aeropuerto/hotel/estación",
+      "amount": 59
+     },
+     {
+      "id": "exSeguroLimpieza",
+      "label": "Seguro de limpieza (prepago)",
+      "amount": 24.99
+     }
+    ],
+    "finance": [
+     {
+      "type": "income",
+      "concept": "Entrega aeropuerto/hotel/estación",
+      "amount": 59,
+      "date": "2027-01-09",
+      "notes": "Extra contratado",
+      "_autoExtra": true
+     },
+     {
+      "type": "income",
+      "concept": "Seguro de limpieza (prepago)",
+      "amount": 24.99,
+      "date": "2027-01-09",
+      "notes": "Extra contratado",
+      "_autoExtra": true
+     }
+    ],
+    "priceDay": null,
+    "fianza": 0,
+    "deliveryPlace": "",
+    "returnPlace": ""
+   },
+   "vf": [
+    {
+     "t": "income",
+     "c": "Alquiler",
+     "a": 100,
+     "d": "2027-01-09",
+     "x": false
+    },
+    {
+     "t": "income",
+     "c": "Entrega aeropuerto/hotel/estación",
+     "a": 59,
+     "d": "2027-01-01",
+     "x": true
+    },
+    {
+     "t": "income",
+     "c": "Seguro de limpieza (prepago)",
+     "a": 24.99,
+     "d": "2027-01-01",
+     "x": true
+    }
+   ],
+   "tot": 183.99,
+   "real": 183.99
+  }
+ }
+}

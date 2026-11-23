@@ -1,0 +1,4 @@
+# Caché de librerías y fuentes descargadas (vendor.py), salidas de run_all.py y caché de Python
+.cache/
+.resultados/
+__pycache__/
