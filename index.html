@@ -1083,6 +1083,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .al-acc summary{min-height:56px;font-size:15px;}
 .al-fzr{display:grid;grid-template-columns:128px 1fr;gap:8px;margin-bottom:8px;}
 .al-fzr>*{min-width:0;}
+/* #138 Fianza en «Registrar devolución»: fianza − cargos = a devolver; «Retener» con importe y motivo; el importe del botón en mono */
+.rf-l .al-li{min-height:44px;}
+.rf-dn label{flex:1;min-width:0;}
+.rf-dn .d-pre{width:132px;flex:none;}
+.rf-seg{margin-top:14px;}
+.rf-seg button{flex-wrap:wrap;gap:0 4px;padding:4px 2px;font-size:13px;line-height:1.15;}
+.rf-seg button b{font-family:var(--mono);font-weight:500;}
+.rf-n{margin:8px 0 0;font-size:13px;line-height:1.4;color:var(--text2);}
+.rf-n b{font-family:var(--mono);font-weight:500;color:var(--text);}
+.rf-n.w{color:var(--amber);}
 /* Asistente: plataforma segmentada (la activa en acento: clase .sel que pone selPlat), extras en lista técnica con marca redonda */
 .al-plat{margin-bottom:0;}
 .al-plat button.sel{background:var(--amber);color:var(--on-amber);}
@@ -1681,6 +1691,17 @@ label.btn-sec.aj-up{width:100%;}
 .ph-bar .row{display:flex;justify-content:space-between;}
 .ph-w{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35;color:var(--amber);margin:10px 0 0;}
 .ph-w .ico{flex:none;margin-top:1px;}
+/* #138 «Antes de entregar» (hoja «Entregar coche»): franja informativa, no bloquea. Cada aviso con icono y color; botones de 44 px */
+.fx-pre{margin:14px 0 4px;padding:12px 14px 14px;border:1px solid var(--border2);border-radius:var(--r-card);background:var(--bg2);}
+.fx-ph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.fx-pr{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:6px 10px;min-height:44px;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.35;color:var(--text);}
+.fx-pr>.ico{color:var(--text2);}
+.fx-pr.w>.ico{color:var(--amber);}
+.fx-pr.e>.ico,.fx-pr.e>span{color:var(--red);}
+.fx-pr.ok>.ico{color:var(--green);}
+.fx-pr b{font-family:var(--mono);font-weight:500;white-space:nowrap;}
+.fx-pr .btn-sec{width:auto;min-height:44px;padding:0 14px;}
+.fx-pre>.btn-sec{margin-top:10px;}
 /* Galería del coche (#123): portada, 8 huecos con icono de posición, visor y «Enviar fotos». Iconos .vx: punto de la foto en el acento */
 .ph-t .f>.ico.vx{width:34px;height:34px;}
 .ico.vx .f{fill:var(--amber);}
@@ -4186,9 +4207,11 @@ function openReturnModal(bookingId){
         +'<div class="d-f"><label class="q" for="retFuelAmt">Importe combustible</label><div class="d-pre"><span>€</span><input id="retFuelAmt" type="number" min="0" step="0.01" inputmode="decimal" value="0" oninput="_retTotUpd()"/></div>'
         +'<span class="d-hint">Litros × (precio + '+esc(String(recargo).replace('.',','))+' €/L)</span></div>')
     +'<div class="d-tot al-tot"><span class="q">A cobrar</span><div class="d-n n2" id="retTot">0<small>,00 €</small></div><p>Importes sugeridos y editables. Con 0 no se crea cobro.</p></div>'
+    +_retFzHtml(_bb) // #138 fianza − cargos = a devolver
     +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmReturn()">'+ico('check-circle')+' Confirmar devolución</button>')
     +'<button class="btn-sec" onclick="closeSheet()">Cancelar</button></div>');
   if(fuelProd!=='elec')_retLoadMunis();
+  _retFzUpd(); // #138
   _fxMount(bookingId,'devolucion');
 }
 
@@ -4214,6 +4237,7 @@ function _retTotUpd(){
   const n=['retKmAmt','retFuelAmt'].reduce((s,id)=>s+Math.max(0,parseFloat(document.getElementById(id)?.value)||0),0);
   const t=fmtF(Math.round(n*100)/100).split(',');
   e.innerHTML=esc(t[0].replace(/\./g,''))+'<small>'+esc(t.length>1?','+t.slice(1).join(','):'')+'</small>';
+  _retFzUpd(); // #138 «Fianza»: se recalcula con los mismos importes
 }
 // Selector segmentado del nivel de combustible: escribe en su <select> oculto y recalcula como su onchange
 function _retSeg(btn){
@@ -4257,6 +4281,8 @@ function _confirmReturn(){
   if(!kmEnd){alert('Introduce los km actuales del vehículo.');return;}
   if(_kmEndBelowStart(window._retKmStart||'',kmEnd)){alert('Los km de fin no pueden ser menores que los de inicio');return;}
   if(!retFuel){alert('Selecciona el nivel de combustible.');return;}
+  const _fzR=_retFzCalc(); // #138 fianza: mismas comprobaciones que setBookingFianzaStatus, antes de guardar nada
+  if(_fzR&&_fzR.m==='ret'){if(!(_fzR.R>0)||_fzR.R>_fzR.fz){alert('El importe retenido debe ser mayor que 0 y no superar la fianza ('+fmtF(_fzR.fz)+')');return;}if(!_fzR.why){alert('Indica el motivo de la retención');return;}}
   V.forEach(v=>{(v.bookings||[]).forEach(b=>{if(b.id===bookingId){
     b.returned=true;b.returnedAt=new Date().toISOString();
     b.kmEnd=kmEnd;b.returnedFuelLevel=retFuel;
@@ -4275,6 +4301,79 @@ function _confirmReturn(){
     _fxOnReturn(b.id,kmEnd,retFuel);
     save();closeSheet();renderDetail(document.getElementById('PC'));
   }});});
+  _retFzApply(bookingId,_fzR); // #138
+}
+// #138 «Fianza» dentro de «Registrar devolución»: fianza − cargos (km, combustible y daños u otros) = a devolver.
+// «Devolver todo», «Retener X» (importe y motivo rellenados desde los cargos, editables) y «Más tarde» (queda pendiente, como antes).
+// Cierra con setBookingFianzaStatus (los mismos campos que la ficha: fianzaStatus, fianzaRetainedAmount, fianzaRetainedReason). Sin datos nuevos.
+// Cobro: los cargos de km y combustible ya son ingresos del alquiler (_returnCharge) y salen en «Por cobrar» si falta cobro. Si la fianza los paga
+// y no estaba en lo recibido, o se devuelve la que sí estaba y quedan cargos, la cantidad recibida se ajusta con _bkSetRec (lo pagado del alquiler
+// + lo que la fianza paga de km y combustible), para que «Por cobrar» diga lo que de verdad falta. «Daños u otros» solo cuenta para la retención
+// y el motivo (no es ingreso). Amovens/Getaround: la fianza la gestiona la plataforma (sin «Retener» ni ajuste de cobro).
+function _retFzWhy(km,fu,dn){return [km>0?'Exceso de km '+fmtF(km):'',fu>0?'Combustible faltante '+fmtF(fu):'',dn>0?'Daños u otros '+fmtF(dn):''].filter(Boolean).join(' · ').replace(/\u00a0/g,' ');} // espacios normales: el motivo sale en la ficha, el recibo y el WhatsApp
+function _retFzHtml(b){
+  window._retFz=null;
+  const fz=b.cancelled?0:Math.max(0,Number(b.fianza)||0);if(!(fz>0))return '';
+  const st=_fianzaStatus(b),c=_bkCobro(b);
+  const rc=(Array.isArray(b.finance)?b.finance:[]).filter(f=>f&&f._returnCharge&&f.type==='income').reduce((s,f)=>s+(Number(f.amount)||0),0);
+  window._retFz={bid:b.id,fz:fz,plat:c.plat,old:c.old,rec:c.rec,alq0:Math.max(0,Math.round((c.alq-rc)*100)/100),m:st==='pending'?'':'none',mU:0,aU:0,rU:0};
+  const L={pending:['Pendiente','chip-amber','hourglass'],returned:['Devuelta','chip-green','check-circle'],retained:['Retenida','chip-red','lock'],partial:['Retenida en parte','chip-amber','lock']}[st];
+  let h='<div class="al-h"><span class="q ac">05</span><h3>Fianza</h3><span class="chip '+L[1]+'">'+ico(L[2])+' '+L[0]+'</span></div>';
+  if(st!=='pending')return h+'<p class="rf-n">Ya está cerrada'+(st==='partial'||st==='retained'?' (retenido '+fmtF(b.fianzaRetainedAmount)+')':'')+'. Si hay que cambiarla, se hace en la ficha del alquiler.</p>';
+  const pl=!!c.plat,seg=(m,t)=>'<button type="button" data-m="'+m+'" aria-pressed="false" onclick="_retFzMode(this)">'+t+'</button>';
+  h+='<div class="al-l rf-l"><div class="al-li"><span>Fianza</span><b>'+fmtF(fz)+'</b></div>'
+    +'<div class="al-li" id="retFzKmL" style="display:none"><span>− Exceso de km</span><b id="retFzKm"></b></div>'
+    +'<div class="al-li" id="retFzFuL" style="display:none"><span>− Combustible</span><b id="retFzFu"></b></div>'
+    +(pl?'':'<div class="al-li rf-dn"><label for="retFzDn">− Daños u otros</label><div class="d-pre"><span>€</span><input id="retFzDn" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" oninput="_retFzUpd()"/></div></div>')+'</div>';
+  if(pl)h+='<p class="rf-n">La fianza la gestiona '+esc(c.plat)+': los cargos se reclaman en la plataforma y no cuentan en «Por cobrar».</p>';
+  else h+='<div class="d-tot al-pd"><span class="q">A devolver</span><b id="retFzRes">'+fmtF(fz)+'</b><p id="retFzMsg"></p></div>';
+  h+='<div class="d-seg al-seg rf-seg" id="retFzSeg" role="group" aria-label="Fianza">'+seg('dev',pl?'Devuelta':'Devolver todo')+(pl?'':seg('ret','Retener <b id="retFzRB"></b>'))+seg('tarde','Más tarde')+'</div>';
+  if(!pl)h+='<div class="al-fzr fx-mt" id="retFzRet" style="display:none"><div class="d-pre"><span>€</span><input id="retFzAmt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Importe" aria-label="Importe retenido" oninput="window._retFz.aU=1;_retFzUpd()"/></div>'
+    +'<input id="retFzRsn" type="text" maxlength="300" placeholder="Motivo" aria-label="Motivo de la retención" oninput="window._retFz.rU=1"/></div>';
+  return h+'<p class="rf-n" id="retFzCob"></p>';
+}
+// Cálculo (solo lee la hoja). m: dev | ret | tarde | none. R: retenido. dev: a devolver. rec: cantidad recibida nueva (null = no cambia). fT: lo que quedará por cobrar del alquiler.
+function _retFzCalc(){
+  const s=window._retFz;if(!s||s.bid!==window._retBookingId||s.m==='none')return null;
+  const r2=x=>Math.round(x*100)/100,n=id=>Math.max(0,parseFloat(document.getElementById(id)?.value)||0);
+  const km=r2(n('retKmAmt')),fu=r2(n('retFuelAmt')),dn=s.plat?0:r2(n('retFzDn')),C=r2(km+fu),T=r2(C+dn);
+  const m=s.mU?s.m:(T>0?(s.plat?'tarde':'ret'):'dev');
+  const auto=r2(Math.min(T,s.fz)),R=m==='ret'?(s.aU?r2(n('retFzAmt')):auto):0;
+  const why=m==='ret'?(s.rU?String(document.getElementById('retFzRsn')?.value||'').trim():_retFzWhy(km,fu,dn)):'';
+  const Rk=Math.min(C,R),rp=Math.min(s.rec,s.alq0),nada=s.plat||s.old;
+  const fA=nada?0:Math.max(0,r2(s.alq0+C-s.rec)),fT=(nada||m==='tarde')?fA:Math.max(0,r2(s.alq0+C-rp-Rk));
+  return {m:m,km:km,fu:fu,dn:dn,C:C,T:T,auto:auto,R:R,why:why,fz:s.fz,plat:s.plat,dev:m==='ret'?Math.max(0,r2(s.fz-R)):m==='dev'?s.fz:null,
+    fT:fT,rec:(nada||m==='tarde'||fT===fA)?null:r2(rp+Rk),kfP:r2(Math.max(0,C-Rk)),dnP:r2(Math.max(0,dn-Math.max(0,R-Rk))),rec0:s.rec};
+}
+function _retFzMode(btn){const s=window._retFz;if(!s)return;s.m=btn.getAttribute('data-m');s.mU=1;_retFzUpd();if(s.m==='ret'){const a=document.getElementById('retFzAmt');if(a&&!(parseFloat(a.value)>0))a.focus();}}
+function _retFzUpd(){
+  const s=window._retFz,r=_retFzCalc();if(!s||!r)return;
+  const g=id=>document.getElementById(id),tx=(id,t)=>{const e=g(id);if(e)e.textContent=t;};
+  [['retFzKmL','retFzKm',r.km],['retFzFuL','retFzFu',r.fu]].forEach(x=>{const l=g(x[0]);if(l)l.style.display=x[2]>0?'':'none';tx(x[1],fmtF(x[2]));});
+  document.querySelectorAll('#retFzSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.getAttribute('data-m')===r.m)));
+  const rv=r.m==='ret'?r.R:r.auto;tx('retFzRB',rv>0?fmtF(rv):'');
+  const rb=g('retFzRet');if(rb)rb.style.display=r.m==='ret'?'':'none';
+  const a=g('retFzAmt');if(a&&!s.aU)a.value=r.auto>0?r.auto:'';
+  const w=g('retFzRsn');if(w&&!s.rU)w.value=_retFzWhy(r.km,r.fu,r.dn);
+  const res=g('retFzRes');if(res){res.textContent=r.dev==null?'—':fmtF(r.dev);res.style.color=r.dev>0?'var(--green)':'var(--text2)';}
+  const dl=Math.max(0,Math.round((r.T-r.R)*100)/100);
+  tx('retFzMsg',r.m==='tarde'?'La fianza queda pendiente: se cierra luego en la ficha del alquiler o en «Fianzas» del Inicio.'
+    :r.m==='dev'?(r.T>0?'Devuelves la fianza entera: los cargos ('+fmtF(r.T)+') se cobran aparte.':'Sin cargos: se devuelve entera.')
+    :dl>0?'Los cargos superan lo retenido: el cliente debe además '+fmtF(dl)+'.':'Fianza '+fmtF(r.fz)+' − retenido '+fmtF(r.R)+'.');
+  const cb=g('retFzCob');if(!cb)return;
+  if(r.plat){cb.className='rf-n';cb.innerHTML=r.T>0?'Cargos de la devolución: <b>'+fmtF(r.T)+'</b>.':'';return;}
+  let h=(r.fT>0?'Alquiler: quedará por cobrar <b>'+fmtF(r.fT)+'</b> (sale en «Por cobrar»).':'Alquiler: no quedará nada por cobrar.')
+    +(r.rec!=null?' Cantidad recibida: <b>'+fmtF(r.rec0)+'</b> → <b>'+fmtF(r.rec)+'</b>'+(r.rec>r.rec0?' (la fianza paga los cargos).':' (la fianza vuelve al cliente).'):'');
+  if(r.m==='ret'&&r.dnP>0)h+=' '+fmtF(r.dnP)+' de daños u otros no se apuntan solos: si los cobras, añádelos en «Ingresos y gastos» de la ficha.';
+  cb.className='rf-n'+(r.fT>0||(r.m==='ret'&&r.dnP>0)?' w':'');cb.innerHTML=h;
+}
+// Tras guardar la devolución: ajusta lo recibido (si hace falta) y cierra la fianza con la función de siempre (guarda y abre la ficha del alquiler)
+function _retFzApply(bid,r){
+  if(!r||(r.m!=='dev'&&r.m!=='ret'))return;
+  const vb=_fxVB(bid);if(!vb||!vb.b.returned||_fianzaStatus(vb.b)!=='pending')return;
+  if(r.rec!=null&&_bkSetRec(bid,r.rec))renderDetail(document.getElementById('PC')); // si se cancela su confirmación, lo recibido no cambia y la fianza se cierra igual
+  if(r.m==='dev')setBookingFianzaStatus(bid,'returned');
+  else setBookingFianzaStatus(bid,r.R>=r.fz?'retained':'partial',r.R,r.why);
 }
 
 
@@ -12277,6 +12376,7 @@ function _fxDeliver(bid){
   openSheet('<div class="d-ch al-ch"><span class="q ac">Entrega</span>'+(b.startDate===todayStr()?'<span class="chip chip-amber">Entrega hoy</span>':'')+'</div>'
     +'<div class="stitle">Entregar coche</div>'
     +'<div class="d-meta">'+esc(v.name)+' · '+esc(v.plate)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
+    +_fxPreHtml(bid) // #138 «Antes de entregar»
     +'<div class="al-h"><span class="q ac">01</span><h3>Km y combustible</h3></div>'
     +'<div class="d-2"><div class="d-f"><label class="q" for="fxKm">Km actuales</label><input id="fxKm" type="number" min="0" inputmode="numeric" value="'+esc(km)+'" placeholder="Ej: 140100"/></div>'
     +'<div class="d-f"><label class="q" for="fxPlace">Lugar</label><input id="fxPlace" type="text" maxlength="200" autocomplete="off" value="'+esc(b.deliveryPlace||'')+'" placeholder="Dirección o punto"/></div></div>'
@@ -12288,6 +12388,43 @@ function _fxDeliver(bid){
     +'<div class="d-f fx-mt"><label class="q" for="fxNota">Notas de la entrega</label><input id="fxNota" type="text" maxlength="300" autocomplete="off" placeholder="Opcional: lo que veáis juntos"/></div>'
     +'<div class="ph-bar" id="fxBar" data-mode="ent"></div>');
   _fxMount(bid,'entrega');
+}
+// #138 «Antes de entregar»: solo informa (no bloquea la entrega). Cobro del alquiler y de la fianza como la ficha (_bkCobro: lo recibido cubre primero
+// el alquiler y luego la fianza), edad y carnet como la ficha del cliente y #112 (_clAgeGate, _clWarn; ficha por _clFind, como el contrato) y botón al contrato.
+// «Cobrar» (= «Solo alquiler») y «Todo» (= alquiler + fianza) escriben con _bkSetRec, como los atajos de la ficha, y la hoja sigue abierta.
+function _fxPreHtml(bid){
+  const vb=_fxVB(bid);if(!vb)return '';const v=vb.v,b=vb.b,c=_bkCobro(b),_id=escJs(bid),R=[];
+  const row=(k,i,t,btn)=>R.push([k,'<div class="fx-pr'+(k?' '+k:'')+'">'+ico(i)+'<span>'+t+'</span>'+(btn||'<i></i>')+'</div>']);
+  const bt=(m,t)=>'<button type="button" class="btn-sec tap44" onclick="_fxPreCob(\''+_id+'\',\''+m+'\')">'+t+'</button>';
+  if(c.plat)row('','card','Lo cobra '+esc(c.plat));
+  else if(c.falta>0)row('w','coins','Falta cobrar <b>'+fmtF(c.falta)+'</b> del alquiler',bt('alq','Cobrar'));
+  else if(c.st==='cob')row('ok','check-circle','Alquiler cobrado');
+  if(c.fz>0&&!c.plat&&!c.old&&_fianzaStatus(b)==='pending'){
+    const fp=Math.max(0,Math.min(c.rec-Math.min(c.rec,c.alq),c.fz)),fq=Math.round((c.fz-fp)*100)/100;
+    if(fq>0)row('w','lock','Fianza: faltan <b>'+fmtF(fq)+'</b> en lo recibido',bt('todo','Todo <b>'+fmtF(c.alq+c.fz)+'</b>'));
+    else row('ok','lock','Fianza cobrada · '+fmtF(c.fz));
+  }
+  const P=(pre,t)=>pre?pre+t.charAt(0).toLowerCase()+t.slice(1):t;
+  const chk=(nac,exp,pre)=>{const n0=R.length;
+    const ag=_clAgeGate(nac,b.startDate,!!pre);if(ag)row(/menor/i.test(ag)?'e':'w','alert',esc(ag));
+    const x=String(exp||'').slice(0,10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(x))row('w','id-card',esc(P(pre,'Falta la caducidad del carnet')));
+    else{const lw=_clWarn({licenseExp:x},b.startDate,b.endDate);if(lw.length)row('e','id-card',esc(P(pre,x<todayStr()?'Carnet caducado el '+fmtDMY(x):lw[0]+' ('+fmtDMY(x)+')')));}
+    if(R.length===n0)row('ok','id-card',esc(P(pre,'Edad y carnet en regla')));};
+  const cl=_clFind({name:b.clientName,dni:b.clientDni,phone:b.clientPhone},b.id);
+  if(cl)chk(cl.birthdate,cl.licenseExp,'');else row('w','id-card','Sin ficha de cliente: no se pueden comprobar la edad ni el carnet');
+  if(b.hasExtraDriver||b.extraDriverName){const xf=b.extraDriverId&&CL.find(x=>x.id===b.extraDriverId);chk(b.extraDriverBirth||(xf&&xf.birthdate)||'',b.extraDriverLicenseExp||(xf&&xf.licenseExp)||'','Conductor adicional: ');}
+  const n=R.filter(x=>x[0]==='w'||x[0]==='e').length;
+  return '<section class="fx-pre" id="fxPre" aria-label="Antes de entregar"><div class="fx-ph"><span class="q">Antes de entregar</span>'
+    +(n?'<span class="chip chip-amber">'+ico('alert')+' '+n+' por revisar</span>':'<span class="chip chip-green">'+ico('check-circle')+' Todo en orden</span>')+'</div>'
+    +R.map(x=>x[1]).join('')
+    +'<button type="button" class="btn-sec" onclick="closeSheet();openContractForm(\''+escJs(v.id)+'\',\''+_id+'\')">'+ico('doc')+' Contrato</button></section>';
+}
+function _fxPreCob(bid,mode){
+  const vb=_fxVB(bid);if(!vb)return;const c=_bkCobro(vb.b);
+  if(!_bkSetRec(bid,mode==='todo'?c.alq+c.fz:c.alq))return;
+  const pc=document.getElementById('PC');if(pc&&pc.querySelector('.fl-tabs'))renderDetail(pc);else if(pc&&CV==='dashboard')renderDash(pc);
+  const e=document.getElementById('fxPre');if(e)e.outerHTML=_fxPreHtml(bid);
 }
 function _fxSeg(btn){const g=btn.parentNode;g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));const i=document.getElementById('fxFuel');if(i)i.value=btn.getAttribute('data-v');}
 function _fxConfirmDelivery(){
