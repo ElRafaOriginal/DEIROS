@@ -2944,7 +2944,7 @@ function openAnalyticsReportPicker(){
 }
 
 async function generateAnalyticsPDF(fromMonth,toMonth){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // ══ SETUP ════════════════════════════════════════════════════════════════
   const now=new Date();
@@ -5273,8 +5273,8 @@ function _ctGo(n){
 }
 
 // ── Helper universal de guardado PDF (móvil + escritorio) ────────────────────
-function _savePDF(doc, filename){
-  if(_pdfShareTry(doc,d=>_savePDF(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
+function _savePDF(doc, filename, late){
+  if(_pdfLate(doc,filename,_savePDF,late))return;if(_pdfShareTry(doc,d=>_savePDF(d,filename,1)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{
     const blob=doc.output('blob');
     const url=URL.createObjectURL(blob);
@@ -5456,7 +5456,7 @@ function _pdfShareTry(doc,fallback){
 }
 
 async function generateReceiptPDF(bookingId){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // ── Buscar alquiler ───────────────────────────────────────────────────────
   let _bv=null,_bb=null;
@@ -5675,7 +5675,7 @@ const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la 
 
 // ── Anexo de Ampliación PDF ───────────────────────────────────────────────
 async function generateExtensionPDF(bookingId){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   // Anexo de la última «Ampliación» registrada en b.finance del alquiler indicado (o del de la última ampliación confirmada)
   const _last=window._extLastData;
@@ -5799,7 +5799,7 @@ let y=_pdfTitle(doc,PDFS.TOP,'Anexo','AMPLIACIÓN');
 async function generateContractPDF(vId,bookingId){
   const v=V.find(x=>x.id===vId);if(!v)return;
   const b=(v.bookings||[]).find(x=>x.id===bookingId);if(!b)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const g=id=>document.getElementById(id)?.value||'';
   if(b.cancelled){alert('Este alquiler está cancelado: no se puede generar el contrato.');return;}
   if(!g('ctClNombre').trim()||!g('ctClNif').trim()){alert('Faltan el nombre y el NIF/DNI del cliente. Complétalos en el paso 2 antes de generar el contrato.');if(typeof _ctGo==='function')_ctGo(2);return;}
@@ -6181,7 +6181,7 @@ function openMgmtContractForm(ownerId,vId){
 
 async function generateMgmtContractPDF(ownerId,vIdParam){
   const owner=OW.find(o=>o.id===ownerId);if(!owner)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const g=id=>document.getElementById(id)?.value||'';
   const resolvedVId=vIdParam||g('mgVehId')||g('mgVehSel');
   const veh=V.find(v=>v.id===resolvedVId);
@@ -9324,7 +9324,7 @@ function saveDate(id,field,val){const v=V.find(v=>v.id===id);if(!v)return;v[fiel
 
 async function dlMaintReport(vId){
   const v=V.find(v=>v.id===vId);if(!v)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const maints=(v.finances||[]).filter(e=>(e.category==='Mantenimiento periódico'||e.category==='Mantenimiento')).sort((a,b)=>a.date.localeCompare(b.date));
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
@@ -9513,7 +9513,7 @@ function openBizReportPicker(){
 async function dlBizReport(fromMonth,toMonth,periodLabel){
   fromMonth=fromMonth||null;toMonth=toMonth||null;periodLabel=periodLabel||'Todo el período';
   closeSheet();
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   try{
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
@@ -10410,7 +10410,7 @@ function genOwnerReport(ownerId){
 
 async function dlOwnerReport(ownerId,month){
   const o=OW.find(o=>o.id===ownerId);if(!o)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const vehicles=V.filter(v=>!v.archived&&v.ownerId===ownerId);
   const [yr,mo]=month.split('-');
   const mLabel=MON_ES[parseInt(mo)-1]+' '+yr;
@@ -11215,7 +11215,7 @@ function renderBizMgmt(){
   el.innerHTML=h;
 }
 async function exportGlobalExcel(){
-  try{await ensureLib('xlsx');}catch(e){alert('No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('xlsx');}catch(e){return;}
   const wb=XLSX.utils.book_new();
   const activeV=V.filter(v=>!v.archived);
 
@@ -11955,6 +11955,30 @@ function ensureLib(name){
   p.catch(()=>{if(_libP[name]===p)delete _libP[name];});
   return p;
 }
+// Precarga en segundo plano (#134): unos 4 s después de arrancar y cuando el navegador está libre. Si falla, en silencio: se reintenta al pulsar.
+setTimeout(function(){const go=function(){ensureLib('jspdf').catch(function(){});ensureLib('xlsx').catch(function(){});};if(window.requestIdleCallback)requestIdleCallback(go,{timeout:2000});else go();},4000);
+// Al pulsar PDF o Excel (#134): «Cargando…» si la librería aún no está y como mucho 15 s de espera para ESTE toque
+// (la carga sigue en curso y el reintento la aprovecha). Si falla o tarda, avisa y rechaza: quien llama solo hace return.
+function _libNeed(name){
+  const w=name==='xlsx'?'Excel':'PDF',ok=name==='xlsx'?!!window.XLSX:!!(window.jspdf&&window.jspdf.jsPDF),TO={};
+  let el=null,tm=0;
+  if(!ok){const o=document.getElementById('libLd');if(o)o.remove();
+    el=document.createElement('div');el.id='libLd';el.className='d-toast d-fl';el.setAttribute('role','status');el.innerHTML=ico('hourglass','20');
+    const t=document.createElement('span');t.className='grow';t.textContent='Cargando…';el.appendChild(t);document.body.appendChild(el);}
+  return Promise.race([ensureLib(name),new Promise(r=>{tm=setTimeout(()=>r(TO),15000);})]).then(x=>{
+    clearTimeout(tm);if(el)el.remove();
+    if(x===TO){alert('La librería de '+w+' está tardando demasiado. Comprueba la conexión e inténtalo de nuevo.');throw new Error('tiempo límite');}
+  },e=>{clearTimeout(tm);if(el)el.remove();alert('No se ha podido cargar la librería de '+w+'. Comprueba la conexión e inténtalo de nuevo.');throw e;});
+}
+// PDF listo sin el gesto del usuario (la librería acaba de llegar): no se abre ni se comparte todavía; se pide otro toque, como _actaReady (#134).
+// El nombre de «Enviar» se guarda aquí porque _pdfSend lo borra al terminar. late=1: ya hay gesto o ya se pidió el toque.
+function _pdfLate(doc,filename,go,late){
+  const ua=navigator.userActivation;if(late||!ua||ua.isActive!==false)return false;
+  const n=_pdfSendName;_pdfSendName=null;
+  const L=n?['Enviar','send']:go===_savePDF&&/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)?['Abrir','doc']:['Descargar','download'];
+  _actaToast('PDF listo: '+(n||filename),[[L[0],L[1],'btn-pri',(b,el)=>{el.remove();_pdfSendName=n;try{go(doc,filename,1);}finally{_pdfSendName=null;}}]],30000);
+  return true;
+}
 // Cabecera y pie «Ficha suiza» en todas las páginas: fondo blanco, logo dorado, filete negro y datos en mono (sin bloques de color)
 function _pdfBrand(doc,title,sub){
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),m=PDFS.MG,co=getCompanyData();
@@ -12038,15 +12062,15 @@ function _pdfField(doc,x,y,lbl,val,w,font){
   doc.setFont(font||'helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(...PDFS.T);
   doc.text(w?_pdfFit(doc,String(val),w):String(val),x,y+4.8);
 }
-function _pdfDownload(doc,filename){
-  if(_pdfShareTry(doc,d=>_pdfDownload(d,filename)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
+function _pdfDownload(doc,filename,late){
+  if(_pdfLate(doc,filename,_pdfDownload,late))return;if(_pdfShareTry(doc,d=>_pdfDownload(d,filename,1)))return; // «Enviar»: menú de compartir con el PDF adjunto (#96)
   try{const blob=doc.output('blob');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);}
   catch(e){const a=document.createElement('a');a.href=doc.output('datauristring');a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),2000);}
 }
 
 async function dlReport(vId,month){
   const v=V.find(x=>x.id===vId);if(!v)return;
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   // Incluye extras b.finance; excluye _bfEntry (ampliaciones ya proRata'd en v.finances)
   const fins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)));
   const tI=fins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
@@ -12146,7 +12170,7 @@ async function dlReport(vId,month){
 async function exportExcel(vId){
   const v=V.find(x=>x.id===vId);
   if(!v){alert('Vehículo no encontrado');return;}
-  try{await ensureLib('xlsx');}catch(e){alert('No se ha podido cargar la librería de Excel. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('xlsx');}catch(e){return;}
   const wb=XLSX.utils.book_new();
   const _xlsFins=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry).sort((a,b)=>a.date.localeCompare(b.date));
   const finRows=[['Fecha','Tipo','Categoría','Importe €','Descripción']];
@@ -13299,7 +13323,7 @@ async function _actaPDF(bid,fase){
 }
 // «Generar acta» (abre o descarga, como el recibo) y «Enviar acta» (menú de compartir del móvil con el PDF, como «Enviar» #99)
 async function _actaGo(bid,fase,send,btn){
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librería de PDF. Comprueba la conexión e inténtalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   if(_actaBusy)return;_actaBusy=true;
   const tx=btn?btn.innerHTML:'';if(btn){btn.disabled=true;btn.textContent='Preparando…';}
   try{
@@ -13311,7 +13335,7 @@ async function _actaGo(bid,fase,send,btn){
   }catch(e){console.warn('[acta]',e);_saveToast('No se ha podido preparar el acta: '+(e&&e.message?e.message:e));}
   finally{_actaBusy=false;if(btn&&document.body.contains(btn)){btn.disabled=false;btn.innerHTML=tx;}}
 }
-function _actaDo(r,send){if(send){_pdfSendName=r.name;try{_savePDF(r.doc,r.name);}finally{_pdfSendName=null;}}else _savePDF(r.doc,r.name);}
+function _actaDo(r,send){if(send){_pdfSendName=r.name;try{_savePDF(r.doc,r.name,1);}finally{_pdfSendName=null;}}else _savePDF(r.doc,r.name,1);}
 function _actaToast(msg,acts,ms){
   const o=document.getElementById('actaOf');if(o)o.remove();
   const el=document.createElement('div');el.id='actaOf';el.className='d-toast d-fl ok';el.setAttribute('role','status');el.innerHTML=ico('doc','20');
@@ -14698,7 +14722,7 @@ function convertQuoteToBooking(id){
 async function generateQuotePDF(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
   const v=V.find(v=>v.id===q.vehicleId);
-  try{await ensureLib('jspdf');}catch(e){alert('No se ha podido cargar la librer\u00eda de PDF. Comprueba la conexi\u00f3n e int\u00e9ntalo de nuevo.');return;}
+  try{await _libNeed('jspdf');}catch(e){return;}
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
   const W=210,M=16,CW=W-M*2;
