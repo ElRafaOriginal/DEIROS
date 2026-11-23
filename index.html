@@ -5506,13 +5506,13 @@ async function generateReceiptPDF(bookingId){
   // ── Estilo «Ficha suiza»: rótulos en la columna izquierda (mg) y contenido desde L ──
   let y=0;
   const L=mg+34,R=mg+cW,L2=L+(R-L)/2+4,INK=PDFS.T,MID=PDFS.T2,SOFT=PDFS.T2,HAIR=PDFS.LN;
-const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la penalización: '+fmtM(totAlq):'sin penalización')
+const _plCob=(!_isCanc&&_cb.plat&&_cb.st==='pen')?'LO COBRA '+_cb.plat.toUpperCase():''; /* #147: Amovens/Getaround sin cantidad apuntada (= ficha «Lo cobra …») */const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la penalización: '+fmtM(totAlq):'sin penalización')
     :_cb.st==='nada'?'SIN IMPORTE A LIQUIDAR'
     :_cb.st==='cob'?(fianzaPendiente>0?'ALQUILER LIQUIDADO COMPLETAMENTE  —  la fianza va aparte':'IMPORTE LIQUIDADO COMPLETAMENTE')
     :_cb.st==='par'?'PAGO PARCIAL  —  recibido '+fmtM(alqPagado)+' · alquiler '+fmtM(alqPendiente)+' por abonar'
-    :'PENDIENTE DE LIQUIDACIÓN  —  alquiler '+fmtM(alqPendiente)+' por abonar';
+    :_plCob?_plCob+'  —  alquiler '+fmtM(alqPendiente)+' a pagar a través de la plataforma':'PENDIENTE DE LIQUIDACIÓN  —  alquiler '+fmtM(alqPendiente)+' por abonar';
   // Título y sello de estado (solo trazo); debajo, el estado en una línea (sello y línea salen de la misma condición: el estado de cobro de la ficha, #137)
-  y=_pdfTitle(doc,PDFS.TOP,'Recibo',_isCanc?'CANCELADO':{cob:'PAGADO',par:'PAGO PARCIAL',pen:'PENDIENTE DE COBRO',nada:'SIN IMPORTE'}[_cb.st]);
+  y=_pdfTitle(doc,PDFS.TOP,'Recibo',_isCanc?'CANCELADO':_plCob||{cob:'PAGADO',par:'PAGO PARCIAL',pen:'PENDIENTE DE COBRO',nada:'SIN IMPORTE'}[_cb.st]);
   doc.setFont('jbm','normal');doc.setFontSize(6.8);doc.setTextColor(...MID);doc.text(_pdfFit(doc,stMsg,cW),mg,y);
   y+=12;
 
@@ -5633,7 +5633,7 @@ const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la 
   // ── Cifra principal: SOLO el alquiler (la fianza no se suma) ──
   if(y+14>PDFS.BOT){doc.addPage();y=PDFS.TOP+4;}
   doc.setFont('jbm','normal');doc.setFontSize(6.5);doc.setTextColor(...SOFT);
-  doc.text(totAlq===0?'SIN IMPORTE A LIQUIDAR':_isCanc?(alqPendiente>0?'PENALIZACIÓN PENDIENTE DE COBRO':'PENALIZACIÓN ABONADA'):alqPendiente>0?'ALQUILER PENDIENTE DE COBRO':'ALQUILER COMPLETAMENTE ABONADO',R,y,{align:'right'});
+  doc.text(totAlq===0?'SIN IMPORTE A LIQUIDAR':_isCanc?(alqPendiente>0?'PENALIZACIÓN PENDIENTE DE COBRO':'PENALIZACIÓN ABONADA'):alqPendiente>0?(_plCob||'ALQUILER PENDIENTE DE COBRO'):'ALQUILER COMPLETAMENTE ABONADO',R,y,{align:'right'});
   doc.setFont('syne','bold');doc.setFontSize(24);doc.setTextColor(...PDFS.P);
   doc.text(fmtM(alqPendiente>0?alqPendiente:alqPagado),R,y+10,{align:'right'});
   y+=20;
