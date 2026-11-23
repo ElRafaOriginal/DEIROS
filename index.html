@@ -5363,14 +5363,15 @@ async function generateReceiptPDF(bookingId){
   const _fzCerrada=_fzSt==='returned'||_fzSt==='retained'||_fzSt==='partial'; // ya depositada y resuelta
   const _fzRet=_fzSt==='retained'?fianza:_fzSt==='partial'?Math.min(fianza,Number(b.fianzaRetainedAmount)||0):0;
   const totTotal=totAlq+fianza;
-  const abono=Number(b.abonoReserva||0);
+  const _cb=_bkCobro(b); // #137: el mismo cobro que la ficha (Cobrado / Parcial / Pendiente y lo que falta del alquiler); la fianza va aparte
+  const abono=_cb.rec;
   const dur=daysBetween(b.startDate,b.endDate);
   const receiptNum='REC-'+new Date().getFullYear()+'-'+((b.id||'').replace(/[^A-Za-z0-9]/g,'').slice(-6).toUpperCase()||'000000');
-  const alqPagado=Math.min(abono,totAlq);
-  const alqPendiente=Math.max(0,totAlq-alqPagado);
+  const alqPagado=_cb.old?totAlq:Math.min(abono,totAlq); // antiguo marcado cobrado (o paid) sin cantidad: cobrado
+  const alqPendiente=_cb.falta;
   const fianzaPagada=fianza>0?(_fzCerrada?fianza:Math.max(0,Math.min(abono-alqPagado,fianza))):0;
   const fianzaPendiente=Math.max(0,fianza-fianzaPagada);
-  const pendiente=alqPendiente+fianzaPendiente;
+  const pendiente=alqPendiente; // #137: la fianza no es pendiente del alquiler; tiene su propio bloque (05 Fianza)
   const paidFull=totTotal>0&&pendiente===0;
   const conceptoPendiente=alqPendiente>0&&fianzaPendiente>0?'alquiler y fianza':alqPendiente>0?'alquiler':fianzaPendiente>0?'fianza reembolsable':'';
 
@@ -5378,11 +5379,12 @@ async function generateReceiptPDF(bookingId){
   let y=0;
   const L=mg+34,R=mg+cW,L2=L+(R-L)/2+4,INK=PDFS.T,MID=PDFS.T2,SOFT=PDFS.T2,HAIR=PDFS.LN;
 const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la penalización: '+fmtM(totAlq):'sin penalización')
-    :totTotal===0?'SIN IMPORTE A LIQUIDAR'
-    :pendiente===0?'IMPORTE LIQUIDADO COMPLETAMENTE'
-    :'PENDIENTE DE LIQUIDACIÓN  —  '+[alqPendiente>0?'alquiler '+fmtM(alqPendiente):'',fianzaPendiente>0?'fianza '+fmtM(fianzaPendiente):''].filter(Boolean).join(' · ')+' por abonar';
-  // Título y sello de estado (solo trazo); debajo, el estado en una línea (sello y línea salen de la misma condición)
-  y=_pdfTitle(doc,PDFS.TOP,'Recibo',_isCanc?'CANCELADO':totTotal===0?'SIN IMPORTE':pendiente>0?'PENDIENTE DE COBRO':'PAGADO');
+    :_cb.st==='nada'?'SIN IMPORTE A LIQUIDAR'
+    :_cb.st==='cob'?(fianzaPendiente>0?'ALQUILER LIQUIDADO COMPLETAMENTE  —  la fianza va aparte':'IMPORTE LIQUIDADO COMPLETAMENTE')
+    :_cb.st==='par'?'PAGO PARCIAL  —  recibido '+fmtM(alqPagado)+' · alquiler '+fmtM(alqPendiente)+' por abonar'
+    :'PENDIENTE DE LIQUIDACIÓN  —  alquiler '+fmtM(alqPendiente)+' por abonar';
+  // Título y sello de estado (solo trazo); debajo, el estado en una línea (sello y línea salen de la misma condición: el estado de cobro de la ficha, #137)
+  y=_pdfTitle(doc,PDFS.TOP,'Recibo',_isCanc?'CANCELADO':{cob:'PAGADO',par:'PAGO PARCIAL',pen:'PENDIENTE DE COBRO',nada:'SIN IMPORTE'}[_cb.st]);
   doc.setFont('jbm','normal');doc.setFontSize(6.8);doc.setTextColor(...MID);doc.text(_pdfFit(doc,stMsg,cW),mg,y);
   y+=12;
 
