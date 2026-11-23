@@ -1691,6 +1691,17 @@ label.btn-sec.aj-up{width:100%;}
 .ph-bar .row{display:flex;justify-content:space-between;}
 .ph-w{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35;color:var(--amber);margin:10px 0 0;}
 .ph-w .ico{flex:none;margin-top:1px;}
+/* #138 «Antes de entregar» (hoja «Entregar coche»): franja informativa, no bloquea. Cada aviso con icono y color; botones de 44 px */
+.fx-pre{margin:14px 0 4px;padding:12px 14px 14px;border:1px solid var(--border2);border-radius:var(--r-card);background:var(--bg2);}
+.fx-ph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.fx-pr{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:6px 10px;min-height:44px;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.35;color:var(--text);}
+.fx-pr>.ico{color:var(--text2);}
+.fx-pr.w>.ico{color:var(--amber);}
+.fx-pr.e>.ico,.fx-pr.e>span{color:var(--red);}
+.fx-pr.ok>.ico{color:var(--green);}
+.fx-pr b{font-family:var(--mono);font-weight:500;white-space:nowrap;}
+.fx-pr .btn-sec{width:auto;min-height:44px;padding:0 14px;}
+.fx-pre>.btn-sec{margin-top:10px;}
 /* Galería del coche (#123): portada, 8 huecos con icono de posición, visor y «Enviar fotos». Iconos .vx: punto de la foto en el acento */
 .ph-t .f>.ico.vx{width:34px;height:34px;}
 .ico.vx .f{fill:var(--amber);}
@@ -4299,7 +4310,7 @@ function _confirmReturn(){
 // y no estaba en lo recibido, o se devuelve la que sí estaba y quedan cargos, la cantidad recibida se ajusta con _bkSetRec (lo pagado del alquiler
 // + lo que la fianza paga de km y combustible), para que «Por cobrar» diga lo que de verdad falta. «Daños u otros» solo cuenta para la retención
 // y el motivo (no es ingreso). Amovens/Getaround: la fianza la gestiona la plataforma (sin «Retener» ni ajuste de cobro).
-function _retFzWhy(km,fu,dn){return [km>0?'Exceso de km '+fmtF(km):'',fu>0?'Combustible faltante '+fmtF(fu):'',dn>0?'Daños u otros '+fmtF(dn):''].filter(Boolean).join(' · ').replace(/ /g,' ');} // espacios normales: el motivo sale en la ficha, el recibo y el WhatsApp
+function _retFzWhy(km,fu,dn){return [km>0?'Exceso de km '+fmtF(km):'',fu>0?'Combustible faltante '+fmtF(fu):'',dn>0?'Daños u otros '+fmtF(dn):''].filter(Boolean).join(' · ').replace(/\u00a0/g,' ');} // espacios normales: el motivo sale en la ficha, el recibo y el WhatsApp
 function _retFzHtml(b){
   window._retFz=null;
   const fz=b.cancelled?0:Math.max(0,Number(b.fianza)||0);if(!(fz>0))return '';
@@ -12365,6 +12376,7 @@ function _fxDeliver(bid){
   openSheet('<div class="d-ch al-ch"><span class="q ac">Entrega</span>'+(b.startDate===todayStr()?'<span class="chip chip-amber">Entrega hoy</span>':'')+'</div>'
     +'<div class="stitle">Entregar coche</div>'
     +'<div class="d-meta">'+esc(v.name)+' · '+esc(v.plate)+(b.clientName?' · '+esc(b.clientName):'')+'</div>'
+    +_fxPreHtml(bid) // #138 «Antes de entregar»
     +'<div class="al-h"><span class="q ac">01</span><h3>Km y combustible</h3></div>'
     +'<div class="d-2"><div class="d-f"><label class="q" for="fxKm">Km actuales</label><input id="fxKm" type="number" min="0" inputmode="numeric" value="'+esc(km)+'" placeholder="Ej: 140100"/></div>'
     +'<div class="d-f"><label class="q" for="fxPlace">Lugar</label><input id="fxPlace" type="text" maxlength="200" autocomplete="off" value="'+esc(b.deliveryPlace||'')+'" placeholder="Dirección o punto"/></div></div>'
@@ -12376,6 +12388,43 @@ function _fxDeliver(bid){
     +'<div class="d-f fx-mt"><label class="q" for="fxNota">Notas de la entrega</label><input id="fxNota" type="text" maxlength="300" autocomplete="off" placeholder="Opcional: lo que veáis juntos"/></div>'
     +'<div class="ph-bar" id="fxBar" data-mode="ent"></div>');
   _fxMount(bid,'entrega');
+}
+// #138 «Antes de entregar»: solo informa (no bloquea la entrega). Cobro del alquiler y de la fianza como la ficha (_bkCobro: lo recibido cubre primero
+// el alquiler y luego la fianza), edad y carnet como la ficha del cliente y #112 (_clAgeGate, _clWarn; ficha por _clFind, como el contrato) y botón al contrato.
+// «Cobrar» (= «Solo alquiler») y «Todo» (= alquiler + fianza) escriben con _bkSetRec, como los atajos de la ficha, y la hoja sigue abierta.
+function _fxPreHtml(bid){
+  const vb=_fxVB(bid);if(!vb)return '';const v=vb.v,b=vb.b,c=_bkCobro(b),_id=escJs(bid),R=[];
+  const row=(k,i,t,btn)=>R.push([k,'<div class="fx-pr'+(k?' '+k:'')+'">'+ico(i)+'<span>'+t+'</span>'+(btn||'<i></i>')+'</div>']);
+  const bt=(m,t)=>'<button type="button" class="btn-sec tap44" onclick="_fxPreCob(\''+_id+'\',\''+m+'\')">'+t+'</button>';
+  if(c.plat)row('','card','Lo cobra '+esc(c.plat));
+  else if(c.falta>0)row('w','coins','Falta cobrar <b>'+fmtF(c.falta)+'</b> del alquiler',bt('alq','Cobrar'));
+  else if(c.st==='cob')row('ok','check-circle','Alquiler cobrado');
+  if(c.fz>0&&!c.plat&&!c.old&&_fianzaStatus(b)==='pending'){
+    const fp=Math.max(0,Math.min(c.rec-Math.min(c.rec,c.alq),c.fz)),fq=Math.round((c.fz-fp)*100)/100;
+    if(fq>0)row('w','lock','Fianza: faltan <b>'+fmtF(fq)+'</b> en lo recibido',bt('todo','Todo <b>'+fmtF(c.alq+c.fz)+'</b>'));
+    else row('ok','lock','Fianza cobrada · '+fmtF(c.fz));
+  }
+  const P=(pre,t)=>pre?pre+t.charAt(0).toLowerCase()+t.slice(1):t;
+  const chk=(nac,exp,pre)=>{const n0=R.length;
+    const ag=_clAgeGate(nac,b.startDate,!!pre);if(ag)row(/menor/i.test(ag)?'e':'w','alert',esc(ag));
+    const x=String(exp||'').slice(0,10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(x))row('w','id-card',esc(P(pre,'Falta la caducidad del carnet')));
+    else{const lw=_clWarn({licenseExp:x},b.startDate,b.endDate);if(lw.length)row('e','id-card',esc(P(pre,x<todayStr()?'Carnet caducado el '+fmtDMY(x):lw[0]+' ('+fmtDMY(x)+')')));}
+    if(R.length===n0)row('ok','id-card',esc(P(pre,'Edad y carnet en regla')));};
+  const cl=_clFind({name:b.clientName,dni:b.clientDni,phone:b.clientPhone},b.id);
+  if(cl)chk(cl.birthdate,cl.licenseExp,'');else row('w','id-card','Sin ficha de cliente: no se pueden comprobar la edad ni el carnet');
+  if(b.hasExtraDriver||b.extraDriverName){const xf=b.extraDriverId&&CL.find(x=>x.id===b.extraDriverId);chk(b.extraDriverBirth||(xf&&xf.birthdate)||'',b.extraDriverLicenseExp||(xf&&xf.licenseExp)||'','Conductor adicional: ');}
+  const n=R.filter(x=>x[0]==='w'||x[0]==='e').length;
+  return '<section class="fx-pre" id="fxPre" aria-label="Antes de entregar"><div class="fx-ph"><span class="q">Antes de entregar</span>'
+    +(n?'<span class="chip chip-amber">'+ico('alert')+' '+n+' por revisar</span>':'<span class="chip chip-green">'+ico('check-circle')+' Todo en orden</span>')+'</div>'
+    +R.map(x=>x[1]).join('')
+    +'<button type="button" class="btn-sec" onclick="closeSheet();openContractForm(\''+escJs(v.id)+'\',\''+_id+'\')">'+ico('doc')+' Contrato</button></section>';
+}
+function _fxPreCob(bid,mode){
+  const vb=_fxVB(bid);if(!vb)return;const c=_bkCobro(vb.b);
+  if(!_bkSetRec(bid,mode==='todo'?c.alq+c.fz:c.alq))return;
+  const pc=document.getElementById('PC');if(pc&&pc.querySelector('.fl-tabs'))renderDetail(pc);else if(pc&&CV==='dashboard')renderDash(pc);
+  const e=document.getElementById('fxPre');if(e)e.outerHTML=_fxPreHtml(bid);
 }
 function _fxSeg(btn){const g=btn.parentNode;g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));const i=document.getElementById('fxFuel');if(i)i.value=btn.getAttribute('data-v');}
 function _fxConfirmDelivery(){
