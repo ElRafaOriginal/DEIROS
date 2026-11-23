@@ -9396,8 +9396,8 @@ async function dlMaintReport(vId){
     y+=8;
 
     maints.forEach((e,idx)=>{
-      const m=e.maint;
-      const workLines=doc.splitTextToSize(m.work||'Sin descripción',cW-50);
+      const m=e.maint||{};
+      const workLines=doc.splitTextToSize(m.work||(e.maint?'Sin descripción':(e.description||'—')),cW-50);
       const entryH=Math.max(24,12+workLines.length*4.5+8)+(m.shop&&(m.nextKm||m.nextDate)?6:0);
       if(y+entryH>270){
         doc.addPage();
@@ -9417,9 +9417,9 @@ async function dlMaintReport(vId){
       doc.text(fmtDMY(e.date),mg+15,y+6);
 
       // Km at service
-      if(m.km){
+      if(m.km||!e.maint){
         doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
-        doc.text(m.km.toLocaleString('es-ES')+' km',mg+35,y+6);
+        doc.text(m.km?m.km.toLocaleString('es-ES')+' km':'—',mg+35,y+6);
       }
 
       // Cost (right)
@@ -9431,9 +9431,9 @@ async function dlMaintReport(vId){
       doc.text(workLines,mg+15,y+12);
 
       // Shop
-      if(m.shop){
+      if(m.shop||!e.maint){
         doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(...PDFS.T2);
-        doc.text('Taller: '+m.shop,mg+15,y+12+workLines.length*4.5+2);
+        doc.text('Taller: '+(m.shop||'—'),mg+15,y+12+workLines.length*4.5+2);
       }
 
       // Next service row
