@@ -880,6 +880,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .d-pills button{all:unset;flex:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--border2);border-radius:var(--r-pill);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text2);}
 .d-pills button[aria-pressed=true]{border-color:var(--amber);color:var(--text);}
 .d-pills button[aria-pressed=true]::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--amber);}
+/* #147 Duración rápida bajo las fechas: 6 píldoras en 3 columnas (sin desplazamiento oculto), 44 px de alto */
+.d-pills.dur{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible;margin:-4px 0 16px;}
+.d-pills.dur button{justify-content:center;padding:0 6px;font-family:var(--mono);font-size:13px;font-weight:500;}
 /* 11 · Campo con rótulo corto entre comillas, pista aparte, prefijo «€» y fila de dato de solo lectura */
 .d-f{display:grid;gap:8px;margin-bottom:16px;}
 .d-in{min-height:52px;}
@@ -5506,13 +5509,13 @@ async function generateReceiptPDF(bookingId){
   // ── Estilo «Ficha suiza»: rótulos en la columna izquierda (mg) y contenido desde L ──
   let y=0;
   const L=mg+34,R=mg+cW,L2=L+(R-L)/2+4,INK=PDFS.T,MID=PDFS.T2,SOFT=PDFS.T2,HAIR=PDFS.LN;
-const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la penalización: '+fmtM(totAlq):'sin penalización')
+const _plCob=(!_isCanc&&_cb.plat&&_cb.st==='pen')?'LO COBRA '+_cb.plat.toUpperCase():''; /* #147: Amovens/Getaround sin cantidad apuntada (= ficha «Lo cobra …») */const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la penalización: '+fmtM(totAlq):'sin penalización')
     :_cb.st==='nada'?'SIN IMPORTE A LIQUIDAR'
     :_cb.st==='cob'?(fianzaPendiente>0?'ALQUILER LIQUIDADO COMPLETAMENTE  —  la fianza va aparte':'IMPORTE LIQUIDADO COMPLETAMENTE')
     :_cb.st==='par'?'PAGO PARCIAL  —  recibido '+fmtM(alqPagado)+' · alquiler '+fmtM(alqPendiente)+' por abonar'
-    :'PENDIENTE DE LIQUIDACIÓN  —  alquiler '+fmtM(alqPendiente)+' por abonar';
+    :_plCob?_plCob+'  —  alquiler '+fmtM(alqPendiente)+' a pagar a través de la plataforma':'PENDIENTE DE LIQUIDACIÓN  —  alquiler '+fmtM(alqPendiente)+' por abonar';
   // Título y sello de estado (solo trazo); debajo, el estado en una línea (sello y línea salen de la misma condición: el estado de cobro de la ficha, #137)
-  y=_pdfTitle(doc,PDFS.TOP,'Recibo',_isCanc?'CANCELADO':{cob:'PAGADO',par:'PAGO PARCIAL',pen:'PENDIENTE DE COBRO',nada:'SIN IMPORTE'}[_cb.st]);
+  y=_pdfTitle(doc,PDFS.TOP,'Recibo',_isCanc?'CANCELADO':_plCob||{cob:'PAGADO',par:'PAGO PARCIAL',pen:'PENDIENTE DE COBRO',nada:'SIN IMPORTE'}[_cb.st]);
   doc.setFont('jbm','normal');doc.setFontSize(6.8);doc.setTextColor(...MID);doc.text(_pdfFit(doc,stMsg,cW),mg,y);
   y+=12;
 
@@ -5633,7 +5636,7 @@ const stMsg=_isCanc?'ALQUILER CANCELADO  —  '+(totAlq!==0?'solo se liquida la 
   // ── Cifra principal: SOLO el alquiler (la fianza no se suma) ──
   if(y+14>PDFS.BOT){doc.addPage();y=PDFS.TOP+4;}
   doc.setFont('jbm','normal');doc.setFontSize(6.5);doc.setTextColor(...SOFT);
-  doc.text(totAlq===0?'SIN IMPORTE A LIQUIDAR':_isCanc?(alqPendiente>0?'PENALIZACIÓN PENDIENTE DE COBRO':'PENALIZACIÓN ABONADA'):alqPendiente>0?'ALQUILER PENDIENTE DE COBRO':'ALQUILER COMPLETAMENTE ABONADO',R,y,{align:'right'});
+  doc.text(totAlq===0?'SIN IMPORTE A LIQUIDAR':_isCanc?(alqPendiente>0?'PENALIZACIÓN PENDIENTE DE COBRO':'PENALIZACIÓN ABONADA'):alqPendiente>0?(_plCob||'ALQUILER PENDIENTE DE COBRO'):'ALQUILER COMPLETAMENTE ABONADO',R,y,{align:'right'});
   doc.setFont('syne','bold');doc.setFontSize(24);doc.setTextColor(...PDFS.P);
   doc.text(fmtM(alqPendiente>0?alqPendiente:alqPagado),R,y+10,{align:'right'});
   y+=20;
@@ -8131,7 +8134,7 @@ function editBooking(id){
     <div class="d-f"><span class="q">Inicio</span>
       <div class="d-2"><input type="date" id="rSD" value="${esc(safeDate(b.startDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(b.startTime))}" oninput="_recalcRentalExtras()"/></div></div>
     <div class="d-f"><span class="q">Fin</span>
-      <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(b.endDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(b.endTime))}" oninput="_recalcRentalExtras()"/></div></div>
+      <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(b.endDate))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(b.endTime))}" oninput="_recalcRentalExtras()"/></div></div>${_durPills('rSD','rST','rED','rET')}
     <div class="d-2">
       <div class="d-f"><label class="q" for="rDelP">Lugar de entrega</label><input id="rDelP" type="text" placeholder="Dirección o punto" autocomplete="off" value="${esc(b.deliveryPlace||'')}" oninput="_bkPlaceSync(this)"/></div>
       <div class="d-f"><label class="q" for="rRetP">Lugar de devolución</label><input id="rRetP" type="text" placeholder="Igual que la entrega" autocomplete="off" value="${esc(b.returnPlace||'')}" data-same="${!b.returnPlace||b.returnPlace===b.deliveryPlace?'1':'0'}" oninput="_bkPlaceSync(this)"/></div>
@@ -8511,7 +8514,7 @@ function openNewRental(){
     <div class="d-f"><span class="q">Inicio</span>
       <div class="d-2"><input type="date" id="rSD" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rST" value="${esc(safeTime(hh))}" oninput="_recalcRentalExtras()"/></div></div>
     <div class="d-f"><span class="q">Fin</span>
-      <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div></div>
+      <div class="d-2"><input type="date" id="rED" value="${esc(safeDate(today))}" oninput="_recalcRentalExtras()"/><input type="time" id="rET" value="${esc(safeTime(h1))}" oninput="_recalcRentalExtras()"/></div></div>${_durPills('rSD','rST','rED','rET')}
     <div class="d-2">
       <div class="d-f"><label class="q" for="rDelP">Lugar de entrega</label><input id="rDelP" type="text" placeholder="Dirección o punto" autocomplete="off" oninput="_bkPlaceSync(this)"/></div>
       <div class="d-f"><label class="q" for="rRetP">Lugar de devolución</label><input id="rRetP" type="text" placeholder="Igual que la entrega" autocomplete="off" data-same="1" oninput="_bkPlaceSync(this)"/></div>
@@ -8659,6 +8662,20 @@ function _bkPlaceSync(el){
   const d=document.getElementById('rDelP'),r=document.getElementById('rRetP');if(!d||!r)return;
   if(el===r){r.dataset.same=(!r.value.trim()||r.value===d.value)?'1':'0';return;}
   if(r.dataset.same==='1')r.value=d.value;
+}
+// #147 Duración rápida (alta y edición de alquiler, presupuesto): rellena el fin con la fecha de inicio + N días (como daysBetween: 1 día = 1 noche)
+// o el mismo día del mes siguiente, y la hora de fin = la de inicio (N x 24 h exactas); lanza input y change como al escribirla a mano. Sin inicio: hoy.
+const _DUR=[['1 día',1,0],['2 días',2,0],['3 días',3,0],['1 semana',7,0],['2 semanas',14,0],['1 mes',0,1]];
+function _durPills(s,st,e,et){return '<div class="d-pills dur" role="group" aria-label="Duración rápida" data-ids="'+[s,st,e,et].join(' ')+'">'+_DUR.map(d=>'<button type="button" onclick="_durSet(this,'+d[1]+','+d[2]+')">'+d[0]+'</button>').join('')+'</div>';}
+// Mismo día del mes siguiente; si ese mes no lo tiene (31/01), su último día (28/02 o 29/02)
+function _addMonths(str,n){const p=String(str||'').split('-'),y=+p[0],m=+p[1],d=+p[2];if(!y||!m||!d)return '';return ymd(new Date(y,m-1+n,Math.min(d,new Date(y,m+n,0).getDate())));}
+function _durSet(btn,days,months){
+  const g=btn.parentNode.dataset.ids.split(' ').map(i=>document.getElementById(i)),sd=g[0],st=g[1],ed=g[2],et=g[3];if(!sd||!ed)return;
+  const fire=el=>['input','change'].forEach(t=>el.dispatchEvent(new Event(t,{bubbles:true})));
+  if(!sd.value){sd.value=todayStr();fire(sd);}
+  ed.value=months?_addMonths(sd.value,months):addDays(sd.value,days);
+  if(st&&et&&st.value)et.value=st.value;
+  fire(ed);
 }
 function _updatePlatFromCustom(val){
   const v=val.trim().toLowerCase().replace(/\s+/g,'');
@@ -14306,7 +14323,7 @@ function _openQuoteForm(q){
     <div class="d-f"><span class="q">Inicio</span>
       <div class="d-2"><input type="date" id="qStart" value="${esc(safeDate(q?q.startDate:today))}" onchange="_calcQuoteTotal()"/><input type="time" id="qStartT" value="${esc(safeTime(q?q.startTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div></div>
     <div class="d-f"><span class="q">Fin</span>
-      <div class="d-2"><input type="date" id="qEnd" value="${esc(safeDate(q?q.endDate:''))}" onchange="_calcQuoteTotal()"/><input type="time" id="qEndT" value="${esc(safeTime(q?q.endTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div></div>
+      <div class="d-2"><input type="date" id="qEnd" value="${esc(safeDate(q?q.endDate:''))}" onchange="_calcQuoteTotal()"/><input type="time" id="qEndT" value="${esc(safeTime(q?q.endTime||'09:00':'09:00')||'09:00')}" oninput="_calcQuoteTotal()"/></div></div>${_durPills('qStart','qStartT','qEnd','qEndT')}
     <div class="d-f"><label class="q" for="qCustomRate">Precio/día</label>
       <div class="d-pre"><span>€</span><input type="number" id="qCustomRate" step="0.01" inputmode="decimal" placeholder="${_ph}"
           value="${esc(q&&q.customRate?q.customRate:'')}" oninput="_calcQuoteTotal()"/></div>
