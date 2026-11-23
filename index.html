@@ -5352,6 +5352,13 @@ function _waTxFz(b,v){ // solo con fianza, coche devuelto (o fianza ya marcada d
       :_waHola(b.clientName)+' ya te hemos devuelto la fianza del '+v.name+': '+fmtF(fz)+'.','',
     'Gracias por alquilar con Deiros. Aquí nos tienes para la próxima.','',_WA_FIRMA]);
 }
+// #139 «Gracias + reseña» (alquiler Sin app devuelto): nombre, coche y enlace de reseñas de Ajustes; sin enlace, sin esa línea (la hoja avisa)
+function _waTxGr(b,v){
+  const u=_rvUrl();
+  return _waJ([_waHola(b.clientName)+' gracias por alquilar con Deiros. Esperamos que el '+v.name+' te haya ido genial.','',
+    'Si te ha gustado el servicio, ¿nos dejas una reseña en Google? Son 30 segundos y nos ayuda mucho'+(u?':':'.'),u||null,'',
+    'Aquí nos tienes para la próxima.','',_WA_FIRMA]);
+}
 function _waTxQt(q,v){
   const i=_waCu(q.startDate,q.startTime),f=_waCu(q.endDate,q.endTime),d=Number(q.dur)||0,fz=Number(q.fianza)||0;
   return _waJ([_waHola(q.clientName)+' aquí tienes tu presupuesto de Deiros'+(q.num?' ('+q.num+')':'')+':','',
@@ -5382,7 +5389,8 @@ function _waPick(k,id){
     if(b){
       const fz=_waTxFz(b,v);sub=v.name+' · '+fmtDMY(b.startDate)+' → '+fmtDMY(b.endDate);
       _waT.push(['cf','Confirmación',_waTxCf(b,v)],['rd','Recordatorio',_waTxRd(b,v)]);if(fz!==null)_waT.push(['fz','Fianza devuelta',fz]);
-      def=(b.returned&&fz!==null)?'fz':(b.delivered&&!b.returned)?'rd':'cf';
+      const gr=b.returned&&!b.cancelled&&!b.cancellation&&_platK(b.platform)==='sinapp';if(gr)_waT.push(['gr','Gracias + reseña',_waTxGr(b,v)]); // #139 solo Sin app (también 'direct'); no en Amovens ni Getaround
+      def=(b.returned&&fz!==null)?'fz':gr?'gr':(b.delivered&&!b.returned)?'rd':'cf';
     }
   }
   const n=_waNum(ph);if(!n)return;_waN=n;_waT.push(['bl','En blanco','']);
@@ -5394,6 +5402,7 @@ function _waPick(k,id){
     <div class="d-ch"><span class="q ac">WhatsApp</span><button type="button" class="d-ib" onclick="_waClose()" aria-label="Cerrar">${ico('close')}</button></div>
     <div><div class="d-ct al-ct">${esc(name||'Cliente')}</div><div class="d-meta al-mt6">${esc(ph)}${sub?' · '+esc(sub):''}</div></div>
     <div class="d-pills wa-p" role="group" aria-label="Mensaje">${_waT.map((t,i)=>`<button type="button" aria-pressed="false" onclick="_waSel(${i})">${t[1]}</button>`).join('')}</div>
+    <button type="button" id="waNt" class="wa-nt" style="display:none" onclick="_waClose();openReviewSettings()">${ico('alert')}<span>Añade tu enlace de reseñas en Ajustes</span>${ico('chevron')}</button>
     <textarea id="waTx" class="wa-tx" rows="11" oninput="_waSync()" aria-label="Texto del mensaje"></textarea>
     <a id="waGo" class="btn-pri" target="_blank" rel="noopener" onclick="setTimeout(_waClose,400)">${ico('chat')} Abrir WhatsApp</a>`;
   document.body.append(o,s);_waEl=[o,s];
@@ -5404,6 +5413,8 @@ function _waSel(i){
   const t=_waT[i];if(!t)return;const x=document.getElementById('waTx');
   if(x){x.value=t[2];const m=/^(Lugar de entrega|Dónde): $/m.exec(t[2]);if(m){const c=m.index+m[0].length;x.focus({preventScroll:true});x.setSelectionRange(c,c);}} // cursor donde se escribe el lugar
   document.querySelectorAll('.wa-p button').forEach((e,j)=>e.setAttribute('aria-pressed',String(j===i)));_waSync();
+  const nt=document.getElementById('waNt');if(nt)nt.style.display=(t[0]==='gr'&&!_rvUrl())?'':'none'; // #139
+  const P=document.querySelector('.wa-p'),pb=P&&P.children[i];if(pb){const r=pb.getBoundingClientRect(),q=P.getBoundingClientRect();if(r.right>q.right)P.scrollLeft+=r.right-q.right+8;else if(r.left<q.left)P.scrollLeft-=q.left-r.left+8;}
 }
 function _waSync(){
   const x=document.getElementById('waTx'),a=document.getElementById('waGo');if(!a)return;const t=x?x.value:'';
