@@ -16,7 +16,7 @@ TODAS=[('test_galeria.py',[],False),('test_fotos_actas.py',[],False),('test_pant
        ('test_actas_pdf.py',[],False),('test_copia_fotos.py',[],False),('test_resenas.py',[],False),('test_entrega_extra.py',[],False),
        ('test_teclado.py',[],False),('test_cobros.py',[],True),('test_devolucion.py',[],True),('test_copia.py',[],True),
        ('test_pdfs.py',[],True),('test_cifras_cancelados.py',[],True),('test_dinero_cancelados.py',[],True),('test_edad.py',[],True),
-       ('test_comision.py',[],True)]
+       ('test_comision.py',[],True),('test_ampliacion.py',[],True)]
 RAPIDO=[(f,a,r) for f,a,r in TODAS if r]+[('test_pantallas.py',['--rapido'],True)]
 def args():
     a=sys.argv[1:];o={'rapido':'--rapido' in a,'jobs':3,'solo':[]}

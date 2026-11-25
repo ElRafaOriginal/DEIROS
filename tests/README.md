@@ -58,6 +58,7 @@ red. Se puede preparar a mano con `python3 tests/vendor.py`. Los precios de carb
 | `test_comision.py` | Comisión del gestor antes y desde 11/2026 (`COMM_RULE_FROM`), gastos 5.2 / 5.3, Franquicia y Daño cliente, mes malo y déficit, suma de meses, sin propietario; PDF de liquidación de octubre y noviembre con importes fijos. |
 | `test_dinero_cancelados.py` | Cancelados: «Por cobrar» del coche, Clientes (lista, cuadrícula, ficha), «Top alquileres» y €/día del informe; «En X d» en hora local (00:30 y 12:00 en Madrid); liquidación, comisiones, negocio y Resumen con importes fijos. |
 | `test_cifras_cancelados.py` | Cifras sin cancelados: Resumen (mes, año, plataformas con penalización), «Revisión» en Alertas, Flota, avisos de devolución, contrato, propietario, Excel, informe de negocio y días ocupados; también a 1280 px. |
+| `test_ampliacion.py` | **Ampliar alquiler** (#153): «+N días» con horas de reloj (mismo criterio que `calcRentalPrice`), Precio/día ⇄ Diferencia (manda la última escrita, también al cambiar fechas), total del alquiler, negativo / texto / fecha anterior / sin coste, Amovens y alquiler sin horas; lo guardado y el anexo, con valores fijos (iguales a escribir el total a mano antes de #153). |
 | `test_cobros.py` | Cobros en la ficha (cantidad, «Todo», «Solo alquiler», deshacer con confirmación), «Por cobrar» en Inicio y en el coche, plataformas y cancelados, y el **recibo** en PDF con el mismo estado que la ficha (fianza aparte). |
 | `test_devolucion.py` | **Fianza en la devolución** (devolver, retener con motivo, «Más tarde», cargos mayores que la fianza, daños, plataformas, validaciones), «Antes de entregar» (cobro, fianza, carnet, edad), km a 0,19 €/km y combustible = litros × (precio del municipio + 2 €/L). |
 | `test_entrega_extra.py` | **Extra de entrega**: un solo «Entrega» con importe libre (50 € por defecto, decimales) en alta, edición, presupuesto, contrato y recibo; alquileres y presupuestos antiguos (49 € / 59 €, en `datos/`) siguen igual. |
@@ -80,7 +81,7 @@ de #121, inventados) y `run_all.py`.
 
 ## De dónde salen
 
-Son las pruebas que se hicieron para cada PR (#90, #94, #96, #100, #105, #108, #121, #123, #126, #137, #138, #139, #144…),
+Son las pruebas que se hicieron para cada PR (#90, #94, #96, #100, #105, #108, #121, #123, #126, #137, #138, #139, #144, #153…),
 reunidas aquí sin depender de copias en `/tmp` ni de versiones antiguas de `main`: donde comparaban «igual que main», ahora
 comprueban valores fijos escritos en la prueba (o se han quitado si solo tenían sentido comparando; cada fichero lo dice en
 su cabecera).
