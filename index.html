@@ -523,6 +523,17 @@ select option{background:var(--bg);}
 .dh-act.on b .n{color:var(--amber);}
 .dh-act b .ico{color:var(--amber);flex-shrink:0;}
 .dh-act b .u{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--text2);margin:0 auto 0 8px;align-self:flex-end;padding-bottom:4px;}
+/* #162 Móvil: Fianzas y Por cobrar despliegan su lista a lo ancho debajo de la fila (cada una por su cuenta); el «+» gira 45° como en los otros plegables */
+/* Plegadas no enseñan cifras (Rafael, 25/11/2026): solo el título y el «+», en una fila baja como «Coches libres»; el total sale al desplegar */
+.dh-act.dh-fpb{flex-direction:row;align-items:center;min-height:64px;}
+.dh-act[aria-expanded] b .ico{transition:transform .4s var(--ease);}
+.dh-act[aria-expanded=true] b .ico{transform:rotate(45deg);}
+.dh-fp{grid-column:1/-1;}
+.dh-fp[hidden]{display:none;}
+.dh-fph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 12px;min-height:44px;padding-bottom:4px;}
+.dh-fph b{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--amber);}
+.dh-fpe{font-family:var(--mono);font-size:13px;color:var(--text2);padding:14px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);}
+.btn-sec.dh-fpa{display:flex;margin:10px 0 0 auto;}
 /* Acumulado del año: details con línea y «+» que gira 45° */
 /* Desplegable .d-acc (= .dh-yr; FAQ de la web): línea arriba y abajo, «+» en acento que gira 45° */
 .d-acc,.dh-yr{border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);margin:8px 0 8px;}
@@ -4621,8 +4632,8 @@ function retainFianzaPart(bookingId){
   if(!a||!r)return;
   setBookingFianzaStatus(bookingId,'partial',parseFloat(a.value),r.value);
 }
-function openPendingDeposits(filter){
-  filter=filter||'pending';
+// #162 Fianzas de la hoja y del desplegable del Inicio (móvil): mismas filas (filtro y orden) y mismo HTML en los dos sitios
+function _depRows(filter){
   const rows=[];
   V.forEach(v=>(v.bookings||[]).forEach(b=>{
     const st=_fianzaStatus(b);
@@ -4632,25 +4643,31 @@ function openPendingDeposits(filter){
     rows.push({v,b,st});
   }));
   rows.sort((x,y)=>String(x.b.endDate||'').localeCompare(String(y.b.endDate||'')));
+  return rows;
+}
+function _depListH(rows){
   const LBL={pending:'Pendiente',returned:'Devuelta',retained:'Retenida',partial:'Retenida en parte'};
   // Estado como chip con punto (antes texto de color; «en parte» en naranja fuera de paleta)
   const CHIP={pending:'chip-amber',returned:'chip-green',retained:'chip-red',partial:'chip-red'};
+  let h='<div class="d-list fz-l">';
+  rows.forEach(({v,b,st})=>{
+    h+='<div class="fz-r">'
+      +'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>'
+      +'<div class="al-b"><div class="t ell">'+esc(v.name)+' <span class="mono2">'+esc(v.plate||'')+'</span></div>'
+      +'<div class="s ell">'+esc(b.clientName||'—')+'</div><div class="s">'+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
+      +'<span class="chip '+CHIP[st]+'">'+LBL[st]+'</span></div>'
+      +'<div class="r"><b>'+fmtF(b.fianza)+'</b><button class="btn-sec fz-v" onclick="showBookingById(\''+escJs(b.id)+'\')">Ver alquiler</button></div></div>';
+  });
+  return h+'</div>';
+}
+function openPendingDeposits(filter){
+  filter=filter||'pending';
+  const rows=_depRows(filter);
   const pill=(k,t)=>'<button type="button" onclick="openPendingDeposits(\''+k+'\')" aria-pressed="'+(filter===k)+'">'+t+'</button>';
   let h=('<div class="stitle">'+ico('lock')+' Fianzas</div><div class="ssub">Fianzas de los alquileres, por fecha de devolución</div>')
     +'<div class="d-seg" role="group" aria-label="Filtro">'+pill('pending','Pendientes')+pill('retained','Retenidas')+pill('all','Todas')+'</div>';
   if(!rows.length)h+='<div class="d-empty fz-e">'+ico('lock')+'<h3>Sin fianzas</h3><p>Sin fianzas en esta lista</p></div>';
-  else{
-    h+='<div class="d-list fz-l">';
-    rows.forEach(({v,b,st})=>{
-      h+='<div class="fz-r">'
-        +'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>'
-        +'<div class="al-b"><div class="t ell">'+esc(v.name)+' <span class="mono2">'+esc(v.plate||'')+'</span></div>'
-        +'<div class="s ell">'+esc(b.clientName||'—')+'</div><div class="s">'+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
-        +'<span class="chip '+CHIP[st]+'">'+LBL[st]+'</span></div>'
-        +'<div class="r"><b>'+fmtF(b.fianza)+'</b><button class="btn-sec fz-v" onclick="showBookingById(\''+escJs(b.id)+'\')">Ver alquiler</button></div></div>';
-    });
-    h+='</div>';
-  }
+  else h+=_depListH(rows);
   openSheet(h);
   window._depOpen=filter;
 }
@@ -4668,23 +4685,25 @@ function _porCobrar(vid){
   rows.sort((x,y)=>String(x.b.endDate||'').localeCompare(String(y.b.endDate||'')));
   return {rows:rows,tot:Math.round(rows.reduce((s,r)=>s+r.c.falta,0)*100)/100};
 }
+// #162 Filas de «Por cobrar» de la hoja y del desplegable del Inicio (móvil): el mismo HTML en los dos sitios
+function _pcListH(rows){
+  let h='<div class="d-list fz-l">';
+  rows.forEach(({v,b,c})=>{
+    const lb=c.canc?'Cancelado · penalización':c.st==='par'?'Parcial · recibido '+fmtF(c.rec):b.returned?'Devuelto sin cobrar':'Sin cobrar';
+    h+='<div class="fz-r">'
+      +'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>'
+      +'<div class="al-b"><div class="t ell">'+esc(b.clientName||'Sin cliente')+'</div>'
+      +'<div class="s ell">'+esc(v.name)+' <span class="mono2">'+esc(v.plate||'')+'</span></div><div class="s">'+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
+      +'<span class="chip chip-amber">'+lb+'</span></div>'
+      +'<div class="r"><b>'+fmtF(c.falta)+'</b><button class="btn-sec fz-v" onclick="showBookingById(\''+escJs(b.id)+'\')">Ver alquiler</button></div></div>';
+  });
+  return h+'</div>';
+}
 function openPorCobrar(vid){
   const P=_porCobrar(vid),v1=vid?V.find(v=>v.id===vid):null;
   let h='<div class="stitle">'+ico('coins')+' Por cobrar</div><div class="ssub">'+(v1?esc(v1.name)+' · ':'')+'Lo que falta del alquiler en los ya empezados o terminados. Sin fianzas ni Amovens/Getaround.</div>';
   if(!P.rows.length)h+='<div class="d-empty fz-e">'+ico('check-circle')+'<h3>Nada por cobrar</h3><p>Los alquileres empezados o terminados están cobrados</p></div>';
-  else{
-    h+='<div class="d-tot al-pd"><span class="q">Total · '+P.rows.length+' alquiler'+(P.rows.length!==1?'es':'')+'</span><b style="color:var(--amber)">'+fmtF(P.tot)+'</b></div><div class="d-list fz-l">';
-    P.rows.forEach(({v,b,c})=>{
-      const lb=c.canc?'Cancelado · penalización':c.st==='par'?'Parcial · recibido '+fmtF(c.rec):b.returned?'Devuelto sin cobrar':'Sin cobrar';
-      h+='<div class="fz-r">'
-        +'<i class="dh-dot"'+(v.color?' style="background:'+safeColor(v.color)+'"':'')+'></i>'
-        +'<div class="al-b"><div class="t ell">'+esc(b.clientName||'Sin cliente')+'</div>'
-        +'<div class="s ell">'+esc(v.name)+' <span class="mono2">'+esc(v.plate||'')+'</span></div><div class="s">'+esc(fmtDMY(b.startDate||''))+' → '+esc(fmtDMY(b.endDate||''))+'</div>'
-        +'<span class="chip chip-amber">'+lb+'</span></div>'
-        +'<div class="r"><b>'+fmtF(c.falta)+'</b><button class="btn-sec fz-v" onclick="showBookingById(\''+escJs(b.id)+'\')">Ver alquiler</button></div></div>';
-    });
-    h+='</div>';
-  }
+  else h+='<div class="d-tot al-pd"><span class="q">Total · '+P.rows.length+' alquiler'+(P.rows.length!==1?'es':'')+'</span><b style="color:var(--amber)">'+fmtF(P.tot)+'</b></div>'+_pcListH(P.rows);
   openSheet(h);
 }
 
@@ -7167,6 +7186,23 @@ function render(){
 // ═══════════════════════════════════════════════════════════ DASHBOARD
 // inicio2 · ojo de «Resultado flota»: oculta o muestra las cifras del mes sin repintar y lo recuerda en este móvil (preferencia de pantalla, no es un dato)
 function _dashEye(btn){const c=btn&&btn.closest('.dh-res');if(!c)return;const hid=!c.classList.contains('hid');c.classList.toggle('hid',hid);try{localStorage.setItem('deiros_dashHide',hid?'1':'0');}catch(e){}btn.setAttribute('aria-pressed',String(hid));btn.setAttribute('aria-label',hid?'Mostrar cifras':'Ocultar cifras');btn.innerHTML=ico(hid?'eye-off':'eye');}
+// #162 Inicio (móvil): «Fianzas» y «Por cobrar» despliegan su lista a lo ancho debajo de la fila, cada una por su cuenta, y cada una recuerda en este móvil
+// si quedó abierta (preferencia de pantalla, no es un dato). Plegadas por defecto. El contenido es el de la hoja de siempre (_depRows/_depListH y _porCobrar/_pcListH).
+const _FZPC_K={fz:'deiros_dashFzOpen',pc:'deiros_dashPcOpen'};
+function _dashFpOpen(k){try{return localStorage.getItem(_FZPC_K[k])==='1';}catch(e){return false;}}
+function _dashFpBody(k){
+  if(k==='fz'){const R=_depRows('pending'),n=R.length,s=n!==1?'s':'';return '<div class="dh-fph"><span class="q ac">Fianzas</span>'+(n?'<b>'+n+' fianza'+s+' pendiente'+s+' · '+fmtF(R.reduce((t,r)=>t+(Number(r.b.fianza)||0),0))+'</b>':'')+'</div>'
+    +(R.length?_depListH(R):'<p class="dh-fpe">Sin fianzas pendientes</p>')+'<button type="button" class="btn-sec fz-v dh-fpa" onclick="openPendingDeposits(\'all\')">Todas las fianzas</button>';}
+  const P=_porCobrar(),n=P.rows.length;return '<div class="dh-fph"><span class="q ac">Por cobrar</span>'+(n?'<b>'+fmtF(P.tot)+' · '+n+' alquiler'+(n!==1?'es':'')+'</b>':'')+'</div>'
+    +(P.rows.length?_pcListH(P.rows):'<p class="dh-fpe">Nada por cobrar</p>');
+}
+function _dashFpH(k,o){return '<div class="dh-fp" id="dhP-'+k+'" role="region" aria-label="'+(k==='fz'?'Fianzas pendientes':'Por cobrar')+'"'+(o?'>'+_dashFpBody(k):' hidden>')+'</div>';}
+function _dashFzpc(k,btn){
+  const p=document.getElementById('dhP-'+k);if(!p)return;
+  const o=p.hidden;p.innerHTML=o?_dashFpBody(k):'';p.hidden=!o;
+  if(btn)btn.setAttribute('aria-expanded',String(o));
+  try{localStorage.setItem(_FZPC_K[k],o?'1':'0');}catch(e){}
+}
 function renderDash(el){
   const activeV=V.filter(v=>!v.archived);
   const isDesk=window.innerWidth>=768;
@@ -7247,8 +7283,11 @@ function renderDash(el){
     const _pc=_porCobrar(),_pn=_pc.rows.length; // #137: lo que falta por cobrar (euros redondeados hacia arriba; la lista da los céntimos)
     return `<div class="dh-acts">
       <button type="button" class="dh-act" onclick="openFreeVehiclesSearch()"><span class="q">Disponibilidad</span><b>Coches libres ${ico('search')}</b></button>
-      <button type="button" class="dh-act${n?' on':''}" onclick="openPendingDeposits()"><span class="q${n?' ac':''}">Fianzas</span><b><span class="n">${n}</span><span class="u">pendientes</span>${_ARR}</b></button>
-      <button type="button" class="dh-act${_pn?' on':''}" onclick="openPorCobrar()" aria-label="Por cobrar: ${esc(fmtF(_pc.tot))}, ${_pn} alquiler${_pn!==1?'es':''}"><span class="q${_pn?' ac':''}">Por cobrar${_pn?' · '+_pn:''}</span><b><span class="n">${Math.ceil(_pc.tot-0.005).toLocaleString('es-ES')}</span><span class="u">€</span>${_ARR}</b></button>
+      ${isDesk?`<button type="button" class="dh-act${n?' on':''}" onclick="openPendingDeposits()"><span class="q${n?' ac':''}">Fianzas</span><b><span class="n">${n}</span><span class="u">pendientes</span>${_ARR}</b></button>
+      <button type="button" class="dh-act${_pn?' on':''}" onclick="openPorCobrar()" aria-label="Por cobrar: ${esc(fmtF(_pc.tot))}, ${_pn} alquiler${_pn!==1?'es':''}"><span class="q${_pn?' ac':''}">Por cobrar${_pn?' · '+_pn:''}</span><b><span class="n">${Math.ceil(_pc.tot-0.005).toLocaleString('es-ES')}</span><span class="u">€</span>${_ARR}</b></button>`
+      :`<button type="button" class="dh-act dh-fpb${n?' on':''}" onclick="_dashFzpc('fz',this)" aria-expanded="${_dashFpOpen('fz')}" aria-controls="dhP-fz"><span class="q${n?' ac':''}">Fianzas</span><b>${_PLUS}</b></button>
+      <button type="button" class="dh-act dh-fpb${_pn?' on':''}" onclick="_dashFzpc('pc',this)" aria-expanded="${_dashFpOpen('pc')}" aria-controls="dhP-pc"><span class="q${_pn?' ac':''}">Por cobrar</span><b>${_PLUS}</b></button>
+      ${_dashFpH('fz',_dashFpOpen('fz'))}${_dashFpH('pc',_dashFpOpen('pc'))}`}
     </div>`;})();
   const _yr=`<details class="dh-yr">
     <summary><span class="q">Año ${now.getFullYear()} · acumulado</span>${_PLUS}</summary>
