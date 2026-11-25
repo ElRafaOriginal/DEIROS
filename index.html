@@ -7187,9 +7187,24 @@ function renderDash(el){
   const pd={
     amovens:{label:'Amovens',icon:'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FB7AAC;vertical-align:middle;margin-right:5px"></span>',inc:0,n:0},
     getaround:{label:'Getaround',icon:'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8B5CF6;vertical-align:middle;margin-right:5px"></span>',inc:0,n:0},
-    sinapp:{label:'Sin app',icon:'<span style="margin-right:5px">'+ico('handshake')+'</span>',inc:0,n:0}
+    sinapp:{label:'Sin app',icon:'<span style="margin-right:5px">'+ico('handshake')+'</span>',inc:0,n:0},
+    otros:{label:'Otros ingresos',icon:'',inc:0,n:null}
   };
-  activeV.forEach(v=>(v.bookings||[]).forEach(b=>{const _pk=_platK(b.platform);if(pd[_pk]){const _c=b.cancelled||b.cancellation;pd[_pk].inc+=_c?_bookingRealTotal(b):Number(b.amount)||0;if(!_c)pd[_pk].n++;}})); // cancelado: suma su penalización neta y no cuenta como alquiler (como el informe PDF)
+  // Ingresos por plataforma: los MISMOS movimientos que «Ingresos mes» (negocio + prorrateo, ampliaciones, extras, cobros y penalizaciones de cada coche; sin fianzas),
+  // cada uno en la plataforma de su alquiler y en el mes de su fecha; lo que no es de un alquiler de Amovens, Getaround o Sin app va a «Otros ingresos». inP('AAAA-MM') elige el periodo.
+  // n = alquileres no cancelados con algún ingreso en el periodo (el cancelado suma su penalización, no cuenta). Céntimos ajustados para que las filas sumen justo el total.
+  function _platInc(inP){
+    const r={amovens:{label:'Amovens',inc:0,n:0},getaround:{label:'Getaround',inc:0,n:0},sinapp:{label:'Sin app',inc:0,n:0},otros:{label:'Otros ingresos',inc:0,n:null}};
+    const bk={},seen=new Set();V.forEach(v=>(v.bookings||[]).forEach(b=>{if(b&&b.id)bk[b.id]=b;}));
+    const add=(e,b)=>{const k=b?_platK(b.platform):'';const row=r[k]||r.otros;row.inc+=Number(e.amount)||0;if(r[k]&&!b.cancelled&&!b.cancellation&&!seen.has(b.id)){seen.add(b.id);row.n++;}};
+    BF.forEach(e=>{if(e.type==='income'&&!_isDepositInc(e)&&inP(String(e.date||'').slice(0,7)))add(e,null);});
+    activeV.forEach(v=>_getVehicleAllFinancesDisplay(v).forEach(e=>{if(e.type==='income'&&!e._bfEntry&&!_isDepositInc(e)&&e.date&&inP(String(e.date).slice(0,7)))add(e,bk[e.bookingId||e._bookingId]);}));
+    const rs=Object.values(r),tc=Math.round(rs.reduce((s,p)=>s+p.inc,0)*100);rs.forEach(p=>{p.inc=Math.round(p.inc*100);});
+    const big=rs.reduce((a,p)=>Math.abs(p.inc)>Math.abs(a.inc)?p:a,rs[0]);big.inc+=tc-rs.reduce((s,p)=>s+p.inc,0);rs.forEach(p=>{p.inc/=100;});
+    return r;
+  }
+  {const _pi=_platInc(()=>true);Object.keys(pd).forEach(k=>{pd[k].inc=_pi[k].inc;pd[k].n=_pi[k].n;});} // escritorio: histórico (todas las fechas)
+  const _pdv=Object.values(pd).filter(p=>p.n!==null||Math.abs(p.inc)>=0.005); // «Otros ingresos» solo si hay
   const platTotal=Object.values(pd).reduce((s,p)=>s+p.inc,0)||1;
 
   let h='<div class="anim">';
@@ -7299,15 +7314,15 @@ function renderDash(el){
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
         <div class="sec" style="margin-bottom:16px">RENTABILIDAD POR PLATAFORMA</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
-          ${Object.values(pd).map(p=>{
+        <div style="display:grid;grid-template-columns:repeat(${_pdv.length},1fr);gap:16px">
+          ${_pdv.map(p=>{
             const pct=Math.round(p.inc/platTotal*100);
             return `<div style="background:var(--bg3);border-radius:12px;padding:16px">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
                 <span style="font-size:14px;font-weight:700">${p.icon}${esc(p.label)}</span>
               </div>
               <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green);margin-bottom:4px">${fmt(p.inc)}</div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${p.n} alquileres</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${p.n===null?'Sin plataforma':p.n+' alquileres'}</div>
               <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
                 <div style="height:100%;width:${Number(pct)}%;background:var(--amber);border-radius:3px"></div>
               </div>
@@ -7435,19 +7450,10 @@ function renderDash(el){
     // Platform data filtered by period
     function _platData(period){
       const n=new Date();const y=n.getFullYear();const mo=n.getMonth();
-      const pd2={amovens:{label:'Amovens',inc:0,n:0},getaround:{label:'Getaround',inc:0,n:0},sinapp:{label:'Sin app',inc:0,n:0}};
-      activeV.forEach(v=>(v.bookings||[]).forEach(b=>{
-        const _pk=_platK(b.platform);if(!pd2[_pk])return;
-        const m=b.startDate.slice(0,7);
-        const ym=y+'-'+String(mo+1).padStart(2,'0');
-        const qStart=y+'-'+String(Math.floor(mo/3)*3+1).padStart(2,'0');
-        const qEnd=y+'-'+String(Math.floor(mo/3)*3+3).padStart(2,'0');
-        if(period==='monthly'&&m!==ym)return;
-        if(period==='quarterly'&&(m<qStart||m>qEnd))return;
-        if(period==='annual'&&!m.startsWith(String(y)))return;
-        const _c=b.cancelled||b.cancellation;pd2[_pk].inc+=_c?_bookingRealTotal(b):Number(b.amount)||0;if(!_c)pd2[_pk].n++;
-      }));
-      return pd2;
+      const ym=y+'-'+String(mo+1).padStart(2,'0');
+      const qStart=y+'-'+String(Math.floor(mo/3)*3+1).padStart(2,'0');
+      const qEnd=y+'-'+String(Math.floor(mo/3)*3+3).padStart(2,'0');
+      return _platInc(m=>period==='monthly'?m===ym:period==='quarterly'?(m>=qStart&&m<=qEnd):period==='annual'?m.startsWith(String(y)):true);
     }
     const pdP=_platData(_dashPlatPeriod);
     const platTotalP=Math.max(1,...Object.values(pdP).map(p=>p.inc));
@@ -7456,7 +7462,7 @@ function renderDash(el){
       ${['monthly','quarterly','annual'].map(p=>{const a=_dashPlatPeriod===p;const L={monthly:'Mes',quarterly:'Trimestre',annual:'Año'};return '<button type="button" aria-pressed="'+a+'" onclick="_dashPlatPeriod=\''+p+'\';renderDash(document.getElementById(\'PC\'))">'+L[p]+'</button>';}).join('')}
     </div>
     <div class="dh-card">
-      ${Object.values(pdP).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div class="dh-pl"><div class="dh-plh"><span class="t">'+esc(p.label)+'<span class="q">'+p.n+' alq.</span></span><b>'+fmt(p.inc)+'</b></div><div class="dh-bar"><i style="width:'+Number(pct)+'%"></i></div></div>';}).join('')}
+      ${Object.values(pdP).filter(p=>p.n!==null||Math.abs(p.inc)>=0.005).map(p=>{const pct=Math.round(p.inc/platTotalP*100);return '<div class="dh-pl"><div class="dh-plh"><span class="t">'+esc(p.label)+'<span class="q">'+(p.n===null?'sin plataforma':p.n+' alq.')+'</span></span><b>'+fmt(p.inc)+'</b></div><div class="dh-bar"><i style="width:'+Number(pct)+'%"></i></div></div>';}).join('')}
     </div></details>`;
     const own=activeV.filter(v=>v.vtype!=='managed');
     const managed=activeV.filter(v=>v.vtype==='managed');
