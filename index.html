@@ -4027,7 +4027,6 @@ function openExtendBooking(bookingId){
     +'<div class="d-f"><label class="q" for="extDiff">Diferencia a pagar</label><div class="d-pre"><span>€</span><input id="extDiff" class="ex-calc" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" oninput="window._extLast=\'diff\';_extUpdateCalc()"/></div></div>'
     +'</div>'
     +'<p id="extLink" class="d-hint ex-lk"></p>'
-    +'<p class="d-hint ex-lk">'+esc(_isPlat?'Alquiler de '+_platL+': escribe la diferencia que paga la plataforma.':(_base0>0&&_u0>0?'Sugerido: '+_sugS+' €/día, lo que paga en este alquiler. Cámbialo si pactáis otro precio.':'Sugerido: '+_sugS+' €/día, la tarifa por defecto.'))+'</p>'
     +'<input id="extNewTotal" type="hidden" value=""/>'
     +'<div id="extCalcBox" class="d-tot al-tot" aria-live="polite">'
     +'<span class="q">Total del alquiler</span>'
@@ -4063,7 +4062,7 @@ function _extUpdateCalc(){
     const x=_extUnits(c.origEnd,c.oT,nE,et);u=x.u;
     const hm=Math.round(x.h*60),hs=Math.floor(hm/60)+' h'+(hm%60?' '+(hm%60)+' min':'');
     const big='+'+(x.full||!hm?dd(x.full)+(hm?' y '+hs:''):hs);
-    const sub=!hm?'Hasta el '+fmtDMY(nE)+(et?' a las '+et:''):x.h>=6?'Se cobran '+dd(x.charge)+': desde 6 h sueltas cuenta un día más':'Las '+hs+' se cobran a 1/6 del precio/día cada hora';
+    const sub='Hasta el '+fmtDMY(nE)+(et?' a las '+et:''); // #153: limpio, sin explicar el cálculo
     dBox.className='ex-dias';dBox.innerHTML='<b>'+esc(big)+'</b><span>'+esc(sub)+'</span>';
   }
   // Precio/día ⇄ diferencia: la última que se ha escrito manda; la otra se calcula (borde discontinuo)
@@ -4080,14 +4079,14 @@ function _extUpdateCalc(){
     pdI.value=v===null||!u?'':f2(diff/u);
   }
   const uS=String(R2(u)).replace('.',',');
-  if(lk)lk.textContent=!u?'':last==='pd'?'Diferencia calculada = precio/día × '+uS+' días':'Precio/día calculado = diferencia ÷ '+uS+' días';
+  if(lk)lk.textContent=''; // #153: sin explicaciones de cálculo (Rafael)
   // Total del alquiler = total actual + diferencia (es el «nuevo total» que se guarda, igual que si se escribiera a mano)
   if(err)diff=0;
   const nt=R2(c.cur+diff),_dS=fE(nt).split(',');
   tot.value=diff>0?String(nt):'';
   box.innerHTML='<span class="q">Total del alquiler</span>'
     +'<div class="d-n n2">'+esc(_dS[0].replace(/\./g,''))+'<small>'+esc(_dS.length>1?','+_dS.slice(1).join(','):'')+'</small></div>'
-    +(err&&(u||(nE&&nE<c.origEnd))?'<p class="d-hint err">'+ico('alert')+' '+esc(err)+'</p>':'<p>'+esc(diff>0?'antes '+fE(c.cur)+' + '+fE(diff):u?'Sin coste adicional: escribe el precio/día o la diferencia':'Elige la nueva fecha fin')+'</p>');
+    +(err&&(u||(nE&&nE<c.origEnd))?'<p class="d-hint err">'+ico('alert')+' '+esc(err)+'</p>':'');
   if(okB)okB.disabled=!!err;
   window._extErr=err;
 }
