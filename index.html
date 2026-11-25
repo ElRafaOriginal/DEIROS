@@ -14215,8 +14215,8 @@ function quoteNum(){
 const _QT_ST={pendiente:['chip-amber','Pendiente'],aceptado:['chip-green','Aceptado'],rechazado:['chip-red','Rechazado'],convertido:['chip-blue','Convertido']};
 function _qtChip(s){const c=_QT_ST[s];return '<span class="chip '+(c?c[0]:'chip-gray')+'">'+esc(c?c[1]:(s||'—'))+'</span>';}
 function _qtKpi(){
-  const total=QT.length,pend=QT.filter(q=>q.status==='pendiente').length,acep=QT.filter(q=>q.status==='aceptado').length,conv=QT.filter(q=>q.status==='convertido').length;
-  return '<div class="d-kpi qt-k">'+[['Total',total,''],['Pendiente',pend,'chip-amber'],['Aceptado',acep,'chip-green'],['Convertido',conv,'chip-blue']].map(([l,n,c])=>'<div><b'+(c?' class="qt-kd '+c+'"':'')+'>'+n+'</b><span>'+l+'</span></div>').join('')+'</div>';
+  const total=QT.length,pend=QT.filter(q=>q.status==='pendiente').length,rech=QT.filter(q=>q.status==='rechazado').length,conv=QT.filter(q=>q.status==='convertido').length; // «Aceptado» = «Convertido» para Rafael: ya no se ofrece
+  return '<div class="d-kpi qt-k">'+[['Total',total,''],['Pendiente',pend,'chip-amber'],['Convertido',conv,'chip-blue'],['Rechazado',rech,'chip-red']].map(([l,n,c])=>'<div><b'+(c?' class="qt-kd '+c+'"':'')+'>'+n+'</b><span>'+l+'</span></div>').join('')+'</div>';
 }
 // Fila de presupuesto: punto del coche · coche y matrícula / cliente / número y fechas · total y estado. onclick: el de siempre (lista o Contratos)
 function _qtRow(q,click){
@@ -14725,7 +14725,7 @@ function _saveQuote(){
 
 function openQuoteStatusMenu(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
-  const statuses=[['pendiente','hourglass','Pendiente','var(--amber)'],['aceptado','check-circle','Aceptado','var(--green)'],['rechazado','ban','Rechazado','var(--red)'],['convertido','car','Convertido','var(--blue)']];
+  const statuses=[['pendiente','hourglass','Pendiente','var(--amber)'],['rechazado','ban','Rechazado','var(--red)'],['convertido','car','Convertido','var(--blue)']].concat(q.status==='aceptado'?[['aceptado','check-circle','Aceptado','var(--green)']]:[]); // «Aceptado» solo si ya lo tenía (presupuestos antiguos)
   // Filas finas con el icono del estado; el actual con borde de acento y «Actual» (mismo onclick)
   openSheet(('<div class="stitle">Cambiar estado</div><div class="ssub">'+esc(q.num||'')+'</div><div class="d-list qt-sl">')
     +statuses.map(([s,icon,lbl,col])=>`<button type="button" class="d-row qt-so${q.status===s?' on':''}" aria-pressed="${q.status===s?'true':'false'}" onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')"><span class="qt-si" style="color:${safeColor(col)}">${ico(icon)}</span><span class="t">${esc(lbl)}</span><span class="r">${q.status===s?'<span class="q ac">Actual</span>':''}</span></button>`).join('')
