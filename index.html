@@ -7109,7 +7109,7 @@ function render(){
   else if(CV==='analytics')renderAnalytics(el);
   else if(CV==='quotes')renderQuotes(el);
   if(_enterAnim){_enterAnim=false;const _r=el.firstElementChild;if(_r)_r.classList.add('enter');}
-  const TITLES={dashboard:['Resumen','FLEET MANAGER'],rentals:['Alquileres','EN CURSO Y PRÓXIMOS'],vehicles:['Flota','MIS VEHÍCULOS'],contracts:['Contratos','PRESUPUESTOS Y FINANZAS'],agenda:['Agenda','DISPONIBILIDAD GLOBAL'],biz:['Negocio','GASTOS E INGRESOS GENERALES'],owners:['Propietarios','GESTIÓN Y LIQUIDACIONES'],archive:['Archivo','VEHÍCULOS INACTIVOS'],clients:['Clientes','HISTORIAL Y VALORACIONES'],analytics:['Analítica','COMPARATIVA Y ROI'],quotes:['Presupuestos','OFERTAS Y PROPUESTAS'],recurring:['Recurrentes','GASTOS PERIÓDICOS'],ownerProfile:[(_ownerProfileId&&OW.find(o=>o.id===_ownerProfileId)?.name)||'Propietario','PERFIL Y DATOS']};
+  const TITLES={dashboard:['Resumen','FLEET MANAGER'],rentals:['Alquileres','EN CURSO Y PRÓXIMOS'],vehicles:['Flota','MIS VEHÍCULOS'],contracts:['Contratos','CONTRATOS Y PRESUPUESTOS'],agenda:['Agenda','DISPONIBILIDAD GLOBAL'],biz:['Negocio','GASTOS E INGRESOS GENERALES'],owners:['Propietarios','GESTIÓN Y LIQUIDACIONES'],archive:['Archivo','VEHÍCULOS INACTIVOS'],clients:['Clientes','HISTORIAL Y VALORACIONES'],analytics:['Analítica','COMPARATIVA Y ROI'],quotes:['Presupuestos','OFERTAS Y PROPUESTAS'],recurring:['Recurrentes','GASTOS PERIÓDICOS'],ownerProfile:[(_ownerProfileId&&OW.find(o=>o.id===_ownerProfileId)?.name)||'Propietario','PERFIL Y DATOS']};
   const [title,sub]=AV?[gV()?.name||'—',gV()?.plate||'']:(TITLES[CV]||['DEIROS','FLEET MANAGER']);
   const tt=document.getElementById('TT'),ts=document.getElementById('TS');
   if(tt)tt.textContent=title;if(ts)ts.textContent=sub;
@@ -10916,13 +10916,9 @@ function renderRentals(el){
 // ═══════════════════════════════════════════════════════════ CONTRATOS (nueva sección)
 function renderContracts(el){
   const isD=window.innerWidth>=768;
-  // Sub-tabs
-  // Pestañas como selector segmentado (la activa en acento); mismos onclick
-  const tabBar=`<div class="d-seg ct-tabs" role="group" aria-label="Contratos">
-    <button type="button" onclick="_contractsTab='presupuestos';renderContracts(document.getElementById('PC'))" aria-pressed="${_contractsTab==='presupuestos'?'true':'false'}">${ico('quote')} Presupuestos</button>
-    <button type="button" onclick="_contractsTab='finanzas';renderContracts(document.getElementById('PC'))" aria-pressed="${_contractsTab==='finanzas'?'true':'false'}">${ico('euro')} Finanzas</button>
-    <button type="button" onclick="_contractsTab='clientes';renderContracts(document.getElementById('PC'))" aria-pressed="${_contractsTab==='clientes'?'true':'false'}">${ico('user')} Clientes</button>
-  </div>`;
+  // Rafael (25/11/2026): sin barra de pestañas (Negocio y Clientes ya están en el menú); solo presupuestos
+  _contractsTab='presupuestos';
+  const tabBar='';
 
   if(_contractsTab==='presupuestos'){
     // Un botón principal (Nuevo contrato) y uno secundario (Nuevo presupuesto); lista con la tira de contadores y filas finas
