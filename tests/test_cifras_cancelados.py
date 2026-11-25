@@ -74,7 +74,7 @@ def run():
     rv=[a for a in al if a[1]=='Revisión']
     chk(len(rv)==1 and rv[0][0]=='v1' and rv[0][2] in (10,11) and rv[0][3] and not rv[0][4] and rv[0][5]=='wrench',f'Alertas: «Revisión» del v1 en 10 d, urgente (≤30 d), icono llave; la de 90 d no sale ({rv})')
     chk(any(a[1]=='ITV' and a[0]=='v1' for a in al),'Alertas: la ITV sigue saliendo igual')
-    sec=re.search(r'<h2>Alertas</h2>.*?</section>',h,re.S)
+    sec=re.search(r'<details class="dh-yr dh-al".*?</details>',h,re.S)  # inicio2: Alertas es un desplegable
     chk(bool(sec) and 'Revisión' in sec.group(0),'Resumen móvil: la sección Alertas muestra «Revisión»')
     pg.evaluate("openNotifSettings()");pg.wait_for_timeout(300)
     chk('Revisión' in pg.evaluate("document.getElementById('SC').innerHTML"),'Hoja de Notificaciones: lista «Revisión»')
