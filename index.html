@@ -1038,6 +1038,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .al-nt{margin-top:16px;}
 .al-tot{margin-top:24px;}
 .al-tot .d-n.neg{color:var(--red);}
+/* #153 Ampliar alquiler: «+N días» bien visible, precio/día y diferencia enlazados (la calculada, con borde discontinuo y texto gris) */
+.ex-dias{display:grid;gap:6px;margin:0 0 16px;padding:14px 16px;border:1px solid var(--amber);border-radius:16px;}
+.ex-dias b{font-family:var(--display);font-weight:900;font-size:32px;line-height:1;color:var(--amber);}
+.ex-dias span{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:var(--fs-meta);line-height:1.4;color:var(--text2);}
+.ex-dias.off{border-color:var(--border2);}
+.ex-dias.off b{color:var(--text2);}
+.ex-dias.err{border-color:var(--red);}
+.ex-dias.err b,.ex-dias.err span{color:var(--red);}
+.ex-2{align-items:end;}
+.ex-2 .d-f{margin-bottom:8px;}
+input.ex-calc{border-style:dashed;color:var(--text2);}
+.ex-lk{margin:0 0 6px;}
+#extOk:disabled{opacity:.45;cursor:default;}
 .al-pri{margin-top:20px;}
 .al-s{margin-top:var(--sp-sec);}
 .al-h{display:flex;align-items:baseline;gap:10px;margin:32px 0 14px;}
@@ -3986,6 +3999,16 @@ function openExtendBooking(bookingId){
   }
 
   const _curTotal=_bookingClientTotal(_bb);
+  // #153 Precio/día sugerido = el de este alquiler: (importe base + ampliaciones anteriores) ÷ días cobrados hasta hoy, con el mismo criterio que calcRentalPrice;
+  // sin importe, la tarifa por defecto del alta (30 € turismo, 45 € furgoneta). En Amovens/Getaround/otra plataforma no se rellena: se escribe lo que paga la plataforma.
+  const _oT=safeTime(_bb.endTime);
+  const _base0=Number(_bb.amount||0)+(_bb.finance||[]).filter(f=>f&&f.type==='income'&&String(f.concept||'').startsWith('Ampliaci')).reduce((s,f)=>s+Number(f.amount||0),0);
+  const _u0=safeDate(_bb.startDate)&&safeDate(origEnd)?_extUnits(_bb.startDate,safeTime(_bb.startTime),origEnd,_oT).u:0;
+  const _sugPd=_base0>0&&_u0>0?Math.round(_base0/_u0*100)/100:(String(_bv.vehicle_type||'turismo').startsWith('l')?45:30);
+  const _isPlat=!!_bb.platform&&_platK(_bb.platform)!=='sinapp';
+  const _platL=_isPlat?(PLATS[_bb.platform]?PLATS[_bb.platform].label:String(_bb.platform)):'';
+  const _sugS=_sugPd.toFixed(2).replace('.',',');
+  window._extCtx={cur:_curTotal,origEnd,oT:_oT};window._extLast='pd';window._extErr='';
   const _fmtE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
 
   openSheet('<div class="stitle">Ampliar alquiler</div>'
@@ -3995,43 +4018,83 @@ function openExtendBooking(bookingId){
     +'<div class="w2">Total actual del alquiler<b>'+_fmtE(_curTotal)+'</b></div>'
     +'</div>'
     +'<div class="d-2">'
-    +'<div class="d-f"><label class="q" for="extNewEnd">Nueva fecha fin *</label><input id="extNewEnd" type="date" value="'+esc(safeDate(origEnd))+'" min="'+esc(safeDate(origEnd))+'"/></div>'
-    +'<div class="d-f"><label class="q" for="extNewTime">Hora fin</label><input id="extNewTime" type="time" value="'+esc(safeTime(_bb.endTime)||'20:00')+'"/></div>'
+    +'<div class="d-f"><label class="q" for="extNewEnd">Nueva fecha fin *</label><input id="extNewEnd" type="date" value="'+esc(safeDate(origEnd))+'" min="'+esc(safeDate(origEnd))+'" oninput="_extUpdateCalc()" onchange="_extUpdateCalc()"/></div>'
+    +'<div class="d-f"><label class="q" for="extNewTime">Hora fin</label><input id="extNewTime" type="time" value="'+esc(safeTime(_bb.endTime)||'20:00')+'" oninput="_extUpdateCalc()" onchange="_extUpdateCalc()"/></div>'
     +'</div>'
-    +'<div class="d-f"><label class="q" for="extNewTotal">Nuevo importe total</label>'
-    +'<div class="d-pre"><span>€</span><input id="extNewTotal" type="number" step="0.01" inputmode="decimal" placeholder="'+_curTotal.toFixed(2)+'" oninput="_extUpdateCalc('+_curTotal+')"/></div></div>'
-    +'<div id="extCalcBox" class="d-tot al-tot">'
-    +'<p>Introduce el nuevo total para ver la diferencia</p>'
+    +'<div id="extDays" class="ex-dias off" aria-live="polite"></div>'
+    +'<div class="d-2 ex-2">'
+    +'<div class="d-f"><label class="q" for="extPd">Precio/día</label><div class="d-pre ct-pu"><span>€</span><input id="extPd" type="text" inputmode="decimal" autocomplete="off" value="'+(_isPlat?'':_sugS)+'" placeholder="0,00" oninput="window._extLast=\'pd\';_extUpdateCalc()"/><span class="ct-u">/día</span></div></div>'
+    +'<div class="d-f"><label class="q" for="extDiff">Diferencia a pagar</label><div class="d-pre"><span>€</span><input id="extDiff" class="ex-calc" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" oninput="window._extLast=\'diff\';_extUpdateCalc()"/></div></div>'
     +'</div>'
-    +('<div class="d-acts al-end"><button class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
+    +'<p id="extLink" class="d-hint ex-lk"></p>'
+    +'<p class="d-hint ex-lk">'+esc(_isPlat?'Alquiler de '+_platL+': escribe la diferencia que paga la plataforma.':(_base0>0&&_u0>0?'Sugerido: '+_sugS+' €/día, lo que paga en este alquiler. Cámbialo si pactáis otro precio.':'Sugerido: '+_sugS+' €/día, la tarifa por defecto.'))+'</p>'
+    +'<input id="extNewTotal" type="hidden" value=""/>'
+    +'<div id="extCalcBox" class="d-tot al-tot" aria-live="polite">'
+    +'<span class="q">Total del alquiler</span>'
+    +'</div>'
+    +('<div class="d-acts al-end"><button id="extOk" class="btn-pri" onclick="_confirmExtend()">'+ico('check-circle')+' Confirmar ampliación</button>')
     +('<button onclick="generateExtensionPDF(window._extBookingId)" class="btn-sec">'+ico('clipboard')+' Generar Anexo de Ampliación</button>')
     +('<button onclick="_pdfSend(\'ax\',window._extBookingId)" class="btn-sec">'+ico('send')+' Enviar anexo</button>')
     +'<button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
+  _extUpdateCalc();
 }
 
-function _extUpdateCalc(curTotal){
-  const inp=document.getElementById('extNewTotal');
-  const box=document.getElementById('extCalcBox');
-  if(!inp||!box)return;
-  const newTotal=parseFloat(inp.value)||0;
-  const diff=Math.round((newTotal-curTotal)*100)/100;
+// #153 Días cobrables entre dos fechas+horas con el criterio de calcRentalPrice (horas de reloj, #150): cada 24 h = 1 día;
+// horas sueltas: desde 6 h, un día más; menos de 6 h, a 1/6 del precio/día cada hora. Sin horas: daysBetween. u = días equivalentes.
+function _extUnits(sd,st,ed,et){const r=calcRentalPrice(sd,st&&et?st:'',ed,st&&et?et:'',0);return {u:r.extraHours>=6?r.chargeDays:r.fullDays+r.extraHours/6,full:r.fullDays,h:r.extraHours,charge:r.chargeDays};}
+// Importe escrito a mano: admite coma o punto decimal, «€» y espacios (1.234,50 → 1234.5). Vacío → null; no numérico → NaN
+function _extNum(s){s=String(s==null?'':s).replace(/[\s€\u00a0]/g,'');if(s==='')return null;if(s.indexOf(',')>=0)s=s.replace(/\./g,'').replace(',','.');const n=Number(s);return Number.isFinite(n)?n:NaN;}
+// #153 Recalcula la hoja «Ampliar alquiler»: +N días, la casilla que no se ha escrito (manda la última editada: window._extLast) y el total.
+// Lo que se guarda no cambia: el nuevo total (total actual + diferencia) va en #extNewTotal y _confirmExtend lo usa como antes.
+function _extUpdateCalc(){
+  const c=window._extCtx,g=id=>document.getElementById(id);
+  const eD=g('extNewEnd'),eT=g('extNewTime'),pdI=g('extPd'),dfI=g('extDiff'),tot=g('extNewTotal'),dBox=g('extDays'),box=g('extCalcBox'),lk=g('extLink'),okB=g('extOk');
+  if(!c||!eD||!pdI||!dfI||!tot||!dBox||!box)return;
   const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
-  if(!inp.value){box.innerHTML='<p>Introduce el nuevo total para ver la diferencia</p>';return;}
-  if(diff<=0){
-    box.innerHTML=('<p class="d-hint err">'+ico('alert')+' El nuevo total debe ser mayor que el actual (')+fE(curTotal)+')</p>';
+  const R2=n=>Math.round(n*100)/100,f2=n=>R2(n).toFixed(2).replace('.',','),dd=n=>n+' día'+(n!==1?'s':'');
+  const nE=safeDate(eD.value),nT=safeTime(eT&&eT.value)||c.oT,et=c.oT?nT:'';
+  let err='',u=0;
+  if(!nE||nE<=c.origEnd){
+    err='La nueva fecha debe ser posterior a la fecha de fin actual.';
+    const early=!!nE&&nE<c.origEnd;
+    dBox.className='ex-dias '+(early?'err':'off');
+    dBox.innerHTML='<b>+0 días</b><span>'+(early?ico('alert'):'')+'Elige una fecha posterior al '+esc(fmtDMY(c.origEnd))+'</span>';
   } else {
-    const _dS=fE(diff).split(',');
-    box.innerHTML='<span class="q">Importe de la ampliación</span>'
-      +'<div class="d-n n2">+'+esc(_dS[0].replace(/\./g,''))+'<small>'+esc(_dS.length>1?','+_dS.slice(1).join(','):'')+'</small></div>'
-      +'<div class="al-l"><div class="al-li"><span>Total anterior</span><b>'+fE(curTotal)+'</b></div>'
-      +'<div class="al-li"><span>+ Importe ampliación</span><b class="ok">'+fE(diff)+'</b></div>'
-      +'<div class="al-li"><span>Nuevo total</span><b>'+fE(newTotal)+'</b></div></div>';
+    const x=_extUnits(c.origEnd,c.oT,nE,et);u=x.u;
+    const hm=Math.round(x.h*60),hs=Math.floor(hm/60)+' h'+(hm%60?' '+(hm%60)+' min':'');
+    const big='+'+(x.full||!hm?dd(x.full)+(hm?' y '+hs:''):hs);
+    const sub=!hm?'Hasta el '+fmtDMY(nE)+(et?' a las '+et:''):x.h>=6?'Se cobran '+dd(x.charge)+': desde 6 h sueltas cuenta un día más':'Las '+hs+' se cobran a 1/6 del precio/día cada hora';
+    dBox.className='ex-dias';dBox.innerHTML='<b>'+esc(big)+'</b><span>'+esc(sub)+'</span>';
   }
-  window._extDiff=diff>0?diff:0;
+  // Precio/día ⇄ diferencia: la última que se ha escrito manda; la otra se calcula (borde discontinuo)
+  const last=window._extLast==='diff'?'diff':'pd',src=last==='pd'?pdI:dfI,dst=last==='pd'?dfI:pdI;
+  src.classList.remove('ex-calc');dst.classList.add('ex-calc');
+  const v=_extNum(src.value);let diff=0;
+  if(v!==null&&!(v>=0)){
+    err=(last==='pd'?'El precio/día':'La diferencia')+' debe ser un número positivo (por ejemplo 25,50).';dst.value='';
+  } else if(last==='pd'){
+    diff=v===null||!u?0:R2(calcRentalPrice(c.origEnd,c.oT,nE,et,v).total);
+    dfI.value=v===null||!u?'':f2(diff);
+  } else {
+    diff=v===null?0:R2(v);
+    pdI.value=v===null||!u?'':f2(diff/u);
+  }
+  const uS=String(R2(u)).replace('.',',');
+  if(lk)lk.textContent=!u?'':last==='pd'?'Diferencia calculada = precio/día × '+uS+' días':'Precio/día calculado = diferencia ÷ '+uS+' días';
+  // Total del alquiler = total actual + diferencia (es el «nuevo total» que se guarda, igual que si se escribiera a mano)
+  if(err)diff=0;
+  const nt=R2(c.cur+diff),_dS=fE(nt).split(',');
+  tot.value=diff>0?String(nt):'';
+  box.innerHTML='<span class="q">Total del alquiler</span>'
+    +'<div class="d-n n2">'+esc(_dS[0].replace(/\./g,''))+'<small>'+esc(_dS.length>1?','+_dS.slice(1).join(','):'')+'</small></div>'
+    +(err&&(u||(nE&&nE<c.origEnd))?'<p class="d-hint err">'+ico('alert')+' '+esc(err)+'</p>':'<p>'+esc(diff>0?'antes '+fE(c.cur)+' + '+fE(diff):u?'Sin coste adicional: escribe el precio/día o la diferencia':'Elige la nueva fecha fin')+'</p>');
+  if(okB)okB.disabled=!!err;
+  window._extErr=err;
 }
 
 function _confirmExtend(){
   const bookingId=window._extBookingId;const origEnd=window._extOrigEnd;
+  if(window._extErr){alert(window._extErr);return;} // #153: fecha no posterior o importe no válido (el botón ya está desactivado)
   const newEnd=document.getElementById('extNewEnd')?.value;
   const newTime=document.getElementById('extNewTime')?.value||'';
   const newTotalRaw=parseFloat(document.getElementById('extNewTotal')?.value)||0;
