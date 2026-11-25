@@ -60,6 +60,7 @@ red. Se puede preparar a mano con `python3 tests/vendor.py`. Los precios de carb
 | `test_cifras_cancelados.py` | Cifras sin cancelados: Resumen (mes, año, plataformas con penalización), «Revisión» en Alertas, Flota, avisos de devolución, contrato, propietario, Excel, informe de negocio y días ocupados; también a 1280 px. |
 | `test_rentabilidad_plataforma.py` | **Rentabilidad · plataforma** del Resumen: en Mes, Trimestre y Año (y el histórico a 1280 px) la suma de las filas es igual a los ingresos del periodo («INGRESOS MES», «INGRESOS 2026»), con alquileres que cruzan meses, ampliación, extras, cobros de devolución, depósitos (no cuentan), cancelados con penalización, coche en gestión, coche archivado e ingresos sin plataforma («Otros ingresos»). |
 | `test_inicio.py` | **Inicio (Resumen)**: orden en el móvil (Resultado flota → Disponibilidad → Alertas → Hoy → En alquiler ahora → Próximos → Año → Evolución → Rentabilidad) y en escritorio; el **ojo** oculta resultado, margen, ingresos y gastos del mes («••••»), lo recuerda al recargar y funciona en tema claro; **Alertas** plegable que recuerda si se deja abierta y se abre sola con una vencida nueva (número en rojo); las cifras son las de siempre (con `DEIROS_BASE=<index anterior>`, idénticas una a una a 390 y 1280 px). |
+| `test_fianzas_porcobrar.py` | **Fianzas y Por cobrar del Inicio** (#162): en el móvil, plegadas y **sin cifras**; cada una se despliega debajo por su cuenta (aria-expanded, 44 px), recuerda si quedó abierta al recargar, el total arriba y las mismas filas e importes que la hoja de siempre; «Ver alquiler», cobrar «Todo», fianza «Devuelta» y «Todas las fianzas»; estados vacíos, escapado, tema claro; en escritorio, la hoja de siempre. |
 | `test_ampliacion.py` | **Ampliar alquiler** (#153): «+N días» con horas de reloj (mismo criterio que `calcRentalPrice`), Precio/día ⇄ Diferencia (manda la última escrita, también al cambiar fechas), total del alquiler, negativo / texto / fecha anterior / sin coste, Amovens y alquiler sin horas; lo guardado y el anexo, con valores fijos (iguales a escribir el total a mano antes de #153). |
 | `test_cobros.py` | Cobros en la ficha (cantidad, «Todo», «Solo alquiler», deshacer con confirmación), «Por cobrar» en Inicio y en el coche, plataformas y cancelados, y el **recibo** en PDF con el mismo estado que la ficha (fianza aparte). |
 | `test_devolucion.py` | **Fianza en la devolución** (devolver, retener con motivo, «Más tarde», cargos mayores que la fianza, daños, plataformas, validaciones), «Antes de entregar» (cobro, fianza, carnet, edad), km a 0,19 €/km y combustible = litros × (precio del municipio + 2 €/L). |
@@ -83,7 +84,7 @@ de #121, inventados) y `run_all.py`.
 
 ## De dónde salen
 
-Son las pruebas que se hicieron para cada PR (#90, #94, #96, #100, #105, #108, #121, #123, #126, #137, #138, #139, #144, #153…),
+Son las pruebas que se hicieron para cada PR (#90, #94, #96, #100, #105, #108, #121, #123, #126, #137, #138, #139, #144, #153, #162…),
 reunidas aquí sin depender de copias en `/tmp` ni de versiones antiguas de `main`: donde comparaban «igual que main», ahora
 comprueban valores fijos escritos en la prueba (o se han quitado si solo tenían sentido comparando; cada fichero lo dice en
 su cabecera).
