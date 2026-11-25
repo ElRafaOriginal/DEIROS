@@ -635,6 +635,21 @@ select option{background:var(--bg);}
 .hoy-e{font-family:var(--mono);font-size:13px;color:var(--text2);padding:16px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);}
 /* Inicio móvil: desplegables seguidos (Año, Evolución, Rentabilidad) comparten línea */
 .dh-yr+.dh-yr{margin-top:-8px;border-top:0;}
+/* Inicio (inicio2): ojo de «Resultado flota» (oculta resultado, margen, ingresos y gastos del mes como «••••»; se recuerda en deiros_dashHide), Alertas plegable y huecos del nuevo orden */
+.dh-hr{display:inline-flex;align-items:center;gap:2px;}
+.dh-eye{all:unset;box-sizing:border-box;width:44px;height:44px;margin:-14px -12px -14px 0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;color:var(--text2);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.dh-eye .ico{width:22px;height:22px;}
+.dh-eye:active{background:var(--bg3);}
+.dh-eye:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;}
+.dh-res .dh-mk{display:none;}
+.dh-res.hid .dh-big:not(.dh-mk),.dh-res.hid .spec b.lg:not(.dh-mk),.dh-res.hid .dh-mv{display:none;}
+.dh-res.hid .dh-big.dh-mk{display:flex;}
+.dh-res.hid .spec b.dh-mk{display:block;}
+.dh-res.hid .dh-note .dh-mk{display:inline;}
+.dh-al .dh-list{border-top:1px solid var(--border);}
+.dh-al .dh-row:last-child{border-bottom:0;}
+.dh-acts+.dh-sec.hoy,.dh-yr+.dh-sec.hoy{margin-top:24px;}
+.dh-sec+.dh-yr{margin-top:24px;}
 /* ══ Agenda (móvil): navegación ‹ semana ›, selector Lista/Semana en píldora, cabeceras de día con línea, filas neutras con punto del coche ══ */
 .ag-nav{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
 .ag-rng{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;}
@@ -2065,6 +2080,7 @@ undo:'<path d="M9 4.5L4.5 9 9 13.5"/><path d="M4.5 9H14a5.5 5.5 0 0 1 0 11h-3.5"
 download:'<path d="M12 3.5v11.5M7 10l5 5 5-5M4 20.5h16"/>',
 upload:'<path d="M12 15V3.5M7 8.5l5-5 5 5M4 20.5h16"/>',
 eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+'eye-off':'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/>',
 camera:'<path d="M3 7.5h4.2L9 4.5h6l1.8 3H21v12.5H3z"/><circle cx="12" cy="13.5" r="3.6"/><rect class="f" x="17" y="9.5" width="1.8" height="1.8"/>',
 unlink:'<path d="M10 7.5H6.5a4.5 4.5 0 0 0 0 9H10M14 7.5h3.5a4.5 4.5 0 0 1 0 9H14"/><path d="M12 3.5v3M12 17.5v3M8.5 12h1.5M14 12h1.5"/>',
 play:'<path d="M7 4.5v15l12-7.5z"/>',
@@ -7149,6 +7165,8 @@ function render(){
 }
 
 // ═══════════════════════════════════════════════════════════ DASHBOARD
+// inicio2 · ojo de «Resultado flota»: oculta o muestra las cifras del mes sin repintar y lo recuerda en este móvil (preferencia de pantalla, no es un dato)
+function _dashEye(btn){const c=btn&&btn.closest('.dh-res');if(!c)return;const hid=!c.classList.contains('hid');c.classList.toggle('hid',hid);try{localStorage.setItem('deiros_dashHide',hid?'1':'0');}catch(e){}btn.setAttribute('aria-pressed',String(hid));btn.setAttribute('aria-label',hid?'Mostrar cifras':'Ocultar cifras');btn.innerHTML=ico(hid?'eye-off':'eye');}
 function renderDash(el){
   const activeV=V.filter(v=>!v.archived);
   const isDesk=window.innerWidth>=768;
@@ -7213,13 +7231,14 @@ function renderDash(el){
 
   // ── MES EN CURSO: ficha técnica con la cifra protagonista en Doto ──
   const _mpS=fmt(mP).split(','),_mpE=_mpS[0],_mpD=_mpS.length>1?','+_mpS.slice(1).join(','):'';
-  const _mes=`<section class="dh-card hl dotbg">
-    <div class="dh-h"><span class="q ac">Resultado flota</span><span class="q">${MON_LABEL.slice(0,3).toUpperCase()} ${now.getFullYear()}</span></div>
-    <div class="dh-big mx${mP<0?' neg':''}${_mpE.length>6?' l':''}">${esc(_mpE)}<small>${esc(_mpD)}</small></div>
-    <div class="dh-note">Incl. coches en gestión (parte del propietario) · ${mI>0?'Margen '+Math.round(mP/mI*100)+' % · ':''}${mBks} alq. este mes</div>
+  let _hid=false;try{_hid=localStorage.getItem('deiros_dashHide')==='1';}catch(e){}
+  const _mes=`<section class="dh-card hl dotbg dh-res${_hid?' hid':''}">
+    <div class="dh-h"><span class="q ac">Resultado flota</span><span class="dh-hr"><span class="q">${MON_LABEL.slice(0,3).toUpperCase()} ${now.getFullYear()}</span><button type="button" class="dh-eye" onclick="_dashEye(this)" aria-pressed="${_hid}" aria-label="${_hid?'Mostrar cifras':'Ocultar cifras'}">${ico(_hid?'eye-off':'eye')}</button></span></div>
+    <div class="dh-big mx${mP<0?' neg':''}${_mpE.length>6?' l':''}">${esc(_mpE)}<small>${esc(_mpD)}</small></div><div class="dh-big mx dh-mk" aria-hidden="true">••••<small>€</small></div>
+    <div class="dh-note">Incl. coches en gestión (parte del propietario) · ${mI>0?'<span class="dh-mv">Margen '+Math.round(mP/mI*100)+' % · </span><span class="dh-mk" aria-hidden="true">Margen •• % · </span>':''}${mBks} alq. este mes</div>
     <div class="spec">
-      <div><i class="dt dt-ok"></i>INGRESOS MES<b class="lg">${fmt(mI)}</b></div>
-      <div><i class="dt dt-err"></i>GASTOS MES<b class="lg">${fmt(mE)}</b></div>
+      <div><i class="dt dt-ok"></i>INGRESOS MES<b class="lg">${fmt(mI)}</b><b class="lg dh-mk" aria-hidden="true">•••• €</b></div>
+      <div><i class="dt dt-err"></i>GASTOS MES<b class="lg">${fmt(mE)}</b><b class="lg dh-mk" aria-hidden="true">•••• €</b></div>
       <div class="w2">VEHÍCULOS ACTIVOS<b>${activeV.length}</b></div>
     </div>
   </section>`;
@@ -7303,7 +7322,7 @@ function renderDash(el){
   }
 
   if(isDesk){
-    h+=_hoyH+_mes+_acts+_yr;
+    h+=_mes+_acts+_hoyH+_yr; // inicio2: el resultado del mes arriba y la disponibilidad debajo; luego lo del día
     // ── DESKTOP: 2-column layout: [chart+platforms 3fr] [alerts+activity 1.4fr]
     h+=`<div style="display:grid;grid-template-columns:3fr 1.4fr;gap:24px;align-items:start;margin-bottom:28px">`;
 
@@ -7395,8 +7414,24 @@ function renderDash(el){
     }
   } else {
     // ── MOBILE: single column ─────────────────────────────────────────────
-    h+=_hoyH+_acts; // lo del día primero: Hoy y accesos (Coches libres · Fianzas)
+    h+=_mes+_acts; // inicio2: el resultado del mes arriba (como el saldo de una cuenta) y debajo la disponibilidad (Coches libres · Fianzas · Por cobrar)
     const _n2=n=>String(n).padStart(2,'0');
+    // ── ALERTAS: desplegable, plegado por defecto y recuerda si se deja abierto. Con vencidas: número y rótulo en rojo («· N vencida(s)»)
+    //    y se abre solo una vez por cada vencida nueva (firma en deiros_dashAlSeen); si Rafael lo cierra, no vuelve a abrirse hasta que venza otra ──
+    if(alerts.length){
+      const _alV=alerts.filter(a=>a.expired),_alSig=_alV.map(a=>a.vid+':'+(a.kmAlert?'km':a.label)).sort().join('|');
+      let _alO=false,_alS='';try{_alO=localStorage.getItem('deiros_dashAlOpen')==='1';_alS=localStorage.getItem('deiros_dashAlSeen')||'';}catch(e){}
+      if(_alSig&&_alSig!==_alS)_alO=true;
+      h+=`<details class="dh-yr dh-al"${_alO?' open':''} data-sig="${esc(_alSig)}" ontoggle="try{localStorage.setItem('deiros_dashAlOpen',this.open?'1':'0');localStorage.setItem('deiros_dashAlSeen',this.dataset.sig)}catch(e){}">
+        <summary><span class="q${_alV.length?' err':''}">Alertas${_alV.length?' · '+_alV.length+' vencida'+(_alV.length>1?'s':''):''}</span><span class="dh-nn"><span class="q ${_alV.length?'err':'ac'}">${_n2(alerts.length)}</span>${_PLUS}</span></summary>
+        <div class="dh-list">${alerts.slice(0,5).map((a,i)=>`<div class="dh-row" onclick="openV('${escJs(a.vid)}')">
+          <span class="q">${_n2(i+1)}</span>
+          <div style="min-width:0"><div class="t">${esc(a.vname)}</div><div class="s">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
+          <span class="chip ${a.expired?'chip-red':'chip-amber'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
+        </div>`).join('')}</div>
+      </details>`;
+    }
+    h+=_hoyH; // y lo del día: entregas y devoluciones de hoy y atrasadas
     // ── ALQUILERES EN CURSO: desplegable compacto (abierto por defecto; recuerda si Rafael lo cierra), filas de una o dos líneas ──
     if(activeRentals.length){
       let _ro=true;try{_ro=localStorage.getItem('deiros_dashRentOpen')!=='0';}catch(e){}
@@ -7432,18 +7467,7 @@ function renderDash(el){
         }).join('')}
       </div></section>`;
     }
-    // ── ALERTAS: lista técnica ──
-    if(alerts.length){
-      h+=`<section class="dh-sec">
-        <div class="dh-sh"><h2>Alertas</h2><span class="q err">${_n2(alerts.length)}</span></div>
-        <div class="dh-list">${alerts.slice(0,5).map((a,i)=>`<div class="dh-row" onclick="openV('${escJs(a.vid)}')">
-          <span class="q">${_n2(i+1)}</span>
-          <div style="min-width:0"><div class="t">${esc(a.vname)}</div><div class="s">${a.ico?ico(a.ico)+' ':''}${esc(a.label)}</div></div>
-          <span class="chip ${a.expired?'chip-red':'chip-amber'}">${a.expired?'Vencido':'En '+a.days+'d'}</span>
-        </div>`).join('')}</div>
-      </section>`;
-    }
-    h+='<div class="dh-sec">'+_mes+'</div>'+_yr; // el mes y el año, debajo de lo del día
+    h+=_yr; // inicio2: el año acumulado, tras En alquiler ahora y Próximos (el mes ya va arriba)
     const _fo=k=>{try{return localStorage.getItem(k)==='1';}catch(e){return false;}}; // plegados por defecto; recuerdan si se dejan abiertos
     const _ft=k=>` ontoggle="try{localStorage.setItem('${k}',this.open?'1':'0')}catch(e){}"`;
     if(BF.length||activeV.length)h+=`<details class="dh-yr"${_fo('deiros_dashEvoOpen')?' open':''}${_ft('deiros_dashEvoOpen')}><summary><span class="q">Evolución · mensual</span>${_PLUS}</summary>${buildGlobalChart()}</details>`;
