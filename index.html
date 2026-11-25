@@ -10676,7 +10676,7 @@ function _agFbtnSync(){const b=document.getElementById('agFbtn');if(b)b.classLis
 function _agIsMobile(){return !!(window.matchMedia&&window.matchMedia('(max-width:767px)').matches);}
 function agToday(){agY=new Date().getFullYear();agM=new Date().getMonth();agMobStart='';renderAgendaBody();}
 function agMobShift(n){agMobStart=addDays(agMobStart||todayStr(),n);renderAgendaBody();}
-let agMobMode='list',_agLastMobile=null;
+let agMobMode='week',_agLastMobile=null; // Rafael (25/11/2026): la Agenda abre en «Semana»
 function agMobSetMode(m){agMobMode=m;renderAgendaBody();}
 function _agMobOpen(vid,bid){if(bid)showBookingById(bid);else openV(vid);}
 function renderAgendaMobile(res,activeV){
