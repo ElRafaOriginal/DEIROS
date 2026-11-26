@@ -6484,7 +6484,7 @@ async function _saveToCloud(opts){
   if(_saveBlocked)return;
   if(_saveInFlight){_saveQueued=opts;return;}
   _saveInFlight=true;
-  try{await _saveToCloudBody(opts);}
+  try{return await _saveToCloudBody(opts);}
   finally{
     _saveInFlight=false;
     if(_saveQueued&&!_saveBlocked){const q=_saveQueued;_saveQueued=null;_saveToCloud(q);}
@@ -6540,7 +6540,7 @@ async function _saveToCloudBody(opts){
     _setSaveStatus('saved');
     console.log('[save] OK — vehículos:',V.length,'rev:',nextRev);
   }catch(e){
-    if(e&&(e.code==='conflict'||e.message==='CONFLICT')){_showCloudConflict();return;}
+    if(e&&(e.code==='conflict'||e.message==='CONFLICT')){if(opts.auto){_setSaveStatus('hide');return 'conflict';}_showCloudConflict();return;} // auto: rechazo automático de presupuestos (lo resuelve _qtAutoRejectBoot)
     console.error('[save] ERROR:',e);
     _setSaveStatus('error','Error al guardar');
     _saveToast('Error al guardar: '+(e&&e.message?e.message:e));
@@ -13765,6 +13765,7 @@ function importData(event){
       V=_mergePhotos(V);
       _normalizeState();
       _holdCloudWrite=false;
+      _qtAutoReject(); // presupuestos pendientes con el inicio ya pasado → «Rechazado» (se sube con la copia restaurada)
       if(_normFixes)_showNormNotice(_normFixes,'import');
       _invalidateRsCache();
       await _saveToCloud({skipDropCheck:true,force:true});
@@ -14204,11 +14205,37 @@ function quoteNum(){
 }
 
 // Presupuestos: estado como chip (punto + texto), tira de contadores con líneas de 1 px y filas finas (.d-row). Solo presentación.
-const _QT_ST={pendiente:['chip-amber','Pendiente'],aceptado:['chip-green','Aceptado'],rechazado:['chip-red','Rechazado'],convertido:['chip-blue','Convertido']};
+const _QT_ST={pendiente:['chip-amber','Pendiente'],aceptado:['chip-blue','Aceptado'],rechazado:['chip-red','Rechazado'],convertido:['chip-blue','Aceptado']}; // «Aceptado» se guarda como 'convertido' (Rafael, 26/11/2026); los 'aceptado' antiguos se ven igual
 function _qtChip(s){const c=_QT_ST[s];return '<span class="chip '+(c?c[0]:'chip-gray')+'">'+esc(c?c[1]:(s||'—'))+'</span>';}
 function _qtKpi(){
-  const total=QT.length,pend=QT.filter(q=>q.status==='pendiente').length,rech=QT.filter(q=>q.status==='rechazado').length,conv=QT.filter(q=>q.status==='convertido').length; // «Aceptado» = «Convertido» para Rafael: ya no se ofrece
-  return '<div class="d-kpi qt-k">'+[['Total',total,''],['Pendiente',pend,'chip-amber'],['Convertido',conv,'chip-blue'],['Rechazado',rech,'chip-red']].map(([l,n,c])=>'<div><b'+(c?' class="qt-kd '+c+'"':'')+'>'+n+'</b><span>'+l+'</span></div>').join('')+'</div>';
+  const total=QT.length,pend=QT.filter(q=>q.status==='pendiente').length,rech=QT.filter(q=>q.status==='rechazado').length,acep=QT.filter(q=>q.status==='convertido'||q.status==='aceptado').length; // «Aceptado» = 'convertido' + los 'aceptado' antiguos (Rafael, 26/11/2026)
+  return '<div class="d-kpi qt-k">'+[['Total',total,''],['Pendiente',pend,'chip-amber'],['Aceptado',acep,'chip-blue'],['Rechazado',rech,'chip-red']].map(([l,n,c])=>'<div><b'+(c?' class="qt-kd '+c+'"':'')+'>'+n+'</b><span>'+l+'</span></div>').join('')+'</div>';
+}
+// Rechazo automático (Rafael, 26/11/2026): al abrir la app (y al restaurar una copia), todo presupuesto «Pendiente» cuyo inicio es ANTERIOR a hoy
+// (fecha de Madrid) pasa a «Rechazado». Los que empiezan hoy, los que no tienen fecha de inicio válida y los aceptados o rechazados no se tocan.
+// Sin campos nuevos: si Rafael lo vuelve a poner en «Pendiente» con el inicio pasado, se rechaza otra vez al abrir la app (para que siga pendiente, se cambian las fechas).
+function _qtHoyMadrid(){
+  try{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),g=k=>(p.find(x=>x.type===k)||{}).value,s=g('year')+'-'+g('month')+'-'+g('day');if(safeDate(s)===s)return s;}catch(e){}
+  return todayStr();
+}
+function _qtVencido(q,hoy){const s=safeDate(q&&q.startDate);return !!s&&s<(hoy||_qtHoyMadrid());}
+function _qtAutoReject(){
+  const hoy=_qtHoyMadrid();let n=0;
+  (QT||[]).forEach(q=>{if(q&&q.status==='pendiente'&&_qtVencido(q,hoy)){q.status='rechazado';n++;}});
+  return n;
+}
+// Al arrancar (antes de quitar la pantalla de carga): si hay algo que rechazar se guarda por el camino de siempre (rev + transacción); si no, no se escribe nada.
+// Si otro móvil guardó a la vez (normalmente el mismo rechazo), no sale el aviso de conflicto: se recarga la nube en silencio y se repite (máximo 2 intentos).
+// Sin red, la carga ya falla antes y no se llega aquí. La espera del guardado se corta a los 6 s (el guardado sigue solo y la app se abre).
+async function _qtAutoRejectBoot(){
+  let r='ok';
+  for(let i=0;i<2&&_qtAutoReject()&&!_holdCloudWrite;i++){
+    const s=await Promise.race([_saveToCloud({auto:true}),new Promise(ok=>setTimeout(()=>ok('timeout'),6000))]);
+    if(s!=='conflict')break;
+    r=await _loadFromCloud();if(r!=='ok')break;
+  }
+  if(r==='ok')_qtAutoReject(); // tras la última recarga, también en pantalla (se sube con el próximo guardado)
+  return r;
 }
 // Fila de presupuesto: punto del coche · coche y matrícula / cliente / número y fechas · total y estado. onclick: el de siempre (lista o Contratos)
 function _qtRow(q,click){
@@ -14717,16 +14744,17 @@ function _saveQuote(){
 
 function openQuoteStatusMenu(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
-  const statuses=[['pendiente','hourglass','Pendiente','var(--amber)'],['rechazado','ban','Rechazado','var(--red)'],['convertido','car','Convertido','var(--blue)']].concat(q.status==='aceptado'?[['aceptado','check-circle','Aceptado','var(--green)']]:[]); // «Aceptado» solo si ya lo tenía (presupuestos antiguos)
+  const statuses=[['pendiente','hourglass','Pendiente','var(--amber)'],['rechazado','ban','Rechazado','var(--red)'],['convertido','check-circle','Aceptado','var(--blue)']],cur=q.status==='aceptado'?'convertido':q.status; // «Aceptado» se guarda como 'convertido'; un 'aceptado' antiguo marca esa fila (Rafael, 26/11/2026)
   // Filas finas con el icono del estado; el actual con borde de acento y «Actual» (mismo onclick)
   openSheet(('<div class="stitle">Cambiar estado</div><div class="ssub">'+esc(q.num||'')+'</div><div class="d-list qt-sl">')
-    +statuses.map(([s,icon,lbl,col])=>`<button type="button" class="d-row qt-so${q.status===s?' on':''}" aria-pressed="${q.status===s?'true':'false'}" onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')"><span class="qt-si" style="color:${safeColor(col)}">${ico(icon)}</span><span class="t">${esc(lbl)}</span><span class="r">${q.status===s?'<span class="q ac">Actual</span>':''}</span></button>`).join('')
+    +statuses.map(([s,icon,lbl,col])=>`<button type="button" class="d-row qt-so${cur===s?' on':''}" aria-pressed="${cur===s?'true':'false'}" onclick="setQuoteStatus('${escJs(id)}','${escJs(s)}')"><span class="qt-si" style="color:${safeColor(col)}">${ico(icon)}</span><span class="t">${esc(lbl)}</span><span class="r">${cur===s?'<span class="q ac">Actual</span>':''}</span></button>`).join('')
     +'</div><div class="al-dz qt-sc"><button class="btn-txt" onclick="closeSheet()">Cancelar</button></div>');
 }
 
 function setQuoteStatus(id,status){
   const q=QT.find(q=>q.id===id);if(!q)return;
   q.status=status;save();closeSheet();
+  if(status==='pendiente'&&_qtVencido(q))_saveToast('El inicio ya ha pasado: al volver a abrir la app pasará a «Rechazado». Para que siga pendiente, cambia las fechas con «Editar».','warn');
   showQuoteDetail(document.getElementById('PC'));
 }
 
@@ -15144,6 +15172,7 @@ auth.onAuthStateChanged(async user=>{
     const _loadResult=await _loadFromCloud();
     if(_loadResult==='error')return;
     _rvMigrate(); // #139
+    if((await _qtAutoRejectBoot())==='error')return; // presupuestos pendientes con el inicio ya pasado → «Rechazado»
     V.forEach(v=>{v.color=v.vtype==='managed'?COLOR_MAN:COLOR_OWN;});
     showLoading(false);
     // Desktop: wire up layout
