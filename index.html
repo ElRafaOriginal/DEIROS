@@ -14294,7 +14294,7 @@ function showQuoteDetail(el){
   if(q.notes)h+=`<p class="d-note qt-nt">${esc(q.notes)}</p>`;
   // Un botón principal: Convertir en alquiler (o el PDF si ya está convertido); el resto, secundarios; Eliminar en texto rojo al final
   h+='<div class="d-acts qt-acts">';
-  if(q.status!=='convertido'){
+  if(!_qtBooking(q)){ // «Convertir» mientras no exista el alquiler creado desde él, sea cual sea el estado («Aceptado» incluido) (Rafael, 26/11/2026)
     h+=`<button class="btn-pri" onclick="convertQuoteToBooking('${escJs(q.id)}')">${ico('car')} Convertir en alquiler</button>`;
     h+=`<div class="two"><button class="btn-sec" onclick="generateQuotePDF('${escJs(q.id)}')">${ico('doc')} PDF</button><button class="btn-sec" onclick="_pdfSend('qt','${escJs(q.id)}')">${ico('send')} Enviar</button></div>`;
     h+=`<div class="two"><button class="btn-sec" onclick="openEditQuote('${escJs(q.id)}')">${ico('edit')} Editar</button><button class="btn-sec" onclick="openQuoteStatusMenu('${escJs(q.id)}')">${ico('tag')} Estado</button></div>`;
@@ -14694,7 +14694,7 @@ function _saveQuote(){
     const _qv=V.find(x=>x.id===vId);
     const _qSt=document.getElementById('qStartT')?.value||'09:00',_qEt=document.getElementById('qEndT')?.value||'09:00';
     if(new Date(end+'T'+_qEt)<=new Date(start+'T'+_qSt)){alert('La fecha/hora de fin debe ser posterior al inicio');return;}
-    const _qc=_findBookingConflict(_qv,start,_qSt,end,_qEt,existing?.bookingId);
+    const _qc=_findBookingConflict(_qv,start,_qSt,end,_qEt,existing?.bookingId||_qtBooking(existing)?.id);
     if(_qc){alert('Conflicto en '+(_qv?.name||'el vehículo')+':\n'+_conflictText(_qc)+'\nEl presupuesto no se ha guardado.');return;}
   }
   _calcQuoteTotal();
@@ -14724,6 +14724,7 @@ function _saveQuote(){
     totalAmount:calc.total||0,
     notes:(document.getElementById('qNotes')?.value||'').trim(),
   };
+  {const _qbk=existing?(existing.bookingId||_qtBooking(existing)?.id||''):'';if(_qbk)q.bookingId=_qbk;} // editar conserva el alquiler creado desde él (antes se perdía)
   if(_quoteEditId){
     const idx=QT.findIndex(q=>q.id===_quoteEditId);
     if(idx>=0)QT[idx]=q; else QT.unshift(q);
@@ -14764,8 +14765,18 @@ function deleteQuote(id){
   save();_quoteEditId=null;renderQuotes(document.getElementById('PC'));
 }
 
+// Alquiler creado desde el presupuesto (Rafael, 26/11/2026): el de q.bookingId, si sigue existiendo (cancelado también cuenta; si se borró, se puede volver a convertir).
+// Presupuestos antiguos sin bookingId (antes se perdía al editar): el alquiler del mismo coche y la misma fecha de inicio con la nota «Generado desde presupuesto <número>».
+function _qtBooking(q){
+  if(!q)return null;
+  if(q.bookingId){let r=null;V.forEach(v=>(v.bookings||[]).forEach(b=>{if(!r&&b&&b.id===q.bookingId)r=b;}));return r;}
+  const v=V.find(x=>x.id===q.vehicleId),p='Generado desde presupuesto '+(q.num||'');
+  if(!v||!q.num||!q.startDate)return null;
+  return (v.bookings||[]).find(b=>b&&b.startDate===q.startDate&&typeof b.notes==='string'&&(b.notes===p||b.notes.startsWith(p+' · ')))||null;
+}
 function convertQuoteToBooking(id){
   const q=QT.find(q=>q.id===id);if(!q)return;
+  if(_qtBooking(q)){alert('Este presupuesto ya está convertido en alquiler: no se crea otro.');return;}
   const v=V.find(v=>v.id===q.vehicleId);if(!v)return;
   const _cc=_findBookingConflict(v,q.startDate,q.startTime||'09:00',q.endDate,q.endTime||'09:00',q.bookingId);
   if(_cc){alert('Conflicto en '+(v.name||'el vehículo')+':\n'+_conflictText(_cc)+'\nNo se ha creado el alquiler.');return;}
