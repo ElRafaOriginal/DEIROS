@@ -2678,8 +2678,16 @@ function _anStats(vs,months,X){
   return s;
 }
 // Período de la pantalla: Mes (el actual, con lo reservado hasta fin de mes), Año (de enero al mes actual) o Todo (del primer al último mes con actividad)
-function _anRange(vs,X){
+function _anRange(vs,X,from,to){
   const cur=todayStr().slice(0,7),y=Number(cur.slice(0,4));
+  if(from){ // #anC: período del informe PDF; con desde = hasta = mes actual da lo mismo que «Mes» en la pantalla
+    if(!to||to<from){const t=from;from=to||from;to=t;}
+    const ms=_anMonths(from,to),n=ms.length,lb=(a,b,yy)=>a===b?_anMon(a,yy):a.slice(0,4)!==b.slice(0,4)?_anMon(a,true)+'–'+_anMon(b,true):_anMon(a)+'–'+_anMon(b,yy);
+    const pa=_anAdd(from,-n),pb=_anAdd(to,-n),la=_anAdd(from,-12),lz=_anAdd(to,-12);
+    const cmp=[[_anMonths(pa,pb),'vs '+lb(pa,pb,pb.slice(0,4)!==to.slice(0,4))]];
+    if(n<12)cmp.push([_anMonths(la,lz),'vs '+lb(la,lz,true)]);
+    return{ms,cmp,q:lb(from,to,true),from,to};
+  }
   if(_analyticsPer==='ano')return{ms:_anMonths(y+'-01',cur),cmp:[[_anMonths((y-1)+'-01',_anAdd(cur,-12)),'vs '+(cur.slice(5)==='01'?'ene':'ene–'+_anMon(cur))+' '+(y-1)]],q:String(y)};
   if(_analyticsPer==='todo'){let a=cur,b=cur;vs.forEach(v=>{const I=_anIdx(v,X);if(I.first<a)a=I.first;if(I.last>b)b=I.last;});return{ms:_anMonths(a,b),cmp:[],q:'Todo',from:a};}
   return{ms:[cur],cmp:[[[_anAdd(cur,-1)],'vs '+_anMon(_anAdd(cur,-1))],[[_anAdd(cur,-12)],'vs '+_anMon(_anAdd(cur,-12),true)]],q:_anMon(cur,true)};
@@ -2877,7 +2885,7 @@ function openAnalyticsReportPicker(){
   ];
   // Periodos rápidos en píldoras (rellenan Desde/Hasta, como antes) y meses uno debajo de otro
   openSheet(`<div class="stitle">${ico('doc')} Informe de Analíticas</div>
-    <div class="ssub">Selecciona el período. El informe incluirá KPIs, ranking por vehículo, ocupación, desglose mensual y comparativa.</div>
+    <div class="ssub">Elige el período del informe.</div>
     <div class="d-pills an-pp">
       ${presets.map(([lbl,f,t])=>`<button type="button" onclick="document.getElementById('arFrom').value='${escJs(f)}';document.getElementById('arTo').value='${escJs(t)}'">${lbl}</button>`).join('')}
     </div>
@@ -2890,790 +2898,232 @@ function openAnalyticsReportPicker(){
 async function generateAnalyticsPDF(fromMonth,toMonth){
   try{await _libNeed('jspdf');}catch(e){return;}
   try{
-  // ══ SETUP ════════════════════════════════════════════════════════════════
-  const now=new Date();
-  const curM=fromMonth||now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const toM=toMonth||curM;
-  const filtered=V.filter(v=>!v.archived).filter(v=>{
-    if(_analyticsOwnership==='own'&&v.vtype==='managed')return false;
-    if(_analyticsOwnership==='managed'&&v.vtype!=='managed')return false;
-    if(_analyticsVtype&&(v.vehicle_type||'turismo')!==_analyticsVtype)return false;
-    return true;
-  });
-  if(!filtered.length){alert('No hay vehículos con los filtros seleccionados.');return;}
-
+  // #anC · Informe de Analítica en 4 páginas con las MISMAS cifras y bloques que la pantalla (_anVs, _anIdx, _anStats, _anRange):
+  // 1 Resumen (Beneficio flota y su variación, las 4 cifras, comparativa y barras por mes) · 2 Coches (barras de lo que deja cada uno, tabla y
+  // turismo vs furgoneta) · 3 Desglose de gastos y duración · 4 Clientes y plataformas. Si algo no cabe, sigue en la página siguiente
+  const cur=todayStr().slice(0,7);
+  let fm=safeMonth(fromMonth)||cur,tm=safeMonth(toMonth)||fm;
+  if(tm<fm){const t=fm;fm=tm;tm=t;}
+  const vs=_anVs();
+  if(!vs.length){alert('No hay vehículos con los filtros seleccionados.');return;}
+  const X=new Map(),R=_anRange(vs,X,fm,tm),S=_anStats(vs,R.ms,X);
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
-  const W=210,mg=PDFS.MG,cW=W-2*mg; // 178mm ancho de contenido
-
-  // Formato moneda
-  const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
-
-  // Normalizar texto para jsPDF: Helvetica cubre Latin-1 (tildes, ñ) y €.
-  // Solo se eliminan emojis y símbolos fuera de Latin-1 que se corrompen (cid:0).
-  const _s=s=>{
-    if(s===null||s===undefined)return '';
-    const m={'×':'x','–':'-','—':'-','Ø':'O'};
-    return String(s).replace(/[^\x20-\x7E -ÿ€…]/g,c=>m[c]??'');
-  };
-  // Interceptor: aplica _s() automáticamente a todo doc.text()
+  const W=210,m=PDFS.MG,cW=W-2*m,BOT=PDFS.BOT-8;
+  // Helvetica y las fuentes de marca cubren latín-1 y €: lo demás (rayas, flechas) se cambia por su equivalente
+  const _s=s=>{if(s===null||s===undefined)return '';const mp={'–':'-','—':'-','×':'x','Ø':'O','▲':'+','▼':'-'};return String(s).replace(/[^\x20-\x7E -ÿ€…]/g,c=>mp[c]??'');};
   const _dt=doc.text.bind(doc);
   doc.text=(t,...a)=>_dt(Array.isArray(t)?t.map(x=>_s(x)):typeof t==='string'?_s(t):t,...a);
-
-  // Paleta de colores: la común de los PDF (PDFS). El azul pasa a morado y el ámbar a dorado oscuro; los tonos claros ya no se usan
-  const DARK=PDFS.K,PURPLE=PDFS.P,LPURPLE=PDFS.LN,GOLD=PDFS.G;
-  const GREEN=PDFS.OK,LGREEN=PDFS.LN,DGREEN=PDFS.OK;
-  const RED=PDFS.KO,LRED=PDFS.LN,DRED=PDFS.KO;
-  const AMBER=PDFS.GT,LAMBER=PDFS.LN,DAMBER=PDFS.GT;
-  const BLUE=PDFS.P,LBLUE=PDFS.LN,DBLUE=PDFS.P;
-  const LPURPLE2=PDFS.LN,DPURPLE=PDFS.P;
-  const BORDER=PDFS.LN,BGROW=PDFS.LN,GRAY=PDFS.T2;
-
-  // ══ CALCULOS ════════════════════════════════════════════════════════════
-  // Meses del periodo
-  const months=[];
-  {let mi=new Date(curM+'-01T12:00:00');const ms=new Date(toM+'-01T12:00:00');
-   let g=0;
-   while(mi<=ms&&g<1200){
-     if(isNaN(mi.getTime())||isNaN(ms.getTime()))break;
-     months.push(mi.getFullYear()+'-'+String(mi.getMonth()+1).padStart(2,'0'));
-     const prev=mi.getTime();
-     mi.setMonth(mi.getMonth()+1);
-     if(isNaN(mi.getTime())||mi.getTime()<=prev)break;
-     g++;
-   }}
-  const periodMonths=months.length;
-
-  // Dias del periodo (por vehiculo es igual)
-  let periodDim=0;
-  months.forEach(mk=>periodDim+=new Date(parseInt(mk.slice(0,4)),parseInt(mk.slice(5,7)),0).getDate());
-
-  const [fY,fMo]=curM.split('-');const [tY,tMo]=toM.split('-');
-  const periodLabel=curM===toM?fmtMY(curM):fmtMY(curM)+' a '+fmtMY(toM);
-  const periodStr=(curM===toM?(MON_ES[parseInt(fMo)-1]+' '+fY):(MON_ES[parseInt(fMo)-1]+' '+fY+' – '+MON_ES[parseInt(tMo)-1]+' '+tY)).toUpperCase();
-  const filterLabel=_analyticsOwnership==='own'?'Vehículos propios':_analyticsOwnership==='managed'?'En gestión':'Toda la flota';
-
-  // Metricas por vehiculo del periodo
-  const metrics=filtered.map(v=>{
-    const pFins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.date>=curM+'-01'&&e.date<=toM+'-31'));
-    const pInc=pFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const pExp=pFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const pBks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM);
-    const pDays=new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size;
-    const occ=periodDim>0?Math.round(pDays/periodDim*100):0;
-    const rpdInc=pDays>0?Math.round(pInc/pDays*100)/100:0;
-    const avgP=pBks.length>0?Math.round(pInc/pBks.length*100)/100:0;
-    const avgDur=pBks.length>0?Math.round(pDays/pBks.length*10)/10:0;
-    const allFins=_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry));
-    const allInc=allFins.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const allExp=allFins.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const allProfit=allInc-allExp;
-    const pp=Number(v.purchase_price)||0;
-    const roi=pp>0?Math.round(allProfit/pp*100):null;
-    const paidOff=pp>0&&allProfit>=pp;
-    const _pcomm=((v.commission==null||v.commission===''?30:Number(v.commission)))/100;
-    const bizShare=v.vtype==='managed'?_settleTotals(v,pFins).mgr:(pInc-pExp); // comisión − déficit asumido
-    return{v,pInc,pExp,pProfit:pInc-pExp,pBks:pBks.length,pDays,occ,rpdInc,avgP,avgDur,pp,roi,paidOff,allProfit,bizShare};
-  }).sort((a,b)=>b.rpdInc-a.rpdInc);
-
-  // Totales globales
-  const totInc=metrics.reduce((s,m)=>s+m.pInc,0);
-  const totExp=metrics.reduce((s,m)=>s+m.pExp,0);
-  const totProfit=totInc-totExp;
-  const totBks=metrics.reduce((s,m)=>s+m.pBks,0);
-  const totalOccDays=metrics.reduce((s,m)=>s+m.pDays,0);
-  const totalAvailDays=filtered.length*periodDim;
-  const globalOcc=totalAvailDays>0?Math.round(totalOccDays/totalAvailDays*100):0;
-  const avgDailyRate=totalOccDays>0?Math.round(totInc/totalOccDays*100)/100:0;
-  const avgPricePerBk=totBks>0?Math.round(totInc/totBks*100)/100:0;
-  const avgDurGlobal=totBks>0?Math.round(totalOccDays/totBks*10)/10:0;
-  const effRatio=totExp>0?Math.round(totInc/totExp*100)/100:null;
-  const hasMgmt=filtered.some(v=>v.vtype==='managed')&&filtered.some(v=>v.vtype!=='managed');
-  const bizTotProfit=metrics.reduce((s,m)=>s+m.bizShare,0);
-
-  // Plataformas (#anA): los MISMOS movimientos que «Ingresos» del informe (prorrateo, ampliaciones, extras, cobros y penalizaciones; sin fianzas),
-  // cada uno en la plataforma de su alquiler (como Inicio, #158); lo que no es de un alquiler va a «Otros ingresos». Alq. = alquileres no cancelados con algún ingreso en el período.
-  const platAgg={};
-  {const bkMap={},seen=new Set();filtered.forEach(v=>(v.bookings||[]).forEach(b=>{if(b&&b.id)bkMap[b.id]=b;}));
-   filtered.forEach(v=>_plFins(v,_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.date>=curM+'-01'&&e.date<=toM+'-31')).forEach(e=>{
-     if(e.type!=='income'||_isDepositInc(e))return;
-     const b=bkMap[e.bookingId||e._bookingId],k=b?_platK(b.platform):'',p=PLATS[k]?k:'otros';
-     if(!platAgg[p])platAgg[p]={count:p==='otros'?null:0,inc:0,label:p==='otros'?'Otros ingresos':PLATS[p].label};
-     platAgg[p].inc+=Number(e.amount)||0;
-     if(p!=='otros'&&!b.cancelled&&!b.cancellation&&!seen.has(b.id)){seen.add(b.id);platAgg[p].count++;}
-   }));}
-  const platEntries=Object.entries(platAgg).sort((a,b)=>(b[1].count??-1)-(a[1].count??-1));
-  const platColors=[[59,130,246],[251,122,172],[139,92,246],[16,185,129],[180,83,9]];
-
-  // Gastos por categoria
-  const expByCat={};
-  filtered.forEach(v=>_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&e.date>=curM+'-01'&&e.date<=toM+'-31').forEach(e=>{
-    const cat=e.category||'Otros';expByCat[cat]=(expByCat[cat]||0)+(Number(e.amount)||0);
-  }));
-  const expEntries=Object.entries(expByCat).sort((a,b)=>b[1]-a[1]);
-  const expColors=[[239,68,68],[180,83,9],[59,130,246],[139,92,246],[16,185,129],[156,163,175],[248,113,113],[96,165,250]];
-
-  // Todos los alquileres del periodo
-  const allPBks=filtered.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM).map(b=>({...b,_v:v})));
-
-  // Distribucion por duracion
-  const durG={s:[],m:[],l:[]};
-  allPBks.forEach(b=>{const d=daysBetween(b.startDate,b.endDate);d<=3?durG.s.push(b):d<=7?durG.m.push(b):durG.l.push(b);});
-  const durAvg=g=>g.length?Math.round(g.reduce((s,b)=>s+(Number(b.amount)||0),0)/g.length*100)/100:0;
-
-  // Clientes
-  const cliMap={};
-  allPBks.forEach(b=>{const k=(b.clientDni||b.clientName||'').trim().toLowerCase();if(!k||(b.clientName||'').trim()===_CL_ANON)return; // #anA: sin anonimizados
-    if(!cliMap[k])cliMap[k]={name:b.clientName||'—',count:0,total:0};
-    cliMap[k].count++;cliMap[k].total+=Number(b.amount)||0;
-  });
-  const cliList=Object.values(cliMap).sort((a,b)=>b.total-a.total);
-  const recurringCli=cliList.filter(c=>c.count>1);
-
-  // Tiempo muerto
-  const deadTimes=filtered.map(v=>{
-    const sb=[...(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM)].sort((a,b)=>a.startDate.localeCompare(b.startDate));
-    let tg=0,g=0;
-    for(let i=1;i<sb.length;i++){const gap=Math.round((new Date(sb[i].startDate)-new Date(sb[i-1].endDate))/864e5);if(Number.isFinite(gap)&&gap>=0&&gap<4000){tg+=gap;g++;}}
-    return{v,avg:g>0?Math.round(tg/g*10)/10:null,gaps:g};
-  });
-  const validDead=deadTimes.filter(d=>d.avg!==null);
-  const avgDead=validDead.length?Math.round(validDead.reduce((s,d)=>s+d.avg,0)/validDead.length*10)/10:null;
-
-  // Mantenimiento
-  const maintCats=['Mantenimiento periódico','Mantenimiento','Reparación','ITV'];
-  const maintExp=Object.entries(expByCat).filter(([k])=>maintCats.includes(k)).reduce((s,[,v])=>s+v,0);
-  const maintRatio=totInc>0?Math.round(maintExp/totInc*100):0;
-
-  // Turismo vs furgoneta
-  const turismos=filtered.filter(v=>!(v.vehicle_type||'turismo').startsWith('l'));
-  const furgos=filtered.filter(v=>(v.vehicle_type||'turismo').startsWith('l'));
-  const typeM=(vs)=>{
-    const bks=vs.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.slice(0,7)>=curM&&b.startDate.slice(0,7)<=toM));
-    const inc=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&!_isDepositInc(e)&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
-    const exp=vs.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&e.date>=curM+'-01'&&e.date<=toM+'-31').reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
-    const days=vs.reduce((s,v)=>s+new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)>=curM&&d.slice(0,7)<=toM)).size,0)||1;
-    return{cnt:vs.length,bks:bks.length,inc,exp,profit:inc-exp,days,rpd:days>0?Math.round(inc/days*100)/100:0,avgP:bks.length>0?Math.round(inc/bks.length*100)/100:0};
+  const pct=(a,b)=>b>0?Math.round(a/b*100):0;
+  const up=s=>String(s).toUpperCase();
+  // Variación con la misma regla que la pantalla: [texto, color] o null
+  const dl=(a,b,u)=>{
+    let d,t;
+    if(u==='pt'||u==='d'){d=Math.round(a-b);t=Math.abs(d)+(u==='pt'?' pt':' d');}
+    else{if(!b)return null;d=Math.round((a-b)/Math.abs(b)*100);t=Math.abs(d)+' %';}
+    if(!d)return ['=',PDFS.T2];
+    return [(d>0?'+':'-')+t,(u==='d'?d<0:d>0)?PDFS.OK:PDFS.KO];
   };
-  const tStat=typeM(turismos),fStat=typeM(furgos);
-
-  // Km medios (sanity check: solo diferencias < 3000 km por alquiler)
-  const bksKm=allPBks.filter(b=>b.kmStart&&b.kmEnd&&(b.kmEnd-b.kmStart)>0&&(b.kmEnd-b.kmStart)<3000);
-  const avgKm=bksKm.length?Math.round(bksKm.reduce((s,b)=>s+(b.kmEnd-b.kmStart),0)/bksKm.length):null;
-
-  // ══ HELPERS DE DIBUJO ════════════════════════════════════════════════════
-  let y=0;
-
-  // Barra horizontal proporcional: carril de filete fino y barra fina (sin píldoras rellenas)
-  function _hbar(x,yy,w,h,pct,colFill,colEmpty){
-    const t=Math.min(h,1.4),ty=yy+(h-t)/2;
-    doc.setDrawColor(...PDFS.GR);doc.setLineWidth(0.2);doc.line(x,ty+t/2,x+w,ty+t/2);
-    if(pct>0){doc.setFillColor(...colFill);doc.rect(x,ty,Math.max(w*Math.min(pct,100)/100,0.8),t,'F');}
-  }
-
-  // Cabecera de sección: título en mono morado y filete fino con arranque morado, como en los contratos (sin banda; lc, lbg y tc ya no se usan)
-  function _sect(title,lc,lbg,tc){
-    doc.setFontSize(7.5);doc.setFont('jbm','bold');doc.setTextColor(...PDFS.P);
-    doc.text(title,mg,y+5);
-    doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);doc.line(mg,y+7,mg+cW,y+7);
-    doc.setDrawColor(...PDFS.P);doc.setLineWidth(0.8);doc.line(mg,y+7,mg+10,y+7);doc.setLineWidth(0.2);
-    doc.setFont('helvetica','normal');
+  let y=PDFS.TOP;
+  const sec=(t,q)=>{
+    doc.setFont('jbm','bold');doc.setFontSize(7.5);doc.setTextColor(...PDFS.P);doc.text(up(t),m,y+4);
+    if(q){doc.setFont('jbm','normal');doc.setTextColor(...PDFS.T2);doc.text(up(q),W-m,y+4,{align:'right'});}
+    doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.2);doc.line(m,y+6.5,W-m,y+6.5);
+    doc.setDrawColor(...PDFS.P);doc.setLineWidth(0.8);doc.line(m,y+6.5,m+10,y+6.5);doc.setLineWidth(0.2);
     y+=10;
-  }
-
-  // Cabecera de tabla: rótulos en mono gris y filete negro debajo (sin fondo)
-  function _tblH(cols,bgCol){
-    doc.setFontSize(6);doc.setFont('jbm','normal');doc.setTextColor(...GRAY);
-    cols.forEach(([txt,x,a])=>doc.text(txt,x,y+4.5,{align:a||'left'}));
-    doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.35);doc.line(mg,y+6,mg+cW,y+6);doc.setLineWidth(0.2);
-    doc.setFont('helvetica','normal');
-    y+=7;
-  }
-
-  // Ancho (mm) de un importe en la fuente de las celdas (helvetica 7,5 normal)
-  function _incW(t){doc.setFontSize(7.5);doc.setFont('helvetica','normal');return doc.getTextWidth(String(t));}
-  // Fila de datos en tabla (sin sombreado alterno: solo filete fino)
-  function _tblR(cells,odd,rh){
-    const h=rh||7;
-    cells.forEach(([txt,x,a,col,bold])=>{
-      doc.setFontSize(7.5);doc.setFont('helvetica',bold?'bold':'normal');
-      doc.setTextColor(...(col||PDFS.T));
-      if(txt!==null&&txt!==undefined)doc.text(String(txt),x,y+h*0.6,{align:a||'left'});
-    });
-    doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+h,mg+cW,y+h);
+  };
+  // Nueva página si no cabe h; th: cabecera de tabla que se repite
+  const need=(h,th)=>{if(y+h>BOT){doc.addPage();y=PDFS.TOP;if(th)th();}};
+  const row=(cells,h,line,base)=>{
+    h=h||7;
+    cells.forEach(([t,x,a,col,f,b,sz])=>{if(t===null||t===undefined||t==='')return;doc.setFont(f||'helvetica',b?'bold':'normal');doc.setFontSize(sz||8);doc.setTextColor(...(col||PDFS.T));doc.text(String(t),x,y+(base||h*0.62),{align:a||'left'});});
+    if(line!==false){doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.15);doc.line(m,y+h,W-m,y+h);}
     y+=h;
+  };
+  // Gráficos (#anC): rectángulos y líneas de jsPDF; escala lineal que siempre incluye el 0 (aguanta negativos y todo a cero)
+  const e0=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n||0);
+  const scl=(vals,a,len)=>{const ok=vals.filter(Number.isFinite);let mx=Math.max(0,...ok),mn=Math.min(0,...ok);if(mx===mn)mx=mn+1;const k=len/(mx-mn);return{mx,mn,p:v=>a+(mx-(Number.isFinite(v)?v:0))*k,q:v=>a+((Number.isFinite(v)?v:0)-mn)*k};};
+  const bar=(x,y1,w,y2,col)=>{const t=Math.min(y1,y2),h=Math.abs(y2-y1);if(!(h>0.05)||!(w>0))return;doc.setFillColor(...col);doc.rect(x,t,w,h,'F');};
+  const total=(cells)=>{doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.4);doc.line(m,y,W-m,y);doc.setLineWidth(0.2);row(cells.map(c=>{const r=c.slice();r[5]=true;return r;}),7.5,false);};
+
+  // ══ PÁGINA 1 · RESUMEN ══
+  // Beneficio flota del período y su variación; a la derecha, propios y gestión si hay de los dos
+  const own=vs.filter(v=>v.vtype!=='managed'),mgd=vs.filter(v=>v.vtype==='managed');
+  sec('Beneficio flota');
+  doc.setFont('syne','bold');doc.setFontSize(26);doc.setTextColor(...(S.ben<0?PDFS.KO:PDFS.K));
+  doc.text(fmt(S.ben),m,y+11);
+  {let x=m;doc.setFont('jbm','normal');doc.setFontSize(8);
+   R.cmp.forEach(([ms,lbl],i)=>{const p=_anStats(vs,ms,X);if(!p.act)return;const d=dl(S.ben,p.ben,'%');if(!d)return;
+     if(x>m){doc.setTextColor(...PDFS.T2);doc.text('·',x,y+18);x+=4;}
+     doc.setTextColor(...d[1]);doc.setFont('jbm','bold');doc.text(d[0],x,y+18);x+=doc.getTextWidth(_s(d[0]))+1.5;
+     doc.setTextColor(...PDFS.T2);doc.setFont('jbm','normal');doc.text(lbl,x,y+18);x+=doc.getTextWidth(_s(lbl))+3;});}
+  if(own.length&&mgd.length){
+    const o=_anStats(own,R.ms,X).ben,g=_anStats(mgd,R.ms,X).ben;
+    [[`PROPIOS (${own.length})`,o,W-m-48],[`GESTIÓN (${mgd.length})`,g,W-m]].forEach(([l,v,x])=>{
+      doc.setFont('jbm','normal');doc.setFontSize(6);doc.setTextColor(...PDFS.T2);doc.text(l,x,y+4,{align:'right'});
+      doc.setFont('jbm','bold');doc.setFontSize(10.5);doc.setTextColor(...(v<0?PDFS.KO:PDFS.T));doc.text(fmt(v),x,y+11,{align:'right'});});
   }
-
-  // Tarjeta KPI: filete de color arriba, filete fino abajo, cifra en mono (sin fondo)
-  function _kpiCard(x,yy,w,h,label,value,col){
-    doc.setDrawColor(...col);doc.setLineWidth(0.8);doc.line(x,yy,x+w,yy);doc.setLineWidth(0.2);
-    doc.setDrawColor(...BORDER);doc.line(x,yy+h,x+w,yy+h);
-    doc.setFontSize(10);doc.setFont('jbm','bold');doc.setTextColor(...col);
-    doc.text(value,x+w/2,yy+h*0.62,{align:'center'});
-    doc.setFontSize(5.5);doc.setFont('jbm','normal');doc.setTextColor(...GRAY);
-    doc.text(label,x+w/2,yy+h-3,{align:'center'});
-    doc.setFont('helvetica','normal');
-  }
-
-  // Nueva página: raya dorada y título en Syne
-  function _addPage(subtitle){
-    doc.addPage();
-    doc.setDrawColor(...PDFS.GD);doc.setLineWidth(1.2);doc.line(mg,PDFS.TOP-5,mg+10,PDFS.TOP-5);doc.setLineWidth(0.2);
-    doc.setFontSize(11);doc.setFont('syne','bold');doc.setTextColor(...PDFS.K);
-    doc.text('INFORME ANALÍTICAS'+( subtitle?' — '+subtitle:''),mg,PDFS.TOP+1);
-    doc.setFont('helvetica','normal');
-    y=PDFS.TOP+7;
-  }
-
-  function _safeAddPage(minSpace,subtitle){if(y+minSpace>272){_addPage(subtitle);}}
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // PAG 1 — RESUMEN EJECUTIVO
-  // ══════════════════════════════════════════════════════════════════════════
-
-  // Línea de período en mono entre filetes (sin banda)
-  doc.setFontSize(7);doc.setFont('jbm','normal');doc.setTextColor(...DPURPLE);
-  doc.text('Período: '+periodLabel+'  ·  '+filtered.length+' vehículos analizados  ·  '+totBks+' alquileres  ·  Ocup. global: '+globalOcc+'%',mg,PDFS.TOP+1.5);
-  doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.35);doc.line(mg,PDFS.TOP+3.5,mg+cW,PDFS.TOP+3.5);doc.setLineWidth(0.2);
-  doc.setFont('helvetica','normal');
-  y=PDFS.TOP+10;
-
-  // 6 KPI cards
-  {const kpis=[
-    ['ALQUILERES',String(totBks),BLUE],
-    ['DÍAS OCUP.',String(totalOccDays)+'d',BLUE],
-    ['INGRESOS',fE(totInc),GREEN],
-    ['GASTOS',fE(totExp),RED],
-    ['BFO. ACTIVIDAD',fE(totProfit),totProfit>=0?GREEN:RED],
-    ['OCUP. GLOBAL',globalOcc+'%',globalOcc>=70?GREEN:globalOcc>=40?AMBER:RED],
-  ];
-  const kW=(cW-5*3)/6;
-  kpis.forEach(([lbl,val,col],i)=>{
-    _kpiCard(mg+i*(kW+3),y,kW,20,lbl,val,col);
-  });}
-  y+=24;
-
-  // Sub-KPIs compactos
-  doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);doc.line(mg,y,mg+cW,y);doc.line(mg,y+8,mg+cW,y+8);
-  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-  const subKpis=[
-    'Precio medio/alquiler: '+fE(avgPricePerBk),
-    '€/día ocupado: '+fE(avgDailyRate),
-    'Dur. media: '+avgDurGlobal+'d',
-    hasMgmt?'Bfo. flota: '+fE(bizTotProfit):'Ratio eficiencia: '+(effRatio!==null?effRatio+'x':'—'),
-  ];
-  subKpis.forEach((txt,i)=>doc.text(txt,mg+3+i*(cW/4),y+5.5));
-  y+=12;
-
-  // ── DESGLOSE PROPIOS vs GESTIÓN (solo si hay mezcla) ──────────────────
-  if(hasMgmt){
-    const _ownMs=metrics.filter(m=>m.v.vtype!=='managed');
-    const _mgdMs=metrics.filter(m=>m.v.vtype==='managed');
-    const _ownProfit=_ownMs.reduce((s,m)=>s+m.pProfit,0);
-    const _mgdProfit=_mgdMs.reduce((s,m)=>s+m.pProfit,0);
-    const _mgdShare=_mgdMs.reduce((s,m)=>s+m.bizShare,0);
-    // Bloque sin fondo: filete ámbar arriba y fino abajo
-    doc.setDrawColor(...AMBER);doc.setLineWidth(0.8);doc.line(mg,y,mg+cW,y);doc.setLineWidth(0.2);
-    doc.setDrawColor(...BORDER);doc.line(mg,y+28,mg+cW,y+28);
-    // Título
-    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...DAMBER);
-    doc.text('ACTIVIDAD vs BENEFICIO DEL NEGOCIO',mg+8,y+6);
-    doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('Los vehículos en gestión generan facturación. En gestión, el beneficio real del negocio es la comisión menos el déficit asumido por el gestor.',mg+8,y+11);
-    // 3 columnas
-    const colW=(cW-8)/3;
-    const cols=[
-      ['PROPIOS ('+_ownMs.length+' veh.)','Beneficio 100%',fE(_ownProfit),_ownProfit>=0?GREEN:RED],
-      ['GESTIÓN ('+_mgdMs.length+' veh.)','Comisión menos déficit asumido',fE(_mgdShare),PDFS.P2],
-      ['BENEFICIO FLOTA','propios + (comisión menos déficit asumido)',fE(bizTotProfit),bizTotProfit>=0?GREEN:RED],
-    ];
-    cols.forEach(([lbl,sub,val,col],ci)=>{
-      const cx=mg+8+ci*colW;
-      doc.setFontSize(6);doc.setFont('helvetica','bold');doc.setTextColor(...GRAY);
-      doc.text(lbl,cx,y+17);
-      doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-      doc.text(sub,cx,y+21.5);
-      doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...col);
-      doc.text(val,cx,y+27);
-    });
-    // Estrella destacando BFO NEGOCIO
-    doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.setTextColor(...DAMBER);
-    doc.text('*',mg+8+(cW-8)*2/3-4,y+17);
-    y+=32;
-  }
-
-  // ── RANKING DE RENDIMIENTO ─────────────────────────────────────────────
-  _sect('RANKING DE RENDIMIENTO DEL PERÍODO',GREEN,LGREEN,DGREEN);
-  _tblH([
-    ['#',mg+3,'left'],['VEHÍCULO',mg+12,'left'],
-    ['ALQ.',mg+80,'right'],['DÍAS',mg+97,'right'],
-    ['OCUP%',mg+113,'right'],['INGRESOS',mg+148,'right'],
-    ['€/DÍA',W-mg,'right'],
-  ],GREEN);
-  metrics.forEach((m,i)=>{
-    _safeAddPage(8,'RESUMEN');
-    const oc=m.occ;const ocCol=oc>=70?GREEN:oc>=40?AMBER:RED;
-    _tblR([
-      ['#'+(i+1),mg+3,'left',PDFS.P2,true],
-      [_vehLbl(m.v.name,m.v.plate,' · ',m.v.vtype==='managed'?' ●':'',34),mg+12,'left'],
-      [m.pBks,mg+80,'right'],
-      [m.pDays+'d',mg+97,'right'],
-      [oc+'%',mg+113,'right',ocCol,true],
-      [fE(m.pInc),mg+148,'right',GREEN],
-      [fE(m.rpdInc)+'/d',W-mg,'right',PURPLE,true],
-    ],i%2===1);
-  });
-  y+=4;
-
-  // ── DESGLOSE ECONOMICO POR VEHICULO ───────────────────────────────────
-  _safeAddPage(20,'RESUMEN');
-  _sect('DESGLOSE ECONÓMICO POR VEHÍCULO',PURPLE,LPURPLE2,DPURPLE);
-  if(hasMgmt){
-    _tblH([
-      ['VEHÍCULO',mg+3,'left'],['INGRESOS',mg+62,'right'],
-      ['GASTOS',mg+92,'right'],['BFO.ACTIVIDAD',mg+128,'right'],
-      ['PART.NEGOCIO',mg+163,'right'],['ALQ.',W-mg,'right'],
-    ],PURPLE);
-    metrics.forEach((m,i)=>{
-      _safeAddPage(8,'RESUMEN');
-      const prof=m.pProfit;
-      const isGest=m.v.vtype==='managed';
-      const comm=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));
-      _tblR([
-        [_vehLblW(doc,m.v.name,m.v.plate,' ',isGest?' (G '+comm+'%)':'',(mg+62)-_incW(fE(m.pInc))-3-(mg+3),true),mg+3,'left',isGest?PDFS.P2:PDFS.T,true],
-        [fE(m.pInc),mg+62,'right',GREEN],
-        [fE(m.pExp),mg+92,'right',RED],
-        [fE(prof),mg+128,'right',prof>=0?GREEN:RED,false],
-        [isGest?fE(m.bizShare):'—',mg+163,'right',isGest?PDFS.P2:(prof>=0?GREEN:RED),isGest],
-        [String(m.pBks),W-mg,'right'],
-      ],i%2===1);
-    });
-    doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.5);doc.line(mg,y,mg+cW,y);doc.setLineWidth(0.2);doc.line(mg,y+0.9,mg+cW,y+0.9);
-    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-    doc.text('TOTAL',mg+3,y+5.5);doc.text(fE(totInc),mg+62,y+5.5,{align:'right'});
-    doc.text(fE(totExp),mg+92,y+5.5,{align:'right'});
-    doc.text(fE(totProfit),mg+128,y+5.5,{align:'right'});
-    doc.setTextColor(...PURPLE);doc.text(fE(bizTotProfit),mg+163,y+5.5,{align:'right'});
-    doc.setTextColor(...DARK);doc.text(String(totBks),W-mg,y+5.5,{align:'right'});
-    y+=8;
-    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('(G) Vehículo en gestión: Part.Negocio = comisión del gestor menos el déficit asumido; comisión sobre lo facturado menos gastos 5.3 (hasta 10/2026, sobre lo facturado)',mg,y+4);
-    y+=8;
-  } else {
-    _tblH([
-      ['VEHÍCULO',mg+3,'left'],['INGRESOS',mg+76,'right'],
-      ['GASTOS',mg+108,'right'],['BENEFICIO',mg+145,'right'],
-      ['ALQ.',W-mg,'right'],
-    ],PURPLE);
-    metrics.forEach((m,i)=>{
-      _safeAddPage(8,'RESUMEN');
-      const prof=m.pProfit;
-      _tblR([
-        [_vehLbl(m.v.name,m.v.plate,' ','',28),mg+3,'left',PDFS.T,true],
-        [fE(m.pInc),mg+76,'right',GREEN],
-        [fE(m.pExp),mg+108,'right',RED],
-        [fE(prof),mg+145,'right',prof>=0?GREEN:RED,true],
-        [String(m.pBks),W-mg,'right'],
-      ],i%2===1);
-    });
-    doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.5);doc.line(mg,y,mg+cW,y);doc.setLineWidth(0.2);doc.line(mg,y+0.9,mg+cW,y+0.9);
-    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-    doc.text('TOTAL',mg+3,y+5.5);doc.text(fE(totInc),mg+76,y+5.5,{align:'right'});
-    doc.text(fE(totExp),mg+108,y+5.5,{align:'right'});
-    doc.setTextColor(...PURPLE);doc.text(fE(totProfit),mg+145,y+5.5,{align:'right'});
-    doc.setTextColor(...DARK);doc.text(String(totBks),W-mg,y+5.5,{align:'right'});
-    y+=12;
-  }
-
-  // ── ROI (vehiculos propios con precio de compra) ───────────────────────
-  const roiVs=metrics.filter(m=>m.pp>0&&m.v.vtype!=='managed');
-  if(roiVs.length){
-    _safeAddPage(20,'RESUMEN');
-    _sect('RETORNO DE INVERSIÓN (acumulado histórico)',AMBER,LAMBER,DAMBER);
-    _tblH([
-      ['VEHÍCULO',mg+3,'left'],['P.COMPRA',mg+66,'right'],
-      ['BFO.ACUM.',mg+104,'right'],['PENDIENTE',mg+144,'right'],
-      ['ROI%',W-mg,'right'],
-    ],AMBER);
-    roiVs.forEach((m,i)=>{
-      _safeAddPage(8,'ROI');
-      const roi=m.roi!==null?m.roi+'%':'—';
-      const roiCol=m.roi===null?GRAY:m.roi>=100?GREEN:m.roi>=50?AMBER:RED;
-      const pend=Math.max(0,m.pp-m.allProfit);
-      _tblR([
-        [_vehLbl(m.v.name,m.v.plate,' ','',26),mg+3,'left',PDFS.T,true],
-        [fE(m.pp),mg+66,'right',GRAY],
-        [fE(m.allProfit),mg+104,'right',m.allProfit>=0?GREEN:RED],
-        [m.paidOff?'AMORTIZADO':fE(pend)+(_am=>_am?' · ~'+_am+(_am===1?' mes':' meses'):'')(_amortMeses(m.v,m.pp,m.allProfit)),mg+144,'right',m.paidOff?GREEN:AMBER],
-        [roi,W-mg,'right',roiCol,true],
-      ],i%2===1);
-    });
-    y+=4;
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // PAG 2 — OCUPACION, TARIFAS Y PLATAFORMAS
-  // ══════════════════════════════════════════════════════════════════════════
-  _addPage('OCUPACIÓN & TARIFAS');
-
-  // ── OCUPACION GLOBAL ──────────────────────────────────────────────────
-  _sect('OCUPACIÓN DE LA FLOTA',BLUE,LBLUE,DBLUE);
-
-  // Caja global con porcentaje grande
-  const occCol=globalOcc>=70?GREEN:globalOcc>=40?AMBER:RED;
-  doc.setDrawColor(...BLUE);doc.setLineWidth(0.8);doc.line(mg,y,mg+cW,y);doc.setLineWidth(0.2);
-  doc.setDrawColor(...BORDER);doc.line(mg,y+16,mg+cW,y+16);
-  doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...DBLUE);
-  doc.text('OCUPACIÓN GLOBAL DEL PERÍODO',mg+4,y+6);
-  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-  doc.text(totalOccDays+'d ocupados de '+totalAvailDays+'d disponibles ('+filtered.length+' vehículos × '+periodDim+'d)',mg+4,y+11.5);
-  doc.setFontSize(20);doc.setFont('helvetica','bold');doc.setTextColor(...occCol);
-  doc.text(globalOcc+'%',W-mg-4,y+13,{align:'right'});
-  y+=18;
-  _hbar(mg,y,cW,5,globalOcc,occCol,PDFS.LN);
-  doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-  doc.text('0%',mg,y+8);doc.text('50%',mg+cW/2,y+8,{align:'center'});doc.text('100%',W-mg,y+8,{align:'right'});
-  y+=12;
-
-  // Barras individuales
-  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(...DBLUE);
-  doc.text('OCUPACIÓN INDIVIDUAL',mg,y);y+=5;
-  metrics.forEach(m=>{
-    _safeAddPage(8,'OCUPACIÓN');
-    const oc=m.occ;const bc=oc>=70?GREEN:oc>=40?AMBER:RED;
-    const vlbl=_vehLbl(m.v.name,m.v.plate,' · ',m.v.vtype==='managed'?' (G)':'',28);
-    doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
-    doc.text(vlbl,mg,y+3.5);
-    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text(m.pDays+'d / '+periodDim+'d',mg+70,y+3.5,{align:'right'});
-    _hbar(mg+74,y+0.5,cW-92,5,oc,bc);
-    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...bc);
-    doc.text(oc+'%',W-mg,y+4,{align:'right'});
-    y+=8;
-  });
-  y+=4;
-
-  // ── PRECIO MEDIO Y TARIFAS ────────────────────────────────────────────
-  _safeAddPage(50,'TARIFAS');
-  _sect('PRECIO MEDIO Y MÉTRICAS DE TARIFA',AMBER,LAMBER,DAMBER);
-
-  // 4 tarjetas KPI
-  {const pw=(cW-3*4)/4;
-  const pKpis=[
-    ['PRECIO MEDIO\nPOR ALQUILER',fE(avgPricePerBk),AMBER],
-    ['€ POR DÍA\nOCUPADO',fE(avgDailyRate),GREEN],
-    ['DURACIÓN\nMEDIA',avgDurGlobal+'d',BLUE],
-    ['ALQUILERES\nTOTALES',String(totBks),PURPLE],
-  ];
-  pKpis.forEach(([lbl,val,col],i)=>{
-    const px=mg+i*(pw+4);
-    doc.setDrawColor(...col);doc.setLineWidth(0.8);doc.line(px,y,px+pw,y);doc.setLineWidth(0.2);
-    doc.setDrawColor(...BORDER);doc.line(px,y+23,px+pw,y+23);
-    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(...col);
-    doc.text(val,px+pw/2,y+13,{align:'center'});
-    doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    lbl.split('\n').forEach((l,li)=>doc.text(l,px+pw/2,y+17+li*3.5,{align:'center'}));
-  });}
   y+=26;
+  // Las 4 cifras del período, con su variación frente al período anterior
+  {const P=R.cmp.length?_anStats(vs,R.cmp[0][0],X):null,pv=P&&P.act;
+   const K=[[pct(S.occ,S.cap)+'%','Ocupación',pv?dl(pct(S.occ,S.cap),pct(P.occ,P.cap),'pt'):null],
+     [S.occ?fmt(S.fac/S.occ):'—','Precio medio día',pv&&S.occ&&P.occ?dl(S.fac/S.occ,P.fac/P.occ,'%'):null],
+     [S.cap?fmt(S.fac/S.cap):'—','Rinde al día',pv&&S.cap&&P.cap?dl(S.fac/S.cap,P.fac/P.cap,'%'):null],
+     [S.free+' d','Días libres',pv&&R.ms.length===1?dl(S.free,P.free,'d'):null]];
+   const kw=(cW-9)/4;
+   K.forEach(([v,l,d],i)=>{const x=m+i*(kw+3);
+     doc.setDrawColor(...PDFS.GD);doc.setLineWidth(0.8);doc.line(x,y,x+kw,y);doc.setLineWidth(0.2);
+     doc.setDrawColor(...PDFS.LN);doc.line(x,y+22,x+kw,y+22);
+     doc.setFont('jbm','bold');doc.setFontSize(13);doc.setTextColor(...PDFS.T);doc.text(v,x,y+9);
+     doc.setFont('jbm','normal');doc.setFontSize(5.8);doc.setTextColor(...PDFS.T2);doc.text(up(l),x,y+14);
+     if(d){doc.setFont('jbm','bold');doc.setFontSize(7.5);doc.setTextColor(...d[1]);doc.text(d[0],x,y+19.5);}});
+   y+=30;}
+  // Comparativa: el período, el anterior de igual duración y el mismo del año pasado («—» si no hubo actividad)
+  sec('Comparativa');
+  {const cols=[[R.ms,R.q]].concat(R.cmp.map(([ms,l])=>[ms,l.replace(/^vs /,'')])).map(([ms,l])=>({l,s:_anStats(vs,ms,X)}));
+   const xs=[m+92,m+135,W-m].slice(0,cols.length);
+   _pdfTh(doc,y,[['',m,'left']].concat(cols.map((c,i)=>[up(c.l),xs[i],'right'])));y+=7;
+   [['Facturado',s=>fmt(s.fac)],['Gastos',s=>fmt(s.exp)],['Beneficio flota',s=>fmt(s.ben)],['Alquileres',s=>String(s.bks)],['Clientes',s=>String(s.clients)]].forEach(([l,f])=>{
+     row([[l,m,'left',PDFS.T2]].concat(cols.map((c,i)=>[c.s.act||i===0?f(c.s):'—',xs[i],'right',i===0?PDFS.T:PDFS.T2,'jbm',i===0,8.5])),8);});
+  }
 
-  // Tabla por vehiculo
-  _tblH([
-    ['VEHÍCULO',mg+3,'left'],['PRECIO MEDIO',mg+68,'right'],
-    ['€/DÍA OCUP.',mg+106,'right'],['DUR. MEDIA',mg+140,'right'],
-    ['ALQ.',W-mg,'right'],
-  ],AMBER);
-  metrics.forEach((m,i)=>{
-    _safeAddPage(8,'TARIFAS');
-    _tblR([
-      [_vehLbl(m.v.name,m.v.plate,' ','',26),mg+3,'left',PDFS.T,true],
-      [fE(m.avgP),mg+68,'right',AMBER],
-      [fE(m.rpdInc),mg+106,'right',GREEN],
-      [m.avgDur+'d',mg+140,'right',BLUE],
-      [String(m.pBks),W-mg,'right'],
-    ],i%2===1);
+  // Ingresos, Gastos y Beneficio flota por mes del período (un solo mes: los 6 últimos hasta él; más de 24: los 24 últimos), de _anStats:
+  // ingresos = facturado de los propios + comisión de los de gestión; gastos = gastos de los propios + déficit asumido; así Ingresos − Gastos = Beneficio flota
+  {const cm=R.ms.length>1?R.ms.slice(-24):_anMonths(_anAdd(R.ms[0],-5),R.ms[0]);
+   const D=cm.map(mm=>{const s=_anStats(vs,[mm],X);return{m:mm,f:s.inc,g:s.exp,b:s.ben};});
+   y+=6;need(80);sec('Ingresos, gastos y beneficio flota por mes');
+   {let x=W-m;doc.setFont('jbm','normal');doc.setFontSize(6);
+    [[PDFS.P,'Beneficio flota'],[PDFS.T2,'Gastos'],[PDFS.GD,'Ingresos']].forEach(([c,l])=>{x-=doc.getTextWidth(up(l));doc.setTextColor(...PDFS.T2);doc.text(up(l),x,y-5.3);x-=4.5;doc.setFillColor(...c);doc.rect(x,y-7.6,3,3,'F');x-=6;});}
+   const top=y+2,hh=46,L0=m+18,ww=W-m-L0,sc=scl(D.flatMap(d=>[d.f,d.g,d.b]),top,hh),z=sc.p(0),sl=ww/D.length,bw=Math.min(6,sl*0.26);
+   doc.setFont('jbm','normal');doc.setFontSize(6);doc.setTextColor(...PDFS.T2);
+   (D.some(d=>d.f>0||d.g>0||d.b>0)?[[sc.mx,PDFS.LN]]:[]).concat(sc.mn<0?[[sc.mn,PDFS.LN]]:[]).forEach(([v,c])=>{doc.setDrawColor(...c);doc.setLineWidth(0.15);doc.line(L0,sc.p(v),W-m,sc.p(v));doc.text(e0(v),L0-2,sc.p(v)+1,{align:'right'});});
+   doc.text('0 €',L0-2,z+1,{align:'right'});
+   D.forEach((d,i)=>{const cx=L0+i*sl+sl/2;bar(cx-1.5*bw-0.6,z,bw,sc.p(d.f),PDFS.GD);bar(cx-0.5*bw,z,bw,sc.p(d.g),PDFS.T2);bar(cx+0.5*bw+0.6,z,bw,sc.p(d.b),d.b<0?PDFS.KO:PDFS.P);
+     if(sl>=9||i%2===(D.length-1)%2){doc.setFont('jbm','normal');doc.setFontSize(6);doc.setTextColor(...PDFS.T2);doc.text(_anMon(d.m),cx,top+hh+5,{align:'center'});}});
+   doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.3);doc.line(L0,z,W-m,z);doc.setLineWidth(0.2);
+   y=top+hh+8;}
+
+  // ══ PÁGINA 2 · COCHES (y turismo vs furgoneta) ══
+  doc.addPage();y=PDFS.TOP;
+  const cars=vs.map(v=>({v,s:_anStats([v],R.ms,X)})).sort((a,b)=>b.s.ben-a.s.ben);
+  // Lo que deja cada coche: barras horizontales desde el 0 (a la izquierda si es negativo); las cifras, en la tabla de debajo
+  {sec('Lo que deja cada coche');
+   const bx=m+52,bw=W-m-bx,sc=scl(cars.map(c=>c.s.ben),bx,bw),zx=sc.q(0);
+   cars.forEach(({v,s})=>{need(7);
+     doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...PDFS.T);doc.text(_pdfFit(doc,v.name,48),m,y+4.6);
+     const x2=sc.q(s.ben);const xl=Math.min(zx,x2),w=Math.abs(x2-zx);if(w>0.05){doc.setFillColor(...(s.ben<0?PDFS.KO:PDFS.P));doc.rect(xl,y+1.6,w,3.6,'F');}
+     doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.3);doc.line(zx,y,zx,y+7);doc.setLineWidth(0.2);
+     y+=7;});
+   y+=8;}
+  sec('Coches');
+  const thC=()=>{_pdfTh(doc,y,[['VEHÍCULO',m,'left'],['ALQ.',m+90,'right'],['DÍAS',m+104,'right'],['OCUP.',m+119,'right'],['RINDE AL DÍA',m+140,'right'],['FACTURADO',m+160,'right'],['DEJA',W-m,'right']]);y+=7;};
+  thC();
+  cars.forEach(({v,s})=>{
+    const pp=Number(v.purchase_price)||0;let am='';
+    if(v.vtype!=='managed'&&pp>0){const pr=tInc(v)-tExp(v);
+      if(pr>=pp)am='Amortizado';else{const mm=_amortMeses(v,pp,pr);am='Amortizado '+Math.max(0,pct(pr,pp))+' %'+(mm?' · ~'+mm+' '+(mm===1?'mes':'meses'):'');}}
+    const sub=[v.vtype==='managed'?'Gestión '+(v.commission==null||v.commission===''?30:Number(v.commission))+' %':'',am].filter(Boolean).join(' · ');
+    const h=sub?11:8;need(h,thC);
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...PDFS.T);
+    doc.text(_pdfFit(doc,v.name+(v.plate?' · '+v.plate:''),70),m,y+5.2);
+    if(sub){doc.setFont('jbm','normal');doc.setFontSize(6.5);doc.setTextColor(...PDFS.T2);doc.text(_pdfFit(doc,sub,72),m,y+9.2);}
+    row([[String(s.bks),m+90,'right',PDFS.T,'jbm'],[String(s.occ),m+104,'right',PDFS.T,'jbm'],[pct(s.occ,s.cap)+'%',m+119,'right',PDFS.T,'jbm'],
+      [s.cap?fmt(s.fac/s.cap):'—',m+140,'right',PDFS.T,'jbm'],[fmt(s.fac),m+160,'right',PDFS.T,'jbm'],[fmt(s.ben),W-m,'right',s.ben<0?PDFS.KO:s.ben>0?PDFS.OK:PDFS.T,'jbm',true]],h,true,5.2);
   });
-  y+=6;
-
-  // ── ORIGEN DE CLIENTES ────────────────────────────────────────────────
-  _safeAddPage(40,'PLATAFORMAS');
-  _sect('ORIGEN DE CLIENTES — PLATAFORMAS',PURPLE,LPURPLE2,DPURPLE);
-
-  if(!platEntries.length){
-    doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(...GRAY);
-    doc.text('Sin datos de plataforma en el período.',mg+3,y+4);y+=10;
-  } else {
-    // Columnas fijas sin solapamiento:
-    // dot:mg+2 | nombre:mg+7 | count:mg+52(R) | bar1:mg+56(28mm) | %bk:mg+88 | income:mg+128(R) | bar2:mg+133(28mm) | %inc:mg+cW(R)
-    _tblH([
-      ['PLATAFORMA',mg+7,'left'],
-      ['ALQ.',mg+52,'right'],
-      ['% ALQ.',mg+88,'left'],
-      ['INGRESOS',mg+128,'right'],
-      ['% ING.',W-mg,'right'],
-    ],PURPLE);
-    const totPlatBks=platEntries.reduce((s,[,d])=>s+d.count,0);
-    const totPlatInc=platEntries.reduce((s,[,d])=>s+d.inc,0);
-    platEntries.forEach(([key,d],i)=>{
-      _safeAddPage(8,'PLATAFORMAS');
-      const pctBk=totPlatBks>0?Math.round(d.count/totPlatBks*100):0;
-      const pctInc=totPlatInc>0?Math.round(d.inc/totPlatInc*100):0;
-      const pc=platColors[i%platColors.length];
-      // (sin sombreado alterno: el filete fino de abajo separa las filas)
-      // Punto de color
-      doc.setFillColor(...pc);doc.circle(mg+4,y+4.5,2,'F');
-      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
-      doc.text(d.label,mg+9,y+5.5);
-      doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-      doc.text(d.count==null?'—':String(d.count),mg+52,y+5.5,{align:'right'});
-      // Barra %bk (28mm desde mg+56)
-      _hbar(mg+56,y+2,28,5,pctBk,pc);
-      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
-      doc.text(d.count==null?'—':pctBk+'%',mg+88,y+5.5,{align:'left'});
-      // Ingresos
-      doc.setTextColor(...GREEN);
-      doc.text(fE(d.inc),mg+128,y+5.5,{align:'right'});
-      // Barra %inc (28mm desde mg+133)
-      _hbar(mg+133,y+2,28,5,pctInc,PDFS.OK);
-      doc.setTextColor(...PDFS.OK);doc.setFont('helvetica','bold');
-      doc.text(pctInc+'%',W-mg,y+5.5,{align:'right'});
-      doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+9,mg+cW,y+9);
-      y+=9;
-    });
-    y+=4;
+  need(9,thC);
+  total([['TOTAL',m,'left',PDFS.T],[String(S.bks),m+90,'right',PDFS.T,'jbm'],[String(S.occ),m+104,'right',PDFS.T,'jbm'],[pct(S.occ,S.cap)+'%',m+119,'right',PDFS.T,'jbm'],
+    [S.cap?fmt(S.fac/S.cap):'—',m+140,'right',PDFS.T,'jbm'],[fmt(S.fac),m+160,'right',PDFS.T,'jbm'],[fmt(S.ben),W-m,'right',S.ben<0?PDFS.KO:PDFS.T,'jbm']]);
+  y+=8;
+  // Turismo vs furgoneta (solo si hay de los dos)
+  const tur=vs.filter(v=>!(v.vehicle_type||'turismo').startsWith('l')),fur=vs.filter(v=>(v.vehicle_type||'turismo').startsWith('l'));
+  if(tur.length&&fur.length){
+    need(60);sec('Turismo vs furgoneta');
+    const tv=[_anStats(tur,R.ms,X),_anStats(fur,R.ms,X)];
+    _pdfTh(doc,y,[['',m,'left'],['TURISMOS ('+tur.length+')',m+120,'right'],['FURGONETAS ('+fur.length+')',W-m,'right']]);y+=7;
+    [['Facturado',st=>fmt(st.fac)],['Beneficio flota',st=>fmt(st.ben)],['Alquileres',st=>String(st.bks)],['Ocupación',st=>pct(st.occ,st.cap)+'%'],['Precio medio día',st=>st.occ?fmt(st.fac/st.occ):'—']].forEach(([l,f])=>{
+      row([[l,m,'left',PDFS.T2],[f(tv[0]),m+120,'right',PDFS.T,'jbm',false,8.5],[f(tv[1]),W-m,'right',PDFS.T,'jbm',false,8.5]],8);});
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // PAG 3 — GASTOS & EFICIENCIA & DURACION
-  // ══════════════════════════════════════════════════════════════════════════
-  _addPage('GASTOS & EFICIENCIA');
-
-  // ── DESGLOSE GASTOS POR CATEGORIA ─────────────────────────────────────
-  _sect('DESGLOSE DE GASTOS POR CATEGORÍA',RED,LRED,DRED);
-
-  if(!expEntries.length){
-    doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(...GRAY);
-    doc.text('Sin gastos registrados en el período.',mg+3,y+4);y+=10;
-  } else {
-    // Columnas: dot:mg+2 | nombre:mg+7 | importe:mg+60(R) | %text:mg+78 | barra:mg+96→mg+cW-2
-    _tblH([
-      ['CATEGORÍA',mg+7,'left'],['IMPORTE',mg+60,'right'],
-      ['%',mg+78,'left'],['PROPORCIÓN VISUAL',mg+96,'left'],
-    ],RED);
-    const barW=cW-84; // width available for bar from mg+96 to mg+cW-2
-    expEntries.forEach(([cat,amt],i)=>{
-      _safeAddPage(8,'GASTOS');
-      const pct=totExp>0?Math.round(amt/totExp*100):0;
-      const ec=expColors[i%expColors.length];
-      // (sin sombreado alterno: el filete fino de abajo separa las filas)
-      doc.setFillColor(...ec);doc.circle(mg+4,y+3.5,2,'F');
-      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
-      doc.text(cat.substring(0,26),mg+9,y+4.5);
-      doc.setFont('helvetica','normal');doc.setTextColor(...DRED);
-      doc.text(fE(amt),mg+60,y+4.5,{align:'right'});
-      doc.setTextColor(...PDFS.T);doc.setFont('helvetica','bold');
-      doc.text(pct+'%',mg+78,y+4.5);
-      _hbar(mg+96,y+1.5,Math.min(barW,cW-96),4,pct,ec,PDFS.LN);
-      doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+7,mg+cW,y+7);
-      y+=7;
-    });
-    // Fila total
-    doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.5);doc.line(mg,y,mg+cW,y);doc.setLineWidth(0.2);doc.line(mg,y+0.9,mg+cW,y+0.9);
-    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...DRED);
-    doc.text('TOTAL GASTOS',mg+3,y+5.5);
-    doc.text(fE(totExp),mg+60,y+5.5,{align:'right'});
-    doc.text('100%',mg+78,y+5.5);
-    y+=12;
+  // ══ PÁGINA 3 · GASTOS Y DURACIÓN; PÁGINA 4 · CLIENTES Y PLATAFORMAS (alquileres que empiezan en el período, sin anonimizados) ══
+  doc.addPage();y=PDFS.TOP;
+  const bks=vs.flatMap(v=>_anIdx(v,X).bks.filter(b=>R.ms.includes(b.startDate.slice(0,7))));
+  // Desglose de gastos: los MISMOS que «Gastos» de la comparativa (_anStats.exp): gastos de los coches propios por categoría y, en los de gestión,
+  // solo el déficit asumido (sus gastos 5.2 los paga el propietario y los 5.3 ya rebajan la comisión). Los generales de Negocio, aparte y fuera del total.
+  {const gc={},gk={},gcar=[];
+   vs.forEach(v=>{let tv=0;
+     if(v.vtype==='managed'){const d=_anStats([v],R.ms,X).exp;if(d){gk.__def='Déficit asumido (gestión)';gc.__def=(gc.__def||0)+d;tv=d;}}
+     else{const I=_anIdx(v,X);R.ms.forEach(mm=>(I.fin[mm]||[]).forEach(e=>{if(e.type!=='expense')return;
+       const l=String(e.category||'').trim()||'Otros',k=_catKey(l),a=Number(e.amount)||0;if(!gk[k])gk[k]=l;gc[k]=(gc[k]||0)+a;tv+=a;}));}
+     if(tv)gcar.push([v,tv]);});
+   const G=Object.keys(gc).filter(k=>Math.abs(gc[k])>=0.005).map(k=>[gk[k],gc[k]]).sort((a,b)=>b[1]-a[1]);
+   const tot=G.reduce((t,g)=>t+g[1],0),bx=m+100,bw=W-m-14-bx;
+   const gen=!_analyticsOwnership&&!_analyticsVtype?BF.filter(e=>e.type==='expense'&&typeof e.date==='string'&&R.ms.includes(e.date.slice(0,7))).reduce((t,e)=>t+(Number(e.amount)||0),0):0;
+   const shr=(L,T,txt)=>L.forEach(([l,a])=>{need(8);const pc=T>0?a/T*100:0;
+     doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.2);doc.line(bx,y+4,bx+bw,y+4);
+     if(pc>0){doc.setFillColor(...PDFS.T2);doc.rect(bx,y+2.4,Math.max(0.6,bw*Math.min(pc,100)/100),3.2,'F');}
+     row([[txt(l),m,'left',PDFS.T],[fmt(a),m+94,'right',PDFS.T,'jbm'],[T>0&&a>0?Math.round(pc)+'%':'—',W-m,'right',PDFS.T,'jbm']],8);});
+   sec('Desglose de gastos');
+   if(!G.length){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...PDFS.T2);doc.text('Sin gastos en el período.',m,y+5);y+=9;}
+   else{_pdfTh(doc,y,[['CATEGORÍA',m,'left'],['GASTOS',m+94,'right'],['%',W-m,'right']]);y+=7;
+     shr(G,tot,l=>_pdfFit(doc,l,80));need(9);total([['TOTAL',m,'left',PDFS.T],[fmt(tot),m+94,'right',PDFS.T,'jbm']]);}
+   if(gen>=0.005){y+=3;need(8);row([['Gastos generales (Negocio)',m,'left',PDFS.T2],[fmt(gen),m+94,'right',PDFS.T2,'jbm']],8,false);}
+   if(gcar.length>1){y+=6;need(24);
+     _pdfTh(doc,y,[['POR COCHE',m,'left'],['GASTOS',m+94,'right'],['%',W-m,'right']]);y+=7;
+     shr(gcar.sort((a,b)=>b[1]-a[1]).map(([v,a])=>[v,a]),tot,v=>_pdfFit(doc,v.name+(v.plate?' · '+v.plate:''),80));}
   }
+  y+=8;
+  // Duración de los alquileres
+  need(50);sec('Duración de los alquileres');
+  {const g={c:[],m:[],l:[]};bks.forEach(b=>{const d=daysBetween(b.startDate,b.endDate);(d<=3?g.c:d<=7?g.m:g.l).push(b);});
+   _pdfTh(doc,y,[['',m,'left'],['ALQ.',m+100,'right'],['%',m+130,'right'],['IMPORTE MEDIO',W-m,'right']]);y+=7;
+   [['Corto (1-3 días)',g.c],['Medio (4-7 días)',g.m],['Largo (8 días o más)',g.l]].forEach(([l,a])=>{
+     row([[l,m,'left',PDFS.T2],[String(a.length),m+100,'right',PDFS.T,'jbm'],[pct(a.length,bks.length)+'%',m+130,'right',PDFS.T,'jbm'],
+       [a.length?fmt(Math.round(a.reduce((s,b)=>s+(Number(b.amount)||0),0)/a.length)):'—',W-m,'right',PDFS.T,'jbm']],8);});
+   const km=bks.filter(b=>b.kmStart&&b.kmEnd&&b.kmEnd>b.kmStart);
+   if(km.length)row([['Km medios por alquiler',m,'left',PDFS.T2],[Math.round(km.reduce((s,b)=>s+(b.kmEnd-b.kmStart),0)/km.length).toLocaleString('es-ES')+' km',W-m,'right',PDFS.T,'jbm']],8);}
 
-  // ── EFICIENCIA OPERATIVA ──────────────────────────────────────────────
-  _safeAddPage(50,'EFICIENCIA');
-  _sect('EFICIENCIA OPERATIVA',AMBER,LAMBER,DAMBER);
+  doc.addPage();y=PDFS.TOP;
+  const cm={};
+  bks.forEach(b=>{const k=(b.clientDni||b.clientName||'').trim().toLowerCase();if(!k||(b.clientName||'').trim()===_CL_ANON)return;if(!cm[k])cm[k]={name:b.clientName||'—',count:0,total:0};cm[k].count++;cm[k].total+=Number(b.amount)||0;});
+  const cl=Object.values(cm).sort((a,b)=>b.total-a.total),rec=cl.filter(c=>c.count>1);
+  sec('Clientes');
+  {const kw=(cW-3)/2;
+   [[String(cl.length),'Clientes únicos'],[rec.length+' ('+pct(rec.length,cl.length)+'%)','Clientes recurrentes']].forEach(([v,l],i)=>{const x=m+i*(kw+3);
+     doc.setDrawColor(...PDFS.GD);doc.setLineWidth(0.8);doc.line(x,y,x+kw,y);doc.setLineWidth(0.2);
+     doc.setFont('jbm','bold');doc.setFontSize(13);doc.setTextColor(...PDFS.T);doc.text(v,x,y+9);
+     doc.setFont('jbm','normal');doc.setFontSize(5.8);doc.setTextColor(...PDFS.T2);doc.text(up(l),x,y+14);});
+   y+=20;}
+  if(cl.length){
+    const thL=()=>{_pdfTh(doc,y,[['#',m,'left'],['CLIENTE',m+10,'left'],['ALQ.',m+130,'right'],['IMPORTE',W-m,'right']]);y+=7;};
+    thL();
+    cl.slice(0,10).forEach((c,i)=>{need(7,thL);
+      row([[String(i+1).padStart(2,'0'),m,'left',PDFS.P,'jbm',true],[_pdfFit(doc,c.name,95),m+10,'left',PDFS.T],[c.count>1?'RECURRENTE':'',m+112,'right',PDFS.P,'jbm',false,6],
+        [String(c.count),m+130,'right',PDFS.T,'jbm'],[fmt(c.total),W-m,'right',PDFS.T,'jbm']],7);});
+  }else{doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...PDFS.T2);doc.text('Sin clientes en el período.',m,y+5);y+=9;}
+  y+=8;
 
-  // 4 cajas en fila 2+2
-  {const ew=(cW-3)/2;
-  const effBoxes=[
-    ['TIEMPO MUERTO\nMEDIO',avgDead!==null?avgDead+'d':'—',avgDead===null?GRAY:avgDead<=2?GREEN:avgDead<=5?AMBER:RED,'días libres entre alq.'],
-    ['COSTE POR DÍA\nALQUILADO',fE(metrics.reduce((s,m)=>s+m.pExp,0)/Math.max(totalOccDays,1)),RED,'gasto/día ocupado'],
-    ['RATIO\nEFICIENCIA',effRatio!==null?effRatio+'x':'—',effRatio!==null&&effRatio>=3?GREEN:effRatio!==null&&effRatio>=2?AMBER:RED,'€ ingresado por € gastado'],
-    ['MANT.\n/ INGRESOS',maintRatio+'%',maintRatio<=10?GREEN:maintRatio<=20?AMBER:RED,fE(maintExp)+' en mantenimiento'],
-  ];
-  [[0,1],[2,3]].forEach((pair,row)=>{
-    pair.forEach((idx,col)=>{
-      const ex=mg+col*(ew+3),ey=y+row*26;
-      const [lbl,val,col2,sub]=effBoxes[idx];
-      doc.setDrawColor(...col2);doc.setLineWidth(0.8);doc.line(ex,ey,ex+ew,ey);doc.setLineWidth(0.2);
-      doc.setDrawColor(...BORDER);doc.line(ex,ey+22,ex+ew,ey+22);
-      const lblLines=lbl.split('\n');
-      doc.setFontSize(5.5);doc.setFont('helvetica','bold');doc.setTextColor(...GRAY);
-      lblLines.forEach((l,li)=>doc.text(l,ex+ew/2,ey+6+li*3.5,{align:'center'}));
-      doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(...col2);
-      doc.text(val,ex+ew/2,ey+16,{align:'center'});
-      doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-      doc.text(sub,ex+ew/2,ey+20.5,{align:'center'});
-    });
-  });
-  y+=56;}
+  // Plataformas: los MISMOS movimientos que «Facturado» (prorrateo, ampliaciones, extras, cobros y penalizaciones; sin fianzas), cada uno en
+  // la plataforma de su alquiler (como Inicio, #158); lo que no es de un alquiler va a «Otros ingresos». Alq. = alquileres no cancelados con ingreso en el período.
+  {const pa={},seen=new Set();
+   vs.forEach(v=>{const I=_anIdx(v,X),bm={};(v.bookings||[]).forEach(b=>{if(b&&b.id)bm[b.id]=b;});
+     R.ms.forEach(mm=>(I.fin[mm]||[]).forEach(e=>{if(e.type!=='income'||_isDepositInc(e))return;
+       const b=bm[e.bookingId||e._bookingId],k=b?_platK(b.platform):'',p=PLATS[k]?k:'otros';
+       if(!pa[p])pa[p]={l:p==='otros'?'Otros ingresos':PLATS[p].label,n:p==='otros'?null:0,inc:0};
+       pa[p].inc+=Number(e.amount)||0;
+       if(p!=='otros'&&!b.cancelled&&!b.cancellation&&!seen.has(b.id)){seen.add(b.id);pa[p].n++;}}));});
+   const P=Object.entries(pa).sort((a,b)=>(a[0]==='otros')-(b[0]==='otros')||b[1].inc-a[1].inc);
+   const tot=P.reduce((t,[,d])=>t+d.inc,0),bx=m+100,bw=W-m-14-bx;
+   need(30+P.length*8);sec('Plataformas');
+   _pdfTh(doc,y,[['',m,'left'],['ALQ.',m+60,'right'],['FACTURADO',m+94,'right'],['%',W-m,'right']]);y+=7;
+   P.forEach(([k,d])=>{const pc=tot>0?Math.max(0,d.inc/tot*100):0;
+     doc.setDrawColor(...PDFS.LN);doc.setLineWidth(0.2);doc.line(bx,y+4,bx+bw,y+4);
+     if(pc>0){doc.setFillColor(...PDFS.P);doc.rect(bx,y+2.4,Math.max(0.6,bw*Math.min(pc,100)/100),3.2,'F');}
+     row([[d.l,m,'left',PDFS.T],[d.n==null?'—':String(d.n),m+60,'right',PDFS.T,'jbm'],[fmt(d.inc),m+94,'right',PDFS.T,'jbm'],[Math.round(pc)+'%',W-m,'right',PDFS.T,'jbm']],8);});
+   total([['TOTAL',m,'left',PDFS.T],[String(seen.size),m+60,'right',PDFS.T,'jbm'],[fmt(tot),m+94,'right',PDFS.T,'jbm']]);}
 
-  // Tiempo muerto por vehiculo (si hay datos)
-  if(validDead.length){
-    doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(...DAMBER);
-    doc.text('TIEMPO MUERTO POR VEHÍCULO:',mg,y);y+=5;
-    const dtW=(cW-4)/Math.min(validDead.length,2);
-    validDead.forEach((d,i)=>{
-      _safeAddPage(7,'EFICIENCIA');
-      const dc=d.avg<=2?GREEN:d.avg<=5?AMBER:RED;
-      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
-      doc.text(_vehLbl(d.v.name,d.v.plate,' · ','',28),mg+3,y+4);
-      doc.setFont('helvetica','bold');doc.setTextColor(...dc);
-      doc.text(d.avg+'d ('+d.gaps+' int.)',W-mg,y+4,{align:'right'});
-      doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+6,mg+cW,y+6);
-      y+=6;
-    });
-    y+=4;
-  }
-
-  // ── DISTRIBUCION POR DURACION ─────────────────────────────────────────
-  _safeAddPage(50,'DURACIÓN');
-  _sect('DISTRIBUCIÓN POR DURACIÓN DE ALQUILER',BLUE,LBLUE,DBLUE);
-
-  {const dw=(cW-2*4)/3;
-  const durSegs=[
-    ['Corto\n(1-3 dias)',durG.s,BLUE],
-    ['Medio\n(4-7 dias)',durG.m,GREEN],
-    ['Largo\n(8+ dias)',durG.l,AMBER],
-  ];
-  durSegs.forEach(([lbl,grp,col],i)=>{
-    const dx=mg+i*(dw+4),dy=y;
-    const pct=allPBks.length>0?Math.round(grp.length/allPBks.length*100):0;
-    doc.setDrawColor(...col);doc.setLineWidth(0.8);doc.line(dx,dy,dx+dw,dy);doc.setLineWidth(0.2);
-    doc.setDrawColor(...BORDER);doc.line(dx,dy+38,dx+dw,dy+38);
-    const lblLines=lbl.split('\n');
-    doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(...col);
-    lblLines.forEach((l,li)=>doc.text(l,dx+dw/2,dy+8+li*5,{align:'center'}));
-    doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
-    doc.text(String(grp.length),dx+dw/2,dy+23,{align:'center'});
-    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('alq. - '+pct+'% - media: '+fE(durAvg(grp)),dx+dw/2,dy+29,{align:'center'});
-    _hbar(dx+4,dy+33,dw-8,4,pct,col);
-  });
-  y+=44;}
-
-  if(avgKm!==null){
-    doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-    doc.text('Km medios por alquiler ('+bksKm.length+' registros con datos): '+avgKm+' km',mg,y);
-    y+=8;
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // PAG 4 — CLIENTES Y COMPARATIVA (#anA: sin la proyección anual ni el break-even)
-  // ══════════════════════════════════════════════════════════════════════════
-  _addPage('CLIENTES');
-
-  // ── ANALISIS DE CLIENTES ──────────────────────────────────────────────
-  _safeAddPage(60,'CLIENTES');
-  _sect('ANÁLISIS DE CLIENTES',PURPLE,LPURPLE2,DPURPLE);
-
-  // KPI row
-  {const cw4=(cW-3*3)/4;
-  const fidPct=cliList.length>0?Math.round(recurringCli.length/cliList.length*100):0;
-  const avgTicket=cliList.length>0?Math.round(cliList.reduce((s,c)=>s+c.total,0)/cliList.length*100)/100:0;
-  const avgBkCli=cliList.length>0?Math.round(cliList.reduce((s,c)=>s+c.count,0)/cliList.length*10)/10:0;
-  [
-    ['CL. UNICOS',String(cliList.length),BLUE],
-    ['RECURRENTES',String(recurringCli.length),PURPLE],
-    ['FIDELIZACIÓN',fidPct+'%',fidPct>=30?GREEN:fidPct>=15?AMBER:RED],
-    ['TICKET MEDIO',fE(avgTicket),GREEN],
-  ].forEach(([lbl,val,col],i)=>{
-    _kpiCard(mg+i*(cw4+3),y,cw4,18,lbl,val,col);
-  });
-  y+=22;}
-
-  // Top clientes
-  if(cliList.length){
-    const topN=Math.min(10,cliList.length);
-    _tblH([
-      ['#',mg+3,'left'],['CLIENTE',mg+13,'left'],
-      ['ALQ.',mg+106,'right'],['GASTO TOTAL',W-mg,'right'],
-    ],PURPLE);
-    cliList.slice(0,topN).forEach((c,i)=>{
-      _safeAddPage(8,'CLIENTES');
-      const isRec=c.count>1;
-      // (sin sombreado alterno: el filete fino de abajo separa las filas)
-      doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
-      doc.text(String(i+1),mg+3,y+4.5);
-      doc.setFont('helvetica','normal');doc.setTextColor(...PDFS.T);
-      doc.text(c.name.substring(0,34),mg+13,y+4.5);
-      if(isRec){
-        doc.setDrawColor(...PURPLE);doc.setLineWidth(0.3);doc.roundedRect(mg+109,y+1.5,20,4,1,1,'S');doc.setLineWidth(0.2);
-        doc.setFontSize(5.5);doc.setFont('helvetica','bold');doc.setTextColor(...PURPLE);
-        doc.text('RECURRENTE',mg+119,y+4.2,{align:'center'});
-      }
-      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-      doc.text(String(c.count),mg+106,y+4.5,{align:'right'});
-      doc.setFont('helvetica','bold');doc.setTextColor(...GREEN);
-      doc.text(fE(c.total),W-mg,y+4.5,{align:'right'});
-      doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(mg,y+7,mg+cW,y+7);
-      y+=7;
-    });
-    y+=6;
-  }
-
-  // ── TURISMO VS FURGONETA ─────────────────────────────────────────────
-  if(turismos.length>0&&furgos.length>0){
-    _safeAddPage(60,'COMPARATIVA');
-    _sect('TURISMO VS FURGONETA — COMPARATIVA DEL PERÍODO',BLUE,LBLUE,DBLUE);
-    const tvW=(cW-4)/2;
-    [['[ T ] TURISMOS ('+tStat.cnt+')',tStat,BLUE],['[ F ] FURGONETAS ('+fStat.cnt+')',fStat,AMBER]].forEach(([lbl,st,col],ci)=>{
-      const tx=mg+ci*(tvW+4),ty=y;
-      doc.setDrawColor(...col);doc.setLineWidth(0.8);doc.line(tx,ty,tx+tvW,ty);doc.setLineWidth(0.2);
-      doc.setDrawColor(...BORDER);doc.line(tx,ty+52,tx+tvW,ty+52);
-      doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...col);
-      doc.text(lbl,tx+tvW/2,ty+8,{align:'center'});
-      const rows=[['Alquileres',String(st.bks)],['Ingresos',fE(st.inc)],['€/día ocupado',fE(st.rpd)],['Precio medio',fE(st.avgP)],['Gastos',fE(st.exp)],['Beneficio',fE(st.profit)]];
-      rows.forEach(([l,v],ri)=>{
-        const ry=ty+13+ri*6;
-        doc.setDrawColor(...BORDER);doc.setLineWidth(0.15);doc.line(tx,ry+5,tx+tvW,ry+5);
-        doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(...GRAY);
-        doc.text(l,tx+4,ry+3.5);
-        doc.setFont('helvetica','bold');doc.setTextColor(...PDFS.T);
-        doc.text(v,tx+tvW-4,ry+3.5,{align:'right'});
-      });
-    });
-    y+=58;
-  }
-
-  // ── DESGLOSE MENSUAL (si periodo > 1 mes) ─────────────────────────────
-  if(months.length>1){
-    _safeAddPage(50,'MENSUAL');
-    _sect('DESGLOSE MENSUAL — FLOTA COMPLETA',GREEN,LGREEN,DGREEN);
-    _tblH([
-      ['MES',mg+3,'left'],['INGRESOS',mg+62,'right'],
-      ['GASTOS',mg+100,'right'],['BENEFICIO',mg+142,'right'],['ALQ.',W-mg,'right'],
-    ],GREEN);
-    months.forEach((mk,i)=>{
-      _safeAddPage(8,'MENSUAL');
-      const [yr2,mo2]=mk.split('-');
-      const mI=filtered.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='income'&&!_isDepositInc(e)&&e.date.startsWith(mk)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
-      const mE=filtered.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&e.date.startsWith(mk)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
-      const mBk=filtered.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&b.startDate.startsWith(mk)).length,0);
-      const mP=mI-mE;
-      _tblR([
-        [MON_ES[parseInt(mo2)-1]+' '+yr2,mg+3,'left',PDFS.T,true],
-        [fE(mI),mg+62,'right',GREEN],[fE(mE),mg+100,'right',RED],
-        [fE(mP),mg+142,'right',mP>=0?GREEN:RED,true],[String(mBk),W-mg,'right'],
-      ],i%2===1);
-    });
-    doc.setDrawColor(...PDFS.K);doc.setLineWidth(0.5);doc.line(mg,y,mg+cW,y);doc.setLineWidth(0.2);doc.line(mg,y+0.9,mg+cW,y+0.9);
-    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...DARK);
-    doc.text('TOTAL PERÍODO',mg+3,y+5.5);doc.text(fE(totInc),mg+62,y+5.5,{align:'right'});
-    doc.text(fE(totExp),mg+100,y+5.5,{align:'right'});
-    doc.setTextColor(...PURPLE);doc.text(fE(totProfit),mg+142,y+5.5,{align:'right'});
-    doc.setTextColor(...DARK);doc.text(String(totBks),W-mg,y+5.5,{align:'right'});
-    y+=12;
-  }
-
-  _pdfBrand(doc,'INFORME DE ANALÍTICAS',[periodStr,filterLabel]);
-  _savePDF(doc,'Informe_Analiticas_'+curM+'_'+toM+'.pdf');
+  const filterLabel=[_analyticsOwnership==='own'?'Vehículos propios':_analyticsOwnership==='managed'?'En gestión':'Toda la flota',_analyticsVtype?((VTYPES.find(t=>t.id===_analyticsVtype)||{}).label||''):''].filter(Boolean).join(' · ');
+  _pdfBrand(doc,'INFORME DE ANALÍTICAS',[up(R.q),filterLabel]);
+  _savePDF(doc,'Informe_Analiticas_'+fm+'_'+tm+'.pdf');
   }catch(e){alert('Error al generar el informe analítico:\n'+e.message+'\n'+(e.stack||'').slice(0,300));}
 }
 

@@ -1,7 +1,7 @@
 # Analítica · cifras correctas (bloque A): «Beneficio flota» (propios + comisión − déficit asumido) en la cabecera y en la Comparativa,
 # que cuadra con Negocio salvo los ingresos y gastos generales; Comparativa y ocupación con los coches del filtro (desde el
 # bloque B, en las cifras del período; la ocupación «Histórico» ya no está); amortización con una sola cifra (meses al ritmo de los últimos 6 meses) y solo de coches propios; sin «Proyección anual»;
-# clientes sin anonimizados; informe PDF: plataformas = Ingresos, período «10/2026 a 11/2026», sin proyección ni break-even;
+# clientes sin anonimizados; informe PDF (desde el bloque C, el de 3 páginas: período «OCT-NOV 2026», Beneficio flota, amortización, clientes y plataformas = Facturado), sin proyección ni break-even;
 # «Informe PDF» de escritorio abre el selector de período. Datos inventados; fecha fija del arnés: 20/11/2026.
 # Cuentas a mano (comisión 30 %; octubre con la regla antigua, noviembre con la de #90):
 #   v1 propio (compra 6000 €): oct 300 − 100 = 200 · nov (400 + 20) − 50 = 370 · dic (reserva) 100 → beneficio 670 €
@@ -89,26 +89,19 @@ with H.playwright() as p:
     # ── 5. Clientes sin anonimizados (período «Todo») ──
     cl=dict(an).get('Clientes','')
     chk(re.search(r'2 CLIENTES ÚNICOS 1 \(50%\)',N(cl),re.I) and 'anonimizado' not in cl,'Clientes: 2 únicos (Ana y Bea), 1 recurrente; sin «Cliente anonimizado»',cl[:160])
-    # ── 6. Informe PDF de octubre a noviembre ──
+    # ── 6. Informe PDF de octubre a noviembre (#anC: informe nuevo de 3 páginas; sin la tabla de plataformas) ──
     L=[N(t) for t in J("__pdfText(()=>generateAnalyticsPDF('2026-10','2026-11'),true)")]
     txt=' | '.join(L)
     chk(not any(t.startswith('ERROR') for t in L),'PDF: se genera sin error',[t for t in L if t.startswith('ERROR')])
-    chk(any(t.startswith('Período: 10/2026 a 11/2026') for t in L),'PDF: «Período: 10/2026 a 11/2026»',[t for t in L if t.startswith('Período')])
+    chk('OCT-NOV 2026' in L and '→' not in txt,'PDF: período «OCT-NOV 2026» en la cabecera',[t for t in L if '2026' in t][:3])
     chk('PROYECCIÓN' not in txt.upper() and 'Break-even' not in txt,'PDF: sin proyección anual ni break-even')
-    i=L.index('INGRESOS') if 'INGRESOS' in L else -1
-    kpi=L[i-1] if i>0 else ''
-    j=[k for k,t in enumerate(L) if t.startswith('ORIGEN DE CLIENTES')]
-    pl={}
-    if j:
-        seg=L[j[0]:j[0]+60]
-        for k,t in enumerate(seg):
-            if t in ('Sin app','Amovens','Getaround','Otros ingresos'):pl[t]=(seg[k+1],seg[k+3])
-    chk(kpi=='1820,00 €','PDF: «Ingresos» 1820 € (v1 300 + 420 + v2 500 + 600)',kpi)
-    chk(pl=={'Sin app':('2','900,00 €'),'Getaround':('1','500,00 €'),'Amovens':('1','400,00 €'),'Otros ingresos':('-','20,00 €')},'PDF plataformas: los mismos movimientos que Ingresos (900 + 500 + 400 + 20 = 1820; «Otros ingresos» sin nº de alquileres)',pl)
-    chk('Bfo. flota: 888,00 €' in L and 'BENEFICIO FLOTA' in L,'PDF: «Bfo. flota» 888 € (propio 570 + comisiones 318)',[t for t in L if 'flota' in t.lower()])
-    roiP=[t for t in L if '· ~' in t and 'mes' in t]
-    chk(roiP==['5330,00 € · ~19 meses'],'PDF ROI: pendiente con la misma cifra de la pantalla («5330,00 € · ~19 meses»), solo el propio',roiP)
-    k=L.index('CL. UNICOS') if 'CL. UNICOS' in L else -1
+    chk('BENEFICIO FLOTA' in L and L[L.index('BENEFICIO FLOTA')+1:L.index('BENEFICIO FLOTA')+2]==['888,00 €'] if 'BENEFICIO FLOTA' in L else False,'PDF: Beneficio flota 888 € (propio 570 + comisiones 318)',[t for t in L if 'flota' in t.lower()])
+    am=[t for t in L if t.startswith('Amortizado')]
+    chk(am==['Amortizado 11 % · ~19 meses'],'PDF: amortización con la misma cifra de la pantalla, solo el propio',am)
+    i=L.index('PLATAFORMAS') if 'PLATAFORMAS' in L else -1
+    pl={t:tuple(L[i+k+1:i+k+3]) for k,t in enumerate(L[i:i+40]) if i>=0 and t in ('Sin app','Amovens','Getaround','Otros ingresos','TOTAL')}
+    chk(pl=={'Sin app':('2','900,00 €'),'Getaround':('1','500,00 €'),'Amovens':('1','400,00 €'),'Otros ingresos':('-','20,00 €'),'TOTAL':('4','1820,00 €')},'PDF plataformas: los mismos movimientos que el Facturado (900 + 500 + 400 + 20 = 1820; «Otros ingresos» sin nº de alquileres)',pl)
+    k=L.index('CLIENTES ÚNICOS') if 'CLIENTES ÚNICOS' in L else -1
     chk(k>0 and L[k-1]=='1' and 'Cliente anonimizado' not in L,'PDF clientes: 1 único (Ana), sin «Cliente anonimizado»',L[k-1] if k>0 else None)
     ctx.close()
     # ── 7. Escritorio: «Informe PDF» abre el selector de período ──
