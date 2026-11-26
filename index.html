@@ -2736,8 +2736,8 @@ function renderAnalytics(el){
   const _k=(v,l,d)=>`<div><b>${v}</b><span>${l}</span>${d?`<em class="an-kd">${d}</em>`:''}</div>`;
   h+=`<div class="d-kpi an-k4" style="--c:2">
     ${_k(_pct(S.occ,S.cap)+'%','Ocupación',_pv?_dl(_pct(S.occ,S.cap),_pct(P.occ,P.cap),'pt'):'')}
-    ${_k(S.occ?fmt(S.fac/S.occ):'—','€ / día alquilado',_pv&&S.occ&&P.occ?_dl(S.fac/S.occ,P.fac/P.occ,'%'):'')}
-    ${_k(S.cap?fmt(S.fac/S.cap):'—','€ / día disponible',_pv&&S.cap&&P.cap?_dl(S.fac/S.cap,P.fac/P.cap,'%'):'')}
+    ${_k(S.occ?fmt(S.fac/S.occ):'—','Precio medio día',_pv&&S.occ&&P.occ?_dl(S.fac/S.occ,P.fac/P.occ,'%'):'')}
+    ${_k(S.cap?fmt(S.fac/S.cap):'—','Rinde al día',_pv&&S.cap&&P.cap?_dl(S.fac/S.cap,P.fac/P.cap,'%'):'')}
     ${_k(S.free+' d','Días libres',_analyticsPer==='mes'&&_pv?_dl(S.free,P.free,'d'):'')}
   </div>`;
 
@@ -2846,7 +2846,7 @@ function renderAnalytics(el){
     const _tv=[_anStats(_tur,R.ms,X),_anStats(_fur,R.ms,X)];
     h+=_acc('Turismo vs furgoneta',`<div class="an-tb">
       <div class="h"><span></span><span>${ico('car')} Turismos (${_tur.length})</span><span>${ico('van')} Furgonetas (${_fur.length})</span></div>
-      ${[['Facturado',st=>_fmtA(st.fac),st=>''],['Beneficio flota',st=>_fmtA(st.ben),st=>st.ben>=0?'ok':'err'],['Alquileres',st=>st.bks,st=>''],['Ocupación',st=>_pct(st.occ,st.cap)+'%',st=>''],['€/día alquilado',st=>st.occ?_fmtA(st.fac/st.occ):'—',st=>'']].map(([l,f,c])=>`<div><span>${l}</span>${_tv.map(st=>`<b class="${c(st)}">${f(st)}</b>`).join('')}</div>`).join('')}
+      ${[['Facturado',st=>_fmtA(st.fac),st=>''],['Beneficio flota',st=>_fmtA(st.ben),st=>st.ben>=0?'ok':'err'],['Alquileres',st=>st.bks,st=>''],['Ocupación',st=>_pct(st.occ,st.cap)+'%',st=>''],['Precio medio día',st=>st.occ?_fmtA(st.fac/st.occ):'—',st=>'']].map(([l,f,c])=>`<div><span>${l}</span>${_tv.map(st=>`<b class="${c(st)}">${f(st)}</b>`).join('')}</div>`).join('')}
     </div>`);
   }
   h+=`</div></div>`;

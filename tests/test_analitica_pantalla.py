@@ -60,8 +60,8 @@ with H.playwright() as p:
     k=J("""[...document.querySelectorAll('.an-k4>div')].map(d=>[d.querySelector('span').textContent.trim(),d.querySelector('b').textContent.trim(),(d.querySelector('em')||{}).textContent||''])""")
     k={a:(H.N(b),H.N(c).strip()) for a,b,c in k}
     chk(k.get('Ocupación')==('27%','▼ 8 pt'),'Ocupación 27 % (24 de 90 días), ▼ 8 pt vs octubre (35 %)',k.get('Ocupación'))
-    chk(k.get('€ / día alquilado')==('46,67 €','▲ 24 %'),'€/día alquilado 46,67 € (1120 / 24), ▲ 24 % (37,73 €)',k.get('€ / día alquilado'))
-    chk(k.get('€ / día disponible')==('12,44 €','▼ 7 %'),'€/día disponible 12,44 € (1120 / 90), ▼ 7 % (13,39 €)',k.get('€ / día disponible'))
+    chk(k.get('Precio medio día')==('46,67 €','▲ 24 %'),'Precio medio día 46,67 € (1120 / 24), ▲ 24 % (37,73 €)',k.get('Precio medio día'))
+    chk(k.get('Rinde al día')==('12,44 €','▼ 7 %'),'Rinde al día 12,44 € (1120 / 90), ▼ 7 % (13,39 €)',k.get('Rinde al día'))
     chk(k.get('Días libres')==('64 d','▲ 24 d'),'Días libres 64 (15 + 21 + 28, sin los 2 de taller), ▲ 24 d en rojo (40 en octubre)',k.get('Días libres'))
     chk(J("document.querySelector('.an-k4>div:nth-child(4) .an-d').classList.contains('err')"),'Más días libres que el mes anterior se marca en rojo')
     # ── 4. Previsión del mes ──
