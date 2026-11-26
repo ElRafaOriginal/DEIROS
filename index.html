@@ -2780,7 +2780,7 @@ function renderAnalytics(el){
     h+=`<button type="button" class="an-car" onclick="openV('${escJs(v.id)}')">
       <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
       <span class="t"><span class="n">${esc(v.name)}</span>
-        <span class="s">${_pct(s.occ,s.cap)}% ocup. · ${s.cap?fmt(s.fac/s.cap):'—'}/día disp.${cm}</span>
+        <span class="s">${_pct(s.occ,s.cap)}% ocup. · rinde ${s.cap?fmt(s.fac/s.cap):'—'} al día${cm}</span>
         <span class="s${stc}">${st}</span>
         ${am?`<span class="s">${am}</span>`:''}</span>
       <b class="${s.ben<0?'err':s.ben>0?'ok':''}">${fmt(s.ben)}</b>

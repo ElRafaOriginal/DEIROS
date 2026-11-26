@@ -71,9 +71,9 @@ with H.playwright() as p:
     # ── 5. Coches: orden por lo que dejan, ocupación, estado de hoy y amortización ──
     cars=[T(c) for c in J("[...document.querySelectorAll('.an-car')].map(r=>r.textContent)")]
     chk([c.split(' ')[0]+' '+c.split(' ')[1] for c in cars]==['Coche Uno','Furgo Dos','Coche Tres'],'Coches ordenados por lo que dejan: 480, 165 y 0 €',cars)
-    chk(len(cars)==3 and cars[0]=='Coche Uno 50% ocup. · 17,33 €/día disp. Libre desde hace 9 d · próximo 25/11 Amortizado 11 % · ~61 meses 480,00 €','Coche Uno: 50 % · 17,33 €/día disp. · libre desde hace 9 d · próximo 25/11 · amortizado 11 % · ~61 meses',cars[:1])
-    chk(len(cars)==3 and cars[1]=='Furgo Dos 30% ocup. · 20,00 €/día disp. · gestión 30 % Alquilado hasta 23/11 165,00 €','Furgo Dos: alquilado hasta 23/11, comisión 30 %, sin amortización',cars[1:2])
-    chk(len(cars)==3 and cars[2]=='Coche Tres 0% ocup. · 0,00 €/día disp. Libre · sin reserva 0,00 €','Coche Tres: libre y sin reserva',cars[2:])
+    chk(len(cars)==3 and cars[0]=='Coche Uno 50% ocup. · rinde 17,33 € al día Libre desde hace 9 d · próximo 25/11 Amortizado 11 % · ~61 meses 480,00 €','Coche Uno: 50 % · 17,33 €/día disp. · libre desde hace 9 d · próximo 25/11 · amortizado 11 % · ~61 meses',cars[:1])
+    chk(len(cars)==3 and cars[1]=='Furgo Dos 30% ocup. · rinde 20,00 € al día · gestión 30 % Alquilado hasta 23/11 165,00 €','Furgo Dos: alquilado hasta 23/11, comisión 30 %, sin amortización',cars[1:2])
+    chk(len(cars)==3 and cars[2]=='Coche Tres 0% ocup. · rinde 0,00 € al día Libre · sin reserva 0,00 €','Coche Tres: libre y sin reserva',cars[2:])
     chk(J("[...document.querySelectorAll('.an-car')][2].querySelector('.s.ac')!==null") and J("[...document.querySelectorAll('.an-car')][0].querySelector('.s.ac')===null"),'Libre sin reserva en dorado; con reserva próxima, en gris')
     chk(J("_amortMeses(V[0],8000,860)")==61,'_amortMeses(Coche Uno) = 61 (ritmo de los últimos 6 meses: 710 / 6)')
     # ── 6. Comparativa automática ──
