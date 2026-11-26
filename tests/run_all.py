@@ -17,7 +17,7 @@ TODAS=[('test_galeria.py',[],False),('test_fotos_actas.py',[],False),('test_pant
        ('test_teclado.py',[],False),('test_cobros.py',[],True),('test_devolucion.py',[],True),('test_copia.py',[],True),
        ('test_pdfs.py',[],True),('test_cifras_cancelados.py',[],True),('test_dinero_cancelados.py',[],True),('test_edad.py',[],True),
        ('test_comision.py',[],True),('test_ampliacion.py',[],True),('test_rentabilidad_plataforma.py',[],True),('test_inicio.py',[],False),
-       ('test_fianzas_porcobrar.py',[],False),('test_analitica_cifras.py',[],True),('test_presupuestos_estado.py',[],True),('test_presupuesto_convertir.py',[],True)]
+       ('test_fianzas_porcobrar.py',[],False),('test_analitica_cifras.py',[],True),('test_analitica_pantalla.py',[],False),('test_presupuestos_estado.py',[],True),('test_presupuesto_convertir.py',[],True)]
 RAPIDO=[(f,a,r) for f,a,r in TODAS if r]+[('test_pantallas.py',['--rapido'],True)]
 def args():
     a=sys.argv[1:];o={'rapido':'--rapido' in a,'jobs':3,'solo':[]}

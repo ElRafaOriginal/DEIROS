@@ -1418,6 +1418,26 @@ input.ex-calc{border-style:dashed;color:var(--text2);}
 /* Informe de analítica: periodos rápidos en píldoras que saltan de línea */
 .an-pp{flex-wrap:wrap;overflow:visible;margin-bottom:16px;}
 .an-pp button{min-height:40px;padding:0 14px;}
+/* #anB · Analítica nueva: período en la cabecera, 4 cifras, previsión, coches, comparativa de 3 meses y «Más datos» */
+.an-per{margin:0 0 18px;}
+.an-hero .an-dl{margin-top:-8px;}
+.an-dl .an-d{font-size:inherit;}
+.d-kpi.an-k4{margin-bottom:0;}
+.an-k4>div{display:grid;align-content:start;}
+.an-kd{display:block;margin-top:6px;font-style:normal;}
+.al-h.an-h{margin:28px 0 10px;}
+.an-l.an-pv{margin-top:0;}
+.an-pv .an-li b.ac{color:var(--amber);}
+.an-cars{border-top:1px solid var(--border2);}
+.an-car{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:12px;min-height:56px;padding:14px 0;border-bottom:1px solid var(--border);}
+.an-car:last-child{border-bottom:0;}
+.an-car:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+.an-car>.dh-dot{margin-top:7px;}
+.an-car .t{min-width:0;display:grid;gap:3px;}
+.an-car>b{font-family:var(--mono);font-size:15px;font-weight:500;white-space:nowrap;color:var(--text);}
+.an-cmp.an-c3>div{grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr));}
+.an-cmp b.an-c0{color:var(--amber);}
+.d-acc.an-om{margin-top:12px;}
 /* ══ PR G · Presupuestos, Contratos y Editar alquiler: listas en filas finas con estado en chip, ficha del presupuesto con total Doto,
    formularios como el asistente de alquiler (pasos «01», campos .d-f, extras en lista técnica, Atrás/Siguiente fijos al pie) ══ */
 /* Presupuestos: tira de contadores (punto del color del estado) y filas finas */
@@ -2599,158 +2619,78 @@ function deleteClient(id){
 function setAnalyticsOwnership(id){_analyticsOwnership=id;renderAnalytics(document.getElementById('PC'));}
 function setAnalyticsVtype(id){_analyticsVtype=id;renderAnalytics(document.getElementById('PC'));}
 
-function _calcOcc(v, monthKey){
-  // Count unique days occupied in the given month
-  const dim=new Date(parseInt(monthKey.slice(0,4)),parseInt(monthKey.slice(5,7)),0).getDate();
-  const bks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation&&(b.startDate.slice(0,7)===monthKey||b.endDate.slice(0,7)===monthKey||
-    (b.startDate<monthKey+'-01'&&b.endDate>monthKey+'-'+String(dim).padStart(2,'0'))));
-  const days=new Set(bks.flatMap(_daysInBooking).filter(d=>d.slice(0,7)===monthKey)).size;
-  const pct=Math.round(days/dim*100);
-  const inc=_getVehicleAllFinances(v).filter(e=>e.type==='income'&&!_isDepositInc(e)&&e.date.startsWith(monthKey))
-    .reduce((s,e)=>s+Number(e.amount),0);
-  return {days,dim,pct,inc};
+// ═══ #anB · Analítica: base común de cifras (pantalla, «Elegir otros meses» y pruebas) ═══
+// Coches del filtro de Analítica (propiedad y tipo), sin archivados.
+function _anVs(){return V.filter(v=>!v.archived).filter(v=>{
+  if(_analyticsOwnership==='own'&&v.vtype==='managed')return false;
+  if(_analyticsOwnership==='managed'&&v.vtype!=='managed')return false;
+  if(_analyticsVtype&&(v.vehicle_type||'turismo')!==_analyticsVtype)return false;
+  return true;
+});}
+function _anYM(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function _anAdd(m,n){const p=String(m).split('-').map(Number);return _anYM(new Date(p[0],p[1]-1+n,1));}
+function _anDim(m){const p=String(m).split('-').map(Number);return new Date(p[0],p[1],0).getDate();}
+function _anMonths(a,b){const r=[];for(let m=a,g=0;m<=b&&g<600;m=_anAdd(m,1),g++)r.push(m);return r;}
+function _anMon(m,y){const p=String(m).split('-');return MON_ES[parseInt(p[1],10)-1].slice(0,3).toLowerCase()+(y?' '+p[0]:'');}
+// Índice de un coche (una vez por pintado, en X): movimientos por mes (los de Negocio: sin las ampliaciones ya prorrateadas),
+// alquileres no cancelados, días alquilados, días en taller o bloqueados sin alquiler, y primer y último mes con actividad
+function _anIdx(v,X){
+  if(X&&X.has(v))return X.get(v);
+  const fin={},isM=m=>/^\d{4}-\d{2}$/.test(m);
+  _getVehicleAllFinancesDisplay(v).forEach(e=>{if(e._bfEntry||typeof e.date!=='string')return;const m=e.date.slice(0,7);if(isM(m))(fin[m]=fin[m]||[]).push(e);});
+  const bks=(v.bookings||[]).filter(b=>b&&!b.cancelled&&!b.cancellation&&typeof b.startDate==='string');
+  const occ=new Set(bks.flatMap(_daysInBooking));
+  const cal=v.calendar||{},out=new Set(Object.keys(cal).filter(k=>(cal[k]==='maintenance'||cal[k]==='blocked')&&!occ.has(k)));
+  const ms=Object.keys(fin).concat(bks.map(b=>b.startDate.slice(0,7)),bks.map(b=>String(b.endDate||'').slice(0,7))).filter(isM).sort();
+  const cur=todayStr().slice(0,7);
+  const r={fin,bks,occ,out,first:ms[0]||cur,last:ms[ms.length-1]||cur};
+  if(X)X.set(v,r);
+  return r;
 }
-
-function _globalOcc(monthKey,vs){
-  const activeV=vs||V.filter(v=>!v.archived); // #anA: con los coches del filtro de Analítica (si se pasan)
-  if(!activeV.length)return{days:0,dim:0,pct:0};
-  const dim=new Date(parseInt(monthKey.slice(0,4)),parseInt(monthKey.slice(5,7)),0).getDate();
-  // Total available vehicle-days in the month
-  const totalAvail=activeV.length*dim;
-  // Total occupied vehicle-days
-  const totalOcc=activeV.reduce((s,v)=>s+_calcOcc(v,monthKey).days,0);
-  const pct=Math.round(totalOcc/totalAvail*100);
-  const totalInc=activeV.reduce((s,v)=>s+_calcOcc(v,monthKey).inc,0);
-  return{days:totalOcc,dim,pct,totalAvail,totalInc,vehicles:activeV.length};
-}
-
-function _allTimeOcc(v){
-  // Find first and last booking date
-  const bks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation);
-  if(!bks.length)return{pct:0,days:0,totalDays:0};
-  const first=bks.reduce((mn,b)=>b.startDate<mn?b.startDate:mn,bks[0].startDate);
-  const last=bks.reduce((mx,b)=>b.endDate>mx?b.endDate:mx,bks[0].endDate);
-  const _hoy=todayStr(); // #anA: hasta hoy (o el fin del último alquiler, si es posterior); antes, solo hasta el último alquiler
-  const start=new Date(first);const end=new Date(last>_hoy?last:_hoy);
-  const totalDays=Math.max(1,Math.round((end-start)/864e5)+1);
-  const occupied=new Set(bks.flatMap(_daysInBooking)).size;
-  return{pct:Math.round(occupied/totalDays*100),days:occupied,totalDays};
-}
-
-function renderOccupancy(){
-  const el=document.getElementById('occResults');
-  if(!el)return;
-  const activeV=V.filter(v=>!v.archived).filter(v=>{
-    if(_analyticsOwnership==='own'&&v.vtype==='managed')return false;
-    if(_analyticsOwnership==='managed'&&v.vtype!=='managed')return false;
-    if(_analyticsVtype&&(v.vehicle_type||'turismo')!==_analyticsVtype)return false;
-    return true;
+// Cifras de unos coches en unos meses («AAAA-MM»):
+//  ben = Beneficio flota = inc − exp: propio, ingresos (sin fianzas) − gastos; en gestión, comisión − déficit asumido (cláusula Quinta según COMM_RULE_FROM),
+//        como la entrada «Comisión» de Negocio; es decir, Negocio sin los ingresos y gastos generales
+//  fac = facturado del coche (ingresos sin fianzas; en gestión, el bruto) · occ = días alquilados (incluido el de devolución)
+//  cap = días del período desde el primer mes con actividad de cada coche · free = cap − alquilados − en taller o bloqueados
+//  bks = alquileres que empiezan en el período · clients = clientes distintos de esos alquileres (sin anonimizados) · act = hay movimientos o alquileres
+function _anStats(vs,months,X){
+  const s={inc:0,exp:0,ben:0,fac:0,occ:0,cap:0,free:0,bks:0,clients:0,act:false},cl=new Set();
+  const sum=a=>a.reduce((t,e)=>t+(Number(e.amount)||0),0);
+  vs.forEach(v=>{
+    const I=_anIdx(v,X);
+    months.forEach(m=>{
+      const f=I.fin[m]||[];
+      const fac=sum(f.filter(e=>e.type==='income'&&!_isDepositInc(e)));
+      if(v.vtype==='managed'){const c=_ownerSettle(v,f,m).mgr;if(c>0)s.inc+=c;else s.exp-=c;}
+      else{s.inc+=fac;s.exp+=sum(f.filter(e=>e.type==='expense'));}
+      s.fac+=fac;
+      const bk=I.bks.filter(b=>b.startDate.startsWith(m));
+      s.bks+=bk.length;
+      bk.forEach(b=>{if((b.clientName||'').trim()===_CL_ANON)return;const k=b.clientDni||b.clientName;if(k)cl.add(k);});
+      let o=0,x=0;I.occ.forEach(d=>{if(d.startsWith(m))o++;});I.out.forEach(d=>{if(d.startsWith(m))x++;});
+      if(f.length||o||bk.length)s.act=true;
+      s.occ+=o;
+      if(m<I.first)return; // el coche aún no tenía actividad: no suma días disponibles
+      const dim=_anDim(m);s.cap+=dim;s.free+=Math.max(0,dim-o-x);
+    });
   });
-  if(!activeV.length){el.innerHTML='<div class="d-hint">Sin vehículos</div>';return;}
-
-  const selM=document.getElementById('occMonth')?.value||
-    new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0');
-  const curM=new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0');
-  const curG=_globalOcc(curM,activeV);
-  const selG=_globalOcc(selM,activeV);
-  const isSameMonth=selM===curM;
-
-  const fmtM=m=>MON_ES[parseInt(m.slice(5,7))-1]+' '+m.slice(0,4);
-
-  // Barra fina en acento; el % en verde (≥ 70 %), rojo (< 40 %) o texto (sin semáforo ámbar ni rellenos)
-  function occBar(pct){
-    return `<div class="d-bar"><i style="width:${Number(pct)}%"></i></div>`;
-  }
-  function occCls(pct){return pct>=70?'ok':pct>=40?'':'err';}
-
-  let h='';
-
-  // ── Global summary: tira de KPI con líneas de 1 px ────────────
-  h+=`<div class="d-kpi an-oz" style="--c:${isSameMonth?1:2}">`;
-
-  // Current month global
-  h+=`<div>
-    <b class="${occCls(curG.pct)}">${curG.pct}%</b><span>Mes actual · ${fmtM(curM)}</span>
-    <small>${curG.days} días ocupados / ${curG.totalAvail} disponibles</small>
-    ${occBar(curG.pct)}
-    <small>${fmtF(curG.totalInc)} generados</small>
-  </div>`;
-
-  // Selected month (only if different)
-  if(!isSameMonth){
-    h+=`<div>
-      <b class="${occCls(selG.pct)}">${selG.pct}%</b><span>Seleccionado · ${fmtM(selM)}</span>
-      <small>${selG.days} días ocupados / ${selG.totalAvail} disponibles</small>
-      ${occBar(selG.pct)}
-      <small>${fmtF(selG.totalInc)} generados</small>
-    </div>`;
-  }
-  h+='</div>';
-
-  // ── Per-vehicle breakdown: filas finas con punto del coche y ficha técnica ──
-  h+=`<span class="q an-q">Por vehículo</span><div class="an-ovl">`;
-
-  activeV.forEach(v=>{
-    const cur=_calcOcc(v,curM);
-    const sel=isSameMonth?cur:_calcOcc(v,selM);
-    const all=_allTimeOcc(v);
-    h+=`<div class="an-ov">
-      <div class="an-oh">
-        <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
-        <div class="t"><span class="n">${esc(v.name)}</span><span class="s">${esc(v.plate)}</span></div>
-        <b class="${occCls(isSameMonth?cur.pct:sel.pct)}">${isSameMonth?cur.pct:sel.pct}%</b>
-      </div>
-      <div class="spec an-o${isSameMonth?3:4}">
-        <div>Mes actual<b class="${occCls(cur.pct)}">${cur.pct}%</b><span class="dh-sub">${cur.days}/${cur.dim}d</span></div>
-        ${!isSameMonth?`<div>${fmtM(selM).split(' ')[0]}<b class="${occCls(sel.pct)}">${sel.pct}%</b><span class="dh-sub">${sel.days}/${sel.dim}d</span></div>`:''}
-        <div>Histórico<b class="in">${all.pct}%</b><span class="dh-sub">${all.days}/${all.totalDays}d</span></div>
-        <div>Ingresos mes<b class="ok">${fmtF(isSameMonth?cur.inc:sel.inc)}</b></div>
-      </div>
-      ${occBar(isSameMonth?cur.pct:sel.pct)}
-    </div>`;
-  });
-  h+='</div>';
-
-  el.innerHTML=h;
+  s.ben=s.inc-s.exp;s.clients=cl.size;
+  return s;
 }
+// Período de la pantalla: Mes (el actual, con lo reservado hasta fin de mes), Año (de enero al mes actual) o Todo (del primer al último mes con actividad)
+function _anRange(vs,X){
+  const cur=todayStr().slice(0,7),y=Number(cur.slice(0,4));
+  if(_analyticsPer==='ano')return{ms:_anMonths(y+'-01',cur),cmp:[[_anMonths((y-1)+'-01',_anAdd(cur,-12)),'vs '+(cur.slice(5)==='01'?'ene':'ene–'+_anMon(cur))+' '+(y-1)]],q:String(y)};
+  if(_analyticsPer==='todo'){let a=cur,b=cur;vs.forEach(v=>{const I=_anIdx(v,X);if(I.first<a)a=I.first;if(I.last>b)b=I.last;});return{ms:_anMonths(a,b),cmp:[],q:'Todo',from:a};}
+  return{ms:[cur],cmp:[[[_anAdd(cur,-1)],'vs '+_anMon(_anAdd(cur,-1))],[[_anAdd(cur,-12)],'vs '+_anMon(_anAdd(cur,-12),true)]],q:_anMon(cur,true)};
+}
+function setAnalyticsPeriod(p){_analyticsPer=p;try{localStorage.setItem('deiros_anPer',p);}catch(e){}renderAnalytics(document.getElementById('PC'));}
+
 function renderAnalytics(el){
   const allV=V.filter(v=>!v.archived);
   if(!allV.length){el.innerHTML=`<div class="anim"><div class="d-empty">${ico('trend-up')}<h3>Sin vehículos</h3><p>Añade un vehículo en Flota para ver la analítica.</p></div></div>`;return;}
-  const activeV=allV.filter(v=>{
-    if(_analyticsOwnership==='own'&&v.vtype==='managed')return false;
-    if(_analyticsOwnership==='managed'&&v.vtype!=='managed')return false;
-    if(_analyticsVtype&&(v.vehicle_type||'turismo')!==_analyticsVtype)return false;
-    return true;
-  });
+  const activeV=_anVs();
   const usedVtypes=VTYPES.filter(t=>allV.some(v=>(v.vehicle_type||'turismo')===t.id));
-  const isD=window.innerWidth>=768;
-
-  // Per-vehicle metrics
-  const metrics=activeV.map(v=>{
-    const inc=tInc(v),exp=tExp(v),profit=inc-exp;
-    const days=tDays(v);
-    const bks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation);
-    const rpdInc=Math.round(inc/(days||1));
-    const rpdProfit=Math.round(profit/(days||1));
-    const pp=Number(v.purchase_price)||0;
-    const roi=pp>0?Math.round((profit/pp)*100):null;
-    const paidOff=pp>0&&profit>=pp;
-    const daysToPayOff=pp>0&&rpdProfit>0?Math.ceil((pp-profit)/rpdProfit):null;
-    // Occupation
-    const now=new Date();
-    const curM=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-    const dimM=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-    const mDays=new Set(bks.filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.slice(0,7)===curM)).size;
-    const occ=Math.round(mDays/dimM*100);
-    // Platform breakdown
-    const platBk={amovens:0,getaround:0,sinapp:0};
-    const platInc={amovens:0,getaround:0,sinapp:0};
-    bks.forEach(b=>{const _pk=_platK(b.platform);if(platBk[_pk]!==undefined){platBk[_pk]++;platInc[_pk]+=(Number(b.amount)||0);}});
-    const bestPlat=Object.entries(platInc).sort((a,b)=>b[1]-a[1])[0];
-    const _comm=((v.commission==null||v.commission===''?30:Number(v.commission)))/100;
-    const bizShare=v.vtype==='managed'?_settleTotals(v,_getVehicleAllFinances(v)).mgr:profit; // comisión − déficit asumido
-    return{v,inc,exp,profit,days,bks:bks.length,rpdInc,rpdProfit,pp,roi,paidOff,daysToPayOff,occ,bestPlat,bizShare};
-  }).sort((a,b)=>b.rpdInc-a.rpdInc);
 
   // Filtros: propiedad en selector segmentado y tipo de vehículo en píldoras (mismos onclick); informe como secundario
   const _filterUI=`<div class="d-seg an-own" role="group" aria-label="Propiedad"><button type="button" aria-pressed="${!_analyticsOwnership}" onclick="setAnalyticsOwnership('')">Todos</button><button type="button" aria-pressed="${_analyticsOwnership==='own'}" onclick="setAnalyticsOwnership('own')">${ico('key')} Propios</button><button type="button" aria-pressed="${_analyticsOwnership==='managed'}" onclick="setAnalyticsOwnership('managed')">${ico('handshake')} Gestión</button></div>`
@@ -2758,183 +2698,163 @@ function renderAnalytics(el){
   const _pdfBtn=`<button class="btn-sec an-pdf" onclick="openAnalyticsReportPicker()">${ico('doc')} Informe PDF</button>`;
   if(!activeV.length){el.innerHTML=`<div class="anim an">${_filterUI}<div class="d-empty">${ico('search')}<h3>Sin resultados</h3><p>Cambia los filtros para ver vehículos</p></div>${_pdfBtn}</div>`;return;}
 
-  // ── Actividad vs beneficio del negocio (mismas fórmulas de siempre) ─────────
-  const _hasMgd=activeV.some(v=>v.vtype==='managed')&&activeV.some(v=>v.vtype!=='managed');
-  const _ownMs=metrics.filter(m=>m.v.vtype!=='managed');
-  const _mgdMs=metrics.filter(m=>m.v.vtype==='managed');
-  const _ownProfit=_ownMs.reduce((s,m)=>s+m.profit,0);
-  const _mgdProfit=_mgdMs.reduce((s,m)=>s+m.profit,0);
-  const _mgdShare=_mgdMs.reduce((s,m)=>s+m.bizShare,0);
-  const _bizTotal=_ownProfit+_mgdShare;
-  const _actTotal=metrics.reduce((s,m)=>s+m.profit,0);
+  const X=new Map(),R=_anRange(activeV,X),hoy=todayStr(),cur=hoy.slice(0,7);
+  const S=_anStats(activeV,R.ms,X);
+  const _own=activeV.filter(v=>v.vtype!=='managed'),_mgd=activeV.filter(v=>v.vtype==='managed');
+  const _hasMgd=_own.length>0&&_mgd.length>0;
+  const _pct=(a,b)=>b>0?Math.round(a/b*100):0;
+  const _e0=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n||0);
+  const _dm=d=>d.slice(8,10)+'/'+d.slice(5,7);
+  // Variación: ▲/▼ con color (verde si mejora); u: '%' (relativa), 'pt' (puntos) o 'd' (días; menos es mejor)
+  const _dl=(a,b,u)=>{
+    let d,t;
+    if(u==='pt'||u==='d'){d=Math.round(a-b);t=Math.abs(d)+(u==='pt'?' pt':' d');}
+    else{if(!b)return '';d=Math.round((a-b)/Math.abs(b)*100);t=Math.abs(d)+' %';}
+    if(!d)return '<span class="an-d">=</span>';
+    const good=u==='d'?d<0:d>0;
+    return `<span class="an-d ${good?'ok':'err'}">${d>0?'▲':'▼'} ${t}</span>`;
+  };
 
-  // ── Calcular métricas avanzadas ────────────────────────────────────────────
-  const _nowStr=todayStr();
-  const _curM2=_nowStr.slice(0,7);
-  // Todos los alquileres de todos los vehículos activos (filtrados)
-  const _allBks=activeV.flatMap(v=>(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).map(b=>({...b,_v:v})));
-  // Tiempo muerto: días entre fin de un alquiler y comienzo del siguiente
-  const _deadTimes=activeV.map(v=>{
-    const vBks=(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).sort((a,b)=>a.startDate.localeCompare(b.startDate));
-    let totalGap=0,gaps=0;
-    for(let i=1;i<vBks.length;i++){
-      const gap=Math.round((new Date(vBks[i].startDate)-new Date(vBks[i-1].endDate))/864e5);
-      if(gap>=0){totalGap+=gap;gaps++;}
+  // ── 1 · Beneficio flota del período, con su variación ──
+  const _bS=fmt(S.ben).split(','),_bE=_bS[0].replace(/\./g,''),_bD=_bS.length>1?','+_bS.slice(1).join(','):'';
+  const _cmpH=R.cmp.map(([ms,lbl])=>{const p=_anStats(activeV,ms,X);return p.act?(x=>x?x+' '+lbl:'')(_dl(S.ben,p.ben,'%')):'';}).filter(Boolean);
+  const _meta=_analyticsPer==='todo'?'Desde '+_anMon(R.from,true):_cmpH.join(' · ');
+  const _per=[['mes','Mes'],['ano','Año'],['todo','Todo']];
+  let h=`<div class="anim an">
+  ${_filterUI}
+  <div class="d-card xl dotbg an-hero">
+    <div class="d-seg an-per" role="group" aria-label="Período">${_per.map(([k,l])=>`<button type="button" aria-pressed="${_analyticsPer===k}" onclick="setAnalyticsPeriod('${k}')">${l}</button>`).join('')}</div>
+    <div class="d-ch"><span class="q ac">Beneficio flota</span><span class="q">${esc(R.q)}</span></div>
+    <div class="d-n n1 ${S.ben<0?'neg':'ac'}">${esc(_bE)}<small>${esc(_bD)}</small></div>
+    ${_meta?`<div class="d-meta an-dl">${_meta}</div>`:''}
+    ${_hasMgd?(()=>{const o=_anStats(_own,R.ms,X).ben,g=_anStats(_mgd,R.ms,X).ben;return `<div class="spec an-hs"><div>Propios (${_own.length})<b class="${o<0?'err':'ok'}">${fmt(o)}</b></div><div>Gestión (${_mgd.length})<b class="${g<0?'err':''}">${fmt(g)}</b></div></div>`;})():''}
+  </div>
+  ${_pdfBtn}`;
+
+  // ── 2 · Uso de la flota en el período (variación frente al mes anterior en «Mes» y al mismo tramo del año pasado en «Año») ──
+  const P=R.cmp.length?_anStats(activeV,R.cmp[0][0],X):null,_pv=P&&P.act;
+  const _k=(v,l,d)=>`<div><b>${v}</b><span>${l}</span>${d?`<em class="an-kd">${d}</em>`:''}</div>`;
+  h+=`<div class="d-kpi an-k4" style="--c:2">
+    ${_k(_pct(S.occ,S.cap)+'%','Ocupación',_pv?_dl(_pct(S.occ,S.cap),_pct(P.occ,P.cap),'pt'):'')}
+    ${_k(S.occ?fmt(S.fac/S.occ):'—','Precio medio día',_pv&&S.occ&&P.occ?_dl(S.fac/S.occ,P.fac/P.occ,'%'):'')}
+    ${_k(S.cap?fmt(S.fac/S.cap):'—','Rinde al día',_pv&&S.cap&&P.cap?_dl(S.fac/S.cap,P.fac/P.cap,'%'):'')}
+    ${_k(S.free+' d','Días libres',_analyticsPer==='mes'&&_pv?_dl(S.free,P.free,'d'):'')}
+  </div>`;
+
+  // ── 3 · Previsión del mes en curso: facturado de lo hecho o en curso, de lo reservado que aún no empieza y días libres que quedan ──
+  {let done=0,next=0,left=0;
+   activeV.forEach(v=>{const I=_anIdx(v,X),bm={};I.bks.forEach(b=>{bm[b.id]=b;});
+     (I.fin[cur]||[]).forEach(e=>{if(e.type!=='income'||_isDepositInc(e))return;const b=bm[e.bookingId||e._bookingId],a=Number(e.amount)||0;if(b&&b.startDate>hoy)next+=a;else done+=a;});
+     for(let d=addDays(hoy,1),g=0;d.startsWith(cur)&&g<31;d=addDays(d,1),g++)if(!I.occ.has(d)&&!I.out.has(d))left++;});
+   h+=`<div class="al-h an-h"><h3>Previsión del mes</h3><span class="q">${esc(_anMon(cur,true))}</span></div>
+  <div class="an-l an-pv">
+    <div class="an-li"><span>Hecho o en curso</span><b class="ok">${fmt(done)}</b></div>
+    <div class="an-li"><span>Reservado, por empezar</span><b>${fmt(next)}</b></div>
+    <div class="an-li"><span>Días libres hasta fin de mes</span><b class="${left?'ac':''}">${left} d</b></div>
+  </div>`;}
+
+  // ── 4 · Coches: lo que deja cada uno en el período, su ocupación, cómo está hoy y su amortización (solo propios) ──
+  const _cars=activeV.map(v=>({v,s:_anStats([v],R.ms,X)})).sort((a,b)=>b.s.ben-a.s.ben);
+  h+=`<div class="al-h an-h"><h3>Coches</h3><span class="q">${esc(R.q)}</span></div><div class="an-cars">`;
+  _cars.forEach(({v,s})=>{
+    const I=_anIdx(v,X);
+    const now=I.bks.find(b=>!b.returned&&b.startDate<=hoy&&b.endDate>=hoy);
+    let st,stc='';
+    if(now)st=`${ico('key')} Alquilado hasta ${_dm(now.endDate)}`;
+    else if(I.out.has(hoy))st=`${ico('wrench')} En taller o bloqueado hoy`;
+    else{
+      const past=I.bks.filter(b=>b.startDate<=hoy).map(b=>b.endDate<hoy?b.endDate:hoy).sort().pop();
+      const nx=I.bks.filter(b=>b.startDate>hoy).map(b=>b.startDate).sort()[0];
+      const n=past?Math.max(0,Math.round((new Date(hoy)-new Date(past))/864e5)):null;
+      st=`${ico('clock')} Libre${n?` desde hace ${n} d`:''} · ${nx?'próximo '+_dm(nx):'sin reserva'}`;
+      if(!nx&&(n===null||n>=3))stc=' ac';
     }
-    return gaps>0?Math.round(totalGap/gaps*10)/10:null;
-  }).filter(x=>x!==null);
-  const _avgDeadTime=_deadTimes.length?Math.round(_deadTimes.reduce((s,x)=>s+x,0)/_deadTimes.length*10)/10:null;
-  // Coste por día ocupado
-  const _totInc=metrics.reduce((s,m)=>s+m.inc,0);
-  const _totExp=metrics.reduce((s,m)=>s+m.exp,0);
-  const _totDays=metrics.reduce((s,m)=>s+m.days,0);
-  const _costPerDay=_totDays>0?Math.round(_totExp/_totDays*100)/100:0;
-  const _effRatio=_totExp>0?Math.round(_totInc/_totExp*100)/100:null;
-  // Distribución por duración
-  const _durGroups={short:[],med:[],long:[]};
-  _allBks.forEach(b=>{const d=daysBetween(b.startDate,b.endDate);if(d<=3)_durGroups.short.push(b);else if(d<=7)_durGroups.med.push(b);else _durGroups.long.push(b);});
-  const _durAvg=g=>g.length?Math.round(g.reduce((s,b)=>s+(Number(b.amount)||0),0)/g.length):0;
-  // Mantenimiento ratio
-  const _maintCats=['Mantenimiento periódico','Mantenimiento','Reparación','ITV'];
-  const _maintExp=activeV.reduce((s,v)=>s+_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&e.type==='expense'&&!_isOwnerPaid(v,e)&&_maintCats.includes(e.category)).reduce((ss,e)=>ss+(Number(e.amount)||0),0),0);
-  const _maintRatio=_totInc>0?Math.round(_maintExp/_totInc*100):0;
-  // Clientes
+    let am='';
+    const pp=Number(v.purchase_price)||0;
+    if(v.vtype!=='managed'&&pp>0){
+      const pr=tInc(v)-tExp(v);
+      if(pr>=pp)am=`${ico('check-circle')} Amortizado`;
+      else{const mm=_amortMeses(v,pp,pr);am=`Amortizado ${Math.max(0,_pct(pr,pp))} %${mm?` · ~${mm} ${mm===1?'mes':'meses'}`:''}`;}
+    }
+    const cm=v.vtype==='managed'?' · gestión '+(v.commission==null||v.commission===''?30:Number(v.commission))+' %':'';
+    h+=`<button type="button" class="an-car" onclick="openV('${escJs(v.id)}')">
+      <i class="dh-dot"${v.color?' style="background:'+safeColor(v.color)+'"':''}></i>
+      <span class="t"><span class="n">${esc(v.name)}</span>
+        <span class="s">${_pct(s.occ,s.cap)}% ocup. · rinde ${s.cap?fmt(s.fac/s.cap):'—'} al día${cm}</span>
+        <span class="s${stc}">${st}</span>
+        ${am?`<span class="s">${am}</span>`:''}</span>
+      <b class="${s.ben<0?'err':s.ben>0?'ok':''}">${fmt(s.ben)}</b>
+    </button>`;
+  });
+  h+=`</div>`;
+
+  // ── 5 · Comparativa: este mes, el anterior y el mismo mes del año pasado (siempre por meses; «—» si no hay actividad) ──
+  {const cols=[cur,_anAdd(cur,-1),_anAdd(cur,-12)].map(m=>({m,s:_anStats(activeV,[m],X)}));
+   const rows=[['Facturado',s=>_e0(s.fac)],['Gastos',s=>_e0(s.exp)],['Beneficio flota',s=>_e0(s.ben)],['Alquileres',s=>String(s.bks)],['Clientes',s=>String(s.clients)]];
+   h+=`<div class="al-h an-h"><h3>Comparativa</h3></div>
+  <div class="an-cmp an-c3">
+    <div class="h"><span></span>${cols.map((c,i)=>`<span>${esc(i===2?_anMon(c.m,true):_anMon(c.m))}</span>`).join('')}</div>
+    ${rows.map(([l,f])=>`<div><span>${l}</span>${cols.map((c,i)=>`<b${i===0?' class="an-c0"':''}>${c.s.act||i===0?f(c.s):'—'}</b>`).join('')}</div>`).join('')}
+  </div>
+  <details class="d-acc an-acc an-om"><summary><span class="t">Elegir otros meses</span>${'<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>'}</summary><div>
+    <div class="d-f"><label class="q" for="cmpA">Período A</label><input type="month" id="cmpA"/></div>
+    <div class="d-f"><label class="q" for="cmpB">Período B</label><input type="month" id="cmpB"/></div>
+    <button class="btn-pri" onclick="runComparison()">Comparar períodos</button>
+    <div id="cmpResults" class="an-cr"></div>
+  </div></details>`;}
+
+  // ── 6 · Más datos del período (plegados): clientes, duración de los alquileres y turismo vs furgoneta ──
+  const _inR=b=>R.ms.includes(b.startDate.slice(0,7));
+  const _allBks=activeV.flatMap(v=>_anIdx(v,X).bks.filter(_inR));
+  const _fmtA=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
+  let _n=0;
+  const _PL='<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>';
+  const _acc=(t,body)=>`<details class="d-acc an-acc"><summary><span class="q">${String(++_n).padStart(2,'0')}</span><span class="t">${t}</span>${_PL}</summary><div>${body}</div></details>`;
+  h+=`<div class="al-h an-h"><h3>Más datos</h3><span class="q">${esc(R.q)}</span></div><div class="d-list an-accs">`;
+  // Clientes: KPI + top 5 (sin anonimizados)
   const _cliMap={};
   _allBks.forEach(b=>{const k=(b.clientDni||b.clientName||'').trim().toLowerCase();if(!k||(b.clientName||'').trim()===_CL_ANON)return;if(!_cliMap[k])_cliMap[k]={name:b.clientName||'—',count:0,total:0};_cliMap[k].count++;_cliMap[k].total+=Number(b.amount)||0;});
   const _cliList=Object.values(_cliMap).sort((a,b)=>b.total-a.total);
   const _recurring=_cliList.filter(c=>c.count>1);
-  // Km medios
-  const _bksWithKm=_allBks.filter(b=>b.kmStart&&b.kmEnd&&b.kmEnd>b.kmStart);
-  const _avgKm=_bksWithKm.length?Math.round(_bksWithKm.reduce((s,b)=>s+(b.kmEnd-b.kmStart),0)/_bksWithKm.length):null;
-  // Turismo vs Furgoneta
-  const _turismos=activeV.filter(v=>!(v.vehicle_type||'turismo').startsWith('l'));
-  const _furgos=activeV.filter(v=>(v.vehicle_type||'turismo').startsWith('l'));
-  const _typeStats=(vs)=>({cnt:vs.length,inc:vs.reduce((s,v)=>s+tInc(v),0),exp:vs.reduce((s,v)=>s+tExp(v),0),bks:vs.reduce((s,v)=>s+(v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).length,0),days:vs.reduce((s,v)=>s+tDays(v),0)});
-  const _tStat=_typeStats(_turismos),_fStat=_typeStats(_furgos);
-  const _fmtA=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0);
-
-  // ── Presentación: cifra Doto (beneficio real del negocio) + secciones en desplegables «"01"» (solo la primera abierta) ──
-  // Colores: verde ingresos/bueno, rojo gastos/malo, azul info; el antiguo tramo ámbar del semáforo pasa a texto. Barras finas en acento.
-  const _cl=(good,bad)=>good?'ok':bad?'err':'';
-  let _n=0;
-  const _PL='<svg class="ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>';
-  const _acc=(t,body,q)=>`<details class="d-acc an-acc"${_n===0?' open':''}><summary><span class="q">${String(++_n).padStart(2,'0')}</span><span class="t">${t}</span>${q?`<span class="an-sq">${q}</span>`:''}${_PL}</summary><div>${body}</div></details>`;
-  const _bS=fmt(_bizTotal).split(','),_bE=_bS[0].replace(/\./g,''),_bD=_bS.length>1?','+_bS.slice(1).join(','):'';
-
-  let h=`<div class="anim an">
-  ${_filterUI}
-  <div class="d-card xl dotbg an-hero">
-    <div class="d-ch"><span class="q ac">Beneficio flota</span><span class="q">${String(activeV.length).padStart(2,'0')} veh.</span></div>
-    <div class="d-n n1 ${_bizTotal<0?'neg':'ac'}">${esc(_bE)}<small>${esc(_bD)}</small></div>
-    <div class="d-meta">Histórico</div>
-    ${_hasMgd?`<div class="spec an-hs"><div>Propios (${_ownMs.length})<b class="${_ownProfit>=0?'ok':'err'}">${fmt(_ownProfit)}</b><span class="dh-sub">beneficio 100%</span></div><div>Gestión (${_mgdMs.length})<b class="${_mgdShare>=0?'':'err'}">${fmt(_mgdShare)}</b><span class="dh-sub">comisión menos déficit asumido</span></div></div>`:''}
-  </div>
-  ${_pdfBtn}
-  <div class="d-list an-accs">`;
-
-  // 01 · Ranking por ingresos/día: filas con número, coche, ingresos/día y barra fina
-  h+=_acc('Ranking · ingresos por día',`<div class="an-rl">${metrics.map((m,i)=>{
-      const maxRpd=metrics[0].rpdInc||1;
-      const pct=Math.round(m.rpdInc/maxRpd*100);
-      return `<div class="an-rk">
-        <span class="an-no">${String(i+1).padStart(2,'0')}</span>
-        <div class="t"><span class="n">${esc(m.v.name)}</span><span class="s">${esc(m.v.plate)} · ${m.bks} alq. · ${m.days}d ocupado · ocup. mes ${m.occ}%</span></div>
-        <b class="ok">${fmt(m.rpdInc)}/día</b>
-        <div class="d-bar"><i style="width:${Number(pct)}%"></i></div>
-      </div>`;
-    }).join('')}</div>`);
-
-  // ROI por vehículo: filas con punto del coche, compra y P&L en mono, ROI a la derecha
-  const _roiMs=metrics.filter(m=>m.v.vtype!=='managed'); // #anA: solo coches propios (el beneficio de un coche en gestión es del propietario)
-  if(_roiMs.length)h+=_acc('ROI por vehículo',_roiMs.map(m=>{
-      return `<div class="an-r">
-        <i class="dh-dot"${m.v.color?' style="background:'+safeColor(m.v.color)+'"':''}></i>
-        <div class="t">
-          <span class="n">${esc(m.v.name)}</span>
-          <span class="s">${m.pp>0?`Compra: ${fmt(m.pp)}`:'Sin precio registrado'}${m.paidOff?(' · '+ico('check-circle')+' Ya se pagó solo'):''}</span>
-          <span class="s">Ingresos: ${fmt(m.inc)} · Gastos: ${fmt(m.exp)} · Beneficio: ${fmt(m.profit)}</span>
-          ${!m.paidOff&&m.pp>0?(_am=>_am?`<span class="s ac">${ico('clock')} Se paga solo en ~${_am} ${_am===1?'mes':'meses'} al ritmo actual</span>`:'')(_amortMeses(m.v,m.pp,m.profit)):''}
-        </div>
-        <div class="an-v"><b class="${m.roi===null?'':_cl(m.roi>=100,m.roi<50)}">${m.roi!==null?m.roi+'%':'—'}</b><span>ROI</span></div>
-      </div>`;
-    }).join(''));
-
-  // Actividad vs beneficio (solo si hay propios y en gestión)
-  if(_hasMgd){
-    h+=_acc('Actividad vs beneficio',`<p class="d-hint">Los vehículos en gestión generan ingresos brutos para el propietario. En gestión, el beneficio real del negocio es la comisión pactada menos el déficit asumido por el gestor: si el vehículo da pérdidas, el gestor asume el déficit y la cifra puede ser menor que la comisión, incluso negativa.</p>
-      <div class="spec an-s2"><div>Bfo. total actividad<b class="${_actTotal>=0?'ok':'err'}">${fmt(_actTotal)}</b><span class="dh-sub">propios + bruto gestión</span></div><div>Beneficio flota<b class="${_bizTotal>=0?'ok':'err'}">${fmt(_bizTotal)}</b><span class="dh-sub">propios + (comisión − déficit asumido)</span></div></div>
-      ${_mgdMs.map(m=>{const _c=(m.v.commission==null||m.v.commission===''?30:Number(m.v.commission));return `<div class="fl-hr"><div class="t">${esc(m.v.name)} · comisión ${_c}%<span>comisión − déficit asumido, de ${fmt(m.inc)} facturado</span></div><b class="${m.bizShare<0?'err':''}">${fmt(m.bizShare)}</b></div>`;}).join('')}`);
-  }
-
-  // Ocupación del mes actual por coche
-  h+=_acc('Ocupación del mes',[...metrics].sort((a,b)=>b.occ-a.occ).map(m=>`<div class="an-oc">
-      <div class="an-ol"><span>${esc(m.v.name)}</span><b class="${_cl(m.occ>=70,m.occ<40)}">${m.occ}%</b></div>
-      <div class="d-bar"><i style="width:${m.occ}%"></i></div>
-    </div>`).join(''),'Mes actual');
-
-  // Ratio de ocupación (mes elegido): mes en su línea + «Ver»
-  h+=_acc('Ratio de ocupación',`<div class="an-mr">
-      <input type="month" id="occMonth" aria-label="Mes" value="${esc(safeMonth(new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')))}"
-        onchange="renderOccupancy()"/>
-      <button class="btn-sec" onclick="renderOccupancy()">Ver</button>
-    </div>
-    <div id="occResults"></div>`);
-
-  // Comparativa de periodos: meses uno debajo de otro (antes «Período B» se salía de la pantalla)
-  h+=_acc('Comparativa de períodos',`<div class="d-f"><label class="q" for="cmpA">Período A</label><input type="month" id="cmpA"/></div>
-    <div class="d-f"><label class="q" for="cmpB">Período B</label><input type="month" id="cmpB"/></div>
-    <button class="btn-pri" onclick="runComparison()">Comparar períodos</button>
-    <div id="cmpResults" class="an-cr"></div>`);
-
-  // Eficiencia operativa: tira de KPI con líneas de 1 px
-  h+=_acc('Eficiencia operativa',`<div class="d-kpi an-kpi" style="--c:2">
-      <div><b class="${_avgDeadTime===null?'':_cl(_avgDeadTime<=2,_avgDeadTime>5)}">${_avgDeadTime!==null?_avgDeadTime+'d':'—'}</b><span>Tiempo muerto medio</span><small>días libres entre alquileres</small></div>
-      <div><b class="err">${_fmtA(_costPerDay)}</b><span>Coste por día ocupado</span><small>gasto total ÷ días en alquiler</small></div>
-      <div><b class="${_effRatio===null?'':_cl(_effRatio>=3,_effRatio<2)}">${_effRatio!==null?_effRatio+'x':'—'}</b><span>Ratio eficiencia</span><small>€ ingresados por cada € gastado</small></div>
-      <div><b class="${_cl(_maintRatio<=10,_maintRatio>20)}">${_maintRatio}%</b><span>Mantenimiento / ingresos</span><small>${_fmtA(_maintExp)} en mantenimiento total</small></div>
-    </div>`);
-
-  // Duración de los alquileres: filas con barra fina
-  h+=_acc('Duración de los alquileres',[['Corto (1–3d)',_durGroups.short],['Medio (4–7d)',_durGroups.med],['Largo (8d+)',_durGroups.long]].map(([lbl,grp])=>{
-      const totBksAll=_allBks.length||1;const pct=Math.round(grp.length/totBksAll*100);
-      return `<div class="an-oc">
-        <div class="an-ol"><span>${lbl}</span><b>${grp.length} alq. · ${pct}% · Ø${_fmtA(_durAvg(grp))}</b></div>
-        <div class="d-bar"><i style="width:${Number(pct)}%"></i></div>
-      </div>`;
-    }).join('')
-    +(_avgKm!==null?`<p class="d-hint an-km">${ico('odometer')} Km medios por alquiler (con datos de km): <b>${_avgKm.toLocaleString('es-ES')} km</b> · ${_bksWithKm.length} alq. con datos</p>`:''));
-
-  // Clientes: KPI + top 5 en filas
   h+=_acc('Clientes',`<div class="d-kpi an-kpi" style="--c:2">
       <div><b class="in">${_cliList.length}</b><span>Clientes únicos</span></div>
-      <div><b>${_recurring.length}<em> (${_cliList.length>0?Math.round(_recurring.length/_cliList.length*100):0}%)</em></b><span>Clientes recurrentes</span></div>
+      <div><b>${_recurring.length}<em> (${_pct(_recurring.length,_cliList.length)}%)</em></b><span>Clientes recurrentes</span></div>
     </div>
     ${_cliList.length>0?`<span class="q an-q">Top 5 por gasto</span>
     <div class="d-list an-cl">${_cliList.slice(0,5).map((c,i)=>`<div class="d-row">
       <span class="q">${String(i+1).padStart(2,'0')}</span>
       <div><div class="t ell">${esc(c.name)}</div><div class="s">${c.count} alquiler${c.count!==1?'es':''}</div></div>
       <div class="r"><b class="ok">${_fmtA(c.total)}</b>${c.count>1?'<span class="chip">Recurrente</span>':''}</div>
-    </div>`).join('')}</div>`:'<p class="d-hint">Sin datos de clientes</p>'}`);
-
-  // Turismo vs Furgoneta (solo si hay ambos tipos): tabla limpia de 3 columnas
-  if(_turismos.length>0&&_furgos.length>0){
-    const _tv=[_tStat,_fStat];
+    </div>`).join('')}</div>`:'<p class="d-hint">Sin clientes en el período</p>'}`);
+  // Duración de los alquileres: filas con barra fina y km medios
+  const _dur={short:[],med:[],long:[]};
+  _allBks.forEach(b=>{const d=daysBetween(b.startDate,b.endDate);if(d<=3)_dur.short.push(b);else if(d<=7)_dur.med.push(b);else _dur.long.push(b);});
+  const _durAvg=g=>g.length?Math.round(g.reduce((s,b)=>s+(Number(b.amount)||0),0)/g.length):0;
+  const _bksKm=_allBks.filter(b=>b.kmStart&&b.kmEnd&&b.kmEnd>b.kmStart);
+  const _avgKm=_bksKm.length?Math.round(_bksKm.reduce((s,b)=>s+(b.kmEnd-b.kmStart),0)/_bksKm.length):null;
+  h+=_acc('Duración de los alquileres',[['Corto (1–3d)',_dur.short],['Medio (4–7d)',_dur.med],['Largo (8d+)',_dur.long]].map(([lbl,grp])=>{
+      const pct=_pct(grp.length,_allBks.length);
+      return `<div class="an-oc">
+        <div class="an-ol"><span>${lbl}</span><b>${grp.length} alq. · ${pct}% · Ø${_fmtA(_durAvg(grp))}</b></div>
+        <div class="d-bar"><i style="width:${Number(pct)}%"></i></div>
+      </div>`;
+    }).join('')
+    +(_avgKm!==null?`<p class="d-hint an-km">${ico('odometer')} Km medios por alquiler: <b>${_avgKm.toLocaleString('es-ES')} km</b></p>`:''));
+  // Turismo vs furgoneta (solo si hay ambos tipos): mismas cifras que el resto de la pantalla, en el período
+  const _tur=activeV.filter(v=>!(v.vehicle_type||'turismo').startsWith('l')),_fur=activeV.filter(v=>(v.vehicle_type||'turismo').startsWith('l'));
+  if(_tur.length>0&&_fur.length>0){
+    const _tv=[_anStats(_tur,R.ms,X),_anStats(_fur,R.ms,X)];
     h+=_acc('Turismo vs furgoneta',`<div class="an-tb">
-      <div class="h"><span></span><span>${ico('car')} Turismos (${_tStat.cnt})</span><span>${ico('van')} Furgonetas (${_fStat.cnt})</span></div>
-      ${[['Ingresos',st=>_fmtA(st.inc),st=>'ok'],['Gastos',st=>_fmtA(st.exp),st=>'err'],['Beneficio',st=>_fmtA(st.inc-st.exp),st=>st.inc-st.exp>=0?'ok':'err'],['Alquileres',st=>st.bks,st=>''],['Días ocup.',st=>st.days+'d',st=>''],['€/día',st=>_fmtA(st.days>0?Math.round(st.inc/st.days):0),st=>'']].map(([l,f,c])=>`<div><span>${l}</span>${_tv.map(st=>`<b class="${c(st)}">${f(st)}</b>`).join('')}</div>`).join('')}
+      <div class="h"><span></span><span>${ico('car')} Turismos (${_tur.length})</span><span>${ico('van')} Furgonetas (${_fur.length})</span></div>
+      ${[['Facturado',st=>_fmtA(st.fac),st=>''],['Beneficio flota',st=>_fmtA(st.ben),st=>st.ben>=0?'ok':'err'],['Alquileres',st=>st.bks,st=>''],['Ocupación',st=>_pct(st.occ,st.cap)+'%',st=>''],['Precio medio día',st=>st.occ?_fmtA(st.fac/st.occ):'—',st=>'']].map(([l,f,c])=>`<div><span>${l}</span>${_tv.map(st=>`<b class="${c(st)}">${f(st)}</b>`).join('')}</div>`).join('')}
     </div>`);
   }
-
   h+=`</div></div>`;
   el.innerHTML=h;
-  // Default cmp values
-  const now2=new Date();
-  const prevM=new Date(now2.getFullYear(),now2.getMonth()-1,1);
+  // «Elegir otros meses»: por defecto, el mes anterior y el actual
   const elA2=document.getElementById('cmpA');const elB2=document.getElementById('cmpB');
-  if(elA2&&!elA2.value)elA2.value=prevM.getFullYear()+'-'+String(prevM.getMonth()+1).padStart(2,'0');
-  if(elB2&&!elB2.value)elB2.value=now2.getFullYear()+'-'+String(now2.getMonth()+1).padStart(2,'0');
-  // Render occupancy on load
-  renderOccupancy();
+  if(elA2&&!elA2.value)elA2.value=_anAdd(cur,-1);
+  if(elB2&&!elB2.value)elB2.value=cur;
 }
 
 function openAnalyticsReportPicker(){
@@ -6636,7 +6556,7 @@ let dashChartYear=new Date().getFullYear(),dashFinMonth='';
 let _vtype='own',_plat='amovens',_etype='expense',_bizEtype='expense';
 let _filterVtype='',_agFilterVtype='';
 let _filterOwnership='',_agFilterOwnership='';
-let _analyticsVtype='',_analyticsOwnership='';
+let _analyticsVtype='',_analyticsOwnership='',_analyticsPer=(()=>{try{const p=localStorage.getItem('deiros_anPer');return ['mes','ano','todo'].includes(p)?p:'mes';}catch(e){return 'mes';}})(); // #anB
 let _flotaFiltersOpen=false,_agFiltersOpen=false;
 let _dashPlatPeriod='monthly'; // 'monthly'|'quarterly'|'annual'
 let _enterAnim=true; // entrada animada solo al abrir la app o cambiar de pantalla (nav), no al repintar por datos
@@ -9971,27 +9891,11 @@ function runComparison(){
   const res=document.getElementById('cmpResults');
   if(!res)return;
   if(!mA||!mB){res.innerHTML='<div class="d-hint">Selecciona ambos períodos.</div>';return;}
-  // #anA: Beneficio flota del mes con los coches del filtro de Analítica: propios (ingresos − gastos) + en gestión (comisión − déficit asumido,
-  // cláusula Quinta según COMM_RULE_FROM). Mismos movimientos que Negocio (_getBizEntriesWithMgmt) sin los ingresos y gastos generales.
-  const vs=V.filter(v=>!v.archived).filter(v=>{
-    if(_analyticsOwnership==='own'&&v.vtype==='managed')return false;
-    if(_analyticsOwnership==='managed'&&v.vtype!=='managed')return false;
-    if(_analyticsVtype&&(v.vehicle_type||'turismo')!==_analyticsVtype)return false;
-    return true;
-  });
+  // #anA/#anB: Beneficio flota con los coches del filtro de Analítica, con la base común de la pantalla (_anVs y _anStats)
+  const vs=_anVs(),X=new Map();
   function periodStats(m){
-    let inc=0,exp=0;
-    vs.forEach(v=>{
-      const f=_getVehicleAllFinancesDisplay(v).filter(e=>!e._bfEntry&&typeof e.date==='string'&&e.date.startsWith(m));
-      if(v.vtype==='managed'){const c=_ownerSettle(v,f,m).mgr;if(c>0)inc+=c;else exp-=c;return;} // como la entrada «Comisión» de Negocio
-      inc+=f.filter(e=>e.type==='income'&&!_isDepositInc(e)).reduce((s,e)=>s+(Number(e.amount)||0),0);
-      exp+=f.filter(e=>e.type==='expense').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    });
-    const bks=[];
-    vs.forEach(v=>(v.bookings||[]).forEach(b=>{if(b.startDate.startsWith(m)&&!b.cancelled&&!b.cancellation)bks.push(b);}));
-    const days=vs.reduce((s,v)=>s+new Set((v.bookings||[]).filter(b=>!b.cancelled&&!b.cancellation).flatMap(_daysInBooking).filter(d=>d.startsWith(m))).size,0); // días ocupados de cada coche en este mes (incluido el de devolución), como la ocupación de Analítica
-    const clients=new Set(bks.filter(b=>(b.clientName||'').trim()!==_CL_ANON).map(b=>b.clientDni||b.clientName).filter(Boolean)).size; // sin anonimizados
-    return{inc,exp,profit:inc-exp,bks:bks.length,days,clients,margin:inc>0?Math.round((inc-exp)/inc*100):0};
+    const s=_anStats(vs,[m],X);
+    return{inc:s.inc,exp:s.exp,profit:s.ben,bks:s.bks,days:s.occ,clients:s.clients,margin:s.inc>0?Math.round(s.ben/s.inc*100):0};
   }
   const sA=periodStats(mA);const sB=periodStats(mB);
   function diff(a,b,isInv){

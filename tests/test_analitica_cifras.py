@@ -1,6 +1,6 @@
 # Analítica · cifras correctas (bloque A): «Beneficio flota» (propios + comisión − déficit asumido) en la cabecera y en la Comparativa,
-# que cuadra con Negocio salvo los ingresos y gastos generales; Comparativa y ocupación con los coches del filtro; ocupación «Histórico»
-# hasta hoy; amortización con una sola cifra (meses al ritmo de los últimos 6 meses) y solo de coches propios; sin «Proyección anual»;
+# que cuadra con Negocio salvo los ingresos y gastos generales; Comparativa y ocupación con los coches del filtro (desde el
+# bloque B, en las cifras del período; la ocupación «Histórico» ya no está); amortización con una sola cifra (meses al ritmo de los últimos 6 meses) y solo de coches propios; sin «Proyección anual»;
 # clientes sin anonimizados; informe PDF: plataformas = Ingresos, período «10/2026 a 11/2026», sin proyección ni break-even;
 # «Informe PDF» de escritorio abre el selector de período. Datos inventados; fecha fija del arnés: 20/11/2026.
 # Cuentas a mano (comisión 30 %; octubre con la regla antigua, noviembre con la de #90):
@@ -51,35 +51,42 @@ with H.playwright() as p:
     chk(o.get('Beneficio')==['200,00 €','370,00 €'] and o.get('Alquileres')==['1','1'] and o.get('Días ocupados')==['11','11'],'Comparativa con «Propios»: solo el coche propio (200 / 370 €, 1 alquiler, 11 días)',o)
     o=J(CMP,'managed');o={k:N(v) for k,v in o.items()}
     chk(o.get('Beneficio')==['150,00 €','168,00 €'] and o.get('Alquileres')==['1','1'],'Comparativa con «Gestión»: solo la comisión (150 / 168 €)',o)
-    # ── 2. Cabecera «Beneficio flota» = Negocio de siempre − generales ──
-    J("_analyticsOwnership='';nav('analytics')")
+    # ── 2. Cabecera «Beneficio flota» = Negocio de siempre − generales (#anB: con el período «Todo»; «Mes» = el mes actual) ──
+    J("_analyticsOwnership='';setAnalyticsPeriod('todo')")
     hero=N(J("document.querySelector('.an-hero').innerText.replace(/\\s+/g,' ')"))
     allneg=J("""()=>{const s=a=>a.reduce((t,e)=>t+(e.type==='income'&&!_isDepositInc(e)?1:e.type==='expense'?-1:0)*(Number(e.amount)||0),0);return [s(_getBizEntriesWithMgmt()),s(BF)];}""")
     chk(re.search(r'BENEFICIO FLOTA',hero,re.I) and 'negocio' not in hero.lower(),'Cabecera: «Beneficio flota» (ya no «Beneficio del negocio»)',hero)
-    chk(re.search(r'988 ?,00 €',hero) and abs(allneg[0]-allneg[1]-988)<0.005,'Cabecera: 988 € = propios 670 + comisiones 318 = Negocio (928) − generales (−60)',[hero,allneg])
+    chk(re.search(r'988 ?,00 €',hero) and abs(allneg[0]-allneg[1]-988)<0.005,'Cabecera «Todo»: 988 € = propios 670 + comisiones 318 = Negocio (928) − generales (−60)',[hero,allneg])
     meta=J("document.querySelector('.an-hero .d-meta').textContent.trim()")
-    chk(meta=='Histórico','Cabecera: debajo de la cifra, el período («Histórico») en vez de la explicación del cálculo',meta)
-    # ── 3. Amortización: una sola cifra, solo coches propios; sin «Proyección anual» ──
+    chk(meta=='Desde oct 2026','Cabecera «Todo»: debajo de la cifra, desde cuándo («Desde oct 2026»), sin explicar el cálculo',meta)
+    J("setAnalyticsPeriod('mes')")
+    hero=N(J("document.querySelector('.an-hero').innerText.replace(/\\s+/g,' ')"))
+    chk(re.search(r'538 ?,00 €',hero),'Cabecera «Mes»: 538 € = la Comparativa de noviembre',hero)
+    # ── 3. Amortización: una sola cifra, solo coches propios (#anB: en la lista «Coches»); sin «Proyección anual» ──
+    J("setAnalyticsPeriod('todo')")
     an=J("""()=>{const d=[...document.querySelectorAll('details.an-acc')];d.forEach(x=>x.open=true);return d.map(x=>[x.querySelector('.t').textContent.trim(),x.innerText.replace(/\\s+/g,' ')]);}""")
-    tit=[t for t,_ in an];roi=dict(an).get('ROI por vehículo','')
-    chk('Proyección anual' not in tit and not any('Break-even' in b or 'proyect' in b for _,b in an),'Sin el desplegable «Proyección anual» ni «Break-even»',tit)
-    chk('Turismo Uno' in roi and 'Furgo Dos' not in roi,'ROI por vehículo: solo el coche propio (el de gestión no sale)',roi)
-    pay=re.findall(r'Se paga solo en ~(\d+) (\w+)',roi)
-    chk(pay==[('19','meses')],'Amortización: una sola cifra, «~19 meses» ((6000 − 670) / 285 €/mes)',pay)
-    chk('días al ritmo' not in roi,'Amortización: ya no en «días» (que suponía el coche alquilado todos los días)')
+    tit=[t for t,_ in an]
+    txt=N(J("document.querySelector('.an').innerText.replace(/\\s+/g,' ')"))
+    chk('Proyección' not in txt and 'Break-even' not in txt and 'proyect' not in txt,'Sin «Proyección anual» ni «Break-even»',tit)
+    cars=J("""[...document.querySelectorAll('.an-car')].map(r=>r.innerText.replace(/\\s+/g,' '))""")
+    tu=[c for c in cars if 'Turismo Uno' in c];fu=[c for c in cars if 'Furgo Dos' in c]
+    chk(tu and fu and 'Amortizado' in tu[0] and 'Amortizado' not in fu[0],'Amortización: solo en el coche propio (el de gestión no la lleva)',cars)
+    pay=re.findall(r'~(\d+) (mes(?:es)?)',' '.join(cars))
+    chk(pay==[('19','meses')] and 'Amortizado 11 %' in tu[0],'Amortización: una sola cifra, «Amortizado 11 % · ~19 meses» ((6000 − 670) / 285 €/mes)',pay)
+    chk('días al ritmo' not in txt,'Amortización: ya no en «días» (que suponía el coche alquilado todos los días)')
     chk(J("_amortMeses(V[0],6000,670)")==19 and abs(J("_amortRitmo(V[0])")-285)<0.005,'_amortRitmo = 285 €/mes (oct y nov; la reserva de diciembre no cuenta) y _amortMeses = 19')
     J("_analyticsOwnership='managed';nav('analytics')")
-    chk(not J("[...document.querySelectorAll('details.an-acc .t')].some(t=>t.textContent.includes('ROI'))"),'Con «Gestión» no sale el desplegable ROI')
-    # ── 4. Ocupación con el filtro e «Histórico» hasta hoy ──
-    J("_analyticsOwnership='own';nav('analytics')")
-    occ=N(J("document.getElementById('occResults').textContent.replace(/\\s+/g,' ').trim()"))
-    chk('11 días ocupados / 30 disponibles' in occ and occ.startswith('37%'),'Ratio de ocupación con «Propios»: 11 / 30 días = 37 % (antes contaba 60 días disponibles)',occ[:120])
+    chk('Amortizado' not in J("document.querySelector('.an').innerText"),'Con «Gestión» no sale ninguna amortización')
+    # ── 4. Ocupación con el filtro (#anB: cifras «Ocupación» y «Días libres» del período) ──
+    kpi=lambda:dict((b,a) for a,b in J("""[...document.querySelectorAll('.an-k4>div')].map(d=>[d.querySelector('b').textContent.trim(),d.querySelector('span').textContent.trim()])"""))
+    J("_analyticsOwnership='own';setAnalyticsPeriod('mes')");k=kpi()
+    chk(k.get('Ocupación')=='37%' and k.get('Días libres')=='19 d','«Mes» con «Propios»: 11 de 30 días = 37 %, 19 días libres (antes contaba 60 días disponibles)',k)
+    J("_analyticsOwnership=''; nav('analytics')");k=kpi()
+    chk(k.get('Ocupación')=='37%' and k.get('Días libres')=='38 d','«Mes» con «Todos»: 22 de 60 días, 38 libres',k)
+    J("_analyticsOwnership='own';setAnalyticsPeriod('todo')");k=kpi()
+    chk(k.get('Ocupación')=='30%' and k.get('Días libres')=='64 d','«Todo» con «Propios»: desde el primer mes con actividad (oct a dic: 92 días), 28 alquilados = 30 %, 64 libres',k)
     J("_analyticsOwnership='';nav('analytics')")
-    occ=N(J("document.getElementById('occResults').textContent.replace(/\\s+/g,' ').trim()"))
-    chk('22 días ocupados / 60 disponibles' in occ,'Ratio de ocupación con «Todos»: 22 / 60 días',occ[:120])
-    m=re.search(r'Furgo Dos.*?Histórico ?(\d+)% ?(\d+)/(\d+)d',occ)
-    chk(m and m.groups()==('47','22','47'),'«Histórico» de la furgoneta: 22 días de 47 (5/10 → hoy 20/11) = 47 % (antes 22/40 = 55 %)',m.groups() if m else occ)
-    # ── 5. Clientes sin anonimizados ──
+    # ── 5. Clientes sin anonimizados (período «Todo») ──
     cl=dict(an).get('Clientes','')
     chk(re.search(r'2 CLIENTES ÚNICOS 1 \(50%\)',N(cl),re.I) and 'anonimizado' not in cl,'Clientes: 2 únicos (Ana y Bea), 1 recurrente; sin «Cliente anonimizado»',cl[:160])
     # ── 6. Informe PDF de octubre a noviembre ──
